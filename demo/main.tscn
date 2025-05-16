@@ -1,0 +1,55 @@
+[gd_scene load_steps=3 format=3 uid="uid://buvlply3axqqi"]
+
+[ext_resource type="Script" uid="uid://ck323bl4c38kw" path="res://main.gd" id="1_ig7tw"]
+
+[sub_resource type="LabelSettings" id="LabelSettings_ig7tw"]
+font_size = 36
+
+[node name="Main" type="Node"]
+script = ExtResource("1_ig7tw")
+
+[node name="HBoxContainer" type="HBoxContainer" parent="."]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="WorldConfig" type="VBoxContainer" parent="HBoxContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="WorldClientLabel" type="Label" parent="HBoxContainer/WorldConfig"]
+layout_mode = 2
+text = "World Client"
+horizontal_alignment = 1
+
+[node name="Status" type="Label" parent="HBoxContainer/WorldConfig"]
+layout_mode = 2
+size_flags_vertical = 0
+label_settings = SubResource("LabelSettings_ig7tw")
+
+[node name="InputWorldAddr" type="TextEdit" parent="HBoxContainer/WorldConfig"]
+custom_minimum_size = Vector2(0, 100)
+layout_mode = 2
+placeholder_text = "WORLD ADDR"
+
+[node name="BtnStartClient" type="Button" parent="HBoxContainer/WorldConfig"]
+layout_mode = 2
+text = "Connect"
+
+[node name="InputController" type="TextEdit" parent="HBoxContainer/WorldConfig"]
+custom_minimum_size = Vector2(0, 100)
+layout_mode = 2
+placeholder_text = "ControllerADDR"
+
+[node name="ConnectController" type="Button" parent="HBoxContainer/WorldConfig"]
+layout_mode = 2
+text = "Controller"
+
+[node name="VBoxContainer" type="VBoxContainer" parent="HBoxContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[connection signal="pressed" from="HBoxContainer/WorldConfig/BtnStartClient" to="." method="_on_button_pressed"]
+[connection signal="pressed" from="HBoxContainer/WorldConfig/ConnectController" to="." method="_on_connect_controller_pressed"]
