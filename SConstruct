@@ -52,6 +52,9 @@ os.chdir("..")
 # tweak this if you want to use different folders, or more folders, to store your source code in.
 
 env.Append(
+    LINKFLAGS=["-ldbus-1"]
+)
+env.Append(
     CPPPATH=[
         "src/",
         "include/",
@@ -93,4 +96,5 @@ else:
         addon_dir + "dojoc{}{}".format(env["suffix"], env["SHLIBSUFFIX"]),
         source=sources,
     )
+
 Default(library)
