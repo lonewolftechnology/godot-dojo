@@ -1,0 +1,96 @@
+#!/usr/bin/env python
+import os
+import sys
+import shutil
+# Project Configurations
+PROJECT_NAME = "dojoc-gdextension"
+ENTRY_POINT = "dojoc_library_init"
+GODOT_MIN_REQUIREMENT = "4.2"
+
+# Generate .gdextension file
+conf_dict = {
+    r'${PROJECT_NAME}': PROJECT_NAME,
+    r'${ENTRY_POINT}': ENTRY_POINT,
+    r'${GODOT_MIN_REQUIREMENT}': GODOT_MIN_REQUIREMENT
+}
+env = Environment(tools=['textfile'])
+env.Substfile('plugin_template.gdextension.in', SUBST_DICT = conf_dict)
+
+# Gets the standard flags CC, CCX, etc.
+env = SConscript("godot-cpp/SConstruct")
+
+# Dojo.C
+## Helper variables
+rust_libname = "libdojo_c" + env['SHLIBSUFFIX']
+rust_lib = 'dojo.c/target/{}/{}'.format(env["target"].replace("template_",""), rust_libname)
+
+## Build rust
+rust_extra_args = ""
+# TODO: PLATFORM TARGETS
+if env["target"] == "template_release":
+    rust_extra_args += "--release"
+
+env.Execute(
+    action="cargo build {}".format( rust_extra_args),
+    chdir="dojo.c"
+)
+os.chdir("..")
+# Copy compiled library into base directory
+# local_rust = env.Command(
+#     target=rust_libname,
+#     source=rust_lib,
+#     action=Copy('$TARGET', '$SOURCE'))
+
+# For reference:
+# - CCFLAGS are compilation flags shared between C and C++
+# - CFLAGS are for C-specific compilation flags
+# - CXXFLAGS are for C++-specific compilation flags
+# - CPPFLAGS are for pre-processor flags
+# - CPPDEFINES are for pre-processor defines
+# - LINKFLAGS are for linking flags
+
+# tweak this if you want to use different folders, or more folders, to store your source code in.
+
+env.Append(
+    CPPPATH=[
+        "src/",
+        "include/",
+        "dojo.c/"
+    ]
+)
+
+env.Append(
+    LIBS=[File("./" + rust_lib.replace(".so", ".a"))]
+)
+
+
+sources = Glob(
+    "src/*.cpp"
+)
+
+addon_dir = "demo/bin/"
+
+if env["platform"] == "macos":
+    library = env.SharedLibrary(
+        addon_dir + "/dojoc.{}.{}.framework/dojoc.{}.{}".format(
+            env["platform"], env["target"], env["platform"], env["target"]
+        ),
+        source=sources,
+    )
+elif env["platform"] == "ios": # No lo borro por las dudas si surge que hay que hacer ios
+    if env["ios_simulator"]:
+        library = env.StaticLibrary(
+            addon_dir + "/dojoc.{}.{}.simulator.a".format(env["platform"], env["target"]),
+            source=sources,
+        )
+    else:
+        library = env.StaticLibrary(
+            addon_dir + "/dojoc.{}.{}.a".format(env["platform"], env["target"]),
+            source=sources,
+        )
+else:
+    library = env.SharedLibrary(
+        addon_dir + "dojoc{}{}".format(env["suffix"], env["SHLIBSUFFIX"]),
+        source=sources,
+    )
+Default(library)
