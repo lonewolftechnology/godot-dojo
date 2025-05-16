@@ -47,7 +47,8 @@ Luego levantamos Torii, si el hex es diferente actualizenlo
 torii --world 0x07cb912d0029e3799c4b8f2253b21481b2ec814c5daf72de75164ca82e7c42a5 --http.cors_origins "*"
 ```
 
-El projecto de [ejemplo](demo) deberia poderse abrir con cualquier version de godot >= 4.2
+El projecto de [ejemplo](demo) deberia poderse abrir con cualquier version de godot >= 4.2.
+
 Consta de dos textfield que se pusieron por el solo proposito de testear mas facil.
 El primero es para testear la conexion con el servidor. Recibe el address de world
 El segundo es el que hace el login, te abre una pagina en el navegador. Recibe el address de actions
