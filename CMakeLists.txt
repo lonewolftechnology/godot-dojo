@@ -10,7 +10,7 @@ set(CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake" ${CMAKE_MODULE_PATH})
 ########################################################################################################################
 
 # Project setup
-set(PROJECT_NAME "dojoc_gdextension")
+set(PROJECT_NAME "godot-dojo")
 project(
         ${PROJECT_NAME}
         LANGUAGES CXX
@@ -92,9 +92,9 @@ endforeach ()
 set(
         PUBLIC_INCLUDE_DIRS
         ${godot-cpp_SOURCE_DIR}/gdextension
-        ${godot-cpp_SOURCE_DIR}/gen/include
+        ${godot-cpp_SOURCE_DIR}/gen/include/godot-cpp
         ${godot-cpp_BINARY_DIR}/gdextension
-        ${godot-cpp_BINARY_DIR}/gen/include
+        ${godot-cpp_BINARY_DIR}/gen/include/godot-cpp
         ${dojoc_SOURCE_DIR}
 
 )
