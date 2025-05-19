@@ -20,3 +20,7 @@ func _on_connect_controller_pressed() -> void:
 	if input_controller.text.is_empty():
 		input_controller.text = dev_actions_addr
 	dojo.controller_connect(input_controller.text)
+
+
+func _on_testing_pressed() -> void:
+	dojo.testing()
