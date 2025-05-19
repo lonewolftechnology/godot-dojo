@@ -56,10 +56,11 @@ os.chdir("..")
 # - LINKFLAGS are for linking flags
 
 # tweak this if you want to use different folders, or more folders, to store your source code in.
-
-env.Append(
-    LINKFLAGS=["-ldbus-1"]
-)
+if env['platform'] == "linux":
+    env.Append(
+        LINKFLAGS=["-ldbus-1"]
+    )
+    
 env.Append(
     CPPPATH=[
         "src/",
