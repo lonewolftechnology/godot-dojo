@@ -2,17 +2,21 @@
 // Created by hazel on 12/05/25.
 //
 #include "dojo_c_gdextension.h"
+
+#include <unistd.h>
 #include <godot_cpp/core/class_db.hpp>
 #include <godot_cpp/variant/utility_functions.hpp>
 
 using namespace godot;
 DojoC* DojoC::singleton = nullptr;
+dojo_bindings::ControllerAccount* session_account = nullptr;
 
 
 void DojoC::_bind_methods()
 {
 	ClassDB::bind_method(D_METHOD("set_enabled", "p_enabled"), &DojoC::set_enabled);
 	ClassDB::bind_method(D_METHOD("get_enabled"), &DojoC::get_enabled);
+	ClassDB::bind_method(D_METHOD("testing"), &DojoC::testing);
 	// ClassDB::bind_method(D_METHOD("client_new"), &DojoC::client_new);
 	ClassDB::bind_method(D_METHOD("create_client", "p_world"), &DojoC::create_client);
 	ClassDB::bind_method(D_METHOD("controller_connect"), &DojoC::controller_connect);
@@ -65,6 +69,7 @@ void hex_to_bytes(const String _addr, dojo_bindings::FieldElement* felt)
 	}
 }
 
+// que devuelva un msg es testing, no deberia devolver nada
 String DojoC::create_client(const String& world_addr)
 {
 	String _msg = "";
@@ -89,7 +94,9 @@ String DojoC::create_client(const String& world_addr)
 	if (resClient.tag == dojo_bindings::ErrToriiClient)
 	{
 		UtilityFunctions::printerr("Error: ", resClient.err.message);
+		// UtilityFunctions::push_error("Error: ", resClient.err.message);
 		_msg = String("[Error] create_client: ") + resClient.err.message;
+		return "ERROR";
 	}
 	else
 	{
@@ -104,42 +111,12 @@ String DojoC::create_client(const String& world_addr)
 
 
 
-void string_to_bytes(const std::string& hex_str, uint8_t* out_bytes, size_t max_bytes) {
-	// Skip "0x" prefix if present
-	size_t start_idx = (hex_str.substr(0, 2) == "0x") ? 2 : 0;
-
-	// Calculate actual string length without prefix
-	size_t hex_length = hex_str.length() - start_idx;
-
-	// Handle odd number of characters by assuming leading zero
-	bool is_odd = hex_length % 2 != 0;
-	size_t num_bytes = (hex_length + is_odd) / 2;
-
-	// Ensure we don't overflow the output buffer
-	if (num_bytes > max_bytes) {
-		return;
-		//        throw std::runtime_error("Input hex string too long for output buffer");
-	}
-
-	size_t out_idx = 0;
-
-	// Handle first nibble separately if we have odd number of characters
-	if (is_odd) {
-		std::string nibble = hex_str.substr(start_idx, 1);
-		out_bytes[out_idx++] = static_cast<uint8_t>(std::stoul(nibble, nullptr, 16));
-	}
-
-	// Process two hex digits at a time
-	for (size_t i = is_odd ? 1 : 0; i < hex_length; i += 2) {
-		std::string byte_str = hex_str.substr(start_idx + i, 2);
-		out_bytes[out_idx++] = static_cast<uint8_t>(std::stoul(byte_str, nullptr, 16));
-	}
-}
 
 // callback al iniciar sesion en el controller de Cartridge
 void on_account(dojo_bindings::ControllerAccount* account)
 {
 // Implementar
+	session_account = account;
 	UtilityFunctions::print_verbose("on_account callback Triggered");
 }
 
@@ -162,3 +139,72 @@ void DojoC::controller_connect(const String &controller_addr)
 
 }
 
+void DojoC::testing()
+{
+
+
+	const char* rpc_url = "http://localhost:5050";
+	const char* torii_url = "http://localhost:8080";
+	const char* relay_url = "/ip4/127.0.0.1/tcp/9090";
+
+	dojo_bindings::FieldElement world;
+	hex_to_bytes("0x07cb912d0029e3799c4b8f2253b21481b2ec814c5daf72de75164ca82e7c42a5", &world);
+	dojo_bindings::FieldElement actions;
+	hex_to_bytes("0x00a92391c5bcde7af4bad5fd0fff3834395b1ab8055a9abb8387c0e050a34edf", &actions);
+	dojo_bindings::FieldElement eth;
+	hex_to_bytes("0x49d36570d4e46f48e99674bd3fcc84644ddd6b96f7c741b1562b82f9e004dc7", &eth);
+	dojo_bindings::FieldElement katana;
+	hex_to_bytes("0x4b4154414e41", &katana);
+
+	dojo_bindings::ResultToriiClient resClient = dojo_bindings::client_new(torii_url, relay_url, world);
+	if (resClient.tag == dojo_bindings::ErrToriiClient)
+	{
+		UtilityFunctions::printerr("Error: ", resClient.err.message);
+		// UtilityFunctions::push_error("Error: ", resClient.err.message);
+		return;
+	}
+	dojo_bindings::ToriiClient *client = resClient.ok;
+
+	dojo_bindings::Policy policies[] = {
+		{actions, "spawn", "Create a board"},
+		{actions, "move", "Create a game"},
+	};
+
+
+	dojo_bindings::ResultProvider resControllerProvider = dojo_bindings::provider_new(rpc_url);
+	if (resControllerProvider.tag == dojo_bindings::ErrProvider)
+	{
+		UtilityFunctions::printerr("Error: ", resControllerProvider.err.message);
+		// UtilityFunctions::push_error("Error: ", resControllerProvider.err.message);
+		return;
+	}else
+	{
+		UtilityFunctions::print_verbose("Provider created");
+	}
+	dojo_bindings::Provider* controller_provider = resControllerProvider.ok;
+
+	dojo_bindings::ResultControllerAccount resSessionACcount = dojo_bindings::controller_account(policies, 2, actions);
+	if (resSessionACcount.tag == dojo_bindings::OkControllerAccount)
+	{
+		UtilityFunctions::print_verbose("Session account already connected");
+		session_account = resSessionACcount.ok;
+	}
+	else
+	{
+		dojo_bindings::controller_connect(rpc_url, policies, 2, on_account);
+	}
+
+	while (session_account == nullptr)
+	{
+		usleep(100000); // Sleep for 100ms to avoid busy waiting
+	}
+	UtilityFunctions::print_verbose("Session account connected");
+
+
+
+
+
+
+
+
+}

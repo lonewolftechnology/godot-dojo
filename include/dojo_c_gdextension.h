@@ -31,6 +31,7 @@ namespace godot {
 
         String create_client(const String& world_addr);
         void controller_connect(const String &controller_addr);
+        void testing();
 
         DojoC();
         ~DojoC();
