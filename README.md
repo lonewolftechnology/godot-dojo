@@ -5,6 +5,7 @@ Dojo no es soportado nativamente en Windows, por lo que en su caso hay que usar 
 ## Requerimentos:
 - rustup
 - cargo
+- protobuf
 - Instalar [Dojo](https://book.dojoengine.org/getting-started)
 - scons / cmake (depende del que se quiera usar)
 - Otros (avisen cualquier cosa)
