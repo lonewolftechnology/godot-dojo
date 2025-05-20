@@ -116,8 +116,8 @@ String DojoC::create_client(const String& world_addr)
 void on_account(dojo_bindings::ControllerAccount* account)
 {
 // Implementar
-	session_account = account;
-	UtilityFunctions::print_verbose("on_account callback Triggered");
+UtilityFunctions::print_verbose("on_account callback Triggered");
+session_account = account;
 }
 
 void DojoC::controller_connect(const String &controller_addr)
@@ -143,18 +143,20 @@ void DojoC::testing()
 {
 
 
-	const char* rpc_url = "http://localhost:5050";
-	const char* torii_url = "http://localhost:8080";
-	const char* relay_url = "/ip4/127.0.0.1/tcp/9090";
+	const char* rpc_url = "http://0.0.0.0:5050";
+	const char* torii_url = "http://0.0.0.0:8080";
+	const char* relay_url = "/ip4/192.168.100.49/tcp/9090";
 
 	dojo_bindings::FieldElement world;
 	hex_to_bytes("0x07cb912d0029e3799c4b8f2253b21481b2ec814c5daf72de75164ca82e7c42a5", &world);
 	dojo_bindings::FieldElement actions;
 	hex_to_bytes("0x00a92391c5bcde7af4bad5fd0fff3834395b1ab8055a9abb8387c0e050a34edf", &actions);
-	dojo_bindings::FieldElement eth;
-	hex_to_bytes("0x49d36570d4e46f48e99674bd3fcc84644ddd6b96f7c741b1562b82f9e004dc7", &eth);
+	dojo_bindings::FieldElement player;
+	hex_to_bytes("0x127fd5f1fe78a71f8bcd1fec63e3fe2f0486b6ecd5c86a0466c3a21fa5cfcec", &player);
 	dojo_bindings::FieldElement katana;
 	hex_to_bytes("0x4b4154414e41", &katana);
+	// hex_to_bytes("0x07dc7899aa655b0aae51eadff6d801a58e97dd99cf4666ee59e704249e51adf2", &katana);
+
 
 	dojo_bindings::ResultToriiClient resClient = dojo_bindings::client_new(torii_url, relay_url, world);
 	if (resClient.tag == dojo_bindings::ErrToriiClient)
@@ -166,10 +168,9 @@ void DojoC::testing()
 	dojo_bindings::ToriiClient *client = resClient.ok;
 
 	dojo_bindings::Policy policies[] = {
-		{actions, "spawn", "Create a board"},
-		{actions, "move", "Create a game"},
+		{eth, "approve", "Create a board"},
+		{eth, "transfer", "Create a game"},
 	};
-
 
 	dojo_bindings::ResultProvider resControllerProvider = dojo_bindings::provider_new(rpc_url);
 	if (resControllerProvider.tag == dojo_bindings::ErrProvider)
@@ -179,26 +180,77 @@ void DojoC::testing()
 		return;
 	}else
 	{
-		UtilityFunctions::print_verbose("Provider created");
+		UtilityFunctions::print_verbose("Provider created.");
 	}
 	dojo_bindings::Provider* controller_provider = resControllerProvider.ok;
 
-	dojo_bindings::ResultControllerAccount resSessionACcount = dojo_bindings::controller_account(policies, 2, actions);
-	if (resSessionACcount.tag == dojo_bindings::OkControllerAccount)
+	// retrieve session
+	// dojo_bindings::ResultControllerAccount resControllerAccount = dojo_bindings::controller_account(policies,2, katana);
+	// if (resControllerAccount.tag == dojo_bindings::OkControllerAccount)
+	// {
+	// 	UtilityFunctions::print_verbose("Session account already connected");
+	// 	session_account = resControllerAccount.ok;
+	// }else
+	// {
+	// 	UtilityFunctions::print_verbose("Session account not connected, connecting...");
+	// 	dojo_bindings::controller_connect(rpc_url, policies, 2, on_account);
+	// }
+
+	dojo_bindings::FieldElement account_addr;
+	hex_to_bytes("0x127fd5f1fe78a71f8bcd1fec63e3fe2f0486b6ecd5c86a0466c3a21fa5cfcec",&account_addr);
+	dojo_bindings::FieldElement public_key;
+	hex_to_bytes("0xc5b2fcab997346f3ea1c00b002ecf6f382c5f9c9659a3894eb783c5320f912",&public_key);
+	dojo_bindings::FieldElement private_key;
+	hex_to_bytes("0x33246ce85ebdc292e6a5c5b4dd51fab2757be34b8ffda847ca6925edf31cb67",&private_key);
+
+	dojo_bindings::ResultAccount result_account = dojo_bindings::account_new(controller_provider, private_key,"0x127fd5f1fe78a71f8bcd1fec63e3fe2f0486b6ecd5c86a0466c3a21fa5cfcec");
+	if (result_account.tag == dojo_bindings::ErrAccount)
 	{
-		UtilityFunctions::print_verbose("Session account already connected");
-		session_account = resSessionACcount.ok;
-	}
-	else
-	{
-		dojo_bindings::controller_connect(rpc_url, policies, 2, on_account);
+		UtilityFunctions::printerr("Error: ", result_account.err.message);
+		// UtilityFunctions::push_error("Error: ", result_account.err.message);
+		return;
 	}
 
-	while (session_account == nullptr)
+	dojo_bindings::Account* account = result_account.ok;
+
+	UtilityFunctions::print_verbose("Account created.");
+
+	dojo_bindings::Query query = {};
+	query.limit = 100;
+	query.clause.tag = dojo_bindings::NoneClause;
+	dojo_bindings::ResultCArrayEntity res_entities = dojo_bindings::client_entities(client, &query, true);
+
+	if (res_entities.tag == dojo_bindings::ErrCArrayEntity)
 	{
-		usleep(100000); // Sleep for 100ms to avoid busy waiting
+		UtilityFunctions::printerr("Error: ", res_entities.err.message);
+		// UtilityFunctions::push_error("Error: ", res_entities.err.message);
+		return;
 	}
-	UtilityFunctions::print_verbose("Session account connected");
+
+	dojo_bindings::CArrayEntity fetchedEntities = res_entities.ok;
+	UtilityFunctions::print_verbose("Fetched", fetchedEntities.data_len, "entities");
+	for (size_t i = 0; i < fetchedEntities.data_len; i++)
+	{
+		// pritn hex of key
+		printf("Key: 0x");
+		for (size_t j = 0; j < 32; j++)
+		{
+			printf("%02x", fetchedEntities.data[i].hashed_keys.data[j]);
+		}
+		printf("\n");
+
+		// print models name
+		for (size_t j = 0; j < fetchedEntities.data[i].models.data_len; j++)
+		{
+			printf("Model: %s\n", fetchedEntities.data[i].models.data[j].name);
+		}
+	}
+
+	// while (session_account == nullptr)
+	// {
+	// 	usleep(100000); // Sleep for 100ms to avoid busy waiting
+	// }
+	// UtilityFunctions::print_verbose("Session account connected");
 
 
 

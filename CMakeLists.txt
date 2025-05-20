@@ -92,9 +92,9 @@ endforeach ()
 set(
         PUBLIC_INCLUDE_DIRS
         ${godot-cpp_SOURCE_DIR}/gdextension
-        ${godot-cpp_SOURCE_DIR}/gen/include/godot-cpp
-        ${godot-cpp_BINARY_DIR}/gdextension
-        ${godot-cpp_BINARY_DIR}/gen/include/godot-cpp
+        ${godot-cpp_SOURCE_DIR}/gen/include
+        ${godot-cpp_BINARY_DIR}/src
+        ${godot-cpp_BINARY_DIR}/gen/include/godot_cpp
         ${dojoc_SOURCE_DIR}
 
 )

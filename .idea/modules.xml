@@ -2,7 +2,7 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/.idea/dojo_c_gdextension.iml" filepath="$PROJECT_DIR$/.idea/dojo_c_gdextension.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/godot-dojo.iml" filepath="$PROJECT_DIR$/.idea/godot-dojo.iml" />
     </modules>
   </component>
 </project>
