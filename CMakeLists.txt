@@ -51,7 +51,7 @@ include(FetchContent)
 FetchContent_Declare(
         dojoc
         GIT_REPOSITORY https://github.com/dojoengine/dojo.c.git
-        GIT_TAG v1.3.1
+        GIT_TAG v1.5.0
 )
 FetchContent_MakeAvailable(dojoc)
 ########################################################################################################################
