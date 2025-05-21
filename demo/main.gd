@@ -11,7 +11,7 @@ const dev_actions_addr = "0x00a92391c5bcde7af4bad5fd0fff3834395b1ab8055a9abb8387
 @onready var status: Label = $HBoxContainer/WorldConfig/Status
 
 func _ready() -> void:
-	OS.set_environment("RUST_BACKTRACE", "1")
+	OS.set_environment("RUST_BACKTRACE", "full")
 
 func _on_button_pressed() -> void:
 	if input_world_addr.text.is_empty():
