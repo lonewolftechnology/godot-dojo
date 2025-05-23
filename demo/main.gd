@@ -5,10 +5,13 @@ const dev_world_addr = "0x07cb912d0029e3799c4b8f2253b21481b2ec814c5daf72de75164c
 const dev_actions_addr = "0x00a92391c5bcde7af4bad5fd0fff3834395b1ab8055a9abb8387c0e050a34edf"
 
 @onready var dojo:DojoC = DojoC.new()
+@onready var spawn_output: Label = $HBoxContainer/WorldConfig/SpawnOutput
 
 @onready var input_controller: TextEdit = $HBoxContainer/WorldConfig/InputController
 @onready var input_world_addr: TextEdit = $HBoxContainer/WorldConfig/InputWorldAddr
 @onready var status: Label = $HBoxContainer/WorldConfig/Status
+
+@export_global_file("Scarb.toml") var dojo_starter_path:String
 
 func _ready() -> void:
 	OS.set_environment("RUST_BACKTRACE", "full")
@@ -26,4 +29,19 @@ func _on_connect_controller_pressed() -> void:
 
 
 func _on_testing_pressed() -> void:
+	#dojo.call_deferred("testing")
 	dojo.testing()
+	await get_tree().create_timer(2).timeout
+	_on_spawn_pressed()
+
+func _on_spawn_pressed() -> void:
+	var args:Array = [
+		"execute",
+		"dojo_starter-actions",
+		"spawn",
+		"--manifest-path",
+		dojo_starter_path
+	]
+	var out:Array = []
+	OS.execute("sozo",args,out,true)
+	out.any(func(c): spawn_output.text += c)

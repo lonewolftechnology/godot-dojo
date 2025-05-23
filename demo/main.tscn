@@ -7,6 +7,7 @@ font_size = 36
 
 [node name="Main" type="Node"]
 script = ExtResource("1_ig7tw")
+dojo_starter_path = "/home/hazel/Proyectos/Godot/GDE/starting/dojo-starter/Scarb.toml"
 
 [node name="HBoxContainer" type="HBoxContainer" parent="."]
 anchors_preset = 15
@@ -51,6 +52,13 @@ text = "Controller"
 layout_mode = 2
 text = "Testing"
 
+[node name="SpawnOutput" type="Label" parent="HBoxContainer/WorldConfig"]
+layout_mode = 2
+
+[node name="Spawn" type="Button" parent="HBoxContainer/WorldConfig"]
+layout_mode = 2
+text = "SPAWN"
+
 [node name="VBoxContainer" type="VBoxContainer" parent="HBoxContainer"]
 layout_mode = 2
 size_flags_horizontal = 3
@@ -58,3 +66,4 @@ size_flags_horizontal = 3
 [connection signal="pressed" from="HBoxContainer/WorldConfig/BtnStartClient" to="." method="_on_button_pressed"]
 [connection signal="pressed" from="HBoxContainer/WorldConfig/ConnectController" to="." method="_on_connect_controller_pressed"]
 [connection signal="pressed" from="HBoxContainer/WorldConfig/Testing" to="." method="_on_testing_pressed"]
+[connection signal="pressed" from="HBoxContainer/WorldConfig/Spawn" to="." method="_on_spawn_pressed"]
