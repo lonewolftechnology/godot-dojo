@@ -30,11 +30,11 @@ rust_extra_args = ""
 if env["target"] == "template_release":
     rust_extra_args += "--release"
 
-if env['platform'] == "macos":
-    if env['arch'] == "arm64":
-        rust_extra_args += "--target aarch64-apple-darwin"
-    else:
-        rust_extra_args += "--target x86_64-apple-darwin"
+#if env['platform'] == "macos":
+#    if env['arch'] == "arm64":
+#        rust_extra_args += "--target aarch64-apple-darwin"
+#    else:
+#        rust_extra_args += "--target x86_64-apple-darwin"
 
 env.Execute(
     action="cargo build {}".format(rust_extra_args),
@@ -82,7 +82,7 @@ addon_dir = "demo/bin/"
 
 if env["platform"] == "macos":
     library = env.SharedLibrary(
-        addon_dir + "/dojoc.{}.{}.framework/dojoc.{}.{}".format(
+        addon_dir + "/libdojoc.{}.{}.framework/dojoc.{}.{}".format(
             env["platform"], env["target"], env["platform"], env["target"]
         ),
         source=sources,

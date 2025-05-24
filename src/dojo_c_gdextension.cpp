@@ -7,7 +7,6 @@
 #include <unistd.h>
 #include <godot_cpp/core/class_db.hpp>
 #include <godot_cpp/variant/utility_functions.hpp>
-#include <oneapi/tbb/detail/_task.h>
 
 using namespace godot;
 DojoC* DojoC::singleton = nullptr;
@@ -190,14 +189,13 @@ void on_indexer_update(dojo_bindings::ResultSubscription result)
 }
 
 String field_element_to_hex(const dojo_bindings::FieldElement &fe) {
-    std::ostringstream oss;
-    oss << "0x"; // Prefijo hexadecimal, opcional
+
+    String ret = "0x";
     for (size_t i = 0; i < 32; i++) {
-        // Convertir cada byte en un string hexadecimal con dos caracteres
-        oss << std::hex << std::setw(2) << std::setfill('0') << static_cast<int>(fe.data[i]);
-    }
-    // Convertir la cadena std::string a godot::String
-    return String(oss.str().c_str());
+        ret += String::num_int64(fe.data[i], 16, false);
+    };
+
+    return ret;
 }
 
 
