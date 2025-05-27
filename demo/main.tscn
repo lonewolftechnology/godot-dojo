@@ -8,6 +8,7 @@ font_size = 36
 [node name="Main" type="Node"]
 script = ExtResource("1_ig7tw")
 dojo_starter_path = "/home/hazel/Proyectos/Godot/GDE/starting/dojo-starter/Scarb.toml"
+sozo_path = "/home/hazel/.dojo/bin/sozo"
 
 [node name="HBoxContainer" type="HBoxContainer" parent="."]
 anchors_preset = 15

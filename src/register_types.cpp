@@ -3,11 +3,14 @@
 //
 #include "register_types.h"
 
-#include "../include/dojo_c_gdextension.h"
+#include <dojo_c_gdextension.h>
 
 #include <gdextension_interface.h>
 #include <godot_cpp/core/defs.hpp>
 #include <godot_cpp/godot.hpp>
+
+#include "types/primitive.h"
+#include "types/torii_client.h"
 
 using namespace godot;
 
@@ -16,6 +19,8 @@ void initialize_dojoc_module(ModuleInitializationLevel p_level) {
         return;
     }
     GDREGISTER_CLASS(DojoC);
+    GDREGISTER_CLASS(DojoPrimitive);
+    GDREGISTER_CLASS(DojoToriiClient);
 
 }
 

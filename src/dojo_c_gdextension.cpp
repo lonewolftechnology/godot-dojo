@@ -5,14 +5,14 @@
 
 #include <iomanip>
 #include <unistd.h>
+#include <godot_cpp/classes/engine.hpp>
 #include <godot_cpp/core/class_db.hpp>
 #include <godot_cpp/variant/utility_functions.hpp>
+#include "types/primitive.h"
 
 using namespace godot;
 DojoC* DojoC::singleton = nullptr;
 dojo_bindings::ControllerAccount* session_account = nullptr;
-
-
 void DojoC::_bind_methods()
 {
     ClassDB::bind_method(D_METHOD("set_enabled", "p_enabled"), &DojoC::set_enabled);
@@ -22,13 +22,24 @@ void DojoC::_bind_methods()
     ClassDB::bind_method(D_METHOD("create_client", "p_world"), &DojoC::create_client);
     ClassDB::bind_method(D_METHOD("controller_connect"), &DojoC::controller_connect);
     ADD_PROPERTY(PropertyInfo(Variant::BOOL, "is_enabled"), "set_enabled", "get_enabled");
+
+    ClassDB::bind_method(D_METHOD("get_message"), &DojoC::get_output_message);
+    ClassDB::bind_method(D_METHOD("set_message", "p_message"), &DojoC::set_output_message);
+    ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "output_message", PROPERTY_HINT_ARRAY_TYPE), "set_message", "get_message");
+
 }
 
 DojoC::DojoC()
 {
+    if (Engine::get_singleton()->is_editor_hint())
+    {
+        UtilityFunctions::print_verbose("DojoC is running in editor mode");
+        return;
+    }
     // Initialize any variables here.
     singleton = this;
     enabled = true;
+
 }
 
 DojoC* DojoC::get_singleton()
@@ -185,13 +196,13 @@ void on_indexer_update(dojo_bindings::ResultSubscription result)
     // Implementar
     UtilityFunctions::print_verbose("on_indexer_update callback Triggered");
     dojo_bindings::Subscription* subscription = result.ok;
-
 }
 
-String field_element_to_hex(const dojo_bindings::FieldElement &fe) {
-
+String field_element_to_hex(const dojo_bindings::FieldElement& fe)
+{
     String ret = "0x";
-    for (size_t i = 0; i < 32; i++) {
+    for (size_t i = 0; i < 32; i++)
+    {
         ret += String::num_int64(fe.data[i], 16, false);
     };
 
@@ -202,30 +213,33 @@ String field_element_to_hex(const dojo_bindings::FieldElement &fe) {
 void on_event_update(dojo_bindings::FieldElement entity_id, dojo_bindings::CArrayStruct models)
 {
     // Implementar
-    system("Color 0A");
+    Array result;
+    dojo_bindings::FieldElement nullFelt;
+    hex_to_bytes("0x00000000000000000000000000000000", &nullFelt);
     UtilityFunctions::print_verbose("on_event_update callback Triggered.");
-    UtilityFunctions::prints(&entity_id, "Entity ID", field_element_to_hex(entity_id));
+    UtilityFunctions::prints("Entity ID", field_element_to_hex(entity_id));
 
-
-    if(field_element_to_hex(entity_id) == "0x0000000000000000000000000000000000000000000000000000000000000000")
+    if (field_element_to_hex(entity_id) == "0x00000000000000000000000000000000")
+    // if (&entity_id == &nullFelt)
     {
         UtilityFunctions::print("Entity ID is 0, WAITING");
         // sleep(2);
         return;
-
     }
 
-    if (models.data == nullptr) {
+    if (models.data == nullptr)
+    {
         UtilityFunctions::print("models.data is null");
         return;
     }
 
-    if (models.data->children.data == nullptr) {
+    if (models.data->children.data == nullptr)
+    {
         UtilityFunctions::print("models.data->children.data is null");
         return;
     }
 
-    UtilityFunctions::print("\033[1;31mSTART\033[0m");
+    UtilityFunctions::print_rich("[color=RED]START");
     // Accede a models.data->children.data->ty de forma segura
     UtilityFunctions::prints("model name", models.data->name);
     auto children = models.data->children;
@@ -236,10 +250,11 @@ void on_event_update(dojo_bindings::FieldElement entity_id, dojo_bindings::CArra
     std::vector<dojo_bindings::Member> members(children.data, children.data + children.data_len);
 
     // Iterar y procesar los elementos
-    for (const auto& member : members) {
+    for (const auto& member : members)
+    {
         // Accede al miembro que necesites dependiendo de la estructura de `Member`.
         std::cout << "----------------" << std::endl;
-        std::cout << "Procesando member..." << std::endl;
+        UtilityFunctions::print_rich("[color=PERU]Procesando member...");
         std::cout << "member type: " << typeid(member).name() << std::endl;
         std::cout << "member.name: " << member.name << std::endl;
         std::cout << "member.ty: " << member.ty << std::endl;
@@ -247,100 +262,126 @@ void on_event_update(dojo_bindings::FieldElement entity_id, dojo_bindings::CArra
         std::cout << "member.ty type: " << typeid(member.ty).name() << std::endl;
         std::cout << "member.ty->tag type: " << typeid(member.ty->tag).name() << std::endl;
 
-          if (member.ty->tag == dojo_bindings::Ty_Tag::Primitive_)
+        if (member.ty->tag == dojo_bindings::Ty_Tag::Primitive_)
         {
-            UtilityFunctions::print("member_type is Primitive");
-              dojo_bindings::Primitive primitive = member.ty->primitive;
-              if (primitive.tag == dojo_bindings::Primitive_Tag::I8)
-              {
-                  UtilityFunctions::print("member_type is I8");
-              }else if (primitive.tag == dojo_bindings::Primitive_Tag::I16)
-              {
-                  UtilityFunctions::print("member_type is I16");
-              }else if (primitive.tag == dojo_bindings::Primitive_Tag::I32)
-              {
-                  UtilityFunctions::print("member_type is I32");
-              }else if (primitive.tag == dojo_bindings::Primitive_Tag::I64)
-              {
-                  UtilityFunctions::print("member_type is I64");
-              }else if (primitive.tag == dojo_bindings::Primitive_Tag::I128)
-              {
-                  UtilityFunctions::print("member_type is I128");
-              }else if (primitive.tag == dojo_bindings::Primitive_Tag::U8)
-              {
-                  UtilityFunctions::print("member_type is U8");
-              }else if (primitive.tag == dojo_bindings::Primitive_Tag::U16)
-              {
-                  UtilityFunctions::print("member_type is U16");
-              }else if (primitive.tag == dojo_bindings::Primitive_Tag::U32)
-              {
-                  UtilityFunctions::print("member_type is U32");
-              }else if (primitive.tag == dojo_bindings::Primitive_Tag::U64)
-              {
-                  UtilityFunctions::print("member_type is U64");
-              }else if (primitive.tag == dojo_bindings::Primitive_Tag::U128)
-              {
-                  UtilityFunctions::print("member_type is U128");
-              }else if (primitive.tag == dojo_bindings::Primitive_Tag::U256_)
-              {
-                  UtilityFunctions::print("member_type is U256");
-              }else if (primitive.tag == dojo_bindings::Primitive_Tag::Bool)
-              {
-                  UtilityFunctions::print("member_type is Bool");
-              }else if (primitive.tag == dojo_bindings::Primitive_Tag::Felt252)
-              {
-                  UtilityFunctions::print("member_type is Felt252");
-              }else if (primitive.tag == dojo_bindings::Primitive_Tag::ClassHash)
-              {
-                  UtilityFunctions::print("member_type is ClassHash");
-              }else if (primitive.tag == dojo_bindings::Primitive_Tag::ContractAddress)
-              {
-                  UtilityFunctions::print("member_type is ContractAddress");
-              }else if (primitive.tag == dojo_bindings::Primitive_Tag::EthAddress)
-              {
-                  UtilityFunctions::print("member_type is EthAddress");
-              }
+            UtilityFunctions::print_rich("member_type is [color=YELLOW]Primitive");
+            dojo_bindings::Primitive primitive = member.ty->primitive;
+            DojoPrimitive _primitive = DojoPrimitive(primitive);
+            // result.append(_primitive.get_value());
 
-        } else if (member.ty->tag == dojo_bindings::Ty_Tag::Struct_)
+            if (primitive.tag == dojo_bindings::Primitive_Tag::I8)
+            {
+                UtilityFunctions::print_rich("Primitive is[color=GREEN] I8");
+            }
+            else if (primitive.tag == dojo_bindings::Primitive_Tag::I16)
+            {
+                UtilityFunctions::print_rich("Primitive is[color=GREEN] I16");
+            }
+            else if (primitive.tag == dojo_bindings::Primitive_Tag::I32)
+            {
+                UtilityFunctions::print_rich("Primitive is[color=GREEN] I32");
+            }
+            else if (primitive.tag == dojo_bindings::Primitive_Tag::I64)
+            {
+                UtilityFunctions::print_rich("Primitive is[color=GREEN] I64");
+            }
+            else if (primitive.tag == dojo_bindings::Primitive_Tag::I128)
+            {
+                UtilityFunctions::print_rich("Primitive is[color=GREEN] I128");
+            }
+            else if (primitive.tag == dojo_bindings::Primitive_Tag::U8)
+            {
+                UtilityFunctions::print_rich("Primitive is[color=GREEN] U8");
+                result.append(Variant(primitive.u8));
+            }
+            else if (primitive.tag == dojo_bindings::Primitive_Tag::U16)
+            {
+                UtilityFunctions::print_rich("Primitive is[color=GREEN] U16");
+            }
+            else if (primitive.tag == dojo_bindings::Primitive_Tag::U32)
+            {
+                UtilityFunctions::print_rich("Primitive is[color=GREEN] U32");
+            }
+            else if (primitive.tag == dojo_bindings::Primitive_Tag::U64)
+            {
+                UtilityFunctions::print_rich("Primitive is[color=GREEN] U64");
+            }
+            else if (primitive.tag == dojo_bindings::Primitive_Tag::U128)
+            {
+                UtilityFunctions::print_rich("Primitive is[color=GREEN] U128");
+            }
+            else if (primitive.tag == dojo_bindings::Primitive_Tag::U256_)
+            {
+                UtilityFunctions::print_rich("Primitive is[color=GREEN] U256");
+            }
+            else if (primitive.tag == dojo_bindings::Primitive_Tag::Bool)
+            {
+                UtilityFunctions::print_rich("Primitive is[color=GREEN] Bool");
+                result.append(primitive.bool_);
+
+            }
+            else if (primitive.tag == dojo_bindings::Primitive_Tag::Felt252)
+            {
+                UtilityFunctions::print_rich("Primitive is[color=GREEN] Felt252");
+            }
+            else if (primitive.tag == dojo_bindings::Primitive_Tag::ClassHash)
+            {
+                UtilityFunctions::print_rich("Primitive is[color=GREEN] ClassHash");
+            }
+            else if (primitive.tag == dojo_bindings::Primitive_Tag::ContractAddress)
+            {
+                UtilityFunctions::print_rich("Primitive is[color=GREEN] ContractAddress");
+            }
+            else if (primitive.tag == dojo_bindings::Primitive_Tag::EthAddress)
+            {
+                UtilityFunctions::print_rich("Primitive is[color=GREEN] EthAddress");
+            }
+        }
+        else if (member.ty->tag == dojo_bindings::Ty_Tag::Struct_)
         {
-            UtilityFunctions::print("member_type is Struct");
+            UtilityFunctions::print_rich("member_type is [color=YELLOW]Struct");
             dojo_bindings::Struct struct_ = member.ty->struct_;
             UtilityFunctions::prints("struct_name", struct_.name);
-
-        }else if (member.ty->tag == dojo_bindings::Ty_Tag::Array_)
+        }
+        else if (member.ty->tag == dojo_bindings::Ty_Tag::Array_)
         {
-            UtilityFunctions::print("member_type is CArrayTy");
-        }else if (member.ty->tag == dojo_bindings::Ty_Tag::ByteArray)
+            UtilityFunctions::print_rich("member_type is [color=YELLOW]CArrayTy");
+        }
+        else if (member.ty->tag == dojo_bindings::Ty_Tag::ByteArray)
         {
-            UtilityFunctions::print("member_type is byte_array");
-        }else if (member.ty->tag == dojo_bindings::Ty_Tag::Enum_)
+            UtilityFunctions::print_rich("member_type is [color=YELLOW]ByteArray");
+        }
+        else if (member.ty->tag == dojo_bindings::Ty_Tag::Enum_)
         {
-            UtilityFunctions::print("member_type is Enum");
+            UtilityFunctions::print_rich("member_type is [color=YELLOW]Enum");
             dojo_bindings::Enum enum_ = member.ty->enum_;
             UtilityFunctions::prints("enum_name", enum_.name);
             UtilityFunctions::prints("enum_option", enum_.option);
-        }else if (member.ty->tag == dojo_bindings::Ty_Tag::Tuple_)
-        {
-            UtilityFunctions::print("member_type is Tuple");
         }
-    //     printf("\n");
-    //     printf("on_entity_state_update\n");
-    //     printf("Key: 0x");
-    //     for (size_t i = 0; i < 32; i++)
-    //     {
-    //         printf("%02x", entity_id.data[i]);
-    //     }
-    //     printf("\n");
-    //
-    //     for (size_t i = 0; i < models.data_len; i++)
-    //     {
-    //         printf("Model: %s\n", models.data[i].name);
-    //         for (size_t j = 0; j < models.data[i].children.data_len; j++)
-    //         {
-    //             printf("Field: %s\n", models.data[i].children.data[j].name);
-    //             printf("Value: %p\n", models.data[i].children.data[j].ty);
-    //         }
-    //     }
+        else if (member.ty->tag == dojo_bindings::Ty_Tag::Tuple_)
+        {
+            UtilityFunctions::print("member_type is [color=YELLOW]Tuple");
+        }
+
+        DojoC::get_singleton()->set_output_message(result);
+        //     printf("\n");
+        //     printf("on_entity_state_update\n");
+        //     printf("Key: 0x");
+        //     for (size_t i = 0; i < 32; i++)
+        //     {
+        //         printf("%02x", entity_id.data[i]);
+        //     }
+        //     printf("\n");
+        //
+        //     for (size_t i = 0; i < models.data_len; i++)
+        //     {
+        //         printf("Model: %s\n", models.data[i].name);
+        //         for (size_t j = 0; j < models.data[i].children.data_len; j++)
+        //         {
+        //             printf("Field: %s\n", models.data[i].children.data[j].name);
+        //             printf("Value: %p\n", models.data[i].children.data[j].ty);
+        //         }
+        //     }
     }
 
     // UtilityFunctions::prints( "children value:", children);
@@ -349,7 +390,6 @@ void on_event_update(dojo_bindings::FieldElement entity_id, dojo_bindings::CArra
     // UtilityFunctions::prints( "ty value:", ty);
     // UtilityFunctions::prints("type of ty:", typeid(ty->tag).name());
     // UtilityFunctions::print("END");
-
 }
 
 
@@ -405,7 +445,7 @@ void DojoC::testing()
     if (resControllerProvider.tag == dojo_bindings::ErrProvider)
     {
         UtilityFunctions::printerr("Error: ", resControllerProvider.err.message);
-        // UtilityFunctions::push_error("Error: ", resControllerProvider.err.message);
+        // UtilityFunctions::push_error("Error:", resControllerProvider.err.message);
         return;
     }
     else
@@ -443,7 +483,7 @@ void DojoC::testing()
     if (resPageEntities.tag == dojo_bindings::ErrPageEntity)
     {
         UtilityFunctions::printerr("Error: ", resPageEntities.err.message);
-        // UtilityFunctions::push_error("Error: ", resPageEntities.err.message);
+        // UtilityFunctions::push_error("Error:", resPageEntities.err.message);
         return;
     }
     else
@@ -469,7 +509,7 @@ void DojoC::testing()
 
     // while (session_account == nullptr)
     // {
-    //     usleep(100000); // Sleep for 100ms to avoid busy waiting
+    //     usleep(100000); // Sleep for 100 ms to avoid busy waiting
     // }
     dojo_bindings::FieldElement spawn_key;
     hex_to_bytes("0x02a29373f1af8348bd366a990eb3a342ef2cbe5e85160539eaca3441a673f468", &spawn_key);
@@ -494,9 +534,10 @@ void DojoC::testing()
     if (result_subscription.tag == dojo_bindings::ErrSubscription)
     {
         UtilityFunctions::printerr("Error: ", result_subscription.err.message);
-        // UtilityFunctions::push_error("Error: ", result_subscription.err.message);
+        // UtilityFunctions::push_error("Error:", result_subscription.err.message);
         return;
-    }else
+    }
+    else
     {
         UtilityFunctions::print_verbose("Subscription created.");
     }
@@ -505,13 +546,15 @@ void DojoC::testing()
     dojo_bindings::COptionClause event_clause = {};
     event_clause.tag = dojo_bindings::NoneClause;
 
-    dojo_bindings::ResultSubscription resEvent = dojo_bindings::client_on_entity_state_update(client, event_clause, on_event_update);
+    dojo_bindings::ResultSubscription resEvent = dojo_bindings::client_on_entity_state_update(
+        client, event_clause, on_event_update);
     if (resEvent.tag == dojo_bindings::ErrSubscription)
     {
         UtilityFunctions::printerr("Error: ", resEvent.err.message);
         // UtilityFunctions::push_error("Error: ", resEvent.err.message);
         return;
-    }else
+    }
+    else
     {
         UtilityFunctions::print_verbose("Event subscription created.");
     }
@@ -519,4 +562,3 @@ void DojoC::testing()
 
     UtilityFunctions::print_verbose("Session account connected");
 }
-

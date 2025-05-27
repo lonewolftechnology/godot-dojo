@@ -13,4 +13,5 @@ config_version=5
 config/name="Dojo C GDextension Example"
 run/main_scene="uid://buvlply3axqqi"
 config/features=PackedStringArray("4.4", "Forward Plus")
+run/max_fps=60
 config/icon="res://icon.svg"

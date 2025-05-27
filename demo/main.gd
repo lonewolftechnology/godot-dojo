@@ -12,6 +12,7 @@ const dev_actions_addr = "0x00a92391c5bcde7af4bad5fd0fff3834395b1ab8055a9abb8387
 @onready var status: Label = $HBoxContainer/WorldConfig/Status
 
 @export_global_file("Scarb.toml") var dojo_starter_path:String
+@export_global_file("sozo") var sozo_path:String
 
 func _ready() -> void:
 	OS.set_environment("RUST_BACKTRACE", "full")
@@ -33,6 +34,11 @@ func _on_testing_pressed() -> void:
 	dojo.testing()
 	await get_tree().create_timer(2).timeout
 	_on_spawn_pressed()
+	await get_tree().create_timer(2).timeout
+	dojo.output_message.any(
+		func(_msg):
+			print_rich("[color=Coral]value: ", _msg, "type: ", type_string(typeof(_msg)))
+	)
 
 func _on_spawn_pressed() -> void:
 	var args:Array = [
@@ -43,5 +49,5 @@ func _on_spawn_pressed() -> void:
 		dojo_starter_path
 	]
 	var out:Array = []
-	OS.execute("sozo",args,out,true)
+	OS.execute(sozo_path,args,out,true)
 	out.any(func(c): spawn_output.text += c)
