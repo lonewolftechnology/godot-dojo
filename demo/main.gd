@@ -37,7 +37,7 @@ func _on_testing_pressed() -> void:
 	await get_tree().create_timer(2).timeout
 	dojo.output_message.any(
 		func(_msg):
-			print_rich("[color=Coral]value: ", _msg, "type: ", type_string(typeof(_msg)))
+			print_rich("[color=Coral]value: ", _msg, " type: ", type_string(typeof(_msg)))
 	)
 
 func _on_spawn_pressed() -> void:

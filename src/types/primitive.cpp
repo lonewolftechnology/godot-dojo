@@ -47,11 +47,11 @@ DojoPrimitive::DojoPrimitive()
     UtilityFunctions::print("Primitive constructor called");
 }
 
-Variant FieldElementtoPackedByteArray(const uint8_t data[32])
+Variant DataArrayToPackedByteArray(const void* data, const int size = 32)
 {
     PackedByteArray _bytes;
-    _bytes.resize(32);
-    memcpy(_bytes.ptrw(), data, 32);
+    _bytes.resize(size);
+    memcpy(_bytes.ptrw(), data, size);
     UtilityFunctions::print_rich("[color=Green]Conversion ", _bytes.hex_encode());
     return Variant(_bytes);
 }
@@ -90,25 +90,25 @@ DojoPrimitive::DojoPrimitive(const dojo_bindings::Primitive& primitive)
         value = Variant(primitive.u64);
         break;
     case Tag::U128:
-        value = Variant(primitive.u128);
+        value = DataArrayToPackedByteArray(primitive.u128,16);
         break;
     case Tag::U256_:
-        value = Variant(primitive.u256.data);
+        value = DataArrayToPackedByteArray(primitive.u256.data);
         break;
     case Tag::Bool:
         value = Variant(primitive.bool_);
         break;
     case Tag::Felt252:
-        value = FieldElementtoPackedByteArray(primitive.felt252.data);
+        value = DataArrayToPackedByteArray(primitive.felt252.data);
         break;
     case Tag::ClassHash:
-        value = FieldElementtoPackedByteArray(primitive.class_hash.data);
+        value = DataArrayToPackedByteArray(primitive.class_hash.data);
         break;
     case Tag::ContractAddress:
-        value = FieldElementtoPackedByteArray(primitive.contract_address.data);
+        value = DataArrayToPackedByteArray(primitive.contract_address.data);
         break;
     case Tag::EthAddress:
-        value = FieldElementtoPackedByteArray(primitive.eth_address.data);
+        value = DataArrayToPackedByteArray(primitive.eth_address.data);
         break;
     default:
         UtilityFunctions::push_error("Primitive ", PrimitiveTagToString(primitive.tag), " doesn't have a Constructor");
@@ -126,7 +126,7 @@ DojoPrimitive::DojoPrimitive(const dojo_bindings::Primitive& primitive)
 DojoPrimitive::DojoPrimitive(const dojo_bindings::FieldElement field_element)
 {
     UtilityFunctions::print_rich("[color=Red]------------FIELD ELEMENT------------ ");
-    value = FieldElementtoPackedByteArray(field_element.data);
+    value = DataArrayToPackedByteArray(field_element.data);
     UtilityFunctions::print_rich(
         "[color=Yellow]Primitive",
         String(value),

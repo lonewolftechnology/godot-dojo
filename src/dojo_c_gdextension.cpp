@@ -255,12 +255,8 @@ void on_event_update(dojo_bindings::FieldElement entity_id, dojo_bindings::CArra
         // Accede al miembro que necesites dependiendo de la estructura de `Member`.
         std::cout << "----------------" << std::endl;
         UtilityFunctions::print_rich("[color=PERU]Procesando member...");
-        std::cout << "member type: " << typeid(member).name() << std::endl;
-        std::cout << "member.name: " << member.name << std::endl;
-        std::cout << "member.ty: " << member.ty << std::endl;
-        std::cout << "member.ty->tag: " << member.ty->tag << std::endl;
-        std::cout << "member.ty type: " << typeid(member.ty).name() << std::endl;
-        std::cout << "member.ty->tag type: " << typeid(member.ty->tag).name() << std::endl;
+        UtilityFunctions::print_rich("member type: ", typeid(member).name());
+        UtilityFunctions::print_rich("member.name: ", member.name);
 
         if (member.ty->tag == dojo_bindings::Ty_Tag::Primitive_)
         {
@@ -274,7 +270,7 @@ void on_event_update(dojo_bindings::FieldElement entity_id, dojo_bindings::CArra
         {
             UtilityFunctions::print_rich("member_type is [color=YELLOW]Struct");
             dojo_bindings::Struct struct_ = member.ty->struct_;
-            UtilityFunctions::prints("struct_name", struct_.name);
+            UtilityFunctions::print_rich("[color=Peru]struct_name [color=YELLOW]", struct_.name);
         }
         else if (member.ty->tag == dojo_bindings::Ty_Tag::Array_)
         {
@@ -345,8 +341,6 @@ void DojoC::testing()
 
     dojo_bindings::FieldElement katana;
     hex_to_bytes("0x4b4154414e41", &katana);
-
-    DojoPrimitive katana_felt = DojoPrimitive(katana);
 
     // string_to_bytes("0x4b4154414e41", katana.data, 32);
     // hex_to_bytes("0x07dc7899aa655b0aae51eadff6d801a58e97dd99cf4666ee59e704249e51adf2", &katana);
