@@ -76,9 +76,8 @@ env.Append(
 )
 
 
-sources = Glob(
-    "src/*.cpp"
-)
+sources = Glob("src/*.cpp")
+sources += Glob("src/types/*.cpp")
 
 addon_dir = "demo/bin/"
 
