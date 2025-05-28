@@ -267,75 +267,8 @@ void on_event_update(dojo_bindings::FieldElement entity_id, dojo_bindings::CArra
             UtilityFunctions::print_rich("member_type is [color=YELLOW]Primitive");
             dojo_bindings::Primitive primitive = member.ty->primitive;
             DojoPrimitive _primitive = DojoPrimitive(primitive);
-            // result.append(_primitive.get_value());
+            result.append(_primitive.get_value());
 
-            if (primitive.tag == dojo_bindings::Primitive_Tag::I8)
-            {
-                UtilityFunctions::print_rich("Primitive is[color=GREEN] I8");
-            }
-            else if (primitive.tag == dojo_bindings::Primitive_Tag::I16)
-            {
-                UtilityFunctions::print_rich("Primitive is[color=GREEN] I16");
-            }
-            else if (primitive.tag == dojo_bindings::Primitive_Tag::I32)
-            {
-                UtilityFunctions::print_rich("Primitive is[color=GREEN] I32");
-            }
-            else if (primitive.tag == dojo_bindings::Primitive_Tag::I64)
-            {
-                UtilityFunctions::print_rich("Primitive is[color=GREEN] I64");
-            }
-            else if (primitive.tag == dojo_bindings::Primitive_Tag::I128)
-            {
-                UtilityFunctions::print_rich("Primitive is[color=GREEN] I128");
-            }
-            else if (primitive.tag == dojo_bindings::Primitive_Tag::U8)
-            {
-                UtilityFunctions::print_rich("Primitive is[color=GREEN] U8");
-                result.append(Variant(primitive.u8));
-            }
-            else if (primitive.tag == dojo_bindings::Primitive_Tag::U16)
-            {
-                UtilityFunctions::print_rich("Primitive is[color=GREEN] U16");
-            }
-            else if (primitive.tag == dojo_bindings::Primitive_Tag::U32)
-            {
-                UtilityFunctions::print_rich("Primitive is[color=GREEN] U32");
-            }
-            else if (primitive.tag == dojo_bindings::Primitive_Tag::U64)
-            {
-                UtilityFunctions::print_rich("Primitive is[color=GREEN] U64");
-            }
-            else if (primitive.tag == dojo_bindings::Primitive_Tag::U128)
-            {
-                UtilityFunctions::print_rich("Primitive is[color=GREEN] U128");
-            }
-            else if (primitive.tag == dojo_bindings::Primitive_Tag::U256_)
-            {
-                UtilityFunctions::print_rich("Primitive is[color=GREEN] U256");
-            }
-            else if (primitive.tag == dojo_bindings::Primitive_Tag::Bool)
-            {
-                UtilityFunctions::print_rich("Primitive is[color=GREEN] Bool");
-                result.append(primitive.bool_);
-
-            }
-            else if (primitive.tag == dojo_bindings::Primitive_Tag::Felt252)
-            {
-                UtilityFunctions::print_rich("Primitive is[color=GREEN] Felt252");
-            }
-            else if (primitive.tag == dojo_bindings::Primitive_Tag::ClassHash)
-            {
-                UtilityFunctions::print_rich("Primitive is[color=GREEN] ClassHash");
-            }
-            else if (primitive.tag == dojo_bindings::Primitive_Tag::ContractAddress)
-            {
-                UtilityFunctions::print_rich("Primitive is[color=GREEN] ContractAddress");
-            }
-            else if (primitive.tag == dojo_bindings::Primitive_Tag::EthAddress)
-            {
-                UtilityFunctions::print_rich("Primitive is[color=GREEN] EthAddress");
-            }
         }
         else if (member.ty->tag == dojo_bindings::Ty_Tag::Struct_)
         {
@@ -413,6 +346,7 @@ void DojoC::testing()
     dojo_bindings::FieldElement katana;
     hex_to_bytes("0x4b4154414e41", &katana);
 
+    DojoPrimitive katana_felt = DojoPrimitive(katana);
 
     // string_to_bytes("0x4b4154414e41", katana.data, 32);
     // hex_to_bytes("0x07dc7899aa655b0aae51eadff6d801a58e97dd99cf4666ee59e704249e51adf2", &katana);

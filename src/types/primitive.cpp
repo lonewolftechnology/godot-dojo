@@ -47,17 +47,19 @@ DojoPrimitive::DojoPrimitive()
     UtilityFunctions::print("Primitive constructor called");
 }
 
-Variant toByteArray(const uint8_t data[32])
+Variant FieldElementtoPackedByteArray(const uint8_t data[32])
 {
     PackedByteArray _bytes;
     _bytes.resize(32);
     memcpy(_bytes.ptrw(), data, 32);
+    UtilityFunctions::print_rich("[color=Green]Conversion ", _bytes.hex_encode());
     return Variant(_bytes);
 }
 
 DojoPrimitive::DojoPrimitive(const dojo_bindings::Primitive& primitive)
 {
     UtilityFunctions::print_rich("[color=Red]Primitive constructor called ");
+    UtilityFunctions::print_rich("Primitive is[color=GREEN] ", PrimitiveTagToString(primitive.tag));
     switch (primitive.tag)
     {
     case Tag::I8:
@@ -97,16 +99,16 @@ DojoPrimitive::DojoPrimitive(const dojo_bindings::Primitive& primitive)
         value = Variant(primitive.bool_);
         break;
     case Tag::Felt252:
-        value = toByteArray(primitive.felt252.data);
+        value = FieldElementtoPackedByteArray(primitive.felt252.data);
         break;
     case Tag::ClassHash:
-        value = toByteArray(primitive.class_hash.data);
+        value = FieldElementtoPackedByteArray(primitive.class_hash.data);
         break;
     case Tag::ContractAddress:
-        value = toByteArray(primitive.contract_address.data);
+        value = FieldElementtoPackedByteArray(primitive.contract_address.data);
         break;
     case Tag::EthAddress:
-        value = toByteArray(primitive.eth_address.data);
+        value = FieldElementtoPackedByteArray(primitive.eth_address.data);
         break;
     default:
         UtilityFunctions::push_error("Primitive ", PrimitiveTagToString(primitive.tag), " doesn't have a Constructor");
@@ -119,4 +121,16 @@ DojoPrimitive::DojoPrimitive(const dojo_bindings::Primitive& primitive)
             "[color=Yellow]Primitive " + String(value) + "\n[color=Green]Type: " + Variant::get_type_name(
                 value.get_type()));
     }
+}
+
+DojoPrimitive::DojoPrimitive(const dojo_bindings::FieldElement field_element)
+{
+    UtilityFunctions::print_rich("[color=Red]------------FIELD ELEMENT------------ ");
+    value = FieldElementtoPackedByteArray(field_element.data);
+    UtilityFunctions::print_rich(
+        "[color=Yellow]Primitive",
+        String(value),
+        "\n[color=Green]Type:",
+        Variant::get_type_name(value.get_type())
+    );
 }
