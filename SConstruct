@@ -65,7 +65,9 @@ env.Append(
     CPPPATH=[
         "src/",
         "include/",
-        "dojo.c/"
+        "dojo.c",
+        "godot-cpp/include/godot_cpp",
+        "godot-cpp/gen/include/godot_cpp"
     ]
 )
 
