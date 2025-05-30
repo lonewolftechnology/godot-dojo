@@ -6,8 +6,8 @@
 #define PRIMITIVE_H
 
 #include <godot_cpp/classes/ref_counted.hpp>
+#include <godot_cpp/variant/variant.hpp>
 #include "dojo_types.h"
-#include "variant/variant.hpp"
 
 using namespace godot;
 

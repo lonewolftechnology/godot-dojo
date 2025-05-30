@@ -29,6 +29,7 @@ namespace godot {
         String create_client(const String& world_addr);
         void controller_connect(const String &controller_addr);
         void testing();
+        void spawn();
         // Array values = {};
         // Array get_values() const {return values;}
         // void set_values(const Array &p_values) {values = p_values;}
