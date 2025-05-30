@@ -7,64 +7,147 @@ font_size = 36
 
 [node name="Main" type="Node"]
 script = ExtResource("1_ig7tw")
-dojo_starter_path = "/home/hazel/Proyectos/Godot/GDE/starting/dojo-starter/Scarb.toml"
-sozo_path = "/home/hazel/.dojo/bin/sozo"
 
-[node name="HBoxContainer" type="HBoxContainer" parent="."]
+[node name="TabContainer" type="TabContainer" parent="."]
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
+current_tab = 0
 
-[node name="WorldConfig" type="VBoxContainer" parent="HBoxContainer"]
+[node name="SpawnTest" type="VBoxContainer" parent="TabContainer"]
+layout_mode = 2
+metadata/_tab_index = 0
+
+[node name="SpawnLabel" type="Label" parent="TabContainer/SpawnTest"]
+custom_minimum_size = Vector2(0, 60)
+layout_mode = 2
+text = "Spawn Testing"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="HBoxContainer3" type="HBoxContainer" parent="TabContainer/SpawnTest"]
+layout_mode = 2
+alignment = 1
+
+[node name="ProviderStatus" type="HBoxContainer" parent="TabContainer/SpawnTest/HBoxContainer3"]
 layout_mode = 2
 size_flags_horizontal = 3
+alignment = 1
 
-[node name="WorldClientLabel" type="Label" parent="HBoxContainer/WorldConfig"]
+[node name="Type" type="Label" parent="TabContainer/SpawnTest/HBoxContainer3/ProviderStatus"]
+layout_mode = 2
+text = "Provider"
+
+[node name="Status" type="ColorRect" parent="TabContainer/SpawnTest/HBoxContainer3/ProviderStatus"]
+custom_minimum_size = Vector2(30, 30)
+layout_mode = 2
+color = Color(1, 0, 0, 1)
+
+[node name="AccountStatus" type="HBoxContainer" parent="TabContainer/SpawnTest/HBoxContainer3"]
+layout_mode = 2
+size_flags_horizontal = 3
+alignment = 1
+
+[node name="Type" type="Label" parent="TabContainer/SpawnTest/HBoxContainer3/AccountStatus"]
+layout_mode = 2
+text = "Account"
+
+[node name="Status" type="ColorRect" parent="TabContainer/SpawnTest/HBoxContainer3/AccountStatus"]
+custom_minimum_size = Vector2(30, 30)
+layout_mode = 2
+color = Color(1, 0, 0, 1)
+
+[node name="SuscriptionStatus" type="HBoxContainer" parent="TabContainer/SpawnTest/HBoxContainer3"]
+layout_mode = 2
+size_flags_horizontal = 3
+alignment = 1
+
+[node name="Type" type="Label" parent="TabContainer/SpawnTest/HBoxContainer3/SuscriptionStatus"]
+layout_mode = 2
+text = "Subscribed"
+
+[node name="Status" type="ColorRect" parent="TabContainer/SpawnTest/HBoxContainer3/SuscriptionStatus"]
+custom_minimum_size = Vector2(30, 30)
+layout_mode = 2
+color = Color(1, 0, 0, 1)
+
+[node name="HBoxContainer" type="HBoxContainer" parent="TabContainer/SpawnTest"]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="TabContainer/SpawnTest/HBoxContainer"]
+layout_mode = 2
+text = "Esto crea el provider y registra la cuenta con las prefundadas de Katana y registra el callback"
+
+[node name="Testing" type="Button" parent="TabContainer/SpawnTest/HBoxContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Testing"
+
+[node name="HBoxContainer2" type="HBoxContainer" parent="TabContainer/SpawnTest"]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="TabContainer/SpawnTest/HBoxContainer2"]
+layout_mode = 2
+text = "Esto ejecuta el evento, si es que se inicializo el provider y el account"
+
+[node name="Spawn" type="Button" parent="TabContainer/SpawnTest/HBoxContainer2"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "SPAWN"
+
+[node name="Label" type="Label" parent="TabContainer/SpawnTest"]
+layout_mode = 2
+text = "--Spawn Output--"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="ScrollContainer" type="ScrollContainer" parent="TabContainer/SpawnTest"]
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="SpawnOutput" type="RichTextLabel" parent="TabContainer/SpawnTest/ScrollContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+bbcode_enabled = true
+
+[node name="WIP tests" type="VBoxContainer" parent="TabContainer"]
+visible = false
+layout_mode = 2
+size_flags_horizontal = 3
+metadata/_tab_index = 1
+
+[node name="WorldClientLabel" type="Label" parent="TabContainer/WIP tests"]
 layout_mode = 2
 text = "World Client"
 horizontal_alignment = 1
 
-[node name="Status" type="Label" parent="HBoxContainer/WorldConfig"]
+[node name="Status" type="Label" parent="TabContainer/WIP tests"]
 layout_mode = 2
 size_flags_vertical = 0
 label_settings = SubResource("LabelSettings_ig7tw")
 
-[node name="InputWorldAddr" type="TextEdit" parent="HBoxContainer/WorldConfig"]
+[node name="InputWorldAddr" type="TextEdit" parent="TabContainer/WIP tests"]
 custom_minimum_size = Vector2(0, 100)
 layout_mode = 2
 placeholder_text = "WORLD ADDR"
 
-[node name="BtnStartClient" type="Button" parent="HBoxContainer/WorldConfig"]
+[node name="BtnStartClient" type="Button" parent="TabContainer/WIP tests"]
 layout_mode = 2
 text = "Connect"
 
-[node name="InputController" type="TextEdit" parent="HBoxContainer/WorldConfig"]
+[node name="InputController" type="TextEdit" parent="TabContainer/WIP tests"]
 custom_minimum_size = Vector2(0, 100)
 layout_mode = 2
 placeholder_text = "ControllerADDR"
 
-[node name="ConnectController" type="Button" parent="HBoxContainer/WorldConfig"]
+[node name="ConnectController" type="Button" parent="TabContainer/WIP tests"]
 layout_mode = 2
 text = "Controller"
 
-[node name="Testing" type="Button" parent="HBoxContainer/WorldConfig"]
-layout_mode = 2
-text = "Testing"
-
-[node name="SpawnOutput" type="Label" parent="HBoxContainer/WorldConfig"]
-layout_mode = 2
-
-[node name="Spawn" type="Button" parent="HBoxContainer/WorldConfig"]
-layout_mode = 2
-text = "SPAWN"
-
-[node name="VBoxContainer" type="VBoxContainer" parent="HBoxContainer"]
-layout_mode = 2
-size_flags_horizontal = 3
-
-[connection signal="pressed" from="HBoxContainer/WorldConfig/BtnStartClient" to="." method="_on_button_pressed"]
-[connection signal="pressed" from="HBoxContainer/WorldConfig/ConnectController" to="." method="_on_connect_controller_pressed"]
-[connection signal="pressed" from="HBoxContainer/WorldConfig/Testing" to="." method="_on_testing_pressed"]
-[connection signal="pressed" from="HBoxContainer/WorldConfig/Spawn" to="." method="_on_spawn_pressed"]
+[connection signal="pressed" from="TabContainer/SpawnTest/HBoxContainer/Testing" to="." method="_on_testing_pressed"]
+[connection signal="pressed" from="TabContainer/SpawnTest/HBoxContainer2/Spawn" to="." method="_on_spawn_pressed"]
+[connection signal="pressed" from="TabContainer/WIP tests/BtnStartClient" to="." method="_on_button_pressed"]
+[connection signal="pressed" from="TabContainer/WIP tests/ConnectController" to="." method="_on_connect_controller_pressed"]
