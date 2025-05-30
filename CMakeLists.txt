@@ -51,7 +51,7 @@ include(FetchContent)
 FetchContent_Declare(
         dojoc
         GIT_REPOSITORY https://github.com/dojoengine/dojo.c.git
-        GIT_TAG v1.5.0
+        GIT_TAG v1.5.5
 )
 FetchContent_MakeAvailable(dojoc)
 ########################################################################################################################
@@ -92,11 +92,11 @@ endforeach ()
 set(
         PUBLIC_INCLUDE_DIRS
         ${godot-cpp_SOURCE_DIR}/gdextension
-        ${godot-cpp_SOURCE_DIR}/gen/include
-        ${godot-cpp_BINARY_DIR}/src
+        ${godot-cpp_SOURCE_DIR}/include/godot_cpp
+        ${godot-cpp_SOURCE_DIR}/src
+        ${godot-cpp_BINARY_DIR}/gen/src
         ${godot-cpp_BINARY_DIR}/gen/include/godot_cpp
         ${dojoc_SOURCE_DIR}
-
 )
 
 foreach (dir IN LISTS PUBLIC_INCLUDE_DIRS)
