@@ -203,6 +203,7 @@ void on_event_update_msg(const String& _msg)
     DojoC::get_singleton()->call_deferred("emit_signal", "event_update", _msg);
     UtilityFunctions::print_rich(_msg);
 
+
 }
 
 void on_event_update(dojo_bindings::FieldElement entity_id, dojo_bindings::CArrayStruct models)
@@ -236,10 +237,10 @@ void on_event_update(dojo_bindings::FieldElement entity_id, dojo_bindings::CArra
 
     on_event_update_msg("[color=RED]START[/color]");
     // Accede a models.data->children.data->ty de forma segura
-    UtilityFunctions::prints("model name", models.data->name);
+    on_event_update_msg(vformat("model name %s", models.data->name));
     auto children = models.data->children;
-    std::cout << "children.data_len: " << children.data_len << std::endl;
-    std::cout << "children.data: " << children.data << std::endl;
+    //std::cout << "children.data_len: " << children.data_len << std::endl;
+    // std::cout << "children.data: " << children.data << std::endl;
 
     // Convertir `CArrayMember` a `std::vector`
     std::vector<dojo_bindings::Member> members(children.data, children.data + children.data_len);
