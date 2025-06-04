@@ -9,8 +9,11 @@
 #include <godot_cpp/core/defs.hpp>
 #include <godot_cpp/godot.hpp>
 
-#include "types/primitive.h"
-#include "types/torii_client.h"
+#include <variant/primitive.h>
+#include <classes/torii_client.h>
+
+#include <variant/field_element.h>
+
 
 using namespace godot;
 
@@ -21,7 +24,7 @@ void initialize_dojoc_module(ModuleInitializationLevel p_level) {
     GDREGISTER_CLASS(DojoC);
     GDREGISTER_CLASS(DojoPrimitive);
     GDREGISTER_CLASS(DojoToriiClient);
-
+    GDREGISTER_CLASS(FieldElement);
 }
 
 void uninitialize_dojoc_module(ModuleInitializationLevel p_level) {

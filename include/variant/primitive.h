@@ -7,12 +7,12 @@
 
 #include <godot_cpp/classes/ref_counted.hpp>
 #include <godot_cpp/variant/variant.hpp>
-#include "dojo_types.h"
+#include <dojo_types.h>
 
 using namespace godot;
 
 class DojoPrimitive : public RefCounted {
-    GDCLASS(DojoPrimitive, RefCounted)
+    GDCLASS(DojoPrimitive, RefCounted);
 
 using Tag = dojo_bindings::Primitive_Tag;
 

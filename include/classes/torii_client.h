@@ -4,9 +4,9 @@
 
 #ifndef TORII_CLIENT_H
 #define TORII_CLIENT_H
-#include "godot.hpp"
-#include "classes/ref_counted.hpp"
-#include "dojo_types.h"
+#include <godot_cpp/godot.hpp>
+#include <classes/ref_counted.hpp>
+#include <dojo_types.h>
 
 using namespace godot;
 
