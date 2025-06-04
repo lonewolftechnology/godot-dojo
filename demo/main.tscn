@@ -1,12 +1,14 @@
-[gd_scene load_steps=3 format=3 uid="uid://buvlply3axqqi"]
+[gd_scene load_steps=4 format=3 uid="uid://buvlply3axqqi"]
 
 [ext_resource type="Script" uid="uid://ck323bl4c38kw" path="res://main.gd" id="1_ig7tw"]
+[ext_resource type="PackedScene" uid="uid://b5vmo8llucetx" path="res://ui/status_indicator.tscn" id="2_0xm2m"]
 
 [sub_resource type="LabelSettings" id="LabelSettings_ig7tw"]
 font_size = 36
 
 [node name="Main" type="Node"]
 script = ExtResource("1_ig7tw")
+dojo_abi = "/home/hazel/Proyectos/Godot/GDE/starting/dojo-starter/manifest_dev.json"
 
 [node name="TabContainer" type="TabContainer" parent="."]
 anchors_preset = 15
@@ -20,16 +22,19 @@ current_tab = 0
 layout_mode = 2
 metadata/_tab_index = 0
 
-[node name="SpawnLabel" type="Label" parent="TabContainer/SpawnTest"]
+[node name="Connection" type="Label" parent="TabContainer/SpawnTest"]
 custom_minimum_size = Vector2(0, 60)
 layout_mode = 2
-text = "Spawn Testing"
+text = "Testing"
 horizontal_alignment = 1
 vertical_alignment = 1
 
 [node name="HBoxContainer3" type="HBoxContainer" parent="TabContainer/SpawnTest"]
 layout_mode = 2
 alignment = 1
+
+[node name="ClientStatus" parent="TabContainer/SpawnTest/HBoxContainer3" instance=ExtResource("2_0xm2m")]
+layout_mode = 2
 
 [node name="ProviderStatus" type="HBoxContainer" parent="TabContainer/SpawnTest/HBoxContainer3"]
 layout_mode = 2
@@ -41,6 +46,20 @@ layout_mode = 2
 text = "Provider"
 
 [node name="Status" type="ColorRect" parent="TabContainer/SpawnTest/HBoxContainer3/ProviderStatus"]
+custom_minimum_size = Vector2(30, 30)
+layout_mode = 2
+color = Color(1, 0, 0, 1)
+
+[node name="ControllerAccountStatus" type="HBoxContainer" parent="TabContainer/SpawnTest/HBoxContainer3"]
+layout_mode = 2
+size_flags_horizontal = 3
+alignment = 1
+
+[node name="Type" type="Label" parent="TabContainer/SpawnTest/HBoxContainer3/ControllerAccountStatus"]
+layout_mode = 2
+text = "Controller Account"
+
+[node name="Status" type="ColorRect" parent="TabContainer/SpawnTest/HBoxContainer3/ControllerAccountStatus"]
 custom_minimum_size = Vector2(30, 30)
 layout_mode = 2
 color = Color(1, 0, 0, 1)
@@ -85,17 +104,24 @@ layout_mode = 2
 size_flags_horizontal = 3
 text = "Testing"
 
-[node name="HBoxContainer2" type="HBoxContainer" parent="TabContainer/SpawnTest"]
+[node name="Events" type="VBoxContainer" parent="TabContainer/SpawnTest"]
 layout_mode = 2
+alignment = 1
 
-[node name="Label" type="Label" parent="TabContainer/SpawnTest/HBoxContainer2"]
+[node name="Label" type="Label" parent="TabContainer/SpawnTest/Events"]
 layout_mode = 2
-text = "Esto ejecuta el evento, si es que se inicializo el provider y el account"
+text = "Eventos"
+horizontal_alignment = 1
+vertical_alignment = 1
 
-[node name="Spawn" type="Button" parent="TabContainer/SpawnTest/HBoxContainer2"]
+[node name="Spawn" type="Button" parent="TabContainer/SpawnTest/Events"]
 layout_mode = 2
 size_flags_horizontal = 3
 text = "SPAWN"
+
+[node name="Move" type="Button" parent="TabContainer/SpawnTest/Events"]
+layout_mode = 2
+text = "MOVE"
 
 [node name="Label" type="Label" parent="TabContainer/SpawnTest"]
 layout_mode = 2
@@ -148,6 +174,7 @@ layout_mode = 2
 text = "Controller"
 
 [connection signal="pressed" from="TabContainer/SpawnTest/HBoxContainer/Testing" to="." method="_on_testing_pressed"]
-[connection signal="pressed" from="TabContainer/SpawnTest/HBoxContainer2/Spawn" to="." method="_on_spawn_pressed"]
+[connection signal="pressed" from="TabContainer/SpawnTest/Events/Spawn" to="." method="_on_spawn_pressed"]
+[connection signal="pressed" from="TabContainer/SpawnTest/Events/Move" to="." method="_on_move_pressed"]
 [connection signal="pressed" from="TabContainer/WIP tests/BtnStartClient" to="." method="_on_button_pressed"]
 [connection signal="pressed" from="TabContainer/WIP tests/ConnectController" to="." method="_on_connect_controller_pressed"]

@@ -3,7 +3,7 @@ extends Node
 
 const dev_world_addr = "0x07cb912d0029e3799c4b8f2253b21481b2ec814c5daf72de75164ca82e7c42a5"
 const dev_actions_addr = "0x00a92391c5bcde7af4bad5fd0fff3834395b1ab8055a9abb8387c0e050a34edf"
-
+const katana_addr = "0x4b4154414e41"
 @onready var dojo:DojoC = DojoC.new()
 
 @onready var status: Label = $"TabContainer/WIP tests/Status"
@@ -14,16 +14,39 @@ const dev_actions_addr = "0x00a92391c5bcde7af4bad5fd0fff3834395b1ab8055a9abb8387
 @onready var account_status: HBoxContainer = $TabContainer/SpawnTest/HBoxContainer3/AccountStatus
 @onready var suscription_status: HBoxContainer = $TabContainer/SpawnTest/HBoxContainer3/SuscriptionStatus
 @onready var spawn_output: RichTextLabel = $TabContainer/SpawnTest/ScrollContainer/SpawnOutput
+@onready var controller_account_status: HBoxContainer = $TabContainer/SpawnTest/HBoxContainer3/ControllerAccountStatus
 
-
+@export_global_file("*.json") var dojo_abi: String
 
 func _ready() -> void:
 	OS.set_environment("RUST_BACKTRACE", "full")
+	OS.set_environment("BROWSER", "chromium")
 	dojo.event_update.connect(_on_event_update)
 	dojo.account_status_updated.connect(update_status.bind(provider_status))
 	dojo.provider_status_updated.connect(update_status.bind(account_status))
 	dojo.subscription_status_updated.connect(update_event_subscription_status.bind(suscription_status))
+	dojo.controller_account_status_updated.connect(update_status.bind(controller_account_status))
+	if not dojo_abi.is_empty():
+		var json_file = FileAccess.get_file_as_string(dojo_abi)
+		var json = JSON.parse_string(json_file)
+		#json.parse(json_file)
+		var contracts = json['contracts']
+		for data in contracts:
+			print(data['systems'])
+			var abi = data['abi']
+			for abi_item in abi:
+				if abi_item['type'] == "interface" and abi_item['name'] == "dojo_starter::systems::actions::IActions":
+					var items = abi_item['items']
+					print(items)
+					#for item in items:
+						#if item['type'] == "function":
+							#if item['state_mutability'] == "external":
+								#print(item)
+								#print(item['name'])
 	
+	await get_tree().create_timer(1).timeout
+	
+
 
 
 func _on_button_pressed() -> void:
@@ -56,3 +79,7 @@ func update_status(_value:bool, _status_node:HBoxContainer):
 		_status_node.get_node("Status").color = Color.GREEN
 	else:
 		_status_node.get_node("Status").color = Color.RED
+
+
+func _on_move_pressed() -> void:
+	dojo.move()
