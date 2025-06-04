@@ -8,7 +8,11 @@
 #include <godot_cpp/classes/engine.hpp>
 #include <godot_cpp/core/class_db.hpp>
 #include <godot_cpp/variant/utility_functions.hpp>
-#include "types/primitive.h"
+
+#include <debug_macros.h>
+#include <variant/primitive.h>
+
+#include "variant/field_element.h"
 
 using namespace godot;
 DojoC* DojoC::singleton = nullptr;
@@ -23,6 +27,8 @@ void DojoC::_bind_methods()
     ClassDB::bind_method(D_METHOD("get_enabled"), &DojoC::get_enabled);
     ClassDB::bind_method(D_METHOD("testing"), &DojoC::testing);
     ClassDB::bind_method(D_METHOD("spawn"), &DojoC::spawn);
+    ClassDB::bind_method(D_METHOD("move"), &DojoC::move);
+
     // ClassDB::bind_method(D_METHOD("client_new"), &DojoC::client_new);
     ClassDB::bind_method(D_METHOD("create_client", "p_world"), &DojoC::create_client);
     ClassDB::bind_method(D_METHOD("controller_connect"), &DojoC::controller_connect);
@@ -30,10 +36,13 @@ void DojoC::_bind_methods()
 
     ClassDB::bind_method(D_METHOD("get_message"), &DojoC::get_output_message);
     ClassDB::bind_method(D_METHOD("set_message", "p_message"), &DojoC::set_output_message);
+
+
     ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "output_message", PROPERTY_HINT_ARRAY_TYPE), "set_message",
                  "get_message");
 
     ADD_SIGNAL(MethodInfo("event_update", PropertyInfo(Variant::STRING, "msg")));
+    ADD_SIGNAL(MethodInfo("controller_account_status_updated", PropertyInfo(Variant::BOOL, "status")));
     ADD_SIGNAL(MethodInfo("account_status_updated", PropertyInfo(Variant::BOOL, "status")));
     ADD_SIGNAL(MethodInfo("provider_status_updated", PropertyInfo(Variant::BOOL, "status")));
     ADD_SIGNAL(
@@ -41,14 +50,15 @@ void DojoC::_bind_methods()
             "subscription_status_updated",
             PropertyInfo(Variant::BOOL, "status"),
             PropertyInfo(Variant::STRING, "subscription_name") )
-        );
+    );
 }
 
 DojoC::DojoC()
 {
     if (Engine::get_singleton()->is_editor_hint())
     {
-        UtilityFunctions::print_verbose("DojoC is running in editor mode");
+        UtilityFunctions::push_warning("DojoC is running in editor mode");
+
         return;
     }
     // Initialize any variables here.
@@ -71,7 +81,7 @@ DojoC::~DojoC()
 }
 
 // Esto viene de la integración con Unreal
-void string_to_bytes(const std::string& hex_str, uint8_t* out_bytes, size_t max_bytes)
+void string_to_bytes(const String& hex_str, uint8_t* out_bytes, size_t max_bytes = 32)
 {
     // const std::string& hex_str{hex_str_godot.utf8()};
     // Skip "0x" prefix if present
@@ -96,15 +106,15 @@ void string_to_bytes(const std::string& hex_str, uint8_t* out_bytes, size_t max_
     // Handle first nibble separately if we have odd number of characters
     if (is_odd)
     {
-        std::string nibble = hex_str.substr(start_idx, 1);
-        out_bytes[out_idx++] = static_cast<uint8_t>(std::stoul(nibble, nullptr, 16));
+        String nibble = hex_str.substr(start_idx, 1);
+        out_bytes[out_idx++] = static_cast<uint8_t>(nibble.hex_to_int());
     }
 
     // Process two hex digits at a time
     for (size_t i = is_odd ? 1 : 0; i < hex_length; i += 2)
     {
-        std::string byte_str = hex_str.substr(start_idx + i, 2);
-        out_bytes[out_idx++] = static_cast<uint8_t>(std::stoul(byte_str, nullptr, 16));
+        String byte_str = hex_str.substr(start_idx + i, 2);
+        out_bytes[out_idx++] = static_cast<uint8_t>(byte_str.hex_to_int());
     }
 }
 
@@ -135,16 +145,92 @@ String DojoC::create_client(const String& world_addr)
         UtilityFunctions::printerr("Error: ", resClient.err.message);
         // UtilityFunctions::push_error("Error: ", resClient.err.message);
         _msg = String("[Error] create_client: ") + resClient.err.message;
-        return "ERROR";
     }
     else
     {
-        UtilityFunctions::print_verbose("Client creado");
+        UtilityFunctions::print_rich("[color=Green]Client creado[/color]");
         client = resClient.ok;
         _msg = "Client creado";
     }
 
+    dojo_bindings::ResultWorldMetadata resMetadata = dojo_bindings::client_metadata(client);
 
+    if (resMetadata.tag == dojo_bindings::ErrWorldMetadata)
+    {
+        UtilityFunctions::printerr("Error: ", resMetadata.err.message);
+        // UtilityFunctions::push_error("Error: ", resMetadata.err.message);
+        _msg = String("[Error] create_client: ") + resMetadata.err.message;
+    }
+    else
+    {
+        UtilityFunctions::print_rich("[color=Green]Metadata creado[/color]");
+        _msg = "Metadata creado";
+    }
+    dojo_bindings::WorldMetadata metadata = resMetadata.ok;
+
+    std::vector<dojo_bindings::CHashItemFieldElementModelMetadata> feltmetadata(
+        metadata.models.data, metadata.models.data + metadata.models.data_len);
+
+    for (const auto& feltMeta : feltmetadata)
+    {
+        dojo_bindings::ModelMetadata model_metadata = feltMeta.value;
+        UtilityFunctions::print_rich(vformat("[color=Cyan]NameSpace: %s | Model: %s | TY: %s[/color]",
+                                             model_metadata.namespace_, model_metadata.name,
+                                             DojoPrimitive::PrimitiveTagToString(model_metadata.schema.tag)));
+        if (model_metadata.schema.tag == dojo_bindings::Ty_Tag::Primitive_)
+        {
+            UtilityFunctions::print_rich("[color=Peru]Primitive[/color]");
+            dojo_bindings::Primitive primitive = model_metadata.schema.primitive;
+            DojoPrimitive _primitive = DojoPrimitive(primitive);
+            // _msg += _primitive.get_value();
+        }
+        else if (model_metadata.schema.tag == dojo_bindings::Ty_Tag::Struct_)
+        {
+            dojo_bindings::Struct metaStruct = model_metadata.schema.struct_;
+            dojo_bindings::CArrayMember children = metaStruct.children;
+            UtilityFunctions::print_rich(vformat("[color=Peru]Struct is: %s [/color]", metaStruct.name));
+            std::vector<dojo_bindings::Member> members(children.data, children.data + children.data_len);
+
+            // Iterar y procesar los elementos
+            for (const auto& member : members)
+            {
+                UtilityFunctions::print_rich(vformat("[color=YELLOW]member: %s[/color]", member.name));
+
+                if (member.ty->tag == dojo_bindings::Ty_Tag::Primitive_)
+                {
+                    UtilityFunctions::print_rich("member_type is [color=YELLOW]Primitive[/color]");
+                    dojo_bindings::Primitive primitive = member.ty->primitive;
+                    DojoPrimitive _primitive = DojoPrimitive(primitive);
+                }
+                else if (member.ty->tag == dojo_bindings::Ty_Tag::Struct_)
+                {
+                    UtilityFunctions::print_rich("member_type is [color=YELLOW]Struct[/color]");
+                    dojo_bindings::Struct struct_ = member.ty->struct_;
+                    UtilityFunctions::print_rich(vformat("[color=Peru]struct_name[/color] [color=YELLOW] %s [/color]",
+                                                         struct_.name));
+                }
+                else if (member.ty->tag == dojo_bindings::Ty_Tag::Array_)
+                {
+                    UtilityFunctions::print_rich("member_type is [color=YELLOW]CArrayTy[/color]");
+                }
+                else if (member.ty->tag == dojo_bindings::Ty_Tag::ByteArray)
+                {
+                    UtilityFunctions::print_rich("member_type is [color=YELLOW]ByteArray[/color]");
+                }
+                else if (member.ty->tag == dojo_bindings::Ty_Tag::Enum_)
+                {
+                    UtilityFunctions::print_rich("member_type is [color=YELLOW]Enum[/color]");
+                    dojo_bindings::Enum enum_ = member.ty->enum_;
+                    UtilityFunctions::print_rich(vformat("enum_name [color=YELLOW]%s[/color]", enum_.name));
+                    UtilityFunctions::print_rich(vformat("enum_option [color=YELLOW]%s[/color]", enum_.option));
+                }
+                else if (member.ty->tag == dojo_bindings::Ty_Tag::Tuple_)
+                {
+                    UtilityFunctions::print_rich("member_type is [color=YELLOW]Tuple[/color]");
+                }
+            }
+        }
+    }
     return _msg;
 }
 
@@ -153,8 +239,9 @@ String DojoC::create_client(const String& world_addr)
 void on_account(dojo_bindings::ControllerAccount* account)
 {
     // Implementar
-    UtilityFunctions::print_rich("[color=Red]on_account callback Triggered");
+    UtilityFunctions::print_rich("[color=Green]on_account callback Triggered[/color]");
     session_account = account;
+    DojoC::get_singleton()->call_deferred("emit_signal", "controller_account_status_updated", true);
 }
 
 
@@ -202,8 +289,6 @@ void on_event_update_msg(const String& _msg)
 {
     DojoC::get_singleton()->call_deferred("emit_signal", "event_update", _msg);
     UtilityFunctions::print_rich(_msg);
-
-
 }
 
 void on_event_update(dojo_bindings::FieldElement entity_id, dojo_bindings::CArrayStruct models)
@@ -288,60 +373,51 @@ void on_event_update(dojo_bindings::FieldElement entity_id, dojo_bindings::CArra
         }
 
         DojoC::get_singleton()->set_output_message(result);
-        //     printf("\n");
-        //     printf("on_entity_state_update\n");
-        //     printf("Key: 0x");
-        //     for (size_t i = 0; i < 32; i++)
-        //     {
-        //         printf("%02x", entity_id.data[i]);
-        //     }
-        //     printf("\n");
-        //
-        //     for (size_t i = 0; i < models.data_len; i++)
-        //     {
-        //         printf("Model: %s\n", models.data[i].name);
-        //         for (size_t j = 0; j < models.data[i].children.data_len; j++)
-        //         {
-        //             printf("Field: %s\n", models.data[i].children.data[j].name);
-        //             printf("Value: %p\n", models.data[i].children.data[j].ty);
-        //         }
-        //     }
     }
-
-    // UtilityFunctions::prints( "children value:", children);
-    // auto ty = models.data->children.data->ty;
-    // UtilityFunctions::prints( "data value:", data);
-    // UtilityFunctions::prints( "ty value:", ty);
-    // UtilityFunctions::prints("type of ty:", typeid(ty->tag).name());
-    // UtilityFunctions::print("END");
 }
 
 
+void print_felt(String fname, const dojo_bindings::FieldElement felt)
+{
+    dojo_bindings::Resultc_char testing = dojo_bindings::parse_cairo_short_string(felt);
+    if (testing.tag == dojo_bindings::Resultc_char_Tag::Errc_char)
+    {
+        LOG_ERROR("NO STRING");
+    }
+    else
+    {
+        LOG_SUCCESS("Felt:", fname, testing.ok);
+    }
+}
+
 void DojoC::testing()
 {
-    const char* rpc_url = "http://0.0.0.0:5050";
-    const char* torii_url = "http://0.0.0.0:8080";
+    const char* rpc_url = "http://localhost:5050";
+    const char* torii_url = "http://localhost:8080";
     const char* relay_url = "/ip4/127.0.0.1/tcp/9090";
 
     dojo_bindings::FieldElement world;
     string_to_bytes("0x07cb912d0029e3799c4b8f2253b21481b2ec814c5daf72de75164ca82e7c42a5", world.data, 32);
-
+    print_felt("world", world);
     // dojo_bindings::FieldElement actions;
     string_to_bytes("0x00a92391c5bcde7af4bad5fd0fff3834395b1ab8055a9abb8387c0e050a34edf", actions.data, 32);
+    print_felt("actions", actions);
 
     dojo_bindings::FieldElement player;
     string_to_bytes("0x13d9ee239f33fea4f8785b9e3870ade909e20a9599ae7cd62c1c292b73af1b7", player.data, 32);
+    print_felt("player", player);
 
     dojo_bindings::FieldElement katana;
     string_to_bytes("0x4b4154414e41", katana.data, 32);
+    print_felt("katana", katana);
 
     dojo_bindings::FieldElement private_key;
     string_to_bytes("0x1c9053c053edf324aec366a34c6901b1095b07af69495bffec7d7fe21effb1b", private_key.data, 32);
+    print_felt("private_key", private_key);
 
     // string_to_bytes("0x4b4154414e41", katana.data, 32);
 
     dojo_bindings::ToriiClient* client;
-
     dojo_bindings::ResultToriiClient resClient = dojo_bindings::client_new(torii_url, relay_url, world);
     if (resClient.tag == dojo_bindings::ErrToriiClient)
     {
@@ -444,22 +520,23 @@ void DojoC::testing()
     };
     uintptr_t policies_len = 2;
 
-    // dojo_bindings::ResultControllerAccount resControllerAccount =
-    //     dojo_bindings::controller_account(policies, 2, katana);
-    // if (resControllerAccount.tag == dojo_bindings::OkControllerAccount)
-    // {
-    //     UtilityFunctions::print_rich("[color=Green]Session account already connected");
-    //     session_account = resControllerAccount.ok;
-    // }
-    // else
-    // {
-    //     UtilityFunctions::print_rich("[color=Red]Session account not connected, connecting...");
-    //     dojo_bindings::controller_connect(rpc_url, policies, policies_len, on_account);
-    //     // while (session_account == nullptr)
-    //     // {
-    //     //     usleep(100000); // Sleep for 100 ms to avoid busy waiting
-    //     // }
-    // }
+    dojo_bindings::ResultControllerAccount resControllerAccount =
+        dojo_bindings::controller_account(policies, policies_len, katana);
+    if (resControllerAccount.tag == dojo_bindings::OkControllerAccount)
+    {
+        UtilityFunctions::print_rich("[color=Green]Session account already connected");
+        session_account = resControllerAccount.ok;
+    }
+    else
+    {
+        UtilityFunctions::print_rich("[color=Red]Session account not connected, connecting...");
+        dojo_bindings::controller_connect(rpc_url, policies, policies_len, on_account);
+        // while (session_account == nullptr)
+        // {
+        //     usleep(100000); // Sleep for 100 ms to avoid busy waiting
+        // }
+    }
+
 
     dojo_bindings::COptionClause event_clause = {};
     event_clause.tag = dojo_bindings::NoneClause;
@@ -477,7 +554,7 @@ void DojoC::testing()
     else
     {
         UtilityFunctions::print_verbose("Event subscription created.");
-        emit_signal("subscription_status_updated", true, "entity_subscription") ;
+        emit_signal("subscription_status_updated", true, "entity_subscription");
     }
     dojo_bindings::Subscription* event_subscription = resEvent.ok;
 
@@ -501,7 +578,7 @@ void DojoC::testing()
     // }
 }
 
-void DojoC::spawn()
+void account_execute_raw(const dojo_bindings::Call* calldata, const uintptr_t calldata_len = 0)
 {
     if (controller_provider == nullptr)
     {
@@ -514,9 +591,20 @@ void DojoC::spawn()
         return;
     }
 
+    dojo_bindings::ResultFieldElement result = dojo_bindings::account_execute_raw(account, calldata, calldata_len);
+    if (result.tag == dojo_bindings::ErrFieldElement)
+    {
+        LOG_ERROR(calldata->selector, " Failed: ", result.err.message);
+    }
+    else
+    {
+        dojo_bindings::wait_for_transaction(controller_provider, result.ok);
+        LOG_SUCCESS(calldata->selector);
+    }
+}
 
-    // // dojo_bindings::ResultFieldElement resExecute = dojo_bindings::controller_execute_raw();
-    // std::vector<dojo_bindings::Controller> controllerList(data, data + data_len);
+void DojoC::spawn()
+{
     UtilityFunctions::print_rich("[color=RED]----------Block ID---------");
 
     dojo_bindings::BlockId block_id = {
@@ -530,49 +618,38 @@ void DojoC::spawn()
         .to = actions,
         .selector = "spawn",
     };
+    account_execute_raw(&spawn, 1);
+}
 
-    dojo_bindings::ResultFieldElement resSpawn = dojo_bindings::account_execute_raw(account, &spawn, 1);
-    if (resSpawn.tag == dojo_bindings::ErrFieldElement)
-    {
-        UtilityFunctions::print_rich("[color=Red]Spawn Failed.");
-        UtilityFunctions::printerr("Error: ", resSpawn.err.message);
-    }
-    else
-    {
-        dojo_bindings::wait_for_transaction(controller_provider, resSpawn.ok);
-        UtilityFunctions::print_rich("[color=Green]Spawned.");
-    }
-
-    // UtilityFunctions::print_rich("[color=RED]----------CallData---------");
-    // dojo_bindings::FieldElement calldata_data;
-    // // move left
-    // string_to_bytes("0x01", calldata_data.data,1);
-    //
-    // UtilityFunctions::print_rich("[color=RED]----------Move---------");
-    //
-    // dojo_bindings::Call move = {
-    //     .to = actions,
-    //     .selector = "move",
-    //     .calldata = {
-    //         .data = &calldata_data,
-    //         .data_len = 1
-    //     }
-    // };
-
-    //
-    //
-    //
-    // dojo_bindings::ResultFieldElement resMove = dojo_bindings::account_execute_raw(account, &move, 1);
-    // if (resMove.tag == dojo_bindings::ErrFieldElement)
+void DojoC::move()
+{
+    LOG_INFO("----------CallData---------");
+    dojo_bindings::FieldElement direction_felt = {};
+    String direction_hex = "0x0" + String::num_int64(0, 16);
+    LOG_INFO(direction_hex);
+    // string_to_bytes(direction_hex, direction_felt.data, 32);
+    direction_felt.data[31] = 0x01;
+    LOG_INFO("----------Move---------");
+    // dojo_bindings::ResultFieldElement result = dojo_bindings::cairo_short_string_to_felt("0");
+    // if (result.tag == dojo_bindings::ErrFieldElement)
     // {
-    //     UtilityFunctions::printerr("Error: ", resMove.err.message);
-    //     // UtilityFunctions::push_error("Error: ", resMove.err.message);
+    //     LOG_ERROR(result.err.message);
     //     return;
     // }
     // else
     // {
-    //     dojo_bindings::wait_for_transaction(controller_provider, resMove.ok);
-    //     UtilityFunctions::print_rich("[color=Green]Moved.");
-    //     // UtilityFunctions::print_rich("[color=Yellow]", field_element_to_hex(resMove.ok));
+    //     direction_felt = result.ok;
     // }
+    LOG_INFO(field_element_to_hex(direction_felt));
+    dojo_bindings::Call move = {
+        .to = actions,
+        .selector = "move",
+        .calldata = {
+            .data = &direction_felt,
+            .data_len = 1
+        }
+    };
+
+
+    account_execute_raw(&move, 1);
 }

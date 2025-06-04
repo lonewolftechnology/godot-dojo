@@ -30,6 +30,7 @@ namespace godot {
         void controller_connect(const String &controller_addr);
         void testing();
         void spawn();
+        void move();
         // Array values = {};
         // Array get_values() const {return values;}
         // void set_values(const Array &p_values) {values = p_values;}
