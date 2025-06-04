@@ -3,10 +3,10 @@
 // A:
 // Created by hazel on 27/05/25.
 
-#include "types/primitive.h"
+#include "../../include/variant/primitive.h"
 #include "variant/utility_functions.hpp"
 // Esto despues se borra, es para debugguear más fácil falsos positivos/bugs
-const char* PrimitiveTagToString(int value)
+const char* DojoPrimitive::PrimitiveTagToString(int value)
 {
     static const char* names[] = {
         "I8",
@@ -116,7 +116,8 @@ DojoPrimitive::DojoPrimitive(const dojo_bindings::Primitive& primitive)
     }
     if (value.get_type() != Variant::NIL)
     {
-        UtilityFunctions::print_rich("[color=Cyan]Primitive Constructor:");
+
+        UtilityFunctions::print_rich("[color=Cyan]Primitive Constructor Concluded");
         UtilityFunctions::print_rich(
             "[color=Yellow]Primitive " + String(value) + "\n[color=Green]Type: " + Variant::get_type_name(
                 value.get_type()));

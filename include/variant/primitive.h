@@ -23,6 +23,7 @@ protected:
     static void _bind_methods();
 
 public:
+    static const char* PrimitiveTagToString(int value);
     DojoPrimitive();
     DojoPrimitive(const dojo_bindings::Primitive &primitive);
     DojoPrimitive(const dojo_bindings::FieldElement field_element);
