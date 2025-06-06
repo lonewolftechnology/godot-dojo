@@ -7,6 +7,9 @@
 
 #include <godot_cpp/classes/object.hpp>
 #include "dojo_types.h"
+#include "variant/field_element.h"
+#include "classes/event_subscription.h"
+
 namespace godot {
 
     class DojoC : public Object {
@@ -15,8 +18,7 @@ namespace godot {
     protected:
         static void _bind_methods();
 		static DojoC *singleton;
-		bool enabled;
-
+        bool enabled;
 
     public:
         void set_enabled(bool p_enabled){enabled=p_enabled;};
@@ -26,11 +28,13 @@ namespace godot {
 
         static DojoC *get_singleton();
 
-        String create_client(const String& world_addr);
-        void controller_connect(const String &controller_addr);
+        void create_client(const String& world_addr, String torii_url, String relay_url);
+        void controller_new(const String& controller_addr, const String& rpc_url);
+        // void controller_connect(const String &controller_addr);
         void testing();
-        void spawn();
-        void move();
+        void create_entity_subscription(Callable callback);
+        void spawn(bool _debug);
+        void move(Ref<FieldElement> ref_felt, bool _debug);
         // Array values = {};
         // Array get_values() const {return values;}
         // void set_values(const Array &p_values) {values = p_values;}

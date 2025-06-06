@@ -1,7 +1,8 @@
-[gd_scene load_steps=4 format=3 uid="uid://buvlply3axqqi"]
+[gd_scene load_steps=5 format=3 uid="uid://buvlply3axqqi"]
 
 [ext_resource type="Script" uid="uid://ck323bl4c38kw" path="res://main.gd" id="1_ig7tw"]
 [ext_resource type="PackedScene" uid="uid://b5vmo8llucetx" path="res://ui/status_indicator.tscn" id="2_0xm2m"]
+[ext_resource type="Texture2D" uid="uid://cpwiq4efrduji" path="res://icon.svg" id="3_h2yge"]
 
 [sub_resource type="LabelSettings" id="LabelSettings_ig7tw"]
 font_size = 36
@@ -150,6 +151,10 @@ layout_mode = 2
 text = "World Client"
 horizontal_alignment = 1
 
+[node name="Subcribe" type="Button" parent="TabContainer/WIP tests"]
+layout_mode = 2
+text = "Suscribe"
+
 [node name="Status" type="Label" parent="TabContainer/WIP tests"]
 layout_mode = 2
 size_flags_vertical = 0
@@ -173,8 +178,13 @@ placeholder_text = "ControllerADDR"
 layout_mode = 2
 text = "Controller"
 
+[node name="Sprite2D" type="Sprite2D" parent="."]
+position = Vector2(-312, 295)
+texture = ExtResource("3_h2yge")
+
 [connection signal="pressed" from="TabContainer/SpawnTest/HBoxContainer/Testing" to="." method="_on_testing_pressed"]
 [connection signal="pressed" from="TabContainer/SpawnTest/Events/Spawn" to="." method="_on_spawn_pressed"]
 [connection signal="pressed" from="TabContainer/SpawnTest/Events/Move" to="." method="_on_move_pressed"]
+[connection signal="pressed" from="TabContainer/WIP tests/Subcribe" to="." method="_on_subcribe_pressed"]
 [connection signal="pressed" from="TabContainer/WIP tests/BtnStartClient" to="." method="_on_button_pressed"]
 [connection signal="pressed" from="TabContainer/WIP tests/ConnectController" to="." method="_on_connect_controller_pressed"]

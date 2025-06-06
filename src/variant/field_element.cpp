@@ -8,8 +8,7 @@
 using namespace godot;
 
 FieldElement::FieldElement()
-{
-}
+= default;
 
 FieldElement::FieldElement(const String& hex_str, size_t max_bytes)
 {
@@ -37,15 +36,26 @@ FieldElement::FieldElement(const String& hex_str, size_t max_bytes)
     if (is_odd)
     {
         String nibble = hex_str.substr(start_idx, 1);
-        field_element->data[out_idx++] = static_cast<uint8_t>(nibble.hex_to_int());
+        felt->data[out_idx++] = static_cast<uint8_t>(nibble.hex_to_int());
     }
 
     // Process two hex digits at a time
     for (size_t i = is_odd ? 1 : 0; i < hex_length; i += 2)
     {
         String byte_str = hex_str.substr(start_idx + i, 2);
-        field_element->data[out_idx++] = static_cast<uint8_t>(byte_str.hex_to_int());
+        felt->data[out_idx++] = static_cast<uint8_t>(byte_str.hex_to_int());
     }
+}
+
+FieldElement::FieldElement(int enum_value)
+{
+    memset(felt->data, 0, 32);
+    felt->data[31] = static_cast<uint8_t>(enum_value);
+}
+
+FieldElement::FieldElement(dojo_bindings::FieldElement* existing_felt)
+{
+    felt = existing_felt;
 }
 
 FieldElement::~FieldElement()
@@ -63,5 +73,45 @@ PackedByteArray FieldElement::to_packed_array(const void* data, const int size)
 
 PackedByteArray FieldElement::as_packed_array() const
 {
-    return to_packed_array(field_element->data);
+    return to_packed_array(felt->data);
+}
+
+String FieldElement::to_string() const
+{
+    String ret = "0x";
+    for (size_t i = 0; i < 32; i++)
+    {
+        ret += String::num_int64(felt->data[i], 16, false);
+    };
+
+    return ret;
+}
+
+const char* FieldElement::to_string_c_str() const
+{
+    return to_string().utf8().get_data();
+}
+
+Ref<FieldElement> FieldElement::from_enum(int enum_value)
+{
+    Ref<FieldElement> field_element;
+    field_element.instantiate();
+    // Debug: Verificar estado del objeto
+    if (field_element.is_null())
+    {
+        LOG_ERROR("Failed to instantiate FieldElement");
+        return {};
+    }
+
+    if (field_element->felt == nullptr)
+    {
+        LOG_ERROR("felt is null after instantiation");
+        // Limpiar e inicializar
+        field_element->felt = new dojo_bindings::FieldElement();
+    }
+    memset(field_element->felt->data, 0, 32);
+    field_element->felt->data[31] = static_cast<uint8_t>(enum_value);
+
+
+    return field_element;
 }

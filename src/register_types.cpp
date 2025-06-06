@@ -14,6 +14,8 @@
 
 #include <variant/field_element.h>
 
+#include <classes/event_subscription.h>
+
 
 using namespace godot;
 
@@ -21,10 +23,11 @@ void initialize_dojoc_module(ModuleInitializationLevel p_level) {
     if (p_level != MODULE_INITIALIZATION_LEVEL_SCENE) {
         return;
     }
-    GDREGISTER_CLASS(DojoC);
+    GDREGISTER_CLASS(FieldElement);
     GDREGISTER_CLASS(DojoPrimitive);
     GDREGISTER_CLASS(DojoToriiClient);
-    GDREGISTER_CLASS(FieldElement);
+    GDREGISTER_CLASS(EventSubscription);
+    GDREGISTER_CLASS(DojoC);
 }
 
 void uninitialize_dojoc_module(ModuleInitializationLevel p_level) {
