@@ -21,7 +21,11 @@ env = SConscript("godot-cpp/SConstruct")
 
 # Dojo.C
 ## Helper variables
-rust_libname = "libdojo_c" + env['SHLIBSUFFIX']
+if env['platform'] == "windows":
+    rust_libname = "dojo_c"
+else:
+    rust_libname = "libdojo_c"
+rust_libname += env['SHLIBSUFFIX']
 rust_lib = 'dojo.c/target/{}/{}'.format(env["target"].replace("template_",""), rust_libname)
 
 ## Build rust
@@ -71,9 +75,15 @@ env.Append(
     ]
 )
 
-env.Append(
-    LIBS=[File("./" + rust_lib.replace(".so", ".a"))]
-)
+if env['platform'] == "windows":
+    env.Append(
+        LIBS=[File("./" + rust_lib.replace(".dll", ".lib"))]
+    )
+    env.Append(LINKFLAGS=['/NODEFAULTLIB:MSVCRT'])
+else:
+    env.Append(
+        LIBS=[File("./" + rust_lib.replace(".so", ".a"))]
+    )
 
 
 sources = Glob("src/*.cpp")
