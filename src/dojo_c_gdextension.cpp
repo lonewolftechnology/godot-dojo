@@ -4,10 +4,10 @@
 #include "dojo_c_gdextension.h"
 
 #include <godot_cpp/classes/engine.hpp>
+#include <godot_cpp/classes/os.hpp>
 #include <godot_cpp/core/class_db.hpp>
 
 #include <debug_macros.h>
-#include <unistd.h>
 #include <variant/primitive.h>
 
 
@@ -270,7 +270,7 @@ void DojoC::controller_new(const String& controller_addr,
     }
     while (session_account == nullptr)
     {
-        usleep(1000); // Sleep for 100 ms to avoid busy waiting
+        OS::get_singleton()->delay_msec(1000); // Sleep for 100 ms to avoid busy waiting
     }
     print_felt("chain ID ",dojo_bindings::controller_chain_id(session_account));
     FieldElement private_key = {"0x14d6672dcb4b77ca36a887e9a11cd9d637d5012468175829e9c6e770c61642"};

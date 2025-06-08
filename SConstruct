@@ -81,6 +81,11 @@ sources += Glob("src/types/*.cpp")
 
 addon_dir = "demo/bin/"
 
+if env.get("is_msvc", False):
+    env['CXXFLAGS'].remove("/std:c++17")
+    env.Append(CXXFLAGS=["/std:c++20"])
+
+
 if env["platform"] == "macos":
     library = env.SharedLibrary(
         addon_dir + "/libdojoc.{}.{}.framework/dojoc.{}.{}".format(
