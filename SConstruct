@@ -2,6 +2,7 @@
 import os
 import sys
 import shutil
+
 # Project Configurations
 PROJECT_NAME = "dojoc-gdextension"
 ENTRY_POINT = "dojoc_library_init"
@@ -14,34 +15,58 @@ conf_dict = {
     r'${GODOT_MIN_REQUIREMENT}': GODOT_MIN_REQUIREMENT
 }
 env = Environment(tools=['textfile'])
-env.Substfile('plugin_template.gdextension.in', SUBST_DICT = conf_dict)
+env.Substfile('plugin_template.gdextension.in', SUBST_DICT=conf_dict)
 
 # Gets the standard flags CC, CCX, etc.
 env = SConscript("godot-cpp/SConstruct")
 
 # Dojo.C
 ## Helper variables
+rust_libname = "libdojo_c" + env['SHLIBSUFFIX']
+rust_extra_args = ""
+rust_lib = ""
+rust_target = ""
+
+# Platform specifics
 if env['platform'] == "windows":
-    rust_libname = "dojo_c"
-else:
-    rust_libname = "libdojo_c"
-rust_libname += env['SHLIBSUFFIX']
-rust_lib = 'dojo.c/target/{}/{}'.format(env["target"].replace("template_",""), rust_libname)
+    if env.get("is_msvc", False):
+        rust_target = "x86_64-pc-windows-msvc"
+        rust_libname = rust_libname.replace(".dll", ".lib")
+        env['CXXFLAGS'].remove("/std:c++17")
+        env.Append(CXXFLAGS=["/std:c++20"])
+        env.Append(
+            LINKFLAGS=[
+                '/NODEFAULTLIB:MSVCRT'
+            ]
+        )
+    else:
+        rust_libname = rust_libname[3:]
+        # rust_libname = rust_libname.replace(".dll", ".dll.a")
+        rust_target = "x86_64-pc-windows-gnu"
+
+elif env['platform'] == "linux":
+    rust_target = "x86_64-unknown-linux-gnu"
+    env.Append(
+        LINKFLAGS=["-ldbus-1"],
+    )
+
+elif env['platform'] == "macos":
+    if env['arch'] == "arm64":
+        rust_target = "aarch64-apple-darwin"
+    else:
+        rust_target = "x86_64-apple-darwin"
+
+rust_libname = rust_libname.replace(".so", ".a")
 
 ## Build rust
-rust_extra_args = ""
-# TODO: PLATFORM TARGETS
 if env["target"] == "template_release":
     rust_extra_args += "--release"
 
-#if env['platform'] == "macos":
-#    if env['arch'] == "arm64":
-#        rust_extra_args += "--target aarch64-apple-darwin"
-#    else:
-#        rust_extra_args += "--target x86_64-apple-darwin"
+rust_lib_path = 'dojo.c/target/{}/{}'.format(rust_target, env["target"].replace("template_", ""))
+rust_lib = "{}/{}".format(rust_lib_path, rust_libname)
 
 env.Execute(
-    action="cargo build {}".format(rust_extra_args),
+    action="cargo build --target {} {}".format(rust_target, rust_extra_args),
     chdir="dojo.c"
 )
 os.chdir("..")
@@ -58,43 +83,30 @@ os.chdir("..")
 # - CPPFLAGS are for pre-processor flags
 # - CPPDEFINES are for pre-processor defines
 # - LINKFLAGS are for linking flags
-
-# tweak this if you want to use different folders, or more folders, to store your source code in.
-if env['platform'] == "linux":
-    env.Append(
-        LINKFLAGS=["-ldbus-1"]
-    )
-    
 env.Append(
     CPPPATH=[
         "src/",
         "include/",
         "dojo.c",
         "godot-cpp/include/godot_cpp",
-        "godot-cpp/gen/include/godot_cpp"
+        "godot-cpp/gen/include/godot_cpp",
+        "godot-cpp/gdextension"
+    ],
+    LIBS=[
+        File("./" + rust_lib)
+    ],
+    LINKFLAGS=[
+        "-static-libgcc",
+        "-static-libstdc++"
     ]
+
 )
 
-if env['platform'] == "windows":
-    env.Append(
-        LIBS=[File("./" + rust_lib.replace(".dll", ".lib"))]
-    )
-    env.Append(LINKFLAGS=['/NODEFAULTLIB:MSVCRT'])
-else:
-    env.Append(
-        LIBS=[File("./" + rust_lib.replace(".so", ".a"))]
-    )
-
-
 sources = Glob("src/*.cpp")
-sources += Glob("src/types/*.cpp")
+sources += Glob("src/classes/*.cpp")
+sources += Glob("src/variant/*.cpp")
 
 addon_dir = "demo/bin/"
-
-if env.get("is_msvc", False):
-    env['CXXFLAGS'].remove("/std:c++17")
-    env.Append(CXXFLAGS=["/std:c++20"])
-
 
 if env["platform"] == "macos":
     library = env.SharedLibrary(
@@ -103,7 +115,7 @@ if env["platform"] == "macos":
         ),
         source=sources,
     )
-elif env["platform"] == "ios": # No lo borro por las dudas si surge que hay que hacer ios
+elif env["platform"] == "ios":  # No lo borro por las dudas si surge que hay que hacer ios
     if env["ios_simulator"]:
         library = env.StaticLibrary(
             addon_dir + "/dojoc.{}.{}.simulator.a".format(env["platform"], env["target"]),
