@@ -33,6 +33,7 @@ namespace godot {
         // void controller_connect(const String &controller_addr);
         void testing();
         void create_entity_subscription(Callable callback);
+        void entity_subscription(Callable callback);
         void spawn(bool _debug);
         void move(Ref<FieldElement> ref_felt, bool _debug);
         void send_message(const String& _msg);

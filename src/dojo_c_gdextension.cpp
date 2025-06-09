@@ -30,6 +30,7 @@ void DojoC::_bind_methods()
     ClassDB::bind_method(D_METHOD("spawn"), &DojoC::spawn);
     ClassDB::bind_method(D_METHOD("move"), &DojoC::move);
     ClassDB::bind_method(D_METHOD("create_entity_subscription", "p_callable"), &DojoC::create_entity_subscription);
+    ClassDB::bind_method(D_METHOD("entity_subscription", "p_callable"), &DojoC::entity_subscription);
     ClassDB::bind_method(
         D_METHOD(
             "controller_new",
@@ -44,7 +45,7 @@ void DojoC::_bind_methods()
         D_METHOD("create_client", "p_world", "p_torii_url"),
         &DojoC::create_client,
         DEFVAL("http://localhost:8080")
-        );
+    );
     // ClassDB::bind_method(D_METHOD("controller_connect"), &DojoC::controller_connect);
     ADD_PROPERTY(PropertyInfo(Variant::BOOL, "is_enabled"), "set_enabled", "get_enabled");
 
@@ -561,16 +562,21 @@ void DojoC::testing()
 }
 
 EventSubscription* event_subscription;
+EventSubscription* entity_subs;
 
 void event_wrapper(dojo_bindings::FieldElement entity_id, dojo_bindings::CArrayStruct models)
 {
     event_subscription->on_entity_update(&entity_id, models);
 }
 
+void message_wrapper(dojo_bindings::FieldElement entity_id, dojo_bindings::CArrayStruct models)
+{
+    entity_subs->on_entity_update(&entity_id, models);
+}
 
 void DojoC::create_entity_subscription(Callable callback)
 {
-    event_subscription = new EventSubscription;
+    event_subscription = new EventSubscription();
 
     dojo_bindings::COptionClause event_clause = {};
 
@@ -581,7 +587,7 @@ void DojoC::create_entity_subscription(Callable callback)
     if (resEvent.tag == dojo_bindings::ErrSubscription)
     {
         LOG_ERROR(resEvent.err.message);
-        // emit_signal("subscription_status_updated", false, "entity_subscription");
+        emit_signal("subscription_status_updated", false, "entity_subscription");
 
         return;
     }
@@ -590,7 +596,30 @@ void DojoC::create_entity_subscription(Callable callback)
         event_subscription->set_subscription(resEvent.ok);
 
         LOG_SUCCESS("Event subscription created.");
-        // emit_signal("subscription_status_updated", true, "entity_subscription");
+        emit_signal("subscription_status_updated", true, "entity_subscription");
+    }
+
+}
+
+void DojoC::entity_subscription(Callable callback)
+{
+    entity_subs = new EventSubscription();
+    entity_subs->set_callback(callback);
+    dojo_bindings::COptionClause event_clause = {};
+    event_clause.tag = dojo_bindings::NoneClause;
+
+    dojo_bindings::ResultSubscription resEntity = dojo_bindings::client_on_entity_state_update(
+        client,
+        event_clause,
+        message_wrapper
+    );
+    if (resEntity.tag == dojo_bindings::ErrSubscription)
+    {
+        LOG_ERROR(resEntity.err.message);
+        // emit_signal("subscription_status_updated", false, "entity_subscription");
+    }else
+    {
+        entity_subs->set_subscription(resEntity.ok);
     }
 }
 
@@ -755,13 +784,14 @@ void DojoC::send_message(const String& _msg)
         json_data.utf8().get_data(),
         signature_felts,
         2
-        );
+    );
 
     if (result.tag == dojo_bindings::ErrFieldElement)
     {
         LOG_ERROR("Failed to publish message: ", result.err.message);
         return;
-    } else
+    }
+    else
     {
         LOG_SUCCESS("Message published.");
         FieldElement felt_result = {&result.ok};

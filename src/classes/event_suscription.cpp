@@ -6,6 +6,7 @@
 
 #include "variant/field_element.h"
 #include <variant/primitive.h>
+
 EventSubscription::EventSubscription()
 {
 }
@@ -14,7 +15,7 @@ EventSubscription::~EventSubscription()
 {
 }
 
-void EventSubscription::on_entity_update(dojo_bindings::FieldElement* entity_id, dojo_bindings::CArrayStruct models) const
+void EventSubscription::on_entity_update(dojo_bindings::FieldElement* entity_id, dojo_bindings::CArrayStruct models)
 {
     LOG_INFO("Entity Update Event Received");
     if (callback.is_null())
@@ -81,23 +82,24 @@ void EventSubscription::on_entity_update(dojo_bindings::FieldElement* entity_id,
             LOG_INFO("member_type is [color=YELLOW]Struct[/color]");
             dojo_bindings::Struct struct_ = member.ty->struct_;
             LOG_INFO("[color=Peru]struct_name[/color] [color=YELLOW]", struct_.name, "[/color]");
-             std::vector<dojo_bindings::Member> struct_child(struct_.children.data,
+            std::vector<dojo_bindings::Member> struct_child(struct_.children.data,
                                                             struct_.children.data + struct_.children.data_len);
-            Dictionary vec2 = {};
-            for (const auto& struct_child_member : struct_child)
+            if (struct_.name == "Vec2")
             {
-                LOG_INFO("struct_child_member.name: ", struct_child_member.name);
-
-                if (struct_child_member.ty->tag == dojo_bindings::Ty_Tag::Primitive_)
+                Dictionary vec2 = {};
+                for (const auto& struct_child_member : struct_child)
                 {
-                    DojoPrimitive s_value = {struct_child_member.ty->primitive};
-                    vec2[struct_child_member.name] = s_value.get_value();
-                    LOG_INFO(struct_child_member.name, s_value.get_value());
+                    LOG_INFO("struct_child_member.name: ", struct_child_member.name);
+
+                    if (struct_child_member.ty->tag == dojo_bindings::Ty_Tag::Primitive_)
+                    {
+                        DojoPrimitive s_value = {struct_child_member.ty->primitive};
+                        vec2[struct_child_member.name] = s_value.get_value();
+                        LOG_INFO(struct_child_member.name, s_value.get_value());
+                    }
                 }
-
-
+                arguments.append(Vector2(vec2['x'], vec2['y']));
             }
-            arguments.append(Vector2(vec2['x'], vec2['y']));
         }
         else if (member.ty->tag == dojo_bindings::Ty_Tag::Array_)
         {
@@ -118,10 +120,8 @@ void EventSubscription::on_entity_update(dojo_bindings::FieldElement* entity_id,
         {
             LOG_INFO("member_type is [color=YELLOW]Tuple[/color]");
         }
-
     }
     // arguments.push_back(models); // Si también quieres pasar models
     Variant callback_result = callback.call(arguments);
     LOG_INFO("RESULT: ", callback_result);
-
 };
