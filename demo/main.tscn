@@ -12,7 +12,7 @@
 [ext_resource type="Texture2D" uid="uid://d1cuwkkgp8hyv" path="res://assets/arrow_up_p.png" id="7_ycdy4"]
 [ext_resource type="Texture2D" uid="uid://bkiqp5xd7g5mf" path="res://assets/arrow_down_p.png" id="9_w48qg"]
 [ext_resource type="Texture2D" uid="uid://dn0lmukjhns5l" path="res://assets/arrow_right_p.png" id="11_vivmo"]
-[ext_resource type="Script" path="res://player.gd" id="12_ycdy4"]
+[ext_resource type="Script" uid="uid://y62xiri5drum" path="res://player.gd" id="12_ycdy4"]
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_lquwl"]
 atlas = ExtResource("2_1bvp3")
@@ -28,17 +28,19 @@ bg_color = Color(0, 0, 0, 0.607843)
 script = ExtResource("1_ig7tw")
 dojo_abi = "/home/idontkillcoyotes/Documentos/Laburo/dojo-starter/manifest_dev.json"
 
-[node name="Background" type="CanvasLayer" parent="."]
+[node name="Parallax" type="ParallaxBackground" parent="."]
 layer = -1
 
-[node name="Bg" type="TextureRect" parent="Background"]
+[node name="ParallaxLayer" type="ParallaxLayer" parent="Parallax"]
+position = Vector2(-640, -360)
+
+[node name="Parallax2D" type="Parallax2D" parent="Parallax/ParallaxLayer"]
+repeat_size = Vector2(2560, 1440)
+
+[node name="Bg" type="Sprite2D" parent="Parallax/ParallaxLayer/Parallax2D"]
 texture_filter = 1
 texture_repeat = 2
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
+position = Vector2(640, 360)
 texture = SubResource("AtlasTexture_lquwl")
 metadata/_edit_lock_ = true
 
@@ -255,8 +257,6 @@ texture_normal = ExtResource("7_efxa6")
 texture_pressed = ExtResource("11_vivmo")
 texture_hover = ExtResource("7_efxa6")
 
-[node name="Camera2D" type="Camera2D" parent="."]
-
 [node name="Player" type="Node2D" parent="."]
 unique_name_in_owner = true
 script = ExtResource("12_ycdy4")
@@ -283,6 +283,10 @@ theme_override_styles/normal = SubResource("StyleBoxFlat_w48qg")
 text = "0x0"
 horizontal_alignment = 1
 vertical_alignment = 1
+
+[node name="Camera2D" type="Camera2D" parent="Player"]
+position_smoothing_enabled = true
+position_smoothing_speed = 4.0
 
 [connection signal="toggled" from="UI/HBoxContainer/ButtonToggle" to="." method="_on_button_toggle_toggled"]
 [connection signal="pressed" from="UI/HBoxContainer/Tabs/SpawnTest/HBoxContainer/Testing" to="." method="_on_testing_pressed"]
