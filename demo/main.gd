@@ -14,9 +14,9 @@ const dev_actions_addr = "0x00a92391c5bcde7af4bad5fd0fff3834395b1ab8055a9abb8387
 
 @onready var provider_status: HBoxContainer = %ProviderStatus
 @onready var account_status: HBoxContainer = %AccountStatus
-@onready var suscription_status: HBoxContainer = %uscriptionStatus
+@onready var suscription_status: HBoxContainer = %SuscriptionStatus
 @onready var spawn_output: RichTextLabel = %SpawnOutput
-@onready var controller_account_status: HBoxContainer = %ontrollerAccountStatus
+@onready var controller_account_status: HBoxContainer = %ControllerAccountStatus
 @onready var sprite: Sprite2D = %Sprite2D
 @onready var chat_box: TextEdit = %ChatBox
 @onready var tabs: TabContainer = %Tabs
@@ -55,7 +55,7 @@ func callable_test(args:Array):
 	prints("\nAAAAAAAAAAAAAA", args)
 	if args.size() > 1:
 		var vec = args[1]
-		print(args[1])
+		print("Args(1): ",args[1])
 		await get_tree().process_frame
 		await get_tree().process_frame
 		await get_tree().process_frame
