@@ -1,152 +1,150 @@
-[gd_scene load_steps=5 format=3 uid="uid://buvlply3axqqi"]
+[gd_scene load_steps=7 format=3 uid="uid://buvlply3axqqi"]
 
 [ext_resource type="Script" uid="uid://ck323bl4c38kw" path="res://main.gd" id="1_ig7tw"]
 [ext_resource type="PackedScene" uid="uid://b5vmo8llucetx" path="res://ui/status_indicator.tscn" id="2_0xm2m"]
+[ext_resource type="Texture2D" uid="uid://blljslsxyx8em" path="res://assets/tile.png" id="2_1bvp3"]
 [ext_resource type="Texture2D" uid="uid://cpwiq4efrduji" path="res://icon.svg" id="3_h2yge"]
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_lquwl"]
+atlas = ExtResource("2_1bvp3")
+region = Rect2(0, 0, 1280, 720)
 
 [sub_resource type="LabelSettings" id="LabelSettings_ig7tw"]
 font_size = 36
 
 [node name="Main" type="Node"]
 script = ExtResource("1_ig7tw")
-dojo_abi = "/home/hazel/Proyectos/Godot/GDE/starting/dojo-starter/manifest_dev.json"
+dojo_abi = "/home/idontkillcoyotes/Documentos/Laburo/dojo-starter/manifest_dev.json"
 
-[node name="TabContainer" type="TabContainer" parent="."]
+[node name="Background" type="CanvasLayer" parent="."]
+layer = -1
+
+[node name="Bg" type="TextureRect" parent="Background"]
+texture_filter = 1
+texture_repeat = 2
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
-current_tab = 1
+texture = SubResource("AtlasTexture_lquwl")
+metadata/_edit_lock_ = true
 
-[node name="SpawnTest" type="VBoxContainer" parent="TabContainer"]
-visible = false
+[node name="UI" type="CanvasLayer" parent="."]
+
+[node name="HBoxContainer" type="HBoxContainer" parent="UI"]
+offset_right = 40.0
+offset_bottom = 40.0
+
+[node name="ButtonToggle" type="Button" parent="UI/HBoxContainer"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(40, 40)
+layout_mode = 2
+size_flags_horizontal = 2
+size_flags_vertical = 0
+toggle_mode = true
+text = "*"
+
+[node name="Tabs" type="TabContainer" parent="UI/HBoxContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+current_tab = 0
+
+[node name="SpawnTest" type="VBoxContainer" parent="UI/HBoxContainer/Tabs"]
 layout_mode = 2
 metadata/_tab_index = 0
 
-[node name="Connection" type="Label" parent="TabContainer/SpawnTest"]
+[node name="Connection" type="Label" parent="UI/HBoxContainer/Tabs/SpawnTest"]
 custom_minimum_size = Vector2(0, 60)
 layout_mode = 2
 text = "Testing"
 horizontal_alignment = 1
 vertical_alignment = 1
 
-[node name="HBoxContainer3" type="HBoxContainer" parent="TabContainer/SpawnTest"]
+[node name="Status" type="HBoxContainer" parent="UI/HBoxContainer/Tabs/SpawnTest"]
 layout_mode = 2
 alignment = 1
 
-[node name="ClientStatus" parent="TabContainer/SpawnTest/HBoxContainer3" instance=ExtResource("2_0xm2m")]
+[node name="ClientStatus" parent="UI/HBoxContainer/Tabs/SpawnTest/Status" instance=ExtResource("2_0xm2m")]
+unique_name_in_owner = true
+layout_mode = 2
+type_name = "Client"
+
+[node name="ProviderStatus" parent="UI/HBoxContainer/Tabs/SpawnTest/Status" instance=ExtResource("2_0xm2m")]
+unique_name_in_owner = true
+layout_mode = 2
+type_name = "Provider"
+
+[node name="ControllerAccountStatus" parent="UI/HBoxContainer/Tabs/SpawnTest/Status" instance=ExtResource("2_0xm2m")]
+unique_name_in_owner = true
+layout_mode = 2
+type_name = "Controller"
+
+[node name="AccountStatus" parent="UI/HBoxContainer/Tabs/SpawnTest/Status" instance=ExtResource("2_0xm2m")]
+unique_name_in_owner = true
+layout_mode = 2
+type_name = "Account"
+
+[node name="SuscriptionStatus" parent="UI/HBoxContainer/Tabs/SpawnTest/Status" instance=ExtResource("2_0xm2m")]
+unique_name_in_owner = true
+layout_mode = 2
+type_name = "Suscription"
+
+[node name="HBoxContainer" type="HBoxContainer" parent="UI/HBoxContainer/Tabs/SpawnTest"]
 layout_mode = 2
 
-[node name="ProviderStatus" type="HBoxContainer" parent="TabContainer/SpawnTest/HBoxContainer3"]
-layout_mode = 2
-size_flags_horizontal = 3
-alignment = 1
-
-[node name="Type" type="Label" parent="TabContainer/SpawnTest/HBoxContainer3/ProviderStatus"]
-layout_mode = 2
-text = "Provider"
-
-[node name="Status" type="ColorRect" parent="TabContainer/SpawnTest/HBoxContainer3/ProviderStatus"]
-custom_minimum_size = Vector2(30, 30)
-layout_mode = 2
-color = Color(1, 0, 0, 1)
-
-[node name="ControllerAccountStatus" type="HBoxContainer" parent="TabContainer/SpawnTest/HBoxContainer3"]
-layout_mode = 2
-size_flags_horizontal = 3
-alignment = 1
-
-[node name="Type" type="Label" parent="TabContainer/SpawnTest/HBoxContainer3/ControllerAccountStatus"]
-layout_mode = 2
-text = "Controller Account"
-
-[node name="Status" type="ColorRect" parent="TabContainer/SpawnTest/HBoxContainer3/ControllerAccountStatus"]
-custom_minimum_size = Vector2(30, 30)
-layout_mode = 2
-color = Color(1, 0, 0, 1)
-
-[node name="AccountStatus" type="HBoxContainer" parent="TabContainer/SpawnTest/HBoxContainer3"]
-layout_mode = 2
-size_flags_horizontal = 3
-alignment = 1
-
-[node name="Type" type="Label" parent="TabContainer/SpawnTest/HBoxContainer3/AccountStatus"]
-layout_mode = 2
-text = "Account"
-
-[node name="Status" type="ColorRect" parent="TabContainer/SpawnTest/HBoxContainer3/AccountStatus"]
-custom_minimum_size = Vector2(30, 30)
-layout_mode = 2
-color = Color(1, 0, 0, 1)
-
-[node name="SuscriptionStatus" type="HBoxContainer" parent="TabContainer/SpawnTest/HBoxContainer3"]
-layout_mode = 2
-size_flags_horizontal = 3
-alignment = 1
-
-[node name="Type" type="Label" parent="TabContainer/SpawnTest/HBoxContainer3/SuscriptionStatus"]
-layout_mode = 2
-text = "Subscribed"
-
-[node name="Status" type="ColorRect" parent="TabContainer/SpawnTest/HBoxContainer3/SuscriptionStatus"]
-custom_minimum_size = Vector2(30, 30)
-layout_mode = 2
-color = Color(1, 0, 0, 1)
-
-[node name="HBoxContainer" type="HBoxContainer" parent="TabContainer/SpawnTest"]
-layout_mode = 2
-
-[node name="Label" type="Label" parent="TabContainer/SpawnTest/HBoxContainer"]
+[node name="Label" type="Label" parent="UI/HBoxContainer/Tabs/SpawnTest/HBoxContainer"]
 layout_mode = 2
 text = "Esto crea el provider y registra la cuenta con las prefundadas de Katana y registra el callback"
 
-[node name="Testing" type="Button" parent="TabContainer/SpawnTest/HBoxContainer"]
+[node name="Testing" type="Button" parent="UI/HBoxContainer/Tabs/SpawnTest/HBoxContainer"]
 layout_mode = 2
 size_flags_horizontal = 3
 text = "Testing"
 
-[node name="Events" type="VBoxContainer" parent="TabContainer/SpawnTest"]
+[node name="Events" type="VBoxContainer" parent="UI/HBoxContainer/Tabs/SpawnTest"]
 layout_mode = 2
 alignment = 1
 
-[node name="Label" type="Label" parent="TabContainer/SpawnTest/Events"]
+[node name="Label" type="Label" parent="UI/HBoxContainer/Tabs/SpawnTest/Events"]
 layout_mode = 2
 text = "Eventos"
 horizontal_alignment = 1
 vertical_alignment = 1
 
-[node name="Spawn" type="Button" parent="TabContainer/SpawnTest/Events"]
+[node name="Spawn" type="Button" parent="UI/HBoxContainer/Tabs/SpawnTest/Events"]
 layout_mode = 2
 size_flags_horizontal = 3
 text = "SPAWN"
 
-[node name="Move" type="Button" parent="TabContainer/SpawnTest/Events"]
+[node name="Move" type="Button" parent="UI/HBoxContainer/Tabs/SpawnTest/Events"]
 layout_mode = 2
 text = "MOVE"
 
-[node name="Label" type="Label" parent="TabContainer/SpawnTest"]
+[node name="Label" type="Label" parent="UI/HBoxContainer/Tabs/SpawnTest"]
 layout_mode = 2
 text = "--Spawn Output--"
 horizontal_alignment = 1
 vertical_alignment = 1
 
-[node name="ScrollContainer" type="ScrollContainer" parent="TabContainer/SpawnTest"]
+[node name="ScrollContainer" type="ScrollContainer" parent="UI/HBoxContainer/Tabs/SpawnTest"]
 layout_mode = 2
 size_flags_vertical = 3
 
-[node name="SpawnOutput" type="RichTextLabel" parent="TabContainer/SpawnTest/ScrollContainer"]
+[node name="SpawnOutput" type="RichTextLabel" parent="UI/HBoxContainer/Tabs/SpawnTest/ScrollContainer"]
+unique_name_in_owner = true
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 3
 bbcode_enabled = true
 
-[node name="WIP tests" type="VBoxContainer" parent="TabContainer"]
+[node name="WIPTests" type="VBoxContainer" parent="UI/HBoxContainer/Tabs"]
+visible = false
 layout_mode = 2
 size_flags_horizontal = 3
 metadata/_tab_index = 1
 
-[node name="Label" type="Label" parent="TabContainer/WIP tests"]
+[node name="Label" type="Label" parent="UI/HBoxContainer/Tabs/WIPTests"]
 layout_mode = 2
 text = "Orden de botones: Suscribe -> Controller
 Login con passkey, en caso de que no sea chromium based el navegador:
@@ -154,54 +152,61 @@ BitWarden(extension navegador) funciona para generar y loguearse"
 horizontal_alignment = 1
 vertical_alignment = 1
 
-[node name="WorldClientLabel" type="Label" parent="TabContainer/WIP tests"]
+[node name="WorldClientLabel" type="Label" parent="UI/HBoxContainer/Tabs/WIPTests"]
 layout_mode = 2
 text = "World Client"
 horizontal_alignment = 1
 
-[node name="Subcribe" type="Button" parent="TabContainer/WIP tests"]
+[node name="Subcribe" type="Button" parent="UI/HBoxContainer/Tabs/WIPTests"]
 layout_mode = 2
 text = "Suscribe"
 
-[node name="Status" type="Label" parent="TabContainer/WIP tests"]
+[node name="Status" type="Label" parent="UI/HBoxContainer/Tabs/WIPTests"]
+unique_name_in_owner = true
 layout_mode = 2
 size_flags_vertical = 0
 label_settings = SubResource("LabelSettings_ig7tw")
 
-[node name="InputWorldAddr" type="TextEdit" parent="TabContainer/WIP tests"]
+[node name="InputWorldAddr" type="TextEdit" parent="UI/HBoxContainer/Tabs/WIPTests"]
+unique_name_in_owner = true
 custom_minimum_size = Vector2(0, 100)
 layout_mode = 2
 placeholder_text = "WORLD ADDR"
 
-[node name="BtnStartClient" type="Button" parent="TabContainer/WIP tests"]
+[node name="BtnStartClient" type="Button" parent="UI/HBoxContainer/Tabs/WIPTests"]
 layout_mode = 2
 text = "Connect"
 
-[node name="InputController" type="TextEdit" parent="TabContainer/WIP tests"]
+[node name="InputController" type="TextEdit" parent="UI/HBoxContainer/Tabs/WIPTests"]
+unique_name_in_owner = true
 custom_minimum_size = Vector2(0, 100)
 layout_mode = 2
 placeholder_text = "ControllerADDR"
 
-[node name="ConnectController" type="Button" parent="TabContainer/WIP tests"]
+[node name="ConnectController" type="Button" parent="UI/HBoxContainer/Tabs/WIPTests"]
 layout_mode = 2
 text = "Controller"
 
-[node name="Chat" type="VBoxContainer" parent="TabContainer"]
+[node name="Chat" type="VBoxContainer" parent="UI/HBoxContainer/Tabs"]
 visible = false
+custom_minimum_size = Vector2(500, 200)
 layout_mode = 2
 metadata/_tab_index = 2
 
-[node name="ChatBox" type="TextEdit" parent="TabContainer/Chat"]
+[node name="ChatBox" type="TextEdit" parent="UI/HBoxContainer/Tabs/Chat"]
+unique_name_in_owner = true
 custom_minimum_size = Vector2(0, 200)
 layout_mode = 2
 
 [node name="Sprite2D" type="Sprite2D" parent="."]
-position = Vector2(-312, 295)
+position = Vector2(640, 384)
+scale = Vector2(0.5, 0.5)
 texture = ExtResource("3_h2yge")
 
-[connection signal="pressed" from="TabContainer/SpawnTest/HBoxContainer/Testing" to="." method="_on_testing_pressed"]
-[connection signal="pressed" from="TabContainer/SpawnTest/Events/Spawn" to="." method="_on_spawn_pressed"]
-[connection signal="pressed" from="TabContainer/SpawnTest/Events/Move" to="." method="_on_move_pressed"]
-[connection signal="pressed" from="TabContainer/WIP tests/Subcribe" to="." method="_on_subcribe_pressed"]
-[connection signal="pressed" from="TabContainer/WIP tests/BtnStartClient" to="." method="_on_button_pressed"]
-[connection signal="pressed" from="TabContainer/WIP tests/ConnectController" to="." method="_on_connect_controller_pressed"]
+[connection signal="toggled" from="UI/HBoxContainer/ButtonToggle" to="." method="_on_button_toggle_toggled"]
+[connection signal="pressed" from="UI/HBoxContainer/Tabs/SpawnTest/HBoxContainer/Testing" to="." method="_on_testing_pressed"]
+[connection signal="pressed" from="UI/HBoxContainer/Tabs/SpawnTest/Events/Spawn" to="." method="_on_spawn_pressed"]
+[connection signal="pressed" from="UI/HBoxContainer/Tabs/SpawnTest/Events/Move" to="." method="_on_move_pressed"]
+[connection signal="pressed" from="UI/HBoxContainer/Tabs/WIPTests/Subcribe" to="." method="_on_subcribe_pressed"]
+[connection signal="pressed" from="UI/HBoxContainer/Tabs/WIPTests/BtnStartClient" to="." method="_on_button_pressed"]
+[connection signal="pressed" from="UI/HBoxContainer/Tabs/WIPTests/ConnectController" to="." method="_on_connect_controller_pressed"]

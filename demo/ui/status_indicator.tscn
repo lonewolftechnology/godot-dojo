@@ -1,8 +1,11 @@
-[gd_scene format=3 uid="uid://b5vmo8llucetx"]
+[gd_scene load_steps=2 format=3 uid="uid://b5vmo8llucetx"]
+
+[ext_resource type="Script" uid="uid://bgryhwe5twsaf" path="res://ui/status_indicator.gd" id="1_22gwk"]
 
 [node name="StatusIndicator" type="HBoxContainer"]
 size_flags_horizontal = 3
 alignment = 1
+script = ExtResource("1_22gwk")
 
 [node name="Type" type="Label" parent="."]
 layout_mode = 2
