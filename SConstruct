@@ -29,6 +29,11 @@ rust_target = ""
 
 # Platform specifics
 if env['platform'] == "windows":
+    # Con msvc, todo es dojo_c
+    # Con mingw (linux, no probe en windows) es dojo_c para el dll
+    # el resto es libdojo_c
+    rust_libname = rust_libname[3:]
+
     if env.get("is_msvc", False):
         rust_target = "x86_64-pc-windows-msvc"
         rust_libname = rust_libname.replace(".dll", ".lib")
@@ -40,7 +45,6 @@ if env['platform'] == "windows":
             ]
         )
     else:
-        rust_libname = rust_libname[3:]
         # rust_libname = rust_libname.replace(".dll", ".dll.a")
         rust_target = "x86_64-pc-windows-gnu"
 
