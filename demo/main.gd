@@ -15,6 +15,7 @@ const dev_actions_addr = "0x00a92391c5bcde7af4bad5fd0fff3834395b1ab8055a9abb8387
 @onready var spawn_output: RichTextLabel = $TabContainer/SpawnTest/ScrollContainer/SpawnOutput
 @onready var controller_account_status: HBoxContainer = $TabContainer/SpawnTest/HBoxContainer3/ControllerAccountStatus
 @onready var sprite_2d: Sprite2D = $Sprite2D
+@onready var chat_box: TextEdit = $TabContainer/Chat/ChatBox
 
 @export_global_file("*.json") var dojo_abi: String
 
@@ -59,8 +60,7 @@ func callable_test(args:Array):
 		await get_tree().process_frame
 		await get_tree().process_frame
 		await get_tree().process_frame
-		var vector = Vector2(vec['x'], vec['y'])
-		sprite_2d.position = vector
+		sprite_2d.position = args[1]
 		#spawn_output.call_deferred("append_text", vector)
 		#spawn_output.call_deferred("newline")
 	prints("AAAAAAAAAAAAAA\n")
@@ -122,3 +122,6 @@ func _input(event: InputEvent) -> void:
 		dojo.move(direction,false)
 		count+=1
 		print(count)
+	if event.is_action("ui_accept"):
+		if chat_box.visible and not chat_box.text.is_empty():
+			dojo.send_message(chat_box.text)

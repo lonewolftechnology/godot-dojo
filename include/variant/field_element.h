@@ -32,6 +32,7 @@ public:
 
 
     dojo_bindings::FieldElement* get_felt() const { return felt; }
+    dojo_bindings::FieldElement get_felt_no_ptr() const { return *felt; }
 
 protected:
     dojo_bindings::FieldElement* felt = new dojo_bindings::FieldElement();

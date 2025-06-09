@@ -5,9 +5,11 @@
 
 #include <godot_cpp/classes/engine.hpp>
 #include <godot_cpp/classes/os.hpp>
+#include <godot_cpp/classes/json.hpp>
 #include <godot_cpp/core/class_db.hpp>
 
 #include <debug_macros.h>
+#include <unistd.h>
 #include <variant/primitive.h>
 
 
@@ -18,6 +20,8 @@ dojo_bindings::ControllerAccount* session_account;
 dojo_bindings::Provider* controller_provider;
 dojo_bindings::Account* account;
 dojo_bindings::FieldElement* actions;
+dojo_bindings::FieldElement priv;
+
 void DojoC::_bind_methods()
 {
     ClassDB::bind_method(D_METHOD("set_enabled", "p_enabled"), &DojoC::set_enabled);
@@ -37,16 +41,17 @@ void DojoC::_bind_methods()
 
     // ClassDB::bind_method(D_METHOD("client_new"), &DojoC::client_new);
     ClassDB::bind_method(
-        D_METHOD("create_client", "p_world", "p_torii_url", "p_relay_url"),
+        D_METHOD("create_client", "p_world", "p_torii_url"),
         &DojoC::create_client,
-        DEFVAL("http://localhost:8080"),
-        DEFVAL("/ip4/127.0.0.1/tcp/9090"));
+        DEFVAL("http://localhost:8080")
+        );
     // ClassDB::bind_method(D_METHOD("controller_connect"), &DojoC::controller_connect);
     ADD_PROPERTY(PropertyInfo(Variant::BOOL, "is_enabled"), "set_enabled", "get_enabled");
 
     ClassDB::bind_method(D_METHOD("get_message"), &DojoC::get_output_message);
     ClassDB::bind_method(D_METHOD("set_message", "p_message"), &DojoC::set_output_message);
 
+    ClassDB::bind_method(D_METHOD("send_message", "p_message"), &DojoC::send_message);
 
     ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "output_message", PROPERTY_HINT_ARRAY_TYPE), "set_message",
                  "get_message");
@@ -76,7 +81,7 @@ DojoC::DojoC()
     enabled = true;
     controller_provider = nullptr;
     account = nullptr;
-    FieldElement action_felt{"0x00a92391c5bcde7af4bad5fd0fff3834395b1ab8055a9abb8387c0e050a34edf",32};
+    FieldElement action_felt{"0x00a92391c5bcde7af4bad5fd0fff3834395b1ab8055a9abb8387c0e050a34edf", 32};
     actions = action_felt.get_felt();
 }
 
@@ -90,6 +95,7 @@ DojoC::~DojoC()
     // Add your cleanup here.
     singleton = nullptr;
 }
+
 void print_felt(String fname, const dojo_bindings::FieldElement felt)
 {
     dojo_bindings::Resultc_char testing = dojo_bindings::parse_cairo_short_string(felt);
@@ -102,21 +108,19 @@ void print_felt(String fname, const dojo_bindings::FieldElement felt)
         LOG_SUCCESS("Felt:", fname, testing.ok);
     }
 }
+
 // que devuelva un msg es testing, no deberia devolver nada
 void DojoC::create_client(const String& world_addr,
-                          String torii_url = "http://localhost:8080",
-                          String relay_url = "/ip4/127.0.0.1/tcp/9090")
+                          String torii_url = "http://localhost:8080")
 {
     UtilityFunctions::print("Attempting to create client...");
 
     FieldElement world = {world_addr, 32};
 
     LOG_INFO("RPC Endpoint: ", torii_url);
-    LOG_INFO("World Endpoint: ", relay_url);
 
     dojo_bindings::ResultToriiClient resClient = dojo_bindings::client_new(
         torii_url.utf8().get_data(),
-        relay_url.utf8().get_data(),
         *world.get_felt());
 
     if (resClient.tag == dojo_bindings::ErrToriiClient)
@@ -148,7 +152,6 @@ void client_metadata()
         LOG_SUCCESS("Metadata creado");
     }
     dojo_bindings::WorldMetadata metadata = resMetadata.ok;
-
     std::vector<dojo_bindings::CHashItemFieldElementModelMetadata> feltmetadata(
         metadata.models.data, metadata.models.data + metadata.models.data_len);
 
@@ -218,7 +221,7 @@ void client_metadata()
 void on_account(dojo_bindings::ControllerAccount* account)
 {
     // Implementar
-    LOG_SUCCESS("on_account callback Triggered");
+    LOG_SUCCESS("Account Data received");
     session_account = account;
     DojoC::get_singleton()->call_deferred("emit_signal", "controller_account_status_updated", true);
 }
@@ -266,39 +269,39 @@ void DojoC::controller_new(const String& controller_addr,
     {
         LOG_INFO("Session account not connected, connecting...");
         dojo_bindings::controller_connect(rpc_url.utf8().get_data(), policies, policies_len, on_account);
-
     }
     while (session_account == nullptr)
     {
         OS::get_singleton()->delay_msec(1000); // Sleep for 100 ms to avoid busy waiting
     }
-    print_felt("chain ID ",dojo_bindings::controller_chain_id(session_account));
+    print_felt("chain ID ", dojo_bindings::controller_chain_id(session_account));
     FieldElement private_key = {"0x14d6672dcb4b77ca36a887e9a11cd9d637d5012468175829e9c6e770c61642"};
+    priv = private_key.get_felt_no_ptr();
     dojo_bindings::FieldElement res_addr = dojo_bindings::controller_address(session_account);
     FieldElement account_addr = {&res_addr};
 
-    UtilityFunctions::print_rich("[color=RED]----------ACCOUNT---------");
+    // UtilityFunctions::print_rich("[color=RED]----------ACCOUNT---------");
 
     // // dojo_bindings::ResultFieldElement resExecute = dojo_bindings::controller_execute_raw();
     // std::vector<dojo_bindings::Controller> controllerList(data, data + data_len);
 
-    dojo_bindings::ResultAccount resultAccount = dojo_bindings::account_new(
-        controller_provider, *private_key.get_felt(),
-        account_addr.to_string_c_str());
-    if (resultAccount.tag == dojo_bindings::ErrAccount)
-    {
-        UtilityFunctions::printerr("Error: ", resultAccount.err.message);
-        // UtilityFunctions::push_error("Error: ", resultAccount.err.message);
-        emit_signal("account_status_updated", false);
-
-        return;
-    }
-    else
-    {
-        UtilityFunctions::print_rich("[color=Green]Account created.");
-        account = resultAccount.ok;
-        emit_signal("account_status_updated", true);
-    }
+    // dojo_bindings::ResultAccount resultAccount = dojo_bindings::account_new(
+    //     controller_provider, *private_key.get_felt(),
+    //     account_addr.to_string_c_str());
+    // if (resultAccount.tag == dojo_bindings::ErrAccount)
+    // {
+    //     UtilityFunctions::printerr("Error: ", resultAccount.err.message);
+    //     // UtilityFunctions::push_error("Error: ", resultAccount.err.message);
+    //     emit_signal("account_status_updated", false);
+    //
+    //     return;
+    // }
+    // else
+    // {
+    //     UtilityFunctions::print_rich("[color=Green]Account created.");
+    //     account = resultAccount.ok;
+    //     emit_signal("account_status_updated", true);
+    // }
 }
 
 void subscription_callback(dojo_bindings::Event event)
@@ -419,8 +422,6 @@ void on_event_update(dojo_bindings::FieldElement entity_id, dojo_bindings::CArra
 }
 
 
-
-
 void DojoC::testing()
 {
     const char* rpc_url = "http://localhost:5050";
@@ -438,7 +439,7 @@ void DojoC::testing()
     // string_to_bytes("0x4b4154414e41", katana.data, 32);
 
     dojo_bindings::ToriiClient* client;
-    dojo_bindings::ResultToriiClient resClient = dojo_bindings::client_new(torii_url, relay_url, *world.get_felt());
+    dojo_bindings::ResultToriiClient resClient = dojo_bindings::client_new(torii_url, *world.get_felt());
     if (resClient.tag == dojo_bindings::ErrToriiClient)
     {
         UtilityFunctions::printerr("Error: ", resClient.err.message);
@@ -575,7 +576,7 @@ void DojoC::create_entity_subscription(Callable callback)
 
     event_clause.tag = dojo_bindings::NoneClause;
     event_subscription->set_callback(callback);
-    dojo_bindings::ResultSubscription resEvent = dojo_bindings::client_on_entity_state_update(
+    dojo_bindings::ResultSubscription resEvent = dojo_bindings::client_on_event_message_update(
         client, event_clause, event_wrapper);
     if (resEvent.tag == dojo_bindings::ErrSubscription)
     {
@@ -649,7 +650,8 @@ void DojoC::spawn(bool _debug = false)
         }
         LOG_INFO("USERNAME ", dojo_bindings::controller_username(session_account));
         // dojo_bindings::account_set_block_id(session_account, block_id);
-        dojo_bindings::ResultFieldElement result = dojo_bindings::controller_execute_from_outside(session_account, &spawn, 1);
+        dojo_bindings::ResultFieldElement result = dojo_bindings::controller_execute_from_outside(
+            session_account, &spawn, 1);
         if (result.tag == dojo_bindings::ErrFieldElement)
         {
             LOG_ERROR(spawn.selector, " Failed: ", result.err.message);
@@ -689,8 +691,7 @@ void DojoC::move(const Ref<FieldElement> ref_felt, const bool _debug = false)
             LOG_ERROR("Account not initialized.");
             return;
         }
-    account_execute_raw(&move, 1);
-
+        account_execute_raw(&move, 1);
     }
     else
     {
@@ -701,7 +702,8 @@ void DojoC::move(const Ref<FieldElement> ref_felt, const bool _debug = false)
         }
         LOG_INFO("USERNAME ", dojo_bindings::controller_username(session_account));
         // dojo_bindings::account_set_block_id(session_account, block_id);
-        dojo_bindings::ResultFieldElement result = dojo_bindings::controller_execute_from_outside(session_account, &move, 1);
+        dojo_bindings::ResultFieldElement result = dojo_bindings::controller_execute_from_outside(
+            session_account, &move, 1);
         if (result.tag == dojo_bindings::ErrFieldElement)
         {
             LOG_ERROR(move.selector, " Failed: ", result.err.message);
@@ -712,4 +714,58 @@ void DojoC::move(const Ref<FieldElement> ref_felt, const bool _debug = false)
             LOG_SUCCESS(move.selector);
         }
     }
+}
+
+void DojoC::send_message(const String& _msg)
+{
+    dojo_bindings::FieldElement acc = dojo_bindings::controller_address(session_account);
+    FieldElement account_address = {&acc};
+    Dictionary typed_data = {};
+    typed_data["identity"] = account_address.as_packed_array();
+    typed_data["message"] = _msg;
+    typed_data["channel"] = FieldElement(0).as_packed_array();
+    typed_data["salt"] = FieldElement(35).as_packed_array();
+
+    String json_data = JSON::stringify(typed_data);
+
+    dojo_bindings::ResultFieldElement hash = dojo_bindings::cairo_short_string_to_felt("lawea");
+    if (hash.tag == dojo_bindings::ErrFieldElement)
+    {
+        LOG_ERROR("Failed to convert message to felt: ", hash.err.message);
+        return;
+    }
+    LOG_INFO("Message hash: ", field_element_to_hex(hash.ok));
+    dojo_bindings::ResultSignature signature = dojo_bindings::signing_key_sign(
+        dojo_bindings::signing_key_new(),
+        hash.ok);
+    if (signature.tag == dojo_bindings::ErrSignature)
+    {
+        LOG_ERROR("Failed to sign message: ", signature.err.message);
+        return;
+    }
+    LOG_INFO("Signature: ", field_element_to_hex(signature.ok.r));
+    LOG_INFO("Signature: ", field_element_to_hex(signature.ok.s));
+    dojo_bindings::FieldElement signature_felts[] = {
+        {signature.ok.r},
+        {signature.ok.s}
+    };
+    LOG_INFO("Signature felts");
+    dojo_bindings::ResultFieldElement result = dojo_bindings::client_publish_message(
+        client,
+        json_data.utf8().get_data(),
+        signature_felts,
+        2
+        );
+
+    if (result.tag == dojo_bindings::ErrFieldElement)
+    {
+        LOG_ERROR("Failed to publish message: ", result.err.message);
+        return;
+    } else
+    {
+        LOG_SUCCESS("Message published.");
+        FieldElement felt_result = {&result.ok};
+        LOG_INFO(felt_result.to_string());
+    }
+    LOG_INFO("FINISHED");
 }

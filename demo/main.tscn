@@ -17,9 +17,10 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
-current_tab = 0
+current_tab = 1
 
 [node name="SpawnTest" type="VBoxContainer" parent="TabContainer"]
+visible = false
 layout_mode = 2
 metadata/_tab_index = 0
 
@@ -141,10 +142,17 @@ size_flags_vertical = 3
 bbcode_enabled = true
 
 [node name="WIP tests" type="VBoxContainer" parent="TabContainer"]
-visible = false
 layout_mode = 2
 size_flags_horizontal = 3
 metadata/_tab_index = 1
+
+[node name="Label" type="Label" parent="TabContainer/WIP tests"]
+layout_mode = 2
+text = "Orden de botones: Suscribe -> Controller
+Login con passkey, en caso de que no sea chromium based el navegador:
+BitWarden(extension navegador) funciona para generar y loguearse"
+horizontal_alignment = 1
+vertical_alignment = 1
 
 [node name="WorldClientLabel" type="Label" parent="TabContainer/WIP tests"]
 layout_mode = 2
@@ -177,6 +185,15 @@ placeholder_text = "ControllerADDR"
 [node name="ConnectController" type="Button" parent="TabContainer/WIP tests"]
 layout_mode = 2
 text = "Controller"
+
+[node name="Chat" type="VBoxContainer" parent="TabContainer"]
+visible = false
+layout_mode = 2
+metadata/_tab_index = 2
+
+[node name="ChatBox" type="TextEdit" parent="TabContainer/Chat"]
+custom_minimum_size = Vector2(0, 200)
+layout_mode = 2
 
 [node name="Sprite2D" type="Sprite2D" parent="."]
 position = Vector2(-312, 295)

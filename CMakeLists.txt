@@ -7,6 +7,7 @@ set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 set(CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake" ${CMAKE_MODULE_PATH})
 
+
 ########################################################################################################################
 
 # Project setup
@@ -51,7 +52,7 @@ include(FetchContent)
 FetchContent_Declare(
         dojoc
         GIT_REPOSITORY https://github.com/dojoengine/dojo.c.git
-        GIT_TAG v1.5.5
+        GIT_TAG v1.5.7
 )
 FetchContent_MakeAvailable(dojoc)
 ########################################################################################################################

@@ -46,7 +46,7 @@ void DojoPrimitive::_bind_methods()
 
 DojoPrimitive::DojoPrimitive()
 {
-    UtilityFunctions::print("Primitive constructor called");
+    LOG_DEBUG("Primitive constructor called");
 }
 
 PackedByteArray DataArrayToPackedByteArray(const void* data, const int size = 32)
@@ -54,14 +54,11 @@ PackedByteArray DataArrayToPackedByteArray(const void* data, const int size = 32
     PackedByteArray _bytes;
     _bytes.resize(size);
     memcpy(_bytes.ptrw(), data, size);
-    UtilityFunctions::print_rich("[color=Green]Conversion ", _bytes.hex_encode());
     return _bytes;
 }
 
 DojoPrimitive::DojoPrimitive(const dojo_bindings::Primitive& primitive)
 {
-    UtilityFunctions::print_rich("[color=Red]Primitive constructor called ");
-    UtilityFunctions::print_rich("Primitive is[color=GREEN] ", PrimitiveTagToString(primitive.tag));
     switch (primitive.tag)
     {
     case Tag::I8:
@@ -126,14 +123,14 @@ DojoPrimitive::DojoPrimitive(const dojo_bindings::Primitive& primitive)
     }
 }
 
-DojoPrimitive::DojoPrimitive(const dojo_bindings::FieldElement field_element)
-{
-    UtilityFunctions::print_rich("[color=Red]------------FIELD ELEMENT------------ ");
-    value = DataArrayToPackedByteArray(field_element.data);
-    LOG_DEBUG(
-        "[color=Yellow]Primitive",
-        String(value),
-        "\n[color=Green]Type:",
-        Variant::get_type_name(value.get_type())
-    );
-}
+// DojoPrimitive::DojoPrimitive(const dojo_bindings::FieldElement field_element)
+// {
+//     UtilityFunctions::print_rich("[color=Red]------------FIELD ELEMENT------------ ");
+//     value = DataArrayToPackedByteArray(field_element.data);
+//     LOG_DEBUG(
+//         "[color=Yellow]Primitive",
+//         String(value),
+//         "\n[color=Green]Type:",
+//         Variant::get_type_name(value.get_type())
+//     );
+// }
