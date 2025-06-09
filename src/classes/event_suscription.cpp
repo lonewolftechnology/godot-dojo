@@ -14,7 +14,7 @@ EventSubscription::~EventSubscription()
 {
 }
 
-void EventSubscription::on_entity_update(dojo_bindings::FieldElement* entity_id, dojo_bindings::CArrayStruct models)
+void EventSubscription::on_entity_update(dojo_bindings::FieldElement* entity_id, dojo_bindings::CArrayStruct models) const
 {
     LOG_INFO("Entity Update Event Received");
     if (callback.is_null())
@@ -97,7 +97,7 @@ void EventSubscription::on_entity_update(dojo_bindings::FieldElement* entity_id,
 
 
             }
-            arguments.append(vec2);
+            arguments.append(Vector2(vec2['x'], vec2['y']));
         }
         else if (member.ty->tag == dojo_bindings::Ty_Tag::Array_)
         {

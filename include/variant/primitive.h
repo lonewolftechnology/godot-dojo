@@ -26,7 +26,6 @@ public:
     static const char* PrimitiveTagToString(int value);
     DojoPrimitive();
     DojoPrimitive(const dojo_bindings::Primitive &primitive);
-    DojoPrimitive(const dojo_bindings::FieldElement field_element);
 
     Variant get_value() const { return value; }
     void set_value(const Variant &p_value) { value = p_value; }

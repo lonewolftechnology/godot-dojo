@@ -37,7 +37,7 @@ using namespace godot;
             LOG_INFO("Callback Received");
         }
 
-        void on_entity_update(dojo_bindings::FieldElement* entity_id, dojo_bindings::CArrayStruct models);
+        void on_entity_update(dojo_bindings::FieldElement* entity_id, dojo_bindings::CArrayStruct models) const;
         void set_subscription(dojo_bindings::Subscription* subscription) { this->subscription = subscription; }
     };
 
