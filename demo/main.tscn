@@ -1,16 +1,28 @@
-[gd_scene load_steps=7 format=3 uid="uid://buvlply3axqqi"]
+[gd_scene load_steps=17 format=3 uid="uid://buvlply3axqqi"]
 
 [ext_resource type="Script" uid="uid://ck323bl4c38kw" path="res://main.gd" id="1_ig7tw"]
 [ext_resource type="PackedScene" uid="uid://b5vmo8llucetx" path="res://ui/status_indicator.tscn" id="2_0xm2m"]
 [ext_resource type="Texture2D" uid="uid://blljslsxyx8em" path="res://assets/tile.png" id="2_1bvp3"]
 [ext_resource type="Texture2D" uid="uid://cpwiq4efrduji" path="res://icon.svg" id="3_h2yge"]
+[ext_resource type="Texture2D" uid="uid://bls0ryaavsbvd" path="res://assets/arrow_left.png" id="4_5vw27"]
+[ext_resource type="Texture2D" uid="uid://bqdfqrx7ajogy" path="res://assets/arrow_left_p.png" id="5_dg77c"]
+[ext_resource type="Texture2D" uid="uid://do4cgyej57yhs" path="res://assets/arrow_up.png" id="5_kek77"]
+[ext_resource type="Texture2D" uid="uid://dkh2t0psfn40h" path="res://assets/arrow_down.png" id="6_4c57u"]
+[ext_resource type="Texture2D" uid="uid://44dwfojqqvam" path="res://assets/arrow_right.png" id="7_efxa6"]
+[ext_resource type="Texture2D" uid="uid://d1cuwkkgp8hyv" path="res://assets/arrow_up_p.png" id="7_ycdy4"]
+[ext_resource type="Texture2D" uid="uid://bkiqp5xd7g5mf" path="res://assets/arrow_down_p.png" id="9_w48qg"]
+[ext_resource type="Texture2D" uid="uid://dn0lmukjhns5l" path="res://assets/arrow_right_p.png" id="11_vivmo"]
+[ext_resource type="Script" uid="uid://y62xiri5drum" path="res://player.gd" id="12_ycdy4"]
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_lquwl"]
 atlas = ExtResource("2_1bvp3")
-region = Rect2(0, 0, 1280, 720)
+region = Rect2(0, 48, 2560, 1440)
 
 [sub_resource type="LabelSettings" id="LabelSettings_ig7tw"]
 font_size = 36
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_w48qg"]
+bg_color = Color(0, 0, 0, 0.607843)
 
 [node name="Main" type="Node"]
 script = ExtResource("1_ig7tw")
@@ -43,14 +55,15 @@ layout_mode = 2
 size_flags_horizontal = 2
 size_flags_vertical = 0
 toggle_mode = true
-text = "*"
+text = "="
 
 [node name="Tabs" type="TabContainer" parent="UI/HBoxContainer"]
 unique_name_in_owner = true
 layout_mode = 2
-current_tab = 0
+current_tab = 1
 
 [node name="SpawnTest" type="VBoxContainer" parent="UI/HBoxContainer/Tabs"]
+visible = false
 layout_mode = 2
 metadata/_tab_index = 0
 
@@ -139,7 +152,6 @@ size_flags_vertical = 3
 bbcode_enabled = true
 
 [node name="WIPTests" type="VBoxContainer" parent="UI/HBoxContainer/Tabs"]
-visible = false
 layout_mode = 2
 size_flags_horizontal = 3
 metadata/_tab_index = 1
@@ -174,6 +186,7 @@ layout_mode = 2
 placeholder_text = "WORLD ADDR"
 
 [node name="BtnStartClient" type="Button" parent="UI/HBoxContainer/Tabs/WIPTests"]
+visible = false
 layout_mode = 2
 text = "Connect"
 
@@ -198,11 +211,77 @@ unique_name_in_owner = true
 custom_minimum_size = Vector2(0, 200)
 layout_mode = 2
 
-[node name="Sprite2D" type="Sprite2D" parent="."]
+[node name="Arrows" type="HBoxContainer" parent="UI"]
+texture_filter = 1
+anchors_preset = 7
+anchor_left = 0.5
+anchor_top = 1.0
+anchor_right = 0.5
+anchor_bottom = 1.0
+offset_left = -20.0
+offset_top = -40.0
+offset_right = 20.0
+grow_horizontal = 2
+grow_vertical = 0
+alignment = 2
+
+[node name="ArrowLeft" type="TextureButton" parent="UI/Arrows"]
+layout_mode = 2
+size_flags_vertical = 12
+texture_normal = ExtResource("4_5vw27")
+texture_pressed = ExtResource("5_dg77c")
+texture_hover = ExtResource("4_5vw27")
+
+[node name="VBoxContainer" type="VBoxContainer" parent="UI/Arrows"]
+layout_mode = 2
+alignment = 2
+
+[node name="ArrowUp" type="TextureButton" parent="UI/Arrows/VBoxContainer"]
+layout_mode = 2
+texture_normal = ExtResource("5_kek77")
+texture_pressed = ExtResource("7_ycdy4")
+texture_hover = ExtResource("5_kek77")
+
+[node name="ArrowDown" type="TextureButton" parent="UI/Arrows/VBoxContainer"]
+layout_mode = 2
+texture_normal = ExtResource("6_4c57u")
+texture_pressed = ExtResource("9_w48qg")
+texture_hover = ExtResource("6_4c57u")
+
+[node name="ArrowRight" type="TextureButton" parent="UI/Arrows"]
+layout_mode = 2
+size_flags_vertical = 12
+texture_normal = ExtResource("7_efxa6")
+texture_pressed = ExtResource("11_vivmo")
+texture_hover = ExtResource("7_efxa6")
+
+[node name="Camera2D" type="Camera2D" parent="."]
+
+[node name="Player" type="Node2D" parent="."]
 unique_name_in_owner = true
-position = Vector2(640, 384)
+script = ExtResource("12_ycdy4")
+
+[node name="Sprite2D" type="Sprite2D" parent="Player"]
 scale = Vector2(0.5, 0.5)
 texture = ExtResource("3_h2yge")
+
+[node name="Label" type="Label" parent="Player"]
+custom_minimum_size = Vector2(64, 32)
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -32.0
+offset_top = -16.0
+offset_right = 32.0
+offset_bottom = 16.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_styles/normal = SubResource("StyleBoxFlat_w48qg")
+text = "0x0"
+horizontal_alignment = 1
+vertical_alignment = 1
 
 [connection signal="toggled" from="UI/HBoxContainer/ButtonToggle" to="." method="_on_button_toggle_toggled"]
 [connection signal="pressed" from="UI/HBoxContainer/Tabs/SpawnTest/HBoxContainer/Testing" to="." method="_on_testing_pressed"]
@@ -211,3 +290,7 @@ texture = ExtResource("3_h2yge")
 [connection signal="pressed" from="UI/HBoxContainer/Tabs/WIPTests/Subcribe" to="." method="_on_subcribe_pressed"]
 [connection signal="pressed" from="UI/HBoxContainer/Tabs/WIPTests/BtnStartClient" to="." method="_on_button_pressed"]
 [connection signal="pressed" from="UI/HBoxContainer/Tabs/WIPTests/ConnectController" to="." method="_on_connect_controller_pressed"]
+[connection signal="pressed" from="UI/Arrows/ArrowLeft" to="." method="_on_arrow_left_pressed"]
+[connection signal="pressed" from="UI/Arrows/VBoxContainer/ArrowUp" to="." method="_on_arrow_up_pressed"]
+[connection signal="pressed" from="UI/Arrows/VBoxContainer/ArrowDown" to="." method="_on_arrow_down_pressed"]
+[connection signal="pressed" from="UI/Arrows/ArrowRight" to="." method="_on_arrow_right_pressed"]
