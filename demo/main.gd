@@ -1,13 +1,5 @@
 extends Node
 
-
-enum Directions{
-	LEFT = 0,
-	RIGHT = 1,
-	UP = 2,
-	DOWN = 3,
-}
-
 const STEP_SIZE := Vector2(64,64)
 
 const dev_world_addr = "0x07cb912d0029e3799c4b8f2253b21481b2ec814c5daf72de75164ca82e7c42a5"
@@ -25,9 +17,9 @@ const dev_actions_addr = "0x00a92391c5bcde7af4bad5fd0fff3834395b1ab8055a9abb8387
 @onready var suscription_status: HBoxContainer = %SuscriptionStatus
 @onready var spawn_output: RichTextLabel = %SpawnOutput
 @onready var controller_account_status: HBoxContainer = %ControllerAccountStatus
-@onready var player: Node2D = %Player
 @onready var chat_box: TextEdit = %ChatBox
 @onready var tabs: TabContainer = %Tabs
+@onready var player: Node2D = %Player
 
 @onready var button_toggle: Button = %ButtonToggle
 
@@ -60,10 +52,10 @@ func _ready() -> void:
 	
 
 func callable_test(args:Array):
-	prints("\nAAAAAAAAAAAAAA", args)
+	prints("Callable size:", args.size() ,"Result:",args)
 	if args.size() > 1:
 		var vec = args[1]
-		print("Args(1): ",args[1])
+		prints("Args(1):",args[1])
 		await get_tree().process_frame
 		await get_tree().process_frame
 		await get_tree().process_frame
@@ -71,6 +63,9 @@ func callable_test(args:Array):
 		player.position = args[1] * STEP_SIZE
 	prints("AAAAAAAAAAAAAA\n")
 
+func call_test(args:Array):
+	push_warning("adas", args)
+	
 func _on_button_pressed() -> void:
 	if input_world_addr.text.is_empty():
 		input_world_addr.text = dev_world_addr
@@ -81,7 +76,8 @@ func _on_subcribe_pressed() -> void:
 	await get_tree().create_timer(1).timeout
 	var callable:Callable = Callable(self, "callable_test")
 
-	dojo.create_entity_subscription(callable)
+	dojo.create_entity_subscription(call_test)
+	dojo.entity_subscription(callable)
 	
 func _on_connect_controller_pressed() -> void:
 	if input_controller.text.is_empty():
@@ -110,52 +106,24 @@ func _on_move_pressed() -> void:
 	var random_direction = FieldElement.from_enum(randi_range(0,3))
 	dojo.move(random_direction,false)
 	
-func _unhandled_input(event: InputEvent) -> void:
+func _input(event: InputEvent) -> void:
 	var direction:FieldElement
 	if event.is_action_pressed("ui_up"):
 		direction = FieldElement.from_enum(2)
-		get_viewport().set_input_as_handled()
 	if event.is_action_pressed("ui_down"):
 		direction = FieldElement.from_enum(3)
-		get_viewport().set_input_as_handled()
 	if event.is_action_pressed("ui_left"):
 		direction = FieldElement.from_enum(0)
-		get_viewport().set_input_as_handled()
 	if event.is_action_pressed("ui_right"):
 		direction = FieldElement.from_enum(1)
-		get_viewport().set_input_as_handled()
-	
 	if not direction == null:
 		dojo.move(direction,false)
 		count+=1
 		print(count)
-	
 	if event.is_action("ui_accept"):
-		get_viewport().set_input_as_handled()
-		if chat_box.is_visible_in_tree() and not chat_box.text.is_empty():
+		if chat_box.visible and not chat_box.text.is_empty():
 			dojo.send_message(chat_box.text)
 
 
 func _on_button_toggle_toggled(toggled_on: bool) -> void:
 	tabs.visible = toggled_on
-
-
-
-func _move(dir:Directions) -> void:
-	var direction:FieldElement
-	direction = FieldElement.from_enum(int(dir))
-	dojo.move(direction,false)
-	count += 1
-	
-
-func _on_arrow_left_pressed() -> void:
-	_move(Directions.LEFT)
-
-func _on_arrow_up_pressed() -> void:
-	_move(Directions.UP)
-
-func _on_arrow_down_pressed() -> void:
-	_move(Directions.DOWN)
-
-func _on_arrow_right_pressed() -> void:
-	_move(Directions.RIGHT)

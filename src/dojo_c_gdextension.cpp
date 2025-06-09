@@ -280,29 +280,6 @@ void DojoC::controller_new(const String& controller_addr,
     priv = private_key.get_felt_no_ptr();
     dojo_bindings::FieldElement res_addr = dojo_bindings::controller_address(session_account);
     FieldElement account_addr = {&res_addr};
-
-    // UtilityFunctions::print_rich("[color=RED]----------ACCOUNT---------");
-
-    // // dojo_bindings::ResultFieldElement resExecute = dojo_bindings::controller_execute_raw();
-    // std::vector<dojo_bindings::Controller> controllerList(data, data + data_len);
-
-    // dojo_bindings::ResultAccount resultAccount = dojo_bindings::account_new(
-    //     controller_provider, *private_key.get_felt(),
-    //     account_addr.to_string_c_str());
-    // if (resultAccount.tag == dojo_bindings::ErrAccount)
-    // {
-    //     UtilityFunctions::printerr("Error: ", resultAccount.err.message);
-    //     // UtilityFunctions::push_error("Error: ", resultAccount.err.message);
-    //     emit_signal("account_status_updated", false);
-    //
-    //     return;
-    // }
-    // else
-    // {
-    //     UtilityFunctions::print_rich("[color=Green]Account created.");
-    //     account = resultAccount.ok;
-    //     emit_signal("account_status_updated", true);
-    // }
 }
 
 void subscription_callback(dojo_bindings::Event event)
@@ -328,100 +305,6 @@ String field_element_to_hex(const dojo_bindings::FieldElement& fe)
 
     return ret;
 }
-
-void on_event_update_msg(const String& _msg)
-{
-    DojoC::get_singleton()->call_deferred("emit_signal", "event_update", _msg);
-    UtilityFunctions::print_rich(_msg);
-}
-
-void on_event_update(dojo_bindings::FieldElement entity_id, dojo_bindings::CArrayStruct models)
-{
-    // Implementar
-    Array result;
-    dojo_bindings::FieldElement nullFelt = {0, 0};
-    // string_to_bytes("0x0", nullFelt.data, 0);
-    UtilityFunctions::print_verbose("on_event_update callback Triggered.");
-    UtilityFunctions::prints("Entity ID", field_element_to_hex(entity_id));
-
-    if (field_element_to_hex(entity_id) == "0x00000000000000000000000000000000")
-    // if (&entity_id == &nullFelt)
-    {
-        UtilityFunctions::print("Entity ID is 0, WAITING");
-        // sleep(2);
-        return;
-    }
-
-    if (models.data == nullptr)
-    {
-        UtilityFunctions::print("models.data is null");
-        return;
-    }
-
-    if (models.data->children.data == nullptr)
-    {
-        UtilityFunctions::print("models.data->children.data is null");
-        return;
-    }
-
-    on_event_update_msg("[color=RED]START[/color]");
-    // Accede a models.data->children.data->ty de forma segura
-    on_event_update_msg(vformat("model name %s", models.data->name));
-    auto children = models.data->children;
-    //std::cout << "children.data_len: " << children.data_len << std::endl;
-    // std::cout << "children.data: " << children.data << std::endl;
-
-    // Convertir `CArrayMember` a `std::vector`
-    std::vector<dojo_bindings::Member> members(children.data, children.data + children.data_len);
-
-    // Iterar y procesar los elementos
-    for (const auto& member : members)
-    {
-        // Accede al miembro que necesites dependiendo de la estructura de `Member`.
-        std::cout << "----------------" << std::endl;
-        on_event_update_msg("[color=PERU]Procesando member... [/color]");
-        on_event_update_msg(vformat("member type: %s", typeid(member).name()));
-        on_event_update_msg(vformat("member.name: %s", member.name));
-
-        if (member.ty->tag == dojo_bindings::Ty_Tag::Primitive_)
-        {
-            on_event_update_msg("member_type is [color=YELLOW]Primitive[/color]");
-            dojo_bindings::Primitive primitive = member.ty->primitive;
-            DojoPrimitive _primitive = DojoPrimitive(primitive);
-            result.append(_primitive.get_value());
-        }
-        else if (member.ty->tag == dojo_bindings::Ty_Tag::Struct_)
-        {
-            on_event_update_msg("member_type is [color=YELLOW]Struct[/color]");
-            dojo_bindings::Struct struct_ = member.ty->struct_;
-            on_event_update_msg(vformat("[color=Peru]struct_name[/color] [color=YELLOW] %s [/color]", struct_.name));
-            std::vector<dojo_bindings::Member> struct_child(struct_.children.data,
-                                                            struct_.children.data + struct_.children.data_len);
-        }
-        else if (member.ty->tag == dojo_bindings::Ty_Tag::Array_)
-        {
-            on_event_update_msg("member_type is [color=YELLOW]CArrayTy[/color]");
-        }
-        else if (member.ty->tag == dojo_bindings::Ty_Tag::ByteArray)
-        {
-            on_event_update_msg("member_type is [color=YELLOW]ByteArray[/color]");
-        }
-        else if (member.ty->tag == dojo_bindings::Ty_Tag::Enum_)
-        {
-            on_event_update_msg("member_type is [color=YELLOW]Enum[/color]");
-            dojo_bindings::Enum enum_ = member.ty->enum_;
-            on_event_update_msg(vformat("enum_name [color=YELLOW]%s[/color]", enum_.name));
-            on_event_update_msg(vformat("enum_option [color=YELLOW]%s[/color]", enum_.option));
-        }
-        else if (member.ty->tag == dojo_bindings::Ty_Tag::Tuple_)
-        {
-            on_event_update_msg("member_type is [color=YELLOW]Tuple[/color]");
-        }
-
-        DojoC::get_singleton()->set_output_message(result);
-    }
-}
-
 
 void DojoC::testing()
 {
@@ -616,7 +499,7 @@ void DojoC::entity_subscription(Callable callback)
     if (resEntity.tag == dojo_bindings::ErrSubscription)
     {
         LOG_ERROR(resEntity.err.message);
-        // emit_signal("subscription_status_updated", false, "entity_subscription");
+        emit_signal("subscription_status_updated", false, "entity_subscription");
     }else
     {
         entity_subs->set_subscription(resEntity.ok);

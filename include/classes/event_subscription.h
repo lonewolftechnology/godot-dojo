@@ -21,23 +21,16 @@ using namespace godot;
 
 
     protected:
-        static void _bind_methods()
-        {
-            ADD_PROPERTY(PropertyInfo(Variant::CALLABLE, "callback", PROPERTY_HINT_RESOURCE_TYPE, "Callable"), "set_callback", "get_callback");
-        }
+        static void _bind_methods();
 
     public:
         EventSubscription();
         ~EventSubscription();
 
-        Callable get_callback() const { return callback; }
-        void set_callback(const Callable& p_callback)
-        {
-            callback = p_callback;
-            LOG_INFO("Callback Received");
-        }
+        Callable get_callback() const;
+        void set_callback(const Callable& p_callback);
 
-        void on_entity_update(dojo_bindings::FieldElement* entity_id, dojo_bindings::CArrayStruct models);
+        void on_entity_update(dojo_bindings::FieldElement* entity_id, dojo_bindings::CArrayStruct models) const;
         void set_subscription(dojo_bindings::Subscription* subscription) { this->subscription = subscription; }
     };
 

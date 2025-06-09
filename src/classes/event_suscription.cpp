@@ -2,10 +2,16 @@
 // Created by hazel on 5/06/25.
 //
 
+#include <complex>
 #include <classes/event_subscription.h>
 
 #include "variant/field_element.h"
 #include <variant/primitive.h>
+
+void EventSubscription::_bind_methods()
+{
+    // ADD_PROPERTY(PropertyInfo(Variant::CALLABLE, "callback", PROPERTY_HINT_RESOURCE_TYPE, "Callable"), "set_callback", "get_callback");
+}
 
 EventSubscription::EventSubscription()
 {
@@ -15,7 +21,17 @@ EventSubscription::~EventSubscription()
 {
 }
 
-void EventSubscription::on_entity_update(dojo_bindings::FieldElement* entity_id, dojo_bindings::CArrayStruct models)
+Callable EventSubscription::get_callback() const
+{ return callback; }
+
+void EventSubscription::set_callback(const Callable& p_callback)
+{
+    callback = p_callback;
+    LOG_INFO("Callback Received");
+}
+
+void EventSubscription::on_entity_update(dojo_bindings::FieldElement* entity_id,
+                                         dojo_bindings::CArrayStruct models) const
 {
     LOG_INFO("Entity Update Event Received");
     if (callback.is_null())
@@ -29,7 +45,7 @@ void EventSubscription::on_entity_update(dojo_bindings::FieldElement* entity_id,
         return;
     }
     FieldElement entity_felt = {entity_id};
-    Array arguments;
+    Array arguments = {};
     arguments.append(entity_felt.as_packed_array());
     FieldElement nulledFelt = {0};
     if (entity_felt.as_packed_array().hex_encode() == nulledFelt.as_packed_array().hex_encode())
@@ -52,7 +68,7 @@ void EventSubscription::on_entity_update(dojo_bindings::FieldElement* entity_id,
     //     return;
     // }
 
-    LOG_INFO("[color=RED]START[/color]");
+    LOG_INFO("[color=RED]START EVENT SUBSCRIPTION[/color]");
     // Accede a models.data->children.data->ty de forma segura
     LOG_INFO("model name ", models.data->name);
     auto children = models.data->children;
@@ -66,7 +82,7 @@ void EventSubscription::on_entity_update(dojo_bindings::FieldElement* entity_id,
     for (const auto& member : members)
     {
         // Accede al miembro que necesites dependiendo de la estructura de `Member`.
-        LOG_INFO("[color=PERU]Procesando member... [/color]");
+        LOG_INFO("[color=MAGENTA]Procesando member... [/color]");
         LOG_INFO("member type: %s", typeid(member).name());
         LOG_INFO("member.name: %s", member.name);
 
@@ -84,9 +100,11 @@ void EventSubscription::on_entity_update(dojo_bindings::FieldElement* entity_id,
             LOG_INFO("[color=Peru]struct_name[/color] [color=YELLOW]", struct_.name, "[/color]");
             std::vector<dojo_bindings::Member> struct_child(struct_.children.data,
                                                             struct_.children.data + struct_.children.data_len);
-            if (struct_.name == "Vec2")
+            String member_name = member.name;
+            LOG_DEBUG(member_name);
+            if (member_name == "vec")
             {
-                Dictionary vec2 = {};
+                Vector2 vec2 = {0,0};
                 for (const auto& struct_child_member : struct_child)
                 {
                     LOG_INFO("struct_child_member.name: ", struct_child_member.name);
@@ -94,11 +112,19 @@ void EventSubscription::on_entity_update(dojo_bindings::FieldElement* entity_id,
                     if (struct_child_member.ty->tag == dojo_bindings::Ty_Tag::Primitive_)
                     {
                         DojoPrimitive s_value = {struct_child_member.ty->primitive};
-                        vec2[struct_child_member.name] = s_value.get_value();
-                        LOG_INFO(struct_child_member.name, s_value.get_value());
+                        if (struct_child_member.name == "x")
+                        {
+                            vec2.x = s_value.get_value();
+                        }
+                        else
+                        {
+                            vec2.y = s_value.get_value();
+                        }
+                        // LOG_DEBUG(struct_child_member.name, s_value.get_value());
                     }
                 }
-                arguments.append(Vector2(vec2['x'], vec2['y']));
+                LOG_SUCCESS("NEW VECTOR2", vec2);
+                arguments.append(Variant(vec2));
             }
         }
         else if (member.ty->tag == dojo_bindings::Ty_Tag::Array_)
@@ -122,6 +148,11 @@ void EventSubscription::on_entity_update(dojo_bindings::FieldElement* entity_id,
         }
     }
     // arguments.push_back(models); // Si también quieres pasar models
-    Variant callback_result = callback.call(arguments);
+    for (int i = 0; i < arguments.size(); i++)
+    {
+        Variant arg = arguments[i];
+        LOG_DEBUG("ARG: ", arg);
+    }
+    Variant callback_result = callback.call(Variant(arguments));
     LOG_INFO("RESULT: ", callback_result);
 };

@@ -12,7 +12,7 @@
 [ext_resource type="Texture2D" uid="uid://d1cuwkkgp8hyv" path="res://assets/arrow_up_p.png" id="7_ycdy4"]
 [ext_resource type="Texture2D" uid="uid://bkiqp5xd7g5mf" path="res://assets/arrow_down_p.png" id="9_w48qg"]
 [ext_resource type="Texture2D" uid="uid://dn0lmukjhns5l" path="res://assets/arrow_right_p.png" id="11_vivmo"]
-[ext_resource type="Script" uid="uid://y62xiri5drum" path="res://player.gd" id="12_ycdy4"]
+[ext_resource type="Script" path="res://player.gd" id="12_ycdy4"]
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_lquwl"]
 atlas = ExtResource("2_1bvp3")
@@ -262,6 +262,7 @@ unique_name_in_owner = true
 script = ExtResource("12_ycdy4")
 
 [node name="Sprite2D" type="Sprite2D" parent="Player"]
+unique_name_in_owner = true
 scale = Vector2(0.5, 0.5)
 texture = ExtResource("3_h2yge")
 
