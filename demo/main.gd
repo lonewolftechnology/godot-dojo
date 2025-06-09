@@ -28,7 +28,7 @@ func _ready() -> void:
 	dojo.provider_status_updated.connect(update_status.bind(account_status))
 	dojo.subscription_status_updated.connect(update_event_subscription_status.bind(suscription_status))
 	dojo.controller_account_status_updated.connect(update_status.bind(controller_account_status))
-	if not dojo_abi.is_empty():
+	if not dojo_abi.is_empty() and FileAccess.file_exists(dojo_abi):
 		var json_file = FileAccess.get_file_as_string(dojo_abi)
 		var json = JSON.parse_string(json_file)
 		#json.parse(json_file)
