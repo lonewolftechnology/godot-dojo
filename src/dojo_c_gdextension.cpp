@@ -623,12 +623,12 @@ void DojoC::spawn(bool _debug = false)
     UtilityFunctions::print_rich("[color=RED]----------Block ID---------");
 
     dojo_bindings::BlockId block_id = {
-        .tag = dojo_bindings::BlockTag_,
-        .block_tag = dojo_bindings::Pending
+        dojo_bindings::BlockTag_,
+        dojo_bindings::Pending
     };
     dojo_bindings::Call spawn = {
-        .to = *actions,
-        .selector = "spawn",
+        *actions,
+        "spawn",
     };
     if (_debug)
     {
@@ -673,11 +673,11 @@ void DojoC::move(const Ref<FieldElement> ref_felt, const bool _debug = false)
     dojo_bindings::FieldElement* direction_felt = ref_felt->get_felt();
     LOG_INFO("----------Move---------");
     dojo_bindings::Call move = {
-        .to = *actions,
-        .selector = "move",
-        .calldata = {
-            .data = direction_felt,
-            .data_len = 1
+        *actions,
+        "move",
+        {
+            direction_felt,
+            1
         }
     };
 
