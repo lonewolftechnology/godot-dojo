@@ -36,9 +36,9 @@ if env['platform'] == "windows":
 
     if env.get("is_msvc", False):
         rust_target = "x86_64-pc-windows-msvc"
-        rust_libname = rust_libname.replace(".dll", ".lib")
-        env['CXXFLAGS'].remove("/std:c++17")
-        env.Append(CXXFLAGS=["/std:c++20"])
+        rust_libname = rust_libname.replace(".dll", ".dll.lib")
+        #env['CXXFLAGS'].remove("/std:c++17")
+        #env.Append(CXXFLAGS=["/std:c++20"])
         env.Append(
             LINKFLAGS=[
                 '/NODEFAULTLIB:MSVCRT'
@@ -98,10 +98,6 @@ env.Append(
     ],
     LIBS=[
         File("./" + rust_lib)
-    ],
-    LINKFLAGS=[
-        "-static-libgcc",
-        "-static-libstdc++"
     ]
 
 )
