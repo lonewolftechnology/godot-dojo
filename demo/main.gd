@@ -93,10 +93,10 @@ func _on_button_pressed() -> void:
 	
 func _on_subcribe_pressed() -> void:
 	_on_button_pressed()
-	#await get_tree().create_timer(1).timeout
+	await get_tree().create_timer(1).timeout
 
 	dojo.create_entity_subscription(call_test)
-	#await get_tree().create_timer(1).timeout
+	await get_tree().create_timer(1).timeout
 	
 	dojo.entity_subscription(callable_test)
 
@@ -107,8 +107,11 @@ func _on_connect_controller_pressed() -> void:
 	await dojo.on_account
 	#await get_tree().create_timer(5).timeout
 	player.username.text = dojo.get_username()
+	await get_tree().create_timer(1).timeout
 	packed = dojo.get_session_address()
-	dojo.get_entities()
+	await get_tree().create_timer(1).timeout
+	#dojo.get_entities()
+	await get_tree().create_timer(1).timeout
 	dojo.get_controllers()
 
 func _on_spawn_pressed() -> void:
