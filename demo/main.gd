@@ -76,7 +76,7 @@ func callable_test(args:Array):
 		var vec = _vector[0]
 		#prints("Args(1):",args[1])
 		await get_tree().process_frame
-		player.position = vec * STEP_SIZE
+		player.move(vec * STEP_SIZE)
 
 func call_test(args:Array):
 	push_warning("Updates entities")
@@ -157,7 +157,16 @@ func _unhandled_input(event: InputEvent) -> void:
 		get_viewport().set_input_as_handled()
 		if chat_box.is_visible_in_tree() and not chat_box.text.is_empty():
 			dojo.send_message(chat_box.text)
+			
+	if event.is_action_pressed("zoom_in"):
+		get_node("Player/Camera2D").zoom += Vector2(0.1, 0.1)
 
+	if event.is_action_pressed("zoom_out"):
+		get_node("Player/Camera2D").zoom -= Vector2(0.1, 0.1)
+
+	if event is InputEventMouseMotion && Input.is_mouse_button_pressed(MOUSE_BUTTON_RIGHT):
+		get_node("Player/Camera2D").position -= event.relative * 1/get_node("Player/Camera2D").zoom
+		
 
 func _on_button_toggle_toggled(toggled_on: bool) -> void:
 	tabs.visible = toggled_on
