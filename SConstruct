@@ -126,10 +126,16 @@ elif env["platform"] == "ios":  # No lo borro por las dudas si surge que hay que
             addon_dir + "/dojoc.{}.{}.a".format(env["platform"], env["target"]),
             source=sources,
         )
-else:
-    library = env.SharedLibrary(
-        addon_dir + "dojoc{}{}".format(env["suffix"], env["SHLIBSUFFIX"]),
-        source=sources,
-    )
+elif env["platform"] == "windows":
+    if env.get("is_msvc", False):
+        library = env.SharedLibrary(
+            addon_dir + "libdojoc{}{}".format(env["suffix"], env["SHLIBSUFFIX"]),
+            source=sources,
+        )
+    else:
+        library = env.SharedLibrary(
+            addon_dir + "dojoc{}{}".format(env["suffix"], env["SHLIBSUFFIX"]),
+            source=sources,
+        )
 
 Default(library)
