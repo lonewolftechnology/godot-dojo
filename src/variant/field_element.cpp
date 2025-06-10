@@ -115,3 +115,33 @@ Ref<FieldElement> FieldElement::from_enum(int enum_value)
 
     return field_element;
 }
+
+String FieldElement::bytearray_deserialize()
+{
+    dojo_bindings::Resultc_char testing = dojo_bindings::bytearray_deserialize(get_felt(), 32);
+    if (testing.tag == dojo_bindings::Resultc_char_Tag::Errc_char)
+    {
+        LOG_ERROR("Can't deserialize ");
+        return parse_cairo();
+    }
+    else
+    {
+        LOG_SUCCESS("Felt:", testing.ok);
+    }
+    return {testing.ok};
+}
+
+String FieldElement::parse_cairo()
+{
+    dojo_bindings::Resultc_char testing = dojo_bindings::parse_cairo_short_string(get_felt_no_ptr());
+    if (testing.tag == dojo_bindings::Resultc_char_Tag::Errc_char)
+    {
+        LOG_ERROR("NO STRING");
+        return {to_string()};
+    }
+    else
+    {
+        LOG_SUCCESS("Cairo String:", testing.ok);
+    }
+    return {testing.ok};
+}

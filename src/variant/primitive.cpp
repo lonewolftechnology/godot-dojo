@@ -89,7 +89,7 @@ DojoPrimitive::DojoPrimitive(const dojo_bindings::Primitive& primitive)
         value = Variant(primitive.u64);
         break;
     case Tag::U128:
-        value = DataArrayToPackedByteArray(primitive.u128,16);
+        value = DataArrayToPackedByteArray(primitive.u128, 16);
         break;
     case Tag::U256_:
         value = DataArrayToPackedByteArray(primitive.u256.data);
@@ -98,15 +98,19 @@ DojoPrimitive::DojoPrimitive(const dojo_bindings::Primitive& primitive)
         value = Variant(primitive.bool_);
         break;
     case Tag::Felt252:
+        LOG_DEBUG("FELT");
         value = DataArrayToPackedByteArray(primitive.felt252.data);
         break;
     case Tag::ClassHash:
+        LOG_DEBUG("CLASHASH");
         value = DataArrayToPackedByteArray(primitive.class_hash.data);
         break;
     case Tag::ContractAddress:
+        LOG_DEBUG("CONTRACT");
         value = DataArrayToPackedByteArray(primitive.contract_address.data);
         break;
     case Tag::EthAddress:
+        LOG_DEBUG("ETH");
         value = DataArrayToPackedByteArray(primitive.eth_address.data);
         break;
     default:
@@ -115,22 +119,9 @@ DojoPrimitive::DojoPrimitive(const dojo_bindings::Primitive& primitive)
     }
     if (value.get_type() != Variant::NIL)
     {
-
         UtilityFunctions::print_rich("[color=Cyan]Primitive Constructor Concluded");
         UtilityFunctions::print_rich(
             "[color=Yellow]Primitive " + String(value) + "\n[color=Green]Type: " + Variant::get_type_name(
                 value.get_type()));
     }
 }
-
-// DojoPrimitive::DojoPrimitive(const dojo_bindings::FieldElement field_element)
-// {
-//     UtilityFunctions::print_rich("[color=Red]------------FIELD ELEMENT------------ ");
-//     value = DataArrayToPackedByteArray(field_element.data);
-//     LOG_DEBUG(
-//         "[color=Yellow]Primitive",
-//         String(value),
-//         "\n[color=Green]Type:",
-//         Variant::get_type_name(value.get_type())
-//     );
-// }

@@ -2,7 +2,6 @@
 // Created by hazel on 5/06/25.
 //
 
-#include <complex>
 #include <classes/event_subscription.h>
 
 #include "variant/field_element.h"
@@ -90,6 +89,15 @@ void EventSubscription::on_entity_update(dojo_bindings::FieldElement* entity_id,
         {
             LOG_INFO("member_type is [color=YELLOW]Primitive[/color]");
             dojo_bindings::Primitive primitive = member.ty->primitive;
+            if (primitive.tag == dojo_bindings::Primitive_Tag::Felt252)
+            {
+                LOG_INFO("primitive.tag is [color=YELLOW]Felt252[/color]");
+                FieldElement felt = {&primitive.felt252};
+                // LOG_INFO("USERNAME ", dojo_bindings::controller_username(felt));
+
+                LOG_DEBUG(felt.to_string());
+                felt.bytearray_deserialize();
+            }
             DojoPrimitive _primitive = DojoPrimitive(primitive);
             // result.append(_primitive.get_value());
         }

@@ -29,6 +29,8 @@ public:
     String to_string() const;
     const char* to_string_c_str() const;
     static Ref<FieldElement> from_enum(int enum_value);
+    String parse_cairo();
+    String bytearray_deserialize();
 
 
     dojo_bindings::FieldElement* get_felt() const { return felt; }
