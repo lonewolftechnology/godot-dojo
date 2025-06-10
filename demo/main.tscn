@@ -1,9 +1,8 @@
-[gd_scene load_steps=17 format=3 uid="uid://buvlply3axqqi"]
+[gd_scene load_steps=16 format=3 uid="uid://buvlply3axqqi"]
 
 [ext_resource type="Script" uid="uid://ck323bl4c38kw" path="res://main.gd" id="1_ig7tw"]
 [ext_resource type="PackedScene" uid="uid://b5vmo8llucetx" path="res://ui/status_indicator.tscn" id="2_0xm2m"]
 [ext_resource type="Texture2D" uid="uid://blljslsxyx8em" path="res://assets/tile.png" id="2_1bvp3"]
-[ext_resource type="Texture2D" uid="uid://cpwiq4efrduji" path="res://icon.svg" id="3_h2yge"]
 [ext_resource type="Texture2D" uid="uid://bls0ryaavsbvd" path="res://assets/arrow_left.png" id="4_5vw27"]
 [ext_resource type="Texture2D" uid="uid://bqdfqrx7ajogy" path="res://assets/arrow_left_p.png" id="5_dg77c"]
 [ext_resource type="Texture2D" uid="uid://do4cgyej57yhs" path="res://assets/arrow_up.png" id="5_kek77"]
@@ -12,7 +11,7 @@
 [ext_resource type="Texture2D" uid="uid://d1cuwkkgp8hyv" path="res://assets/arrow_up_p.png" id="7_ycdy4"]
 [ext_resource type="Texture2D" uid="uid://bkiqp5xd7g5mf" path="res://assets/arrow_down_p.png" id="9_w48qg"]
 [ext_resource type="Texture2D" uid="uid://dn0lmukjhns5l" path="res://assets/arrow_right_p.png" id="11_vivmo"]
-[ext_resource type="Script" uid="uid://y62xiri5drum" path="res://player.gd" id="12_ycdy4"]
+[ext_resource type="PackedScene" uid="uid://dj5mxqnlsh6q7" path="res://player.tscn" id="12_dg77c"]
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_lquwl"]
 atlas = ExtResource("2_1bvp3")
@@ -21,8 +20,12 @@ region = Rect2(0, 48, 2560, 1440)
 [sub_resource type="LabelSettings" id="LabelSettings_ig7tw"]
 font_size = 36
 
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_w48qg"]
-bg_color = Color(0, 0, 0, 0.607843)
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_ycdy4"]
+content_margin_left = 4.0
+content_margin_top = 4.0
+content_margin_right = 4.0
+content_margin_bottom = 4.0
+bg_color = Color(0.2484, 0.2484, 0.2484, 1)
 
 [node name="Main" type="Node"]
 script = ExtResource("1_ig7tw")
@@ -46,119 +49,39 @@ metadata/_edit_lock_ = true
 
 [node name="UI" type="CanvasLayer" parent="."]
 
-[node name="HBoxContainer" type="HBoxContainer" parent="UI"]
-offset_right = 40.0
-offset_bottom = 40.0
+[node name="VBoxContainer" type="VBoxContainer" parent="UI"]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
 
-[node name="ButtonToggle" type="Button" parent="UI/HBoxContainer"]
+[node name="HBoxContainer" type="HBoxContainer" parent="UI/VBoxContainer"]
+layout_mode = 2
+
+[node name="ButtonToggle" type="Button" parent="UI/VBoxContainer/HBoxContainer"]
 unique_name_in_owner = true
 custom_minimum_size = Vector2(40, 40)
 layout_mode = 2
-size_flags_horizontal = 2
+size_flags_horizontal = 0
 size_flags_vertical = 0
 toggle_mode = true
 text = "="
 
-[node name="Tabs" type="TabContainer" parent="UI/HBoxContainer"]
+[node name="Tabs" type="TabContainer" parent="UI/VBoxContainer/HBoxContainer"]
 unique_name_in_owner = true
+custom_minimum_size = Vector2(400, 400)
 layout_mode = 2
-current_tab = 1
+current_tab = 0
 
-[node name="SpawnTest" type="VBoxContainer" parent="UI/HBoxContainer/Tabs"]
-visible = false
+[node name="Main" type="VBoxContainer" parent="UI/VBoxContainer/HBoxContainer/Tabs"]
 layout_mode = 2
+size_flags_horizontal = 3
+alignment = 1
 metadata/_tab_index = 0
 
-[node name="Connection" type="Label" parent="UI/HBoxContainer/Tabs/SpawnTest"]
-custom_minimum_size = Vector2(0, 60)
-layout_mode = 2
-text = "Testing"
-horizontal_alignment = 1
-vertical_alignment = 1
-
-[node name="Status" type="HBoxContainer" parent="UI/HBoxContainer/Tabs/SpawnTest"]
-layout_mode = 2
-alignment = 1
-
-[node name="ClientStatus" parent="UI/HBoxContainer/Tabs/SpawnTest/Status" instance=ExtResource("2_0xm2m")]
-unique_name_in_owner = true
-layout_mode = 2
-type_name = "Client"
-
-[node name="ProviderStatus" parent="UI/HBoxContainer/Tabs/SpawnTest/Status" instance=ExtResource("2_0xm2m")]
-unique_name_in_owner = true
-layout_mode = 2
-type_name = "Provider"
-
-[node name="ControllerAccountStatus" parent="UI/HBoxContainer/Tabs/SpawnTest/Status" instance=ExtResource("2_0xm2m")]
-unique_name_in_owner = true
-layout_mode = 2
-type_name = "Controller"
-
-[node name="AccountStatus" parent="UI/HBoxContainer/Tabs/SpawnTest/Status" instance=ExtResource("2_0xm2m")]
-unique_name_in_owner = true
-layout_mode = 2
-type_name = "Account"
-
-[node name="SuscriptionStatus" parent="UI/HBoxContainer/Tabs/SpawnTest/Status" instance=ExtResource("2_0xm2m")]
-unique_name_in_owner = true
-layout_mode = 2
-type_name = "Suscription"
-
-[node name="HBoxContainer" type="HBoxContainer" parent="UI/HBoxContainer/Tabs/SpawnTest"]
-layout_mode = 2
-
-[node name="Label" type="Label" parent="UI/HBoxContainer/Tabs/SpawnTest/HBoxContainer"]
-layout_mode = 2
-text = "Esto crea el provider y registra la cuenta con las prefundadas de Katana y registra el callback"
-
-[node name="Testing" type="Button" parent="UI/HBoxContainer/Tabs/SpawnTest/HBoxContainer"]
-layout_mode = 2
-size_flags_horizontal = 3
-text = "Testing"
-
-[node name="Events" type="VBoxContainer" parent="UI/HBoxContainer/Tabs/SpawnTest"]
-layout_mode = 2
-alignment = 1
-
-[node name="Label" type="Label" parent="UI/HBoxContainer/Tabs/SpawnTest/Events"]
-layout_mode = 2
-text = "Eventos"
-horizontal_alignment = 1
-vertical_alignment = 1
-
-[node name="Spawn" type="Button" parent="UI/HBoxContainer/Tabs/SpawnTest/Events"]
-layout_mode = 2
-size_flags_horizontal = 3
-text = "SPAWN"
-
-[node name="Move" type="Button" parent="UI/HBoxContainer/Tabs/SpawnTest/Events"]
-layout_mode = 2
-text = "MOVE"
-
-[node name="Label" type="Label" parent="UI/HBoxContainer/Tabs/SpawnTest"]
-layout_mode = 2
-text = "--Spawn Output--"
-horizontal_alignment = 1
-vertical_alignment = 1
-
-[node name="ScrollContainer" type="ScrollContainer" parent="UI/HBoxContainer/Tabs/SpawnTest"]
-layout_mode = 2
-size_flags_vertical = 3
-
-[node name="SpawnOutput" type="RichTextLabel" parent="UI/HBoxContainer/Tabs/SpawnTest/ScrollContainer"]
-unique_name_in_owner = true
-layout_mode = 2
-size_flags_horizontal = 3
-size_flags_vertical = 3
-bbcode_enabled = true
-
-[node name="WIPTests" type="VBoxContainer" parent="UI/HBoxContainer/Tabs"]
-layout_mode = 2
-size_flags_horizontal = 3
-metadata/_tab_index = 1
-
-[node name="Label" type="Label" parent="UI/HBoxContainer/Tabs/WIPTests"]
+[node name="Label" type="Label" parent="UI/VBoxContainer/HBoxContainer/Tabs/Main"]
+visible = false
 layout_mode = 2
 text = "Orden de botones: Suscribe -> Controller
 Login con passkey, en caso de que no sea chromium based el navegador:
@@ -166,136 +89,209 @@ BitWarden(extension navegador) funciona para generar y loguearse"
 horizontal_alignment = 1
 vertical_alignment = 1
 
-[node name="WorldClientLabel" type="Label" parent="UI/HBoxContainer/Tabs/WIPTests"]
+[node name="WorldClientLabel" type="Label" parent="UI/VBoxContainer/HBoxContainer/Tabs/Main"]
 layout_mode = 2
 text = "World Client"
 horizontal_alignment = 1
 
-[node name="Subcribe" type="Button" parent="UI/HBoxContainer/Tabs/WIPTests"]
+[node name="Subcribe" type="Button" parent="UI/VBoxContainer/HBoxContainer/Tabs/Main"]
 layout_mode = 2
-text = "Suscribe"
+text = "INIT"
 
-[node name="Status" type="Label" parent="UI/HBoxContainer/Tabs/WIPTests"]
+[node name="Status" type="Label" parent="UI/VBoxContainer/HBoxContainer/Tabs/Main"]
 unique_name_in_owner = true
+visible = false
 layout_mode = 2
 size_flags_vertical = 0
 label_settings = SubResource("LabelSettings_ig7tw")
 
-[node name="InputWorldAddr" type="TextEdit" parent="UI/HBoxContainer/Tabs/WIPTests"]
+[node name="InputWorldAddr" type="TextEdit" parent="UI/VBoxContainer/HBoxContainer/Tabs/Main"]
 unique_name_in_owner = true
+visible = false
 custom_minimum_size = Vector2(0, 100)
 layout_mode = 2
 placeholder_text = "WORLD ADDR"
 
-[node name="BtnStartClient" type="Button" parent="UI/HBoxContainer/Tabs/WIPTests"]
+[node name="BtnStartClient" type="Button" parent="UI/VBoxContainer/HBoxContainer/Tabs/Main"]
 visible = false
 layout_mode = 2
 text = "Connect"
 
-[node name="InputController" type="TextEdit" parent="UI/HBoxContainer/Tabs/WIPTests"]
+[node name="InputController" type="TextEdit" parent="UI/VBoxContainer/HBoxContainer/Tabs/Main"]
 unique_name_in_owner = true
+visible = false
 custom_minimum_size = Vector2(0, 100)
 layout_mode = 2
 placeholder_text = "ControllerADDR"
 
-[node name="ConnectController" type="Button" parent="UI/HBoxContainer/Tabs/WIPTests"]
+[node name="ConnectController" type="Button" parent="UI/VBoxContainer/HBoxContainer/Tabs/Main"]
 layout_mode = 2
-text = "Controller"
+text = "Login"
 
-[node name="Chat" type="VBoxContainer" parent="UI/HBoxContainer/Tabs"]
+[node name="Events" type="VBoxContainer" parent="UI/VBoxContainer/HBoxContainer/Tabs/Main"]
+layout_mode = 2
+alignment = 1
+
+[node name="Label" type="Label" parent="UI/VBoxContainer/HBoxContainer/Tabs/Main/Events"]
+layout_mode = 2
+text = "Eventos"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="Spawn" type="Button" parent="UI/VBoxContainer/HBoxContainer/Tabs/Main/Events"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "SPAWN"
+
+[node name="Move" type="Button" parent="UI/VBoxContainer/HBoxContainer/Tabs/Main/Events"]
+layout_mode = 2
+text = "MOVE"
+
+[node name="SpawnTest" type="VBoxContainer" parent="UI/VBoxContainer/HBoxContainer/Tabs/Main"]
+visible = false
+layout_mode = 2
+
+[node name="HBoxContainer" type="HBoxContainer" parent="UI/VBoxContainer/HBoxContainer/Tabs/Main/SpawnTest"]
+visible = false
+layout_mode = 2
+
+[node name="Label" type="Label" parent="UI/VBoxContainer/HBoxContainer/Tabs/Main/SpawnTest/HBoxContainer"]
+layout_mode = 2
+text = "Esto crea el provider y registra la cuenta con las prefundadas de Katana y registra el callback"
+
+[node name="Testing" type="Button" parent="UI/VBoxContainer/HBoxContainer/Tabs/Main/SpawnTest/HBoxContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Testing"
+
+[node name="Label" type="Label" parent="UI/VBoxContainer/HBoxContainer/Tabs/Main/SpawnTest"]
+visible = false
+layout_mode = 2
+text = "--Spawn Output--"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="ScrollContainer" type="ScrollContainer" parent="UI/VBoxContainer/HBoxContainer/Tabs/Main/SpawnTest"]
+visible = false
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="SpawnOutput" type="RichTextLabel" parent="UI/VBoxContainer/HBoxContainer/Tabs/Main/SpawnTest/ScrollContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+bbcode_enabled = true
+
+[node name="Chat" type="VBoxContainer" parent="UI/VBoxContainer/HBoxContainer/Tabs"]
 visible = false
 custom_minimum_size = Vector2(500, 200)
 layout_mode = 2
-metadata/_tab_index = 2
+metadata/_tab_index = 1
 
-[node name="ChatBox" type="TextEdit" parent="UI/HBoxContainer/Tabs/Chat"]
+[node name="ChatBox" type="TextEdit" parent="UI/VBoxContainer/HBoxContainer/Tabs/Chat"]
 unique_name_in_owner = true
 custom_minimum_size = Vector2(0, 200)
 layout_mode = 2
 
-[node name="Arrows" type="HBoxContainer" parent="UI"]
+[node name="Arrows" type="HBoxContainer" parent="UI/VBoxContainer"]
 texture_filter = 1
-anchors_preset = 7
-anchor_left = 0.5
-anchor_top = 1.0
-anchor_right = 0.5
-anchor_bottom = 1.0
-offset_left = -20.0
-offset_top = -40.0
-offset_right = 20.0
-grow_horizontal = 2
-grow_vertical = 0
-alignment = 2
+layout_mode = 2
+size_flags_vertical = 10
+alignment = 1
 
-[node name="ArrowLeft" type="TextureButton" parent="UI/Arrows"]
+[node name="ArrowLeft" type="TextureButton" parent="UI/VBoxContainer/Arrows"]
 layout_mode = 2
 size_flags_vertical = 12
 texture_normal = ExtResource("4_5vw27")
 texture_pressed = ExtResource("5_dg77c")
 texture_hover = ExtResource("4_5vw27")
 
-[node name="VBoxContainer" type="VBoxContainer" parent="UI/Arrows"]
+[node name="VBoxContainer" type="VBoxContainer" parent="UI/VBoxContainer/Arrows"]
 layout_mode = 2
 alignment = 2
 
-[node name="ArrowUp" type="TextureButton" parent="UI/Arrows/VBoxContainer"]
+[node name="ArrowUp" type="TextureButton" parent="UI/VBoxContainer/Arrows/VBoxContainer"]
 layout_mode = 2
 texture_normal = ExtResource("5_kek77")
 texture_pressed = ExtResource("7_ycdy4")
 texture_hover = ExtResource("5_kek77")
 
-[node name="ArrowDown" type="TextureButton" parent="UI/Arrows/VBoxContainer"]
+[node name="ArrowDown" type="TextureButton" parent="UI/VBoxContainer/Arrows/VBoxContainer"]
 layout_mode = 2
 texture_normal = ExtResource("6_4c57u")
 texture_pressed = ExtResource("9_w48qg")
 texture_hover = ExtResource("6_4c57u")
 
-[node name="ArrowRight" type="TextureButton" parent="UI/Arrows"]
+[node name="ArrowRight" type="TextureButton" parent="UI/VBoxContainer/Arrows"]
 layout_mode = 2
 size_flags_vertical = 12
 texture_normal = ExtResource("7_efxa6")
 texture_pressed = ExtResource("11_vivmo")
 texture_hover = ExtResource("7_efxa6")
 
-[node name="Player" type="Node2D" parent="."]
-unique_name_in_owner = true
-script = ExtResource("12_ycdy4")
+[node name="Panel" type="PanelContainer" parent="UI/VBoxContainer"]
+layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_ycdy4")
 
-[node name="Sprite2D" type="Sprite2D" parent="Player"]
-unique_name_in_owner = true
-scale = Vector2(0.5, 0.5)
-texture = ExtResource("3_h2yge")
+[node name="Status" type="HBoxContainer" parent="UI/VBoxContainer/Panel"]
+layout_mode = 2
+size_flags_vertical = 8
+theme_override_constants/separation = 10
 
-[node name="Label" type="Label" parent="Player"]
-custom_minimum_size = Vector2(64, 32)
-anchors_preset = 8
-anchor_left = 0.5
-anchor_top = 0.5
-anchor_right = 0.5
-anchor_bottom = 0.5
-offset_left = -32.0
-offset_top = -16.0
-offset_right = 32.0
-offset_bottom = 16.0
-grow_horizontal = 2
-grow_vertical = 2
-theme_override_styles/normal = SubResource("StyleBoxFlat_w48qg")
-text = "0x0"
-horizontal_alignment = 1
+[node name="Connection" type="Label" parent="UI/VBoxContainer/Panel/Status"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Status:"
 vertical_alignment = 1
 
-[node name="Camera2D" type="Camera2D" parent="Player"]
-position_smoothing_enabled = true
-position_smoothing_speed = 4.0
+[node name="ClientStatus" parent="UI/VBoxContainer/Panel/Status" instance=ExtResource("2_0xm2m")]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 1
+type_name = "Client"
 
-[connection signal="toggled" from="UI/HBoxContainer/ButtonToggle" to="." method="_on_button_toggle_toggled"]
-[connection signal="pressed" from="UI/HBoxContainer/Tabs/SpawnTest/HBoxContainer/Testing" to="." method="_on_testing_pressed"]
-[connection signal="pressed" from="UI/HBoxContainer/Tabs/SpawnTest/Events/Spawn" to="." method="_on_spawn_pressed"]
-[connection signal="pressed" from="UI/HBoxContainer/Tabs/SpawnTest/Events/Move" to="." method="_on_move_pressed"]
-[connection signal="pressed" from="UI/HBoxContainer/Tabs/WIPTests/Subcribe" to="." method="_on_subcribe_pressed"]
-[connection signal="pressed" from="UI/HBoxContainer/Tabs/WIPTests/BtnStartClient" to="." method="_on_button_pressed"]
-[connection signal="pressed" from="UI/HBoxContainer/Tabs/WIPTests/ConnectController" to="." method="_on_connect_controller_pressed"]
-[connection signal="pressed" from="UI/Arrows/ArrowLeft" to="." method="_on_arrow_left_pressed"]
-[connection signal="pressed" from="UI/Arrows/VBoxContainer/ArrowUp" to="." method="_on_arrow_up_pressed"]
-[connection signal="pressed" from="UI/Arrows/VBoxContainer/ArrowDown" to="." method="_on_arrow_down_pressed"]
-[connection signal="pressed" from="UI/Arrows/ArrowRight" to="." method="_on_arrow_right_pressed"]
+[node name="ProviderStatus" parent="UI/VBoxContainer/Panel/Status" instance=ExtResource("2_0xm2m")]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 1
+type_name = "Provider"
+
+[node name="ControllerAccountStatus" parent="UI/VBoxContainer/Panel/Status" instance=ExtResource("2_0xm2m")]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 1
+type_name = "Controller"
+
+[node name="AccountStatus" parent="UI/VBoxContainer/Panel/Status" instance=ExtResource("2_0xm2m")]
+unique_name_in_owner = true
+visible = false
+layout_mode = 2
+size_flags_horizontal = 1
+type_name = "Account"
+
+[node name="SuscriptionStatus" parent="UI/VBoxContainer/Panel/Status" instance=ExtResource("2_0xm2m")]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 1
+type_name = "Suscription"
+
+[node name="EntitiesStatus" parent="UI/VBoxContainer/Panel/Status" instance=ExtResource("2_0xm2m")]
+unique_name_in_owner = true
+layout_mode = 2
+type_name = "EntitiesUpdates"
+
+[node name="Player" parent="." instance=ExtResource("12_dg77c")]
+unique_name_in_owner = true
+
+[connection signal="toggled" from="UI/VBoxContainer/HBoxContainer/ButtonToggle" to="." method="_on_button_toggle_toggled"]
+[connection signal="pressed" from="UI/VBoxContainer/HBoxContainer/Tabs/Main/Subcribe" to="." method="_on_subcribe_pressed"]
+[connection signal="pressed" from="UI/VBoxContainer/HBoxContainer/Tabs/Main/BtnStartClient" to="." method="_on_button_pressed"]
+[connection signal="pressed" from="UI/VBoxContainer/HBoxContainer/Tabs/Main/ConnectController" to="." method="_on_connect_controller_pressed"]
+[connection signal="pressed" from="UI/VBoxContainer/HBoxContainer/Tabs/Main/Events/Spawn" to="." method="_on_spawn_pressed"]
+[connection signal="pressed" from="UI/VBoxContainer/HBoxContainer/Tabs/Main/Events/Move" to="." method="_on_move_pressed"]
+[connection signal="pressed" from="UI/VBoxContainer/HBoxContainer/Tabs/Main/SpawnTest/HBoxContainer/Testing" to="." method="_on_testing_pressed"]
+[connection signal="pressed" from="UI/VBoxContainer/Arrows/ArrowLeft" to="." method="_on_arrow_left_pressed"]
+[connection signal="pressed" from="UI/VBoxContainer/Arrows/VBoxContainer/ArrowUp" to="." method="_on_arrow_up_pressed"]
+[connection signal="pressed" from="UI/VBoxContainer/Arrows/VBoxContainer/ArrowDown" to="." method="_on_arrow_down_pressed"]
+[connection signal="pressed" from="UI/VBoxContainer/Arrows/ArrowRight" to="." method="_on_arrow_right_pressed"]

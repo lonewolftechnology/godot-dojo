@@ -19,6 +19,7 @@ const dev_actions_addr = "0x00a92391c5bcde7af4bad5fd0fff3834395b1ab8055a9abb8387
 @onready var input_world_addr: TextEdit = %InputWorldAddr
 @onready var input_controller: TextEdit = %InputController
 
+@onready var client_status: DojoStatusIndicator = %ClientStatus
 @onready var provider_status: HBoxContainer = %ProviderStatus
 @onready var account_status: HBoxContainer = %AccountStatus
 @onready var suscription_status: HBoxContainer = %SuscriptionStatus
@@ -27,6 +28,7 @@ const dev_actions_addr = "0x00a92391c5bcde7af4bad5fd0fff3834395b1ab8055a9abb8387
 @onready var chat_box: TextEdit = %ChatBox
 @onready var tabs: TabContainer = %Tabs
 @onready var player: Node2D = %Player
+@onready var entities_status: DojoStatusIndicator = %EntitiesStatus
 
 @onready var button_toggle: Button = %ButtonToggle
 
@@ -41,10 +43,12 @@ func _ready() -> void:
 	if Engine.is_editor_hint(): return
 	button_toggle.set_pressed(true)
 	dojo.event_update.connect(_on_event_update)
-	dojo.account_status_updated.connect(update_status.bind(provider_status))
-	dojo.provider_status_updated.connect(update_status.bind(account_status))
-	dojo.subscription_status_updated.connect(update_event_subscription_status.bind(suscription_status))
-	dojo.controller_account_status_updated.connect(update_status.bind(controller_account_status))
+	dojo.account_status_updated.connect(account_status.set_status)
+	dojo.provider_status_updated.connect(provider_status.set_status)
+	dojo.subscription_status_updated.connect(suscription_status.set_status)
+	dojo.controller_account_status_updated.connect(controller_account_status.set_status)
+	dojo.entities_status_updated.connect(entities_status.set_status)
+	dojo.client_status_updated.connect(client_status.set_status)
 	if not dojo_abi.is_empty() and FileAccess.file_exists(dojo_abi):
 		var json_file = FileAccess.get_file_as_string(dojo_abi)
 		var json = JSON.parse_string(json_file)
@@ -70,6 +74,8 @@ func callable_test(args:Array):
 		player.position = args[1] * STEP_SIZE
 	prints("AAAAAAAAAAAAAA\n")
 
+func call_test(args:Array):
+	prints("Updates entities")
 
 func _on_button_pressed() -> void:
 	if input_world_addr.text.is_empty():
@@ -79,18 +85,20 @@ func _on_button_pressed() -> void:
 func _on_subcribe_pressed() -> void:
 	_on_button_pressed()
 	await get_tree().create_timer(1).timeout
-	#var callable:Callable = Callable(self, "callable_test")
 
-	#dojo.create_entity_subscription(call_test)
+	dojo.create_entity_subscription(call_test)
+	await get_tree().create_timer(1).timeout
+	
 	dojo.entity_subscription(callable_test)
 
 func _on_connect_controller_pressed() -> void:
 	if input_controller.text.is_empty():
 		input_controller.text = dev_actions_addr
 	dojo.controller_new(input_controller.text, "https://api.cartridge.gg/x/godot-demo-rookie/katana")
-
-func _on_testing_pressed() -> void:
-	dojo.testing()
+	await dojo.on_account
+	#await get_tree().create_timer(5).timeout
+	player.username.text = dojo.get_username()
+	dojo.get_entities()
 
 func _on_spawn_pressed() -> void:
 	dojo.spawn(false)
