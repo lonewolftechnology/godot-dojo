@@ -15,8 +15,6 @@ String concat_args(Args&&... args) {
 }
 
 // Utility Macros
-#define FIRST_ARG(first, ...) concat_args(first)
-#define REST_ARGS(first, ...) concat_args(__VA_ARGS__)
 
 // Macros que siempre funcionan (errores y warnings)
 #define LOG_ERROR(...) \
@@ -26,7 +24,7 @@ UtilityFunctions::push_error(concat_args(__VA_ARGS__))
 UtilityFunctions::push_warning(concat_args(__VA_ARGS__))
 
 // Macros que solo funcionan cuando DEBUG_ENABLED está activo
-// Despues se puede ver si se mueben de lugar o no
+// Despues se puede ver si se mueven de lugar o no
 #ifdef DEBUG_ENABLED
     #define LOG_INFO(...) \
         TYPED_LOG_COLOR(cyan, "INFO", __VA_ARGS__)
@@ -37,8 +35,8 @@ UtilityFunctions::push_warning(concat_args(__VA_ARGS__))
     #define LOG_DEBUG(...) \
         TYPED_LOG_COLOR(wheat, "DEBUG", __VA_ARGS__)
 
-    #define TYPED_LOG_COLOR(color, ...) \
-    UtilityFunctions::print_rich("[color=" #color "][b][" + FIRST_ARG(__VA_ARGS__) + "][/b][/color] ", REST_ARGS(__VA_ARGS__))
+    #define TYPED_LOG_COLOR(color, type, ...) \
+    UtilityFunctions::print_rich("[color=" #color "][b][" type "][/b][/color] ", concat_args(__VA_ARGS__))
 
     #define LOG_COLOR(color, ...) \
         UtilityFunctions::print_rich("[color=" #color "]" + concat_args(__VA_ARGS__) + "[/color]")
