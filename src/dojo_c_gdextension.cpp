@@ -74,7 +74,6 @@ DojoC::DojoC()
     if (Engine::get_singleton()->is_editor_hint())
     {
         UtilityFunctions::push_warning("DojoC is running in editor mode");
-
         return;
     }
     // Initialize any variables here.
@@ -510,7 +509,9 @@ void DojoC::spawn(bool _debug = false)
             LOG_ERROR("Session Account not initialized.");
             return;
         }
-        LOG_INFO("USERNAME ", dojo_bindings::controller_username(session_account));
+
+        LOG_CUSTOM("USERNAME", dojo_bindings::controller_username(session_account));
+
         // dojo_bindings::account_set_block_id(session_account, block_id);
         dojo_bindings::ResultFieldElement result = dojo_bindings::controller_execute_from_outside(
             session_account, &spawn, 1);
@@ -562,7 +563,7 @@ void DojoC::move(const Ref<FieldElement> ref_felt, const bool _debug = false)
             LOG_ERROR("Session Account not initialized.");
             return;
         }
-        LOG_INFO("USERNAME ", dojo_bindings::controller_username(session_account));
+        LOG_CUSTOM("USERNAME", dojo_bindings::controller_username(session_account));
         // dojo_bindings::account_set_block_id(session_account, block_id);
         dojo_bindings::ResultFieldElement result = dojo_bindings::controller_execute_from_outside(
             session_account, &move, 1);

@@ -7,8 +7,9 @@
 using namespace godot;
 
 // Concatena los elementos en un String de Godot
-template<typename... Args>
-String concat_args(Args&&... args) {
+template <typename... Args>
+String concat_args(Args&&... args)
+{
     String result;
     ((result += String(args)), ...);
     return result;
@@ -26,19 +27,22 @@ UtilityFunctions::push_warning(concat_args(__VA_ARGS__))
 // Macros que solo funcionan cuando DEBUG_ENABLED está activo
 // Despues se puede ver si se mueven de lugar o no
 #ifdef DEBUG_ENABLED
-    #define LOG_INFO(...) \
+#define LOG_INFO(...) \
         TYPED_LOG_COLOR(cyan, "INFO", __VA_ARGS__)
 
-    #define LOG_SUCCESS(...) \
+#define LOG_SUCCESS(...) \
         TYPED_LOG_COLOR(green, "SUCCESS", __VA_ARGS__)
 
-    #define LOG_DEBUG(...) \
+#define LOG_DEBUG(...) \
         TYPED_LOG_COLOR(wheat, "DEBUG", __VA_ARGS__)
 
-    #define TYPED_LOG_COLOR(color, type, ...) \
+#define LOG_CUSTOM(type, ...) \
+        TYPED_LOG_COLOR(magenta, type, __VA_ARGS__)
+
+#define TYPED_LOG_COLOR(color, type, ...) \
     UtilityFunctions::print_rich("[color=" #color "][b][" type "][/b][/color] ", concat_args(__VA_ARGS__))
 
-    #define LOG_COLOR(color, ...) \
+#define LOG_COLOR(color, ...) \
         UtilityFunctions::print_rich("[color=" #color "]" + concat_args(__VA_ARGS__) + "[/color]")
 
 #else
