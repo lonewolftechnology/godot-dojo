@@ -45,6 +45,7 @@ texture_filter = 1
 texture_repeat = 2
 position = Vector2(640, 360)
 texture = SubResource("AtlasTexture_lquwl")
+offset = Vector2(32, 32)
 metadata/_edit_lock_ = true
 
 [node name="UI" type="CanvasLayer" parent="."]
