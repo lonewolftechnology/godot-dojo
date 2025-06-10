@@ -21,7 +21,9 @@ EventSubscription::~EventSubscription()
 }
 
 Callable EventSubscription::get_callback() const
-{ return callback; }
+{
+    return callback;
+}
 
 void EventSubscription::set_callback(const Callable& p_callback)
 {
@@ -112,7 +114,7 @@ void EventSubscription::on_entity_update(dojo_bindings::FieldElement* entity_id,
             LOG_DEBUG(member_name);
             if (member_name == "vec")
             {
-                Vector2 vec2 = {0,0};
+                Vector2 vec2 = {0, 0};
                 for (const auto& struct_child_member : struct_child)
                 {
                     LOG_INFO("struct_child_member.name: ", struct_child_member.name);
@@ -120,19 +122,24 @@ void EventSubscription::on_entity_update(dojo_bindings::FieldElement* entity_id,
                     if (struct_child_member.ty->tag == dojo_bindings::Ty_Tag::Primitive_)
                     {
                         DojoPrimitive s_value = {struct_child_member.ty->primitive};
-                        if (struct_child_member.name == "x")
+                        LOG_DEBUG(struct_child_member.name, " | ", s_value.get_value());
+                        real_t s_value_converted = s_value.get_value();
+                        if (String(struct_child_member.name) == "x")
                         {
-                            vec2.x = s_value.get_value();
+                            LOG_WARNING("UPDATING X");
+                            vec2.x = s_value_converted;
                         }
-                        else
+                        else if (String(struct_child_member.name) == "y")
                         {
-                            vec2.y = s_value.get_value();
+                            LOG_WARNING("UPDATING Y");
+                            vec2.y = s_value_converted;
                         }
                         // LOG_DEBUG(struct_child_member.name, s_value.get_value());
                     }
                 }
-                LOG_SUCCESS("NEW VECTOR2", vec2);
-                arguments.append(Variant(vec2));
+                LOG_SUCCESS("[color=MAGENTA]NEW VECTOR2 [/color]", vec2);
+
+                arguments.append(vec2);
             }
         }
         else if (member.ty->tag == dojo_bindings::Ty_Tag::Array_)

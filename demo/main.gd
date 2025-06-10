@@ -66,10 +66,7 @@ func callable_test(args:Array):
 	prints("Callable size:", args.size() ,"Result:",args)
 	if args.size() > 1:
 		var vec = args[1]
-		prints("Args(1):",args[1])
-		await get_tree().process_frame
-		await get_tree().process_frame
-		await get_tree().process_frame
+		#prints("Args(1):",args[1])
 		await get_tree().process_frame
 		player.position = args[1] * STEP_SIZE
 	prints("AAAAAAAAAAAAAA\n")
@@ -84,10 +81,10 @@ func _on_button_pressed() -> void:
 	
 func _on_subcribe_pressed() -> void:
 	_on_button_pressed()
-	await get_tree().create_timer(1).timeout
+	#await get_tree().create_timer(1).timeout
 
 	dojo.create_entity_subscription(call_test)
-	await get_tree().create_timer(1).timeout
+	#await get_tree().create_timer(1).timeout
 	
 	dojo.entity_subscription(callable_test)
 
@@ -122,16 +119,16 @@ func _on_move_pressed() -> void:
 func _unhandled_input(event: InputEvent) -> void:
 	var direction:FieldElement
 	if event.is_action_pressed("ui_up"):
-		direction = FieldElement.from_enum(2)
+		direction = FieldElement.from_enum(Directions.UP)
 		get_viewport().set_input_as_handled()
 	elif event.is_action_pressed("ui_down"):
-		direction = FieldElement.from_enum(3)
+		direction = FieldElement.from_enum(Directions.DOWN)
 		get_viewport().set_input_as_handled()
 	elif event.is_action_pressed("ui_left"):
-		direction = FieldElement.from_enum(0)
+		direction = FieldElement.from_enum(Directions.LEFT)
 		get_viewport().set_input_as_handled()
 	elif event.is_action_pressed("ui_right"):
-		direction = FieldElement.from_enum(1)
+		direction = FieldElement.from_enum(Directions.RIGHT)
 		get_viewport().set_input_as_handled()
 	
 	if not direction == null:
