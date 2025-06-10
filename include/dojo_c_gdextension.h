@@ -30,6 +30,7 @@ namespace godot {
 
         void create_client(const String& world_addr, String torii_url);
         void get_entities();
+        void get_controllers();
         void controller_new(const String& controller_addr, const String& rpc_url);
         // void controller_connect(const String &controller_addr);
         void create_entity_subscription(Callable callback);
@@ -38,6 +39,8 @@ namespace godot {
         void move(Ref<FieldElement> ref_felt, bool _debug);
         void send_message(const String& _msg);
         String get_username();
+        PackedByteArray get_session_packed_byte();
+        String get_session_address();
         // Array values = {};
         // Array get_values() const {return values;}
         // void set_values(const Array &p_values) {values = p_values;}

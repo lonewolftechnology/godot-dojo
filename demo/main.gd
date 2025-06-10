@@ -35,6 +35,7 @@ const dev_actions_addr = "0x00a92391c5bcde7af4bad5fd0fff3834395b1ab8055a9abb8387
 @export_global_file("*.json") var dojo_abi: String
 
 var count: int = 0
+var packed: String
 
 func _ready() -> void:
 	OS.set_environment("RUST_BACKTRACE", "full")
@@ -64,15 +65,26 @@ func _ready() -> void:
 
 func callable_test(args:Array):
 	prints("Callable size:", args.size() ,"Result:",args)
-	if args.size() > 1:
-		var vec = args[1]
+	#prints("\n\n", packed)
+	push_warning("Updates entities EVENT")
+	var _packed = args.filter(func(c): return c is String)
+	var _vector = args.filter(func(c): return c is Vector2 )
+	if not _packed.is_empty() and _packed[0] != packed: 
+		push_warning("NO SON LO MISMo")
+		return
+	if not _vector.is_empty():
+		var vec = _vector[0]
 		#prints("Args(1):",args[1])
 		await get_tree().process_frame
-		player.position = args[1] * STEP_SIZE
-	prints("AAAAAAAAAAAAAA\n")
+		player.position = vec * STEP_SIZE
 
 func call_test(args:Array):
-	prints("Updates entities")
+	push_warning("Updates entities")
+	var _packed = args.filter(func(c): return c is PackedByteArray)
+	var _vector = args.filter(func(c): return c is Vector2 )
+	if not _packed.is_empty() and _packed[0] == packed: 
+		push_warning("SON LO MISMo")
+		return
 
 func _on_button_pressed() -> void:
 	if input_world_addr.text.is_empty():
@@ -95,7 +107,9 @@ func _on_connect_controller_pressed() -> void:
 	await dojo.on_account
 	#await get_tree().create_timer(5).timeout
 	player.username.text = dojo.get_username()
+	packed = dojo.get_session_address()
 	dojo.get_entities()
+	dojo.get_controllers()
 
 func _on_spawn_pressed() -> void:
 	dojo.spawn(false)

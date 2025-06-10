@@ -21,15 +21,17 @@ dojo_bindings::Provider* controller_provider;
 dojo_bindings::Account* account;
 dojo_bindings::FieldElement* actions;
 dojo_bindings::FieldElement priv;
-
 void DojoC::_bind_methods()
 {
     ClassDB::bind_method(D_METHOD("set_enabled", "p_enabled"), &DojoC::set_enabled);
     ClassDB::bind_method(D_METHOD("get_enabled"), &DojoC::get_enabled);
+    ClassDB::bind_method(D_METHOD("get_controllers"), &DojoC::get_controllers);
     ClassDB::bind_method(D_METHOD("get_entities"), &DojoC::get_entities);
     ClassDB::bind_method(D_METHOD("spawn"), &DojoC::spawn);
     ClassDB::bind_method(D_METHOD("move"), &DojoC::move);
     ClassDB::bind_method(D_METHOD("get_username"), &DojoC::get_username);
+    ClassDB::bind_method(D_METHOD("get_session_packed_byte"), &DojoC::get_session_packed_byte);
+    ClassDB::bind_method(D_METHOD("get_session_address"), &DojoC::get_session_address);
     ClassDB::bind_method(D_METHOD("create_entity_subscription", "p_callable"), &DojoC::create_entity_subscription);
     ClassDB::bind_method(D_METHOD("entity_subscription", "p_callable"), &DojoC::entity_subscription);
     ClassDB::bind_method(
@@ -287,9 +289,12 @@ void DojoC::get_entities()
 
 }
 
-void get_controller_clients()
+void DojoC::get_controllers()
 {
-    dojo_bindings::ResultCArrayController resControllers = dojo_bindings::client_controllers(client, nullptr, 0);
+    dojo_bindings::COptionFieldElement control = {};
+    control.tag = dojo_bindings::NoneFieldElement;
+    // dojo_bindings::ResultCArrayController resControllers = dojo_bindings::client_controllers(client, nullptr, 0);
+    dojo_bindings::ResultCArrayController resControllers = dojo_bindings::client_controllers(client, &control.some, 0);
     if (resControllers.tag == dojo_bindings::ErrCArrayController)
     {
         LOG_ERROR(resControllers.err.message);
@@ -310,8 +315,8 @@ void get_controller_clients()
             dojo_bindings::FieldElement controller_addr = controller.address;
             FieldElement user_felt = {&controller_addr};
             LOG_INFO("Controller: ", controller.username);
-            String player_addr = user_felt.bytearray_deserialize();
-            LOG_DEBUG("CONTROLLER: ", player_addr);
+            String player_addra = user_felt.bytearray_deserialize();
+            LOG_DEBUG("CONTROLLER: ", player_addra);
         }
     }
 }
@@ -632,4 +637,17 @@ void DojoC::send_message(const String& _msg)
 String DojoC::get_username()
 {
     return dojo_bindings::controller_username(session_account);
+}
+
+PackedByteArray DojoC::get_session_packed_byte()
+{
+    LOG_INFO("SESSION PACKED BYTE");
+    return FieldElement::to_packed_array(session_account);
+}
+
+String DojoC::get_session_address()
+{
+    dojo_bindings::FieldElement _felt = dojo_bindings::controller_address(session_account);
+    FieldElement account_address = {&_felt};
+    return account_address.to_string();
 }

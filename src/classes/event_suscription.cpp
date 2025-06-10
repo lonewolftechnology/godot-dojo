@@ -46,8 +46,8 @@ void EventSubscription::on_entity_update(dojo_bindings::FieldElement* entity_id,
         return;
     }
     FieldElement entity_felt = {entity_id};
+    LOG_INFO("Entity ID: ", entity_felt.to_string());
     Array arguments = {};
-    arguments.append(entity_felt.as_packed_array());
     FieldElement nulledFelt = {0};
     if (entity_felt.as_packed_array().hex_encode() == nulledFelt.as_packed_array().hex_encode())
     // if (&entity_id == &nullFelt)
@@ -94,11 +94,14 @@ void EventSubscription::on_entity_update(dojo_bindings::FieldElement* entity_id,
             if (primitive.tag == dojo_bindings::Primitive_Tag::Felt252)
             {
                 LOG_INFO("primitive.tag is [color=YELLOW]Felt252[/color]");
-                FieldElement felt = {&primitive.felt252};
-                // LOG_INFO("USERNAME ", dojo_bindings::controller_username(felt));
+                if (String(member.name) == "player")
+                {
+                    LOG_DEBUG("Player");
+                    FieldElement felt = {&primitive.felt252};
+                    arguments.append(felt.to_string());
+                    felt.bytearray_deserialize();
+                }
 
-                LOG_DEBUG(felt.to_string());
-                felt.bytearray_deserialize();
             }
             DojoPrimitive _primitive = DojoPrimitive(primitive);
             // result.append(_primitive.get_value());
