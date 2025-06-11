@@ -33,7 +33,7 @@ bg_color = Color(0.2484, 0.2484, 0.2484, 1)
 script = ExtResource("1_ig7tw")
 generic_entity_scene = ExtResource("2_ycdy4")
 player_entity_scene = ExtResource("3_w48qg")
-dojo_abi = "/home/idontkillcoyotes/Documentos/Laburo/dojo-starter/manifest_dev.json"
+dojo_abi = "/home/hazel/Proyectos/Godot/GDE/starting/dojo-starter/manifest_dev.json"
 
 [node name="Parallax" type="ParallaxBackground" parent="."]
 layer = -1
@@ -157,6 +157,10 @@ text = "SPAWN"
 visible = false
 layout_mode = 2
 text = "MOVE"
+
+[node name="TESTING" type="Button" parent="UI/VBoxContainer/HBoxContainer/Tabs/Main/Events"]
+layout_mode = 2
+text = "TESTING"
 
 [node name="SpawnTest" type="VBoxContainer" parent="UI/VBoxContainer/HBoxContainer/Tabs/Main"]
 visible = false
@@ -313,6 +317,7 @@ position_smoothing_speed = 4.0
 [connection signal="pressed" from="UI/VBoxContainer/HBoxContainer/Tabs/Main/ConnectController" to="." method="_on_connect_controller_pressed"]
 [connection signal="pressed" from="UI/VBoxContainer/HBoxContainer/Tabs/Main/Events/Spawn" to="." method="_on_spawn_pressed"]
 [connection signal="pressed" from="UI/VBoxContainer/HBoxContainer/Tabs/Main/Events/Move" to="." method="_on_move_pressed"]
+[connection signal="pressed" from="UI/VBoxContainer/HBoxContainer/Tabs/Main/Events/TESTING" to="." method="_on_testing_pressed"]
 [connection signal="pressed" from="UI/VBoxContainer/HBoxContainer/Tabs/Main/SpawnTest/HBoxContainer/Testing" to="." method="_on_testing_pressed"]
 [connection signal="pressed" from="UI/VBoxContainer/Arrows/ArrowLeft" to="." method="_on_arrow_left_pressed"]
 [connection signal="pressed" from="UI/VBoxContainer/Arrows/VBoxContainer/ArrowUp" to="." method="_on_arrow_up_pressed"]

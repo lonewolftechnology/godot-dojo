@@ -87,14 +87,15 @@ func callable_test(args:Array):
 	if _vector.is_empty(): return
 	
 	var vec:Vector2 = _vector[0]
-	if player and _packed[0] != player.id: 
-		push_warning("No es el player")
-		var _id = _packed[0]
-		await get_tree().process_frame
-		controllers.move_controller(_id, vec)
-	else:
-		await get_tree().process_frame
-		player.move(vec)
+	if player:
+		if _packed[0] != player.id: 
+			push_warning("No es el player")
+			var _id = _packed[0]
+			await get_tree().process_frame
+			controllers.move_controller(_id, vec)
+		else:
+			await get_tree().process_frame
+			player.move(vec)
 
 func call_test(args:Array):
 	push_warning("Updates entities", args)
@@ -125,7 +126,8 @@ func _on_subcribe_pressed() -> void:
 	dojo.entity_subscription(callable_test)
 	
 	await get_tree().process_frame
-	dojo.client_metadata()
+	#await get_tree().process_frame
+	#dojo.client_metadata()
 
 func _on_connect_controller_pressed() -> void:
 	if input_controller.text.is_empty():
@@ -135,8 +137,20 @@ func _on_connect_controller_pressed() -> void:
 	username_status.text = dojo.get_username()
 	await get_tree().process_frame
 	var users = dojo.get_controllers()
-	for user in users:
+	users.any(
+		func(user):
 		spawn_entity(user, user['player'])
+		)
+	await get_tree().process_frame
+	await get_tree().process_frame
+	await get_tree().process_frame
+	await get_tree().process_frame
+	var entities = dojo.get_entities()
+	entities.any(
+		func(entity):
+			controllers.move_controller(entity['id'], entity['pos'])
+	)
+	
 
 func _on_spawn_pressed() -> void:
 	dojo.spawn(reset_spawn.button_pressed,false)
@@ -154,7 +168,7 @@ func update_status(_value:bool, _status_node):
 
 func _on_move_pressed() -> void:
 	var random_direction = FieldElement.from_enum(randi_range(0,3))
-	dojo.move(random_direction,false)
+	dojo.move(random_direction,false, false)
 	
 func _unhandled_input(event: InputEvent) -> void:
 	var direction:FieldElement
@@ -172,7 +186,7 @@ func _unhandled_input(event: InputEvent) -> void:
 		get_viewport().set_input_as_handled()
 	
 	if not direction == null:
-		dojo.move(direction,false)
+		dojo.move(direction,false,false)
 		count+=1
 		print(count)
 	
@@ -197,7 +211,7 @@ func _on_button_toggle_toggled(toggled_on: bool) -> void:
 func _move(dir:Directions) -> void:
 	var direction:FieldElement
 	direction = FieldElement.from_enum(int(dir))
-	dojo.move(direction,false)
+	dojo.move(direction,false,false)
 	count += 1
 	
 func _on_arrow_left_pressed() -> void:
@@ -226,3 +240,7 @@ func spawn_entity(_data:Dictionary, is_player:bool = false):
 	
 	
 	
+
+
+func _on_testing_pressed() -> void:
+	dojo.move(FieldElement.from_enum(0),true,false)
