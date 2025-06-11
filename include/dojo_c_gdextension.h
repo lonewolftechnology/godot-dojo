@@ -29,13 +29,14 @@ namespace godot {
         static DojoC *get_singleton();
 
         void create_client(const String& world_addr, String torii_url);
+        void client_metadata();
         void get_entities();
-        void get_controllers();
+        TypedArray<Dictionary> get_controllers();
         void controller_new(const String& controller_addr, const String& rpc_url);
         // void controller_connect(const String &controller_addr);
         void create_entity_subscription(Callable callback);
         void entity_subscription(Callable callback);
-        void spawn(bool _debug);
+        void spawn(bool reset, bool _debug);
         void move(Ref<FieldElement> ref_felt, bool _debug);
         void send_message(const String& _msg);
         String get_username();

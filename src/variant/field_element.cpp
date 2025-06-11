@@ -121,7 +121,7 @@ String FieldElement::bytearray_deserialize()
     dojo_bindings::Resultc_char testing = dojo_bindings::bytearray_deserialize(get_felt(), 32);
     if (testing.tag == dojo_bindings::Resultc_char_Tag::Errc_char)
     {
-        LOG_ERROR("Can't deserialize ");
+        LOG_DEBUG("Can't deserialize Trying Cairo String");
         return parse_cairo();
     }
     else
@@ -136,7 +136,7 @@ String FieldElement::parse_cairo()
     dojo_bindings::Resultc_char testing = dojo_bindings::parse_cairo_short_string(get_felt_no_ptr());
     if (testing.tag == dojo_bindings::Resultc_char_Tag::Errc_char)
     {
-        LOG_ERROR("NO STRING");
+        LOG_DEBUG("No cairo string found, returning as string hex");
         return {to_string()};
     }
     else

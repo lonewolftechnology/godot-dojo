@@ -7,6 +7,7 @@
 #include <godot_cpp/classes/os.hpp>
 #include <godot_cpp/classes/json.hpp>
 #include <godot_cpp/core/class_db.hpp>
+#include <godot_cpp/classes/time.hpp>
 
 #include <debug_macros.h>
 #include <variant/primitive.h>
@@ -26,6 +27,7 @@ void DojoC::_bind_methods()
     ClassDB::bind_method(D_METHOD("get_enabled"), &DojoC::get_enabled);
     ClassDB::bind_method(D_METHOD("get_controllers"), &DojoC::get_controllers);
     ClassDB::bind_method(D_METHOD("get_entities"), &DojoC::get_entities);
+    ClassDB::bind_method(D_METHOD("client_metadata"), &DojoC::client_metadata);
     ClassDB::bind_method(D_METHOD("spawn"), &DojoC::spawn);
     ClassDB::bind_method(D_METHOD("move"), &DojoC::move);
     ClassDB::bind_method(D_METHOD("get_username"), &DojoC::get_username);
@@ -142,7 +144,7 @@ void DojoC::create_client(const String& world_addr,
     }
 }
 
-void client_metadata()
+void DojoC::client_metadata()
 {
     dojo_bindings::ResultWorldMetadata resMetadata = dojo_bindings::client_metadata(client);
 
@@ -162,12 +164,12 @@ void client_metadata()
     for (const auto& feltMeta : feltmetadata)
     {
         dojo_bindings::ModelMetadata model_metadata = feltMeta.value;
-        UtilityFunctions::print_rich(vformat("[color=Cyan]NameSpace: %s | Model: %s | TY: %s[/color]",
+        LOG_DEBUG(vformat("[color=Cyan]NameSpace: %s | Model: %s | TY: %s[/color]",
                                              model_metadata.namespace_, model_metadata.name,
                                              DojoPrimitive::PrimitiveTagToString(model_metadata.schema.tag)));
         if (model_metadata.schema.tag == dojo_bindings::Ty_Tag::Primitive_)
         {
-            UtilityFunctions::print_rich("[color=Peru]Primitive[/color]");
+            LOG_DEBUG("[color=Peru]Primitive[/color]");
             dojo_bindings::Primitive primitive = model_metadata.schema.primitive;
             DojoPrimitive _primitive = DojoPrimitive(primitive);
             // _msg += _primitive.get_value();
@@ -176,45 +178,45 @@ void client_metadata()
         {
             dojo_bindings::Struct metaStruct = model_metadata.schema.struct_;
             dojo_bindings::CArrayMember children = metaStruct.children;
-            UtilityFunctions::print_rich(vformat("[color=Peru]Struct is: %s [/color]", metaStruct.name));
+            LOG_DEBUG(vformat("[color=Peru]Struct is: %s [/color]", metaStruct.name));
             std::vector<dojo_bindings::Member> members(children.data, children.data + children.data_len);
 
             // Iterar y procesar los elementos
             for (const auto& member : members)
             {
-                UtilityFunctions::print_rich(vformat("[color=YELLOW]member: %s[/color]", member.name));
+                LOG_DEBUG(vformat("[color=YELLOW]member: %s[/color]", member.name));
 
                 if (member.ty->tag == dojo_bindings::Ty_Tag::Primitive_)
                 {
-                    UtilityFunctions::print_rich("member_type is [color=YELLOW]Primitive[/color]");
+                    LOG_DEBUG("member_type is [color=YELLOW]Primitive[/color]");
                     dojo_bindings::Primitive primitive = member.ty->primitive;
                     DojoPrimitive _primitive = DojoPrimitive(primitive);
                 }
                 else if (member.ty->tag == dojo_bindings::Ty_Tag::Struct_)
                 {
-                    UtilityFunctions::print_rich("member_type is [color=YELLOW]Struct[/color]");
+                    LOG_DEBUG("member_type is [color=YELLOW]Struct[/color]");
                     dojo_bindings::Struct struct_ = member.ty->struct_;
-                    UtilityFunctions::print_rich(vformat("[color=Peru]struct_name[/color] [color=YELLOW] %s [/color]",
+                    LOG_DEBUG(vformat("[color=Peru]struct_name[/color] [color=YELLOW] %s [/color]",
                                                          struct_.name));
                 }
                 else if (member.ty->tag == dojo_bindings::Ty_Tag::Array_)
                 {
-                    UtilityFunctions::print_rich("member_type is [color=YELLOW]CArrayTy[/color]");
+                    LOG_DEBUG("member_type is [color=YELLOW]CArrayTy[/color]");
                 }
                 else if (member.ty->tag == dojo_bindings::Ty_Tag::ByteArray)
                 {
-                    UtilityFunctions::print_rich("member_type is [color=YELLOW]ByteArray[/color]");
+                    LOG_DEBUG("member_type is [color=YELLOW]ByteArray[/color]");
                 }
                 else if (member.ty->tag == dojo_bindings::Ty_Tag::Enum_)
                 {
-                    UtilityFunctions::print_rich("member_type is [color=YELLOW]Enum[/color]");
+                    LOG_DEBUG("member_type is [color=YELLOW]Enum[/color]");
                     dojo_bindings::Enum enum_ = member.ty->enum_;
-                    UtilityFunctions::print_rich(vformat("enum_name [color=YELLOW]%s[/color]", enum_.name));
-                    UtilityFunctions::print_rich(vformat("enum_option [color=YELLOW]%s[/color]", enum_.option));
+                    LOG_DEBUG(vformat("enum_name [color=YELLOW]%s[/color]", enum_.name));
+                    LOG_DEBUG(vformat("enum_option [color=YELLOW]%s[/color]", enum_.option));
                 }
                 else if (member.ty->tag == dojo_bindings::Ty_Tag::Tuple_)
                 {
-                    UtilityFunctions::print_rich("member_type is [color=YELLOW]Tuple[/color]");
+                    LOG_DEBUG("member_type is [color=YELLOW]Tuple[/color]");
                 }
             }
         }
@@ -235,9 +237,7 @@ void on_account(dojo_bindings::ControllerAccount* account)
     priv = private_key.get_felt_no_ptr();
     dojo_bindings::FieldElement res_addr = dojo_bindings::controller_address(session_account);
     FieldElement account_addr = {&res_addr};
-    LOG_INFO("--\n\n");
-    String player_addr = account_addr.bytearray_deserialize();
-    LOG_DEBUG("PLAYER ", player_addr);
+    LOG_CUSTOM("PLAYER ID", account_addr.to_string());
     LOG_INFO("--\n\n");
 }
 
@@ -287,8 +287,9 @@ void DojoC::get_entities()
 
 }
 
-void DojoC::get_controllers()
+TypedArray<Dictionary> DojoC::get_controllers()
 {
+    TypedArray<Dictionary> result = {};
     dojo_bindings::COptionFieldElement control = {};
     control.tag = dojo_bindings::NoneFieldElement;
     // dojo_bindings::ResultCArrayController resControllers = dojo_bindings::client_controllers(client, nullptr, 0);
@@ -301,22 +302,41 @@ void DojoC::get_controllers()
     {
         dojo_bindings::CArrayController controllers = resControllers.ok;
         LOG_SUCCESS("Controllers received");
+        LOG_CUSTOM("CURRENT PLAYER", controller_username(session_account));
         if (controllers.data_len <= 0)
         {
-            LOG_DEBUG("THERE WHERE NONE");
-            return;
+            LOG_DEBUG("YOU ARE ALONE IN THIS WORLD...");
+            return {};
         }
+
         std::vector<dojo_bindings::Controller> controller_list(controllers.data,
                                                                controllers.data + controllers.data_len);
         for (const auto& controller : controller_list)
         {
+            Dictionary controller_dict = {};
             dojo_bindings::FieldElement controller_addr = controller.address;
             FieldElement user_felt = {&controller_addr};
-            LOG_INFO("Controller: ", controller.username);
-            String player_addra = user_felt.bytearray_deserialize();
-            LOG_DEBUG("CONTROLLER: ", player_addra);
+            LOG_DEBUG("CONTROLLER");
+
+            if (strcmp(controller.username, controller_username(session_account)) == 0)
+            {
+                LOG_DEBUG("Player Found");
+                controller_dict["player"] = true;
+            }
+            else
+            {
+                controller_dict["player"] = false;
+            }
+            controller_dict["username"] = controller.username;
+            controller_dict["id"] = user_felt.to_string();
+            controller_dict["timestamp"] = controller.deployed_at_timestamp;
+            LOG_CUSTOM("CONTROLLER USERNAME", controller_dict["username"]);
+            LOG_CUSTOM("CONTROLLER ID", controller_dict["id"]);
+            LOG_CUSTOM("CONTROLLER TIMESTAMP", controller_dict["timestamp"]);
+            result.append(controller_dict);
         }
     }
+    return result;
 }
 
 void DojoC::controller_new(const String& controller_addr,
@@ -345,11 +365,11 @@ void DojoC::controller_new(const String& controller_addr,
     // string_to_bytes(controller_addr, target.data, 32);
     // Por ahora hardcodeado
     dojo_bindings::Policy policies[] = {
+        {*target.get_felt(), "reset_spawn", "Spawns at 0,0"},
         {*target.get_felt(), "spawn", "Spawns"},
         {*target.get_felt(), "move", "Move to a direction"},
     };
-
-    uintptr_t policies_len = 2;
+    uintptr_t policies_len = 3;
 
     dojo_bindings::ResultControllerAccount resControllerAccount =
         dojo_bindings::controller_account(policies, policies_len, *katana.get_felt());
@@ -480,9 +500,9 @@ void account_execute_raw(const dojo_bindings::Call* calldata, const uintptr_t ca
     }
 }
 
-void DojoC::spawn(bool _debug = false)
+void DojoC::spawn(bool reset = false, bool _debug = false)
 {
-    UtilityFunctions::print_rich("[color=RED]----------Block ID---------");
+    LOG_CUSTOM("SPAWN","[color=RED]----------Block ID---------");
 
     dojo_bindings::BlockId block_id = {
         dojo_bindings::BlockTag_,
@@ -490,7 +510,7 @@ void DojoC::spawn(bool _debug = false)
     };
     dojo_bindings::Call spawn = {
         *actions,
-        "spawn",
+        reset ? "reset_spawn" : "spawn",
     };
     if (_debug)
     {
@@ -529,14 +549,13 @@ void DojoC::spawn(bool _debug = false)
 
 void DojoC::move(const Ref<FieldElement> ref_felt, const bool _debug = false)
 {
-    LOG_INFO("----------CallData---------");
+    LOG_CUSTOM("MOVE", "CallData creation");
     // dojo_bindings::FieldElement direction_felt = {};
     // String direction_hex = "0x0" + String::num_int64(0, 16);
     // LOG_INFO(direction_hex);
     // // string_to_bytes(direction_hex, direction_felt.data, 32);
     // direction_felt.data[31] = 0x01;
     dojo_bindings::FieldElement* direction_felt = ref_felt->get_felt();
-    LOG_INFO("----------Move---------");
     dojo_bindings::Call move = {
         *actions,
         "move",
@@ -545,6 +564,7 @@ void DojoC::move(const Ref<FieldElement> ref_felt, const bool _debug = false)
             1
         }
     };
+    LOG_CUSTOM("MOVE", "CallData created");
 
 
     if (_debug)
@@ -574,7 +594,7 @@ void DojoC::move(const Ref<FieldElement> ref_felt, const bool _debug = false)
         else
         {
             dojo_bindings::wait_for_transaction(controller_provider, result.ok);
-            LOG_SUCCESS(move.selector);
+            LOG_SUCCESS_EXTRA("MOVE", move.selector);
         }
     }
 }
