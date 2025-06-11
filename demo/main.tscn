@@ -1,8 +1,10 @@
-[gd_scene load_steps=16 format=3 uid="uid://buvlply3axqqi"]
+[gd_scene load_steps=18 format=3 uid="uid://buvlply3axqqi"]
 
 [ext_resource type="Script" uid="uid://ck323bl4c38kw" path="res://main.gd" id="1_ig7tw"]
 [ext_resource type="PackedScene" uid="uid://b5vmo8llucetx" path="res://ui/status_indicator.tscn" id="2_0xm2m"]
 [ext_resource type="Texture2D" uid="uid://blljslsxyx8em" path="res://assets/tile.png" id="2_1bvp3"]
+[ext_resource type="PackedScene" uid="uid://dj5mxqnlsh6q7" path="res://entities/generic/generic.tscn" id="2_ycdy4"]
+[ext_resource type="PackedScene" uid="uid://vjy23l7u4hch" path="res://entities/player/player.tscn" id="3_w48qg"]
 [ext_resource type="Texture2D" uid="uid://bls0ryaavsbvd" path="res://assets/arrow_left.png" id="4_5vw27"]
 [ext_resource type="Texture2D" uid="uid://bqdfqrx7ajogy" path="res://assets/arrow_left_p.png" id="5_dg77c"]
 [ext_resource type="Texture2D" uid="uid://do4cgyej57yhs" path="res://assets/arrow_up.png" id="5_kek77"]
@@ -11,7 +13,7 @@
 [ext_resource type="Texture2D" uid="uid://d1cuwkkgp8hyv" path="res://assets/arrow_up_p.png" id="7_ycdy4"]
 [ext_resource type="Texture2D" uid="uid://bkiqp5xd7g5mf" path="res://assets/arrow_down_p.png" id="9_w48qg"]
 [ext_resource type="Texture2D" uid="uid://dn0lmukjhns5l" path="res://assets/arrow_right_p.png" id="11_vivmo"]
-[ext_resource type="PackedScene" uid="uid://dj5mxqnlsh6q7" path="res://player.tscn" id="12_dg77c"]
+[ext_resource type="Script" uid="uid://c63vfoblqmxxg" path="res://tools/controllers.gd" id="14_w48qg"]
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_lquwl"]
 atlas = ExtResource("2_1bvp3")
@@ -29,6 +31,8 @@ bg_color = Color(0.2484, 0.2484, 0.2484, 1)
 
 [node name="Main" type="Node"]
 script = ExtResource("1_ig7tw")
+generic_entity_scene = ExtResource("2_ycdy4")
+player_entity_scene = ExtResource("3_w48qg")
 dojo_abi = "/home/idontkillcoyotes/Documentos/Laburo/dojo-starter/manifest_dev.json"
 
 [node name="Parallax" type="ParallaxBackground" parent="."]
@@ -139,12 +143,18 @@ text = "Eventos"
 horizontal_alignment = 1
 vertical_alignment = 1
 
+[node name="ResetSpawn" type="CheckBox" parent="UI/VBoxContainer/HBoxContainer/Tabs/Main/Events"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "Spawn at 0,0"
+
 [node name="Spawn" type="Button" parent="UI/VBoxContainer/HBoxContainer/Tabs/Main/Events"]
 layout_mode = 2
 size_flags_horizontal = 3
 text = "SPAWN"
 
 [node name="Move" type="Button" parent="UI/VBoxContainer/HBoxContainer/Tabs/Main/Events"]
+visible = false
 layout_mode = 2
 text = "MOVE"
 
@@ -240,9 +250,17 @@ layout_mode = 2
 size_flags_vertical = 8
 theme_override_constants/separation = 10
 
-[node name="Connection" type="Label" parent="UI/VBoxContainer/Panel/Status"]
+[node name="UsernameStatus" type="Label" parent="UI/VBoxContainer/Panel/Status"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "Username"
+
+[node name="VSeparator" type="VSeparator" parent="UI/VBoxContainer/Panel/Status"]
 layout_mode = 2
 size_flags_horizontal = 3
+
+[node name="Connection" type="Label" parent="UI/VBoxContainer/Panel/Status"]
+layout_mode = 2
 text = "Status:"
 vertical_alignment = 1
 
@@ -282,8 +300,12 @@ unique_name_in_owner = true
 layout_mode = 2
 type_name = "EntitiesUpdates"
 
-[node name="Player" parent="." instance=ExtResource("12_dg77c")]
-unique_name_in_owner = true
+[node name="Controllers" type="Node2D" parent="."]
+script = ExtResource("14_w48qg")
+
+[node name="Camera2D" type="Camera2D" parent="."]
+position_smoothing_enabled = true
+position_smoothing_speed = 4.0
 
 [connection signal="toggled" from="UI/VBoxContainer/HBoxContainer/ButtonToggle" to="." method="_on_button_toggle_toggled"]
 [connection signal="pressed" from="UI/VBoxContainer/HBoxContainer/Tabs/Main/Subcribe" to="." method="_on_subcribe_pressed"]

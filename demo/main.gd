@@ -7,11 +7,11 @@ enum Directions{
 	DOWN = 3,
 }
 
-const STEP_SIZE := Vector2(64,64)
-
 const dev_world_addr = "0x07cb912d0029e3799c4b8f2253b21481b2ec814c5daf72de75164ca82e7c42a5"
 const dev_actions_addr = "0x00a92391c5bcde7af4bad5fd0fff3834395b1ab8055a9abb8387c0e050a34edf"
 
+@export var generic_entity_scene:PackedScene
+@export var player_entity_scene:PackedScene
 
 @onready var dojo:DojoC = DojoC.new()
 
@@ -19,23 +19,37 @@ const dev_actions_addr = "0x00a92391c5bcde7af4bad5fd0fff3834395b1ab8055a9abb8387
 @onready var input_world_addr: TextEdit = %InputWorldAddr
 @onready var input_controller: TextEdit = %InputController
 
-@onready var client_status: DojoStatusIndicator = %ClientStatus
-@onready var provider_status: HBoxContainer = %ProviderStatus
-@onready var account_status: HBoxContainer = %AccountStatus
-@onready var suscription_status: HBoxContainer = %SuscriptionStatus
 @onready var spawn_output: RichTextLabel = %SpawnOutput
-@onready var controller_account_status: HBoxContainer = %ControllerAccountStatus
 @onready var chat_box: TextEdit = %ChatBox
 @onready var tabs: TabContainer = %Tabs
-@onready var player: Node2D = %Player
-@onready var entities_status: DojoStatusIndicator = %EntitiesStatus
+@onready var reset_spawn: CheckBox = %ResetSpawn
+
+@onready var controllers: Node2D = $Controllers
 
 @onready var button_toggle: Button = %ButtonToggle
 
 @export_global_file("*.json") var dojo_abi: String
 
+# Status Nodes
+@onready var username_status: Label = %UsernameStatus
+@onready var client_status: DojoStatusIndicator = %ClientStatus
+@onready var provider_status: DojoStatusIndicator = %ProviderStatus
+@onready var controller_account_status: DojoStatusIndicator = %ControllerAccountStatus
+@onready var account_status: DojoStatusIndicator = %AccountStatus
+@onready var suscription_status: DojoStatusIndicator = %SuscriptionStatus
+@onready var entities_status: DojoStatusIndicator = %EntitiesStatus
+
 var count: int = 0
 var packed: String
+
+var player:PlayerEntity
+
+var camera:Camera2D:
+	get:
+		if player:
+			return player.camera
+		else:
+			return get_viewport().get_camera_2d()
 
 func _ready() -> void:
 	OS.set_environment("RUST_BACKTRACE", "full")
@@ -66,25 +80,35 @@ func _ready() -> void:
 func callable_test(args:Array):
 	prints("Callable size:", args.size() ,"Result:",args)
 	#prints("\n\n", packed)
-	push_warning("Updates entities EVENT")
+	push_warning("Updates entities EVENT", args)
 	var _packed = args.filter(func(c): return c is String)
 	var _vector = args.filter(func(c): return c is Vector2 )
-	if not _packed.is_empty() and _packed[0] != packed: 
-		push_warning("NO SON LO MISMo")
-		return
-	if not _vector.is_empty():
-		var vec = _vector[0]
-		#prints("Args(1):",args[1])
+	
+	if _vector.is_empty(): return
+	
+	var vec:Vector2 = _vector[0]
+	if player and _packed[0] != player.id: 
+		push_warning("No es el player")
+		var _id = _packed[0]
 		await get_tree().process_frame
-		player.move(vec * STEP_SIZE)
+		controllers.move_controller(_id, vec)
+	else:
+		await get_tree().process_frame
+		player.move(vec)
 
 func call_test(args:Array):
-	push_warning("Updates entities")
-	var _packed = args.filter(func(c): return c is PackedByteArray)
-	var _vector = args.filter(func(c): return c is Vector2 )
-	if not _packed.is_empty() and _packed[0] == packed: 
+	push_warning("Updates entities", args)
+	var _packed = args.filter(func(c): return c is String)
+	var _vector = args.filter(func(c): return c is Vector2)
+	if _vector.is_empty(): return
+	var vec:Vector2 = _vector[0]
+	
+	if player and _packed[0] != player.id: 
 		push_warning("SON LO MISMo")
-		return
+		var _id = _packed[0]
+		await get_tree().process_frame
+		controllers.move_controller(_id, vec)
+
 
 func _on_button_pressed() -> void:
 	if input_world_addr.text.is_empty():
@@ -93,29 +117,29 @@ func _on_button_pressed() -> void:
 	
 func _on_subcribe_pressed() -> void:
 	_on_button_pressed()
-	await get_tree().create_timer(1).timeout
+	await get_tree().process_frame
 
 	dojo.create_entity_subscription(call_test)
-	await get_tree().create_timer(1).timeout
+	await get_tree().process_frame
 	
 	dojo.entity_subscription(callable_test)
+	
+	await get_tree().process_frame
+	dojo.client_metadata()
 
 func _on_connect_controller_pressed() -> void:
 	if input_controller.text.is_empty():
 		input_controller.text = dev_actions_addr
 	dojo.controller_new(input_controller.text, "https://api.cartridge.gg/x/godot-demo-rookie/katana")
 	await dojo.on_account
-	#await get_tree().create_timer(5).timeout
-	player.username.text = dojo.get_username()
-	await get_tree().create_timer(1).timeout
-	packed = dojo.get_session_address()
-	await get_tree().create_timer(1).timeout
-	#dojo.get_entities()
-	await get_tree().create_timer(1).timeout
-	dojo.get_controllers()
+	username_status.text = dojo.get_username()
+	await get_tree().process_frame
+	var users = dojo.get_controllers()
+	for user in users:
+		spawn_entity(user, user['player'])
 
 func _on_spawn_pressed() -> void:
-	dojo.spawn(false)
+	dojo.spawn(reset_spawn.button_pressed,false)
 
 func _on_event_update(_msg:String):
 	spawn_output.append_text(_msg)
@@ -127,7 +151,6 @@ func update_event_subscription_status(_value:bool, _event:String, _status_node:H
 func update_status(_value:bool, _status_node):
 	if _status_node is DojoStatusIndicator:
 		_status_node.set_status(_value)
-
 
 func _on_move_pressed() -> void:
 	var random_direction = FieldElement.from_enum(randi_range(0,3))
@@ -159,13 +182,13 @@ func _unhandled_input(event: InputEvent) -> void:
 			dojo.send_message(chat_box.text)
 			
 	if event.is_action_pressed("zoom_in"):
-		get_node("Player/Camera2D").zoom += Vector2(0.1, 0.1)
+		camera.zoom += Vector2(0.1, 0.1)
 
 	if event.is_action_pressed("zoom_out"):
-		get_node("Player/Camera2D").zoom -= Vector2(0.1, 0.1)
+		camera.zoom -= Vector2(0.1, 0.1)
 
 	if event is InputEventMouseMotion && Input.is_mouse_button_pressed(MOUSE_BUTTON_RIGHT):
-		get_node("Player/Camera2D").position -= event.relative * 1/get_node("Player/Camera2D").zoom
+		camera.position -= event.relative * 1/camera.zoom
 		
 
 func _on_button_toggle_toggled(toggled_on: bool) -> void:
@@ -177,7 +200,6 @@ func _move(dir:Directions) -> void:
 	dojo.move(direction,false)
 	count += 1
 	
-
 func _on_arrow_left_pressed() -> void:
 	_move(Directions.LEFT)
 
@@ -189,3 +211,18 @@ func _on_arrow_down_pressed() -> void:
 
 func _on_arrow_right_pressed() -> void:
 	_move(Directions.RIGHT)
+
+
+func spawn_entity(_data:Dictionary, is_player:bool = false):
+	var new_entity:GenericEntity
+	if is_player:
+		new_entity = player_entity_scene.instantiate()
+		player = new_entity
+	else:
+		new_entity = generic_entity_scene.instantiate()
+	await get_tree().process_frame
+	controllers.add_child(new_entity)
+	new_entity.setup(_data)	
+	
+	
+	

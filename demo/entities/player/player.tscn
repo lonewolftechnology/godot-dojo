@@ -1,0 +1,11 @@
+[gd_scene load_steps=3 format=3 uid="uid://vjy23l7u4hch"]
+
+[ext_resource type="PackedScene" uid="uid://dj5mxqnlsh6q7" path="res://entities/generic/generic.tscn" id="1_symyc"]
+[ext_resource type="Script" uid="uid://du5fxjm6hi5sa" path="res://entities/player/player.gd" id="2_abrql"]
+
+[node name="Player" instance=ExtResource("1_symyc")]
+script = ExtResource("2_abrql")
+
+[node name="Camera2D" type="Camera2D" parent="." index="3"]
+position_smoothing_enabled = true
+position_smoothing_speed = 4.0
