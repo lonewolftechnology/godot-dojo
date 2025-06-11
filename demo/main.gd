@@ -142,9 +142,6 @@ func _on_connect_controller_pressed() -> void:
 		spawn_entity(user, user['player'])
 		)
 	await get_tree().process_frame
-	await get_tree().process_frame
-	await get_tree().process_frame
-	await get_tree().process_frame
 	var entities = dojo.get_entities()
 	entities.any(
 		func(entity):
