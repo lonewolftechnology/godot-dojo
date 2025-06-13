@@ -1,10 +1,8 @@
-[gd_scene load_steps=18 format=3 uid="uid://buvlply3axqqi"]
+[gd_scene load_steps=15 format=3 uid="uid://buvlply3axqqi"]
 
 [ext_resource type="Script" uid="uid://ck323bl4c38kw" path="res://main.gd" id="1_ig7tw"]
 [ext_resource type="PackedScene" uid="uid://b5vmo8llucetx" path="res://ui/status_indicator.tscn" id="2_0xm2m"]
 [ext_resource type="Texture2D" uid="uid://blljslsxyx8em" path="res://assets/tile.png" id="2_1bvp3"]
-[ext_resource type="PackedScene" uid="uid://dj5mxqnlsh6q7" path="res://entities/generic/generic.tscn" id="2_ycdy4"]
-[ext_resource type="PackedScene" uid="uid://vjy23l7u4hch" path="res://entities/player/player.tscn" id="3_w48qg"]
 [ext_resource type="Texture2D" uid="uid://bls0ryaavsbvd" path="res://assets/arrow_left.png" id="4_5vw27"]
 [ext_resource type="Texture2D" uid="uid://bqdfqrx7ajogy" path="res://assets/arrow_left_p.png" id="5_dg77c"]
 [ext_resource type="Texture2D" uid="uid://do4cgyej57yhs" path="res://assets/arrow_up.png" id="5_kek77"]
@@ -19,9 +17,6 @@
 atlas = ExtResource("2_1bvp3")
 region = Rect2(0, 48, 2560, 1440)
 
-[sub_resource type="LabelSettings" id="LabelSettings_ig7tw"]
-font_size = 36
-
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_ycdy4"]
 content_margin_left = 4.0
 content_margin_top = 4.0
@@ -31,8 +26,6 @@ bg_color = Color(0.2484, 0.2484, 0.2484, 1)
 
 [node name="Main" type="Node"]
 script = ExtResource("1_ig7tw")
-generic_entity_scene = ExtResource("2_ycdy4")
-player_entity_scene = ExtResource("3_w48qg")
 dojo_abi = "/home/hazel/Proyectos/Godot/GDE/starting/dojo-starter/manifest_dev.json"
 
 [node name="Parallax" type="ParallaxBackground" parent="."]
@@ -85,55 +78,23 @@ size_flags_horizontal = 3
 alignment = 1
 metadata/_tab_index = 0
 
-[node name="Label" type="Label" parent="UI/VBoxContainer/HBoxContainer/Tabs/Main"]
-visible = false
-layout_mode = 2
-text = "Orden de botones: Suscribe -> Controller
-Login con passkey, en caso de que no sea chromium based el navegador:
-BitWarden(extension navegador) funciona para generar y loguearse"
-horizontal_alignment = 1
-vertical_alignment = 1
-
 [node name="WorldClientLabel" type="Label" parent="UI/VBoxContainer/HBoxContainer/Tabs/Main"]
 layout_mode = 2
 text = "World Client"
 horizontal_alignment = 1
 
-[node name="Subcribe" type="Button" parent="UI/VBoxContainer/HBoxContainer/Tabs/Main"]
-layout_mode = 2
-text = "INIT"
-
-[node name="Status" type="Label" parent="UI/VBoxContainer/HBoxContainer/Tabs/Main"]
+[node name="StartToriiClient" type="Button" parent="UI/VBoxContainer/HBoxContainer/Tabs/Main"]
 unique_name_in_owner = true
-visible = false
 layout_mode = 2
-size_flags_vertical = 0
-label_settings = SubResource("LabelSettings_ig7tw")
-
-[node name="InputWorldAddr" type="TextEdit" parent="UI/VBoxContainer/HBoxContainer/Tabs/Main"]
-unique_name_in_owner = true
-visible = false
-custom_minimum_size = Vector2(0, 100)
-layout_mode = 2
-placeholder_text = "WORLD ADDR"
-
-[node name="BtnStartClient" type="Button" parent="UI/VBoxContainer/HBoxContainer/Tabs/Main"]
-visible = false
-layout_mode = 2
-text = "Connect"
-
-[node name="InputController" type="TextEdit" parent="UI/VBoxContainer/HBoxContainer/Tabs/Main"]
-unique_name_in_owner = true
-visible = false
-custom_minimum_size = Vector2(0, 100)
-layout_mode = 2
-placeholder_text = "ControllerADDR"
+text = "Start Torii Client"
 
 [node name="ConnectController" type="Button" parent="UI/VBoxContainer/HBoxContainer/Tabs/Main"]
+visible = false
 layout_mode = 2
 text = "Login"
 
 [node name="Events" type="VBoxContainer" parent="UI/VBoxContainer/HBoxContainer/Tabs/Main"]
+visible = false
 layout_mode = 2
 alignment = 1
 
@@ -161,42 +122,6 @@ text = "MOVE"
 [node name="TESTING" type="Button" parent="UI/VBoxContainer/HBoxContainer/Tabs/Main/Events"]
 layout_mode = 2
 text = "TESTING"
-
-[node name="SpawnTest" type="VBoxContainer" parent="UI/VBoxContainer/HBoxContainer/Tabs/Main"]
-visible = false
-layout_mode = 2
-
-[node name="HBoxContainer" type="HBoxContainer" parent="UI/VBoxContainer/HBoxContainer/Tabs/Main/SpawnTest"]
-visible = false
-layout_mode = 2
-
-[node name="Label" type="Label" parent="UI/VBoxContainer/HBoxContainer/Tabs/Main/SpawnTest/HBoxContainer"]
-layout_mode = 2
-text = "Esto crea el provider y registra la cuenta con las prefundadas de Katana y registra el callback"
-
-[node name="Testing" type="Button" parent="UI/VBoxContainer/HBoxContainer/Tabs/Main/SpawnTest/HBoxContainer"]
-layout_mode = 2
-size_flags_horizontal = 3
-text = "Testing"
-
-[node name="Label" type="Label" parent="UI/VBoxContainer/HBoxContainer/Tabs/Main/SpawnTest"]
-visible = false
-layout_mode = 2
-text = "--Spawn Output--"
-horizontal_alignment = 1
-vertical_alignment = 1
-
-[node name="ScrollContainer" type="ScrollContainer" parent="UI/VBoxContainer/HBoxContainer/Tabs/Main/SpawnTest"]
-visible = false
-layout_mode = 2
-size_flags_vertical = 3
-
-[node name="SpawnOutput" type="RichTextLabel" parent="UI/VBoxContainer/HBoxContainer/Tabs/Main/SpawnTest/ScrollContainer"]
-unique_name_in_owner = true
-layout_mode = 2
-size_flags_horizontal = 3
-size_flags_vertical = 3
-bbcode_enabled = true
 
 [node name="Chat" type="VBoxContainer" parent="UI/VBoxContainer/HBoxContainer/Tabs"]
 visible = false
@@ -312,13 +237,11 @@ position_smoothing_enabled = true
 position_smoothing_speed = 4.0
 
 [connection signal="toggled" from="UI/VBoxContainer/HBoxContainer/ButtonToggle" to="." method="_on_button_toggle_toggled"]
-[connection signal="pressed" from="UI/VBoxContainer/HBoxContainer/Tabs/Main/Subcribe" to="." method="_on_subcribe_pressed"]
-[connection signal="pressed" from="UI/VBoxContainer/HBoxContainer/Tabs/Main/BtnStartClient" to="." method="_on_button_pressed"]
+[connection signal="pressed" from="UI/VBoxContainer/HBoxContainer/Tabs/Main/StartToriiClient" to="." method="_on_subcribe_pressed"]
 [connection signal="pressed" from="UI/VBoxContainer/HBoxContainer/Tabs/Main/ConnectController" to="." method="_on_connect_controller_pressed"]
 [connection signal="pressed" from="UI/VBoxContainer/HBoxContainer/Tabs/Main/Events/Spawn" to="." method="_on_spawn_pressed"]
 [connection signal="pressed" from="UI/VBoxContainer/HBoxContainer/Tabs/Main/Events/Move" to="." method="_on_move_pressed"]
 [connection signal="pressed" from="UI/VBoxContainer/HBoxContainer/Tabs/Main/Events/TESTING" to="." method="_on_testing_pressed"]
-[connection signal="pressed" from="UI/VBoxContainer/HBoxContainer/Tabs/Main/SpawnTest/HBoxContainer/Testing" to="." method="_on_testing_pressed"]
 [connection signal="pressed" from="UI/VBoxContainer/Arrows/ArrowLeft" to="." method="_on_arrow_left_pressed"]
 [connection signal="pressed" from="UI/VBoxContainer/Arrows/VBoxContainer/ArrowUp" to="." method="_on_arrow_up_pressed"]
 [connection signal="pressed" from="UI/VBoxContainer/Arrows/VBoxContainer/ArrowDown" to="." method="_on_arrow_down_pressed"]
