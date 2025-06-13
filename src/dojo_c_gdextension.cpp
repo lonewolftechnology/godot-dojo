@@ -12,11 +12,12 @@
 #include <debug_macros.h>
 #include <variant/primitive.h>
 
+#include "classes/controller_account.h"
+
 
 using namespace godot;
 dojo_bindings::ToriiClient* client;
 DojoC* DojoC::singleton = nullptr;
-dojo_bindings::ControllerAccount* session_account;
 dojo_bindings::Provider* controller_provider;
 dojo_bindings::Account* account;
 dojo_bindings::FieldElement* actions;
@@ -31,19 +32,8 @@ void DojoC::_bind_methods()
     ClassDB::bind_method(D_METHOD("client_metadata"), &DojoC::client_metadata);
     ClassDB::bind_method(D_METHOD("spawn"), &DojoC::spawn);
     ClassDB::bind_method(D_METHOD("move"), &DojoC::move);
-    ClassDB::bind_method(D_METHOD("get_username"), &DojoC::get_username);
-    ClassDB::bind_method(D_METHOD("get_session_packed_byte"), &DojoC::get_session_packed_byte);
-    ClassDB::bind_method(D_METHOD("get_session_address"), &DojoC::get_session_address);
     ClassDB::bind_method(D_METHOD("create_entity_subscription", "p_callable"), &DojoC::create_entity_subscription);
     ClassDB::bind_method(D_METHOD("entity_subscription", "p_callable"), &DojoC::entity_subscription);
-    ClassDB::bind_method(
-        D_METHOD(
-            "controller_new",
-            "p_controller_addr",
-            "p_relay_rul"),
-        &DojoC::controller_new,
-        DEFVAL("http://localhost:5050")
-    );
 
     // ClassDB::bind_method(D_METHOD("client_new"), &DojoC::client_new);
     ClassDB::bind_method(
@@ -69,7 +59,6 @@ void DojoC::_bind_methods()
     ADD_SIGNAL(MethodInfo("client_status_updated", PropertyInfo(Variant::BOOL, "status")));
     ADD_SIGNAL(MethodInfo("entities_status_updated", PropertyInfo(Variant::BOOL, "status")));
     ADD_SIGNAL(MethodInfo("subscription_status_updated",PropertyInfo(Variant::BOOL, "status")));
-    ADD_SIGNAL(MethodInfo("on_account"));
 }
 
 DojoC::DojoC()
@@ -97,6 +86,7 @@ DojoC::~DojoC()
 {
     // Add your cleanup here.
     singleton = nullptr;
+
 }
 
 void print_felt(String fname, const dojo_bindings::FieldElement felt)
@@ -224,24 +214,6 @@ void DojoC::client_metadata()
     }
 }
 
-// callback al iniciar sesion en el controller de Cartridge
-void on_account(dojo_bindings::ControllerAccount* account)
-{
-    // Implementar
-    LOG_SUCCESS("Account Data received");
-    session_account = account;
-    DojoC::get_singleton()->call_deferred("emit_signal", "controller_account_status_updated", true);
-    DojoC::get_singleton()->call_deferred("emit_signal", "on_account");
-
-    print_felt("chain ID ", dojo_bindings::controller_chain_id(session_account));
-    FieldElement private_key = {"0x14d6672dcb4b77ca36a887e9a11cd9d637d5012468175829e9c6e770c61642"};
-    priv = private_key.get_felt_no_ptr();
-    dojo_bindings::FieldElement res_addr = dojo_bindings::controller_address(session_account);
-    FieldElement account_addr = {&res_addr};
-    LOG_CUSTOM("PLAYER ID", account_addr.to_string());
-    LOG_INFO("--\n\n");
-}
-
 TypedArray<Dictionary> DojoC::get_entities()
 {
     TypedArray<Dictionary> result = {};
@@ -353,6 +325,7 @@ TypedArray<Dictionary> DojoC::get_entities()
 
 TypedArray<Dictionary> DojoC::get_controllers()
 {
+    dojo_bindings::ControllerAccount* session_account = ControllerAccount::get_singleton()->get_session_account();
     TypedArray<Dictionary> result = {};
     dojo_bindings::COptionFieldElement control = {};
     control.tag = dojo_bindings::NoneFieldElement;
@@ -361,6 +334,7 @@ TypedArray<Dictionary> DojoC::get_controllers()
     if (resControllers.tag == dojo_bindings::ErrCArrayController)
     {
         LOG_ERROR(resControllers.err.message);
+        return result;
     }
     else
     {
@@ -403,57 +377,10 @@ TypedArray<Dictionary> DojoC::get_controllers()
     return result;
 }
 
-void DojoC::controller_new(const String& controller_addr,
-                           const String& rpc_url = "http://localhost:5050"
-)
-{
-    FieldElement target = {controller_addr, 32};
-    FieldElement katana = {"0x57505f474f444f545f44454d4f5f524f4f4b4945", 32};
-    LOG_INFO("CHAIN ID: ", katana.bytearray_deserialize());
-
-    dojo_bindings::ResultProvider resControllerProvider = dojo_bindings::provider_new(rpc_url.utf8().get_data());
-    if (resControllerProvider.tag == dojo_bindings::ErrProvider)
-    {
-        UtilityFunctions::printerr("Error: ", resControllerProvider.err.message);
-        emit_signal("provider_status_updated", false);
-
-        return;
-    }
-    else
-    {
-        LOG_SUCCESS("Controller Provider created");
-        controller_provider = resControllerProvider.ok;
-        emit_signal("provider_status_updated", true);
-    }
-
-    // string_to_bytes(controller_addr, target.data, 32);
-    // Por ahora hardcodeado
-    dojo_bindings::Policy policies[] = {
-        {*target.get_felt(), "reset_spawn", "Spawns at 0,0"},
-        {*target.get_felt(), "spawn", "Spawns"},
-        {*target.get_felt(), "move", "Move to a direction"},
-    };
-    uintptr_t policies_len = 3;
-
-    dojo_bindings::ResultControllerAccount resControllerAccount =
-        dojo_bindings::controller_account(policies, policies_len, *katana.get_felt());
-    if (resControllerAccount.tag == dojo_bindings::OkControllerAccount)
-    {
-        LOG_INFO("Session account already connected");
-        session_account = resControllerAccount.ok;
-        emit_signal("on_account");
-    }
-    else
-    {
-        LOG_INFO("Session account not connected, connecting...");
-        dojo_bindings::controller_connect(rpc_url.utf8().get_data(), policies, policies_len, on_account);
-    }
-}
-
 void subscription_callback(dojo_bindings::Event event)
 {
-    UtilityFunctions::print_verbose("subscription_callback Triggered");
-    UtilityFunctions::print_verbose(&event.data);
+    LOG_INFO("subscription_callback Triggered");
+    // LOG_INFO(&event.data);
 }
 
 void on_indexer_update(dojo_bindings::ResultSubscription result)
@@ -565,6 +492,8 @@ void account_execute_raw(const dojo_bindings::Call* calldata, const uintptr_t ca
 void DojoC::spawn(bool reset = false, bool _debug = false)
 {
     LOG_CUSTOM("SPAWN", "[color=RED]----------Block ID---------");
+    dojo_bindings::ControllerAccount* session_account = ControllerAccount::get_singleton()->get_session_account();
+
 
     dojo_bindings::BlockId block_id = {
         dojo_bindings::BlockTag_,
@@ -612,6 +541,7 @@ void DojoC::spawn(bool reset = false, bool _debug = false)
 void DojoC::move(const Ref<FieldElement> ref_felt, bool test = false, const bool _debug = false)
 {
     LOG_CUSTOM("MOVE", "CallData creation");
+    dojo_bindings::ControllerAccount* session_account = ControllerAccount::get_singleton()->get_session_account();
     // dojo_bindings::FieldElement direction_felt = {};
     // String direction_hex = "0x0" + String::num_int64(0, 16);
     // LOG_INFO(direction_hex);
@@ -676,6 +606,7 @@ void DojoC::move(const Ref<FieldElement> ref_felt, bool test = false, const bool
 
 void DojoC::send_message(const String& _msg)
 {
+    dojo_bindings::ControllerAccount* session_account = ControllerAccount::get_singleton()->get_session_account();
     dojo_bindings::FieldElement acc = dojo_bindings::controller_address(session_account);
     FieldElement account_address = {&acc};
     Dictionary typed_data = {};
@@ -727,22 +658,4 @@ void DojoC::send_message(const String& _msg)
         LOG_INFO(felt_result.to_string());
     }
     LOG_INFO("FINISHED");
-}
-
-String DojoC::get_username()
-{
-    return dojo_bindings::controller_username(session_account);
-}
-
-PackedByteArray DojoC::get_session_packed_byte()
-{
-    LOG_INFO("SESSION PACKED BYTE");
-    return FieldElement::to_packed_array(session_account);
-}
-
-String DojoC::get_session_address()
-{
-    dojo_bindings::FieldElement _felt = dojo_bindings::controller_address(session_account);
-    FieldElement account_address = {&_felt};
-    return account_address.to_string();
 }

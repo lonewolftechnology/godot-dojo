@@ -1,0 +1,6 @@
+[submodule "godot-cpp"]
+	path = godot-cpp
+	url = https://github.com/godotengine/godot-cpp
+[submodule "dojo.c"]
+	path = dojo.c
+	url = https://github.com/dojoengine/dojo.c

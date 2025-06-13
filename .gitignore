@@ -89,3 +89,5 @@ config.log
 
 # Python/scons
 .venv
+
+cmake-*

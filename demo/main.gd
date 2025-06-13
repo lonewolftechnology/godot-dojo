@@ -118,14 +118,11 @@ func _on_button_pressed() -> void:
 	
 func _on_subcribe_pressed() -> void:
 	_on_button_pressed()
-	await get_tree().process_frame
 
 	dojo.create_entity_subscription(call_test)
-	await get_tree().process_frame
 	
 	dojo.entity_subscription(callable_test)
 	
-	await get_tree().process_frame
 	#await get_tree().process_frame
 	#dojo.client_metadata()
 
@@ -135,7 +132,6 @@ func _on_connect_controller_pressed() -> void:
 	dojo.controller_new(input_controller.text, "https://api.cartridge.gg/x/godot-demo-rookie/katana")
 	await dojo.on_account
 	username_status.text = dojo.get_username()
-	await get_tree().process_frame
 	var users = dojo.get_controllers()
 	users.any(
 		func(user):
