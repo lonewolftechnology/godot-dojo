@@ -32,6 +32,7 @@ public:
     String parse_cairo();
     String bytearray_deserialize();
 
+    static String get_as_string(dojo_bindings::FieldElement* _felt);
 
     dojo_bindings::FieldElement* get_felt() const { return felt; }
     dojo_bindings::FieldElement get_felt_no_ptr() const { return *felt; }

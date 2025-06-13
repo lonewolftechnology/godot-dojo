@@ -121,7 +121,7 @@ String FieldElement::bytearray_deserialize()
     dojo_bindings::Resultc_char testing = dojo_bindings::bytearray_deserialize(get_felt(), 32);
     if (testing.tag == dojo_bindings::Resultc_char_Tag::Errc_char)
     {
-        LOG_DEBUG("Can't deserialize Trying Cairo String");
+        LOG_DEBUG("Can't deserialize... Trying Cairo String");
         return parse_cairo();
     }
     else
@@ -129,6 +129,17 @@ String FieldElement::bytearray_deserialize()
         LOG_SUCCESS("Felt:", testing.ok);
     }
     return {testing.ok};
+}
+
+String FieldElement::get_as_string(dojo_bindings::FieldElement* _felt)
+{
+    String ret = "0x";
+    for (size_t i = 0; i < 32; i++)
+    {
+        ret += String::num_int64(_felt->data[i], 16, false);
+    };
+
+    return ret;
 }
 
 String FieldElement::parse_cairo()
