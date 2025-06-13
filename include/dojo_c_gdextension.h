@@ -23,31 +23,9 @@ namespace godot {
     public:
         void set_enabled(bool p_enabled){enabled=p_enabled;};
         bool get_enabled(){return enabled;}
-        Array output_message;
-
 
         static DojoC *get_singleton();
 
-        void create_client(const String& world_addr, String torii_url);
-        void client_metadata();
-        TypedArray<Dictionary> get_entities();
-        TypedArray<Dictionary> get_controllers();
-        void controller_new(const String& controller_addr, const String& rpc_url);
-        // void controller_connect(const String &controller_addr);
-        void create_entity_subscription(Callable callback);
-        void entity_subscription(Callable callback);
-        void spawn(bool reset, bool _debug);
-        void move(Ref<FieldElement> ref_felt, bool test, bool _debug);
-        void send_message(const String& _msg);
-        String get_username();
-        PackedByteArray get_session_packed_byte();
-        String get_session_address();
-        // Array values = {};
-        // Array get_values() const {return values;}
-        // void set_values(const Array &p_values) {values = p_values;}
-
-        Array get_output_message() const {return output_message;}
-        void set_output_message(const Array p_output_message) {output_message = p_output_message;}
 
         DojoC();
         ~DojoC();
