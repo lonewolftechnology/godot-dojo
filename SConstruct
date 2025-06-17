@@ -30,7 +30,7 @@ def init_colors():
         os.system("")
 
         # Verificar si estamos en Windows Terminal o PowerShell moderno
-        if os.getenv('WT_SESSION') or 'WindowsPowerShell' in str(os.getenv('PSModulePath', '')):
+        if os.getenv('WT_SESSION') or 'WindowsPowerShell' in str(os.getenv('PSModulePath, ')):
             return {
                 'G': '\033[92m',
                 'B': '\033[94m',
@@ -93,7 +93,7 @@ def detect_arch():
 _msvc_cache = None
 
 def has_msvc():
-    """Detecta MSVC de forma simple - si Rust puede usarlo, nosotros también (CACHED)"""
+    """Detecta MSVC de forma rápida y confiable (CACHED)"""
     global _msvc_cache
     
     # Si ya fue detectado, usar cache
@@ -104,44 +104,57 @@ def has_msvc():
         _msvc_cache = False
         return _msvc_cache
 
+    print(f"{B}🔍 Detecting MSVC toolchain...{X}")
+    
     try:
-        print(f"{B}🔍 Detecting MSVC toolchain...{X}")
-        
-        # Método 1: Verificar directamente cl.exe
+        # Método 1: Verificar directamente cl.exe (más rápido)
         result = subprocess.run(['where', 'cl'], 
-                              capture_output=True, text=True, shell=True)
+                              capture_output=True, text=True, shell=True, timeout=5)
         if result.returncode == 0:
-            print(f"  ✅ MSVC compiler found: {result.stdout.strip().split()[0]}")
+            cl_path = result.stdout.strip().split('\n')[0]
+            print(f"  ✅ MSVC compiler found: {cl_path}")
             _msvc_cache = True
             return _msvc_cache
         
-        # Método 2: Test con cargo check en dojo.c directory
-        result = subprocess.run([
-            'cargo', 'check', '--target', 'x86_64-pc-windows-msvc'
-        ], capture_output=True, text=True, cwd='external/dojo.c')
+        # Método 2: Verificar variables de entorno de Visual Studio
+        vs_vars = ['VSINSTALLDIR', 'VCINSTALLDIR', 'VCToolsInstallDir']
+        for var in vs_vars:
+            if os.environ.get(var):
+                print(f"  ✅ MSVC environment detected: {var}={os.environ[var]}")
+                _msvc_cache = True
+                return _msvc_cache
         
-        if result.returncode == 0:
-            print(f"  ✅ MSVC toolchain confirmed (Rust can use it)")
+        # Método 3: Verificar si rustup tiene el target MSVC instalado (rápido)
+        result = subprocess.run(['rustup', 'target', 'list', '--installed'], 
+                              capture_output=True, text=True, timeout=10)
+        if result.returncode == 0 and 'x86_64-pc-windows-msvc' in result.stdout:
+            print(f"  ✅ MSVC target already installed in rustup")
             _msvc_cache = True
             return _msvc_cache
         
+        # Método 4: Verificar directorios típicos de Visual Studio
+        vs_paths = [
+            r"C:\Program Files\Microsoft Visual Studio",
+            r"C:\Program Files (x86)\Microsoft Visual Studio",
+            r"C:\BuildTools\VC\Tools\MSVC"
+        ]
+        
+        for vs_path in vs_paths:
+            if os.path.exists(vs_path):
+                print(f"  ✅ Visual Studio installation found: {vs_path}")
+                _msvc_cache = True
+                return _msvc_cache
+        
+        print(f"  ⚠️ MSVC not detected - will use GNU toolchain")
         _msvc_cache = False
         return _msvc_cache
         
+    except subprocess.TimeoutExpired:
+        print(f"  ⚠️ MSVC detection timed out - assuming not available")
+        _msvc_cache = False
+        return _msvc_cache
     except Exception as e:
-        print(f"  ⚠️ MSVC detection inconclusive: {e}")
-        # En Windows, usar método más conservador
-        try:
-            # Verificar si rustup conoce el target MSVC
-            result = subprocess.run(['rustup', 'target', 'list'], 
-                                  capture_output=True, text=True)
-            if result.returncode == 0 and 'x86_64-pc-windows-msvc' in result.stdout:
-                print(f"  ✅ MSVC target available in rustup")
-                _msvc_cache = True
-                return _msvc_cache
-        except:
-            pass
-        
+        print(f"  ⚠️ MSVC detection failed: {e}")
         _msvc_cache = False
         return _msvc_cache
 
@@ -154,8 +167,10 @@ if is_cleaning:
     # 1. Limpiar dojo.c con cargo clean
     print(f"{Y}🦀 Cleaning dojo.c (cargo clean)...{X}")
     try:
-        subprocess.run(["cargo", "clean"], cwd="external/dojo.c", check=True)
+        subprocess.run(["cargo", "clean"], cwd="external/dojo.c", check=True, timeout=30)
         print(f"{G}✅ dojo.c cleaned{X}")
+    except subprocess.TimeoutExpired:
+        print(f"{R}❌ dojo.c clean timed out{X}")
     except subprocess.CalledProcessError as e:
         print(f"{R}❌ Failed to clean dojo.c: {e}{X}")
     except Exception as e:
@@ -188,8 +203,10 @@ if is_cleaning:
             cleanup_args.append(f"{key}={value}")
         
         cleanup_cmd = ["scons", "-C", "external/godot-cpp", "--clean"] + cleanup_args
-        subprocess.run(cleanup_cmd, check=False)  # No fallar si hay error
+        subprocess.run(cleanup_cmd, check=False, timeout=60)  # No fallar si hay error
         print(f"{G}✅ godot-cpp cleanup attempted{X}")
+    except subprocess.TimeoutExpired:
+        print(f"{Y}⚠️ godot-cpp cleanup timed out{X}")
     except Exception as e:
         print(f"{Y}⚠️ godot-cpp cleanup failed: {e}{X}")
 
@@ -220,10 +237,10 @@ if not is_cleaning:
         if has_msvc():
             print(f"{G}✅ MSVC detected - will use x86_64-pc-windows-msvc target{X}")
             
-            # Instalar target MSVC si no existe (silenciosamente)
+            # Instalar target MSVC si no existe (silenciosamente con timeout)
             try:
                 subprocess.run(['rustup', 'target', 'add', 'x86_64-pc-windows-msvc'], 
-                              capture_output=True, check=False)
+                              capture_output=True, check=False, timeout=30)
             except:
                 pass
             
