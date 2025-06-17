@@ -393,28 +393,7 @@ if not is_cleaning:
 
     # Determinar sufijo de librería basado en plataforma y arquitectura
     if platform == "linux":
-        lib_suffix = f<pad><pad><pad>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-".linux.{target}.{arch}.so"
+        lib_suffix = f".linux.{target}.{arch}.so"
     elif platform == "windows":
         lib_suffix = f".windows.{target}.{arch}.dll"
     elif platform == "macos":
