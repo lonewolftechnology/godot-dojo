@@ -227,6 +227,33 @@ if not is_cleaning:
     # Detectar host system para decisiones de toolchain
     host_platform = detect_platform()
     
+    # Auto-configuración simple para Windows + MSVC
+    def auto_setup_windows():
+        """Setup automático para Windows - configura target MSVC en línea de comandos"""
+        if py_platform.system().lower() != "windows":
+            return None
+        
+        print(f"{B}Windows detected - checking for MSVC...{X}")
+        
+        # Verificar si MSVC está disponible
+        if has_msvc():
+            print(f"{G}✅ MSVC detected - will use x86_64-pc-windows-msvc target{X}")
+            
+            # Instalar target MSVC si no existe (silenciosamente)
+            try:
+                subprocess.run(['rustup', 'target', 'add', 'x86_64-pc-windows-msvc'], 
+                              capture_output=True, check=False)
+            except:
+                pass
+            
+            return "x86_64-pc-windows-msvc"
+        else:
+            print(f"{Y}⚠️ MSVC not detected - will use GNU target{X}")
+            return None
+
+    # Llamar automáticamente para determinar el target
+    auto_msvc_target = auto_setup_windows()
+    
     # LÓGICA MODIFICADA: Siempre preferir MSVC en Windows si está disponible
     if host_platform == "windows" and platform == "windows":
         use_msvc = has_msvc()
@@ -261,7 +288,7 @@ if not is_cleaning:
         # Si hay auto-detección de MSVC, usarla
         if auto_target and platform == "windows":
             return auto_target
-        
+            
         if platform == "windows":
             if use_msvc:
                 # MSVC targets
@@ -291,7 +318,6 @@ if not is_cleaning:
         # Default fallback
         return "x86_64-unknown-linux-gnu"
 
-    # Y actualizar la llamada:
     rust_target = get_rust_target(platform, arch, use_msvc, auto_msvc_target)
     print(f"  🦀 Rust target: {rust_target}")
 
