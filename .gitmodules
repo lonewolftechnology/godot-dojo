@@ -1,6 +1,9 @@
-[submodule "godot-cpp"]
-	path = godot-cpp
-	url = https://github.com/godotengine/godot-cpp
-[submodule "dojo.c"]
-	path = dojo.c
+[submodule "external/dojo.c"]
+	path = external/dojo.c
 	url = https://github.com/dojoengine/dojo.c
+	branch = v1.5.7
+[submodule "external/godot-cpp"]
+	path = external/godot-cpp
+	url = https://github.com/godotengine/godot-cpp
+	branch = godot-4.2.2-stable
+
