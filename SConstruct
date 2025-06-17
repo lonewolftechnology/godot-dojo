@@ -193,31 +193,38 @@ if not is_cleaning:
             return False
 
         try:
-            # Si estamos en Windows y llegaste hasta aquí, probablemente tengas MSVC
-            # Ya que cargo con target msvc funciona
+            # Método 1: Verificar directamente cl.exe
+            result = subprocess.run(['where', 'cl'], 
+                                  capture_output=True, text=True, shell=True)
+            if result.returncode == 0:
+                print(f"  ✅ MSVC compiler found: {result.stdout.strip().split()[0]}")
+                return True
             
-            # Test simple: intentar compilar algo mínimo
+            # Método 2: Test con cargo check en dojo.c directory
             result = subprocess.run([
                 'cargo', 'check', '--target', 'x86_64-pc-windows-msvc', '--quiet'
-            ], capture_output=True, text=True, cwd='.')
+            ], capture_output=True, text=True, cwd='external/dojo.c')
             
             if result.returncode == 0:
                 print(f"  ✅ MSVC toolchain confirmed (Rust can use it)")
                 return True
-            else:
-                # Fallback a detección tradicional
-                result = subprocess.run(['where', 'cl'], 
-                                      capture_output=True, text=True, shell=True)
-                if result.returncode == 0:
-                    print(f"  ✅ MSVC compiler found: {result.stdout.strip().split()[0]}")
-                    return True
             
             return False
             
         except Exception as e:
             print(f"  ⚠️ MSVC detection inconclusive: {e}")
-            # En Windows, asumir que MSVC está disponible si llegamos hasta aquí
-            return True
+            # En Windows, usar método más conservador
+            try:
+                # Verificar si rustup conoce el target MSVC
+                result = subprocess.run(['rustup', 'target', 'list'], 
+                                      capture_output=True, text=Text)
+                if result.returncode == 0 and 'x86_64-pc-windows-msvc' in result.stdout:
+                    print(f"  ✅ MSVC target available in rustup")
+                    return True
+            except:
+                pass
+            
+            return False
 
     # Obtener parámetros con detección automática
     platform = ARGUMENTS.get('platform', detect_platform())
@@ -531,7 +538,7 @@ def detect_rust_target():
         if has_msvc():
             # Verificar si el target MSVC está instalado
             result = subprocess.run(['rustup', 'target', 'list', '--installed'], 
-                                  capture_output=True, text=True)
+                                  capture_output=True, text=Text)
             
             if result.returncode == 0 and 'x86_64-pc-windows-msvc' in result.stdout:
                 print(f"  🎯 Forcing Rust target to x86_64-pc-windows-msvc")
@@ -540,13 +547,13 @@ def detect_rust_target():
                 # Instalar el target MSVC
                 print(f"  🔧 Installing MSVC target for Rust...")
                 install_result = subprocess.run(['rustup', 'target', 'add', 'x86_64-pc-windows-msvc'], 
-                                              capture_output=True, text=True)
+                                              capture_output=True, text=Text)
                 if install_result.returncode == 0:
                     return "x86_64-pc-windows-msvc"
         
         # Fallback al target por defecto
         result = subprocess.run(['rustc', '--version', '--verbose'], 
-                              capture_output=True, text=True)
+                              capture_output=True, text=Text)
         if result.returncode == 0:
             for line in result.stdout.split('\n'):
                 if line.startswith('host:'):
