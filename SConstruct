@@ -64,6 +64,70 @@ G, B, R, Y, X = colors['G'], colors['B'], colors['R'], colors['Y'], colors['X']
 
 print(f"{B}🚀 Building {PROJECT_NAME}{X}")
 
+# FUNCIONES COMUNES (DISPONIBLES PARA CLEANING Y BUILD)
+def detect_platform():
+    system = py_platform.system().lower()
+    if system == "linux":
+        return "linux"
+    elif system == "windows":
+        return "windows"
+    elif system == "darwin":
+        return "macos"
+    else:
+        print(f"{Y}⚠️ Unknown system '{system}', defaulting to linux{X}")
+        return "linux"
+
+def detect_arch():
+    machine = py_platform.machine().lower()
+    if machine in ["x86_64", "amd64"]:
+        return "x86_64"
+    elif machine in ["aarch64", "arm64"]:
+        return "arm64"
+    elif machine.startswith("arm"):
+        return "arm32"
+    else:
+        print(f"{Y}⚠️ Unknown architecture '{machine}', defaulting to x86_64{X}")
+        return "x86_64"
+
+def has_msvc():
+    """Detecta MSVC de forma simple - si Rust puede usarlo, nosotros también"""
+    if py_platform.system().lower() != "windows":
+        return False
+
+    try:
+        # Método 1: Verificar directamente cl.exe
+        result = subprocess.run(['where', 'cl'], 
+                              capture_output=True, text=True, shell=True)
+        if result.returncode == 0:
+            print(f"  ✅ MSVC compiler found: {result.stdout.strip().split()[0]}")
+            return True
+        
+        # Método 2: Test con cargo check en dojo.c directory
+        result = subprocess.run([
+            'cargo', 'check', '--target', 'x86_64-pc-windows-msvc'
+        ], capture_output=True, text=True, cwd='external/dojo.c')
+        
+        if result.returncode == 0:
+            print(f"  ✅ MSVC toolchain confirmed (Rust can use it)")
+            return True
+        
+        return False
+        
+    except Exception as e:
+        print(f"  ⚠️ MSVC detection inconclusive: {e}")
+        # En Windows, usar método más conservador
+        try:
+            # Verificar si rustup conoce el target MSVC
+            result = subprocess.run(['rustup', 'target', 'list'], 
+                                  capture_output=True, text=True)
+            if result.returncode == 0 and 'x86_64-pc-windows-msvc' in result.stdout:
+                print(f"  ✅ MSVC target available in rustup")
+                return True
+        except:
+            pass
+        
+        return False
+
 # Detectar si estamos en modo clean
 is_cleaning = GetOption('clean')
 
@@ -160,72 +224,6 @@ if is_cleaning:
 
 # Si no estamos limpiando, continuar con el build normal
 if not is_cleaning:
-    # Detectar plataforma del sistema
-    def detect_platform():
-        system = py_platform.system().lower()
-        if system == "linux":
-            return "linux"
-        elif system == "windows":
-            return "windows"
-        elif system == "darwin":
-            return "macos"
-        else:
-            print(f"{Y}⚠️ Unknown system '{system}', defaulting to linux{X}")
-            return "linux"
-
-    # Detectar arquitectura del sistema
-    def detect_arch():
-        machine = py_platform.machine().lower()
-        if machine in ["x86_64", "amd64"]:
-            return "x86_64"
-        elif machine in ["aarch64", "arm64"]:
-            return "arm64"
-        elif machine.startswith("arm"):
-            return "arm32"
-        else:
-            print(f"{Y}⚠️ Unknown architecture '{machine}', defaulting to x86_64{X}")
-            return "x86_64"
-
-    # Detectar si MSVC está disponible en Windows (versión mejorada)
-    def has_msvc():
-        """Detecta MSVC de forma simple - si Rust puede usarlo, nosotros también"""
-        if py_platform.system().lower() != "windows":
-            return False
-
-        try:
-            # Método 1: Verificar directamente cl.exe
-            result = subprocess.run(['where', 'cl'], 
-                                  capture_output=True, text=True, shell=True)
-            if result.returncode == 0:
-                print(f"  ✅ MSVC compiler found: {result.stdout.strip().split()[0]}")
-                return True
-            
-            # Método 2: Test con cargo check en dojo.c directory
-            result = subprocess.run([
-                'cargo', 'check', '--target', 'x86_64-pc-windows-msvc'
-            ], capture_output=True, text=True, cwd='external/dojo.c')
-            
-            if result.returncode == 0:
-                print(f"  ✅ MSVC toolchain confirmed (Rust can use it)")
-                return True
-            
-            return False
-            
-        except Exception as e:
-            print(f"  ⚠️ MSVC detection inconclusive: {e}")
-            # En Windows, usar método más conservador
-            try:
-                # Verificar si rustup conoce el target MSVC
-                result = subprocess.run(['rustup', 'target', 'list'], 
-                                      capture_output=True, text=Text)
-                if result.returncode == 0 and 'x86_64-pc-windows-msvc' in result.stdout:
-                    print(f"  ✅ MSVC target available in rustup")
-                    return True
-            except:
-                pass
-            
-            return False
-
     # Obtener parámetros con detección automática
     platform = ARGUMENTS.get('platform', detect_platform())
     target = ARGUMENTS.get('target', 'template_debug')
@@ -343,28 +341,42 @@ if not is_cleaning:
     print(f"{Y}🔧 Step 2: Patching dojo.hpp...{X}")
     dojo_hpp_path = "external/dojo.c/dojo.hpp"
 
-    with open(dojo_hpp_path, 'r') as f:
-        content = f.read()
+    # Verificar si el archivo existe
+    if not os.path.exists(dojo_hpp_path):
+        print(f"{R}❌ dojo.hpp not found at: {dojo_hpp_path}{X}")
+        Exit(1)
 
-    # Buscar la declaración del namespace y agregar struct Clause; después
-    if "struct Clause;" not in content:
-        # Buscar patrón del namespace (puede variar)
-        import re
-        namespace_pattern = r'(namespace\s+\w+\s*{)'
-        match = re.search(namespace_pattern, content)
+    try:
+        with open(dojo_hpp_path, 'r', encoding='utf-8') as f:
+            content = f.read()
 
-        if match:
-            # Insertar después del namespace
-            insert_pos = match.end()
-            content = content[:insert_pos] + '\nstruct Clause;' + content[insert_pos:]
+        # Buscar la declaración del namespace y agregar struct Clause; después
+        if "struct Clause;" not in content:
+            # Buscar patrón del namespace (puede variar)
+            import re
+            namespace_pattern = r'(namespace\s+\w+\s*{)'
+            match = re.search(namespace_pattern, content)
+
+            if match:
+                # Insertar después del namespace
+                insert_pos = match.end()
+                content = content[:insert_pos] + '\nstruct Clause;' + content[insert_pos:]
+                print(f"  ✏️  Added 'struct Clause;' after namespace declaration")
+            else:
+                # Fallback: agregar al inicio del archivo
+                content = "struct Clause;\n" + content
+                print(f"  ✏️  Added 'struct Clause;' at beginning of file")
+
+            with open(dojo_hpp_path, 'w', encoding='utf-8') as f:
+                f.write(content)
+
+            print(f"  ✅ Successfully patched dojo.hpp")
         else:
-            # Fallback: agregar al inicio del archivo
-            content = "struct Clause;\n" + content
+            print(f"  ℹ️  'struct Clause;' already present, skipping patch")
 
-        with open(dojo_hpp_path, 'w') as f:
-            f.write(content)
-
-        print(f"  ✏️  Added 'struct Clause;' declaration")
+    except Exception as e:
+        print(f"{R}❌ Error patching dojo.hpp: {e}{X}")
+        Exit(1)
 
     print(f"{G}✅ Step 2 complete: dojo.hpp patched{X}")
 
@@ -527,76 +539,3 @@ if not is_cleaning:
     Default(library)
 
     print(f"{G}🎉 Build configuration complete!{X}")
-
-def detect_rust_target():
-    """Detecta y configura el target correcto de Rust"""
-    if py_platform.system().lower() != "windows":
-        return None
-    
-    try:
-        # Forzar MSVC si está disponible
-        if has_msvc():
-            # Verificar si el target MSVC está instalado
-            result = subprocess.run(['rustup', 'target', 'list', '--installed'], 
-                                  capture_output=True, text=Text)
-            
-            if result.returncode == 0 and 'x86_64-pc-windows-msvc' in result.stdout:
-                print(f"  🎯 Forcing Rust target to x86_64-pc-windows-msvc")
-                return "x86_64-pc-windows-msvc"
-            else:
-                # Instalar el target MSVC
-                print(f"  🔧 Installing MSVC target for Rust...")
-                install_result = subprocess.run(['rustup', 'target', 'add', 'x86_64-pc-windows-msvc'], 
-                                              capture_output=True, text=Text)
-                if install_result.returncode == 0:
-                    return "x86_64-pc-windows-msvc"
-        
-        # Fallback al target por defecto
-        result = subprocess.run(['rustc', '--version', '--verbose'], 
-                              capture_output=True, text=Text)
-        if result.returncode == 0:
-            for line in result.stdout.split('\n'):
-                if line.startswith('host:'):
-                    return line.split(':', 1)[1].strip()
-        
-        return None
-        
-    except Exception as e:
-        print(f"  ⚠️ Error detecting Rust target: {e}")
-        return None
-
-# Auto-configuración simple para Windows + MSVC
-def auto_setup_windows():
-    """Setup automático para Windows - configura target MSVC en línea de comandos"""
-    if py_platform.system().lower() != "windows":
-        return None
-    
-    print(f"{B}Windows detected - checking for MSVC...{X}")
-    
-    # Verificar si MSVC está disponible
-    if has_msvc():
-        print(f"{G}✅ MSVC detected - will use x86_64-pc-windows-msvc target{X}")
-        
-        # Instalar target MSVC si no existe (silenciosamente)
-        try:
-            subprocess.run(['rustup', 'target', 'add', 'x86_64-pc-windows-msvc'], 
-                          capture_output=True, check=False)
-        except:
-            pass
-        
-        return "x86_64-pc-windows-msvc"
-    else:
-        print(f"{Y}⚠️ MSVC not detected - will use GNU target{X}")
-        return None
-
-# Llamar automáticamente al inicio para determinar el target
-auto_msvc_target = auto_setup_windows()
-
-# Usar en tu código principal
-rust_target = detect_rust_target()
-if rust_target:
-    print(f"  🎯 Using Rust target: {rust_target}")
-    # Agregar el target a los comandos de cargo
-    cargo_build_args = ['--target', rust_target] if rust_target else []
-else:
-    cargo_build_args = []
