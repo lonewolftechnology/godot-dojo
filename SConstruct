@@ -1,141 +1,394 @@
 #!/usr/bin/env python
 import os
-import sys
+import subprocess
+import glob
 import shutil
+import platform as py_platform
 
-# Project Configurations
-PROJECT_NAME = "dojoc-gdextension"
+# Config
+PROJECT_NAME = "godot-dojo"
 ENTRY_POINT = "dojoc_library_init"
 GODOT_MIN_REQUIREMENT = "4.2"
 
-# Generate .gdextension file
-conf_dict = {
-    r'${PROJECT_NAME}': PROJECT_NAME,
-    r'${ENTRY_POINT}': ENTRY_POINT,
-    r'${GODOT_MIN_REQUIREMENT}': GODOT_MIN_REQUIREMENT
-}
-env = Environment(tools=['textfile'])
-env.Substfile('plugin_template.gdextension.in', SUBST_DICT=conf_dict)
+# Colors para output
+G = '\033[92m'  # Green
+B = '\033[94m'  # Blue
+R = '\033[91m'  # Red
+Y = '\033[1;33m'  # Yellow
+X = '\033[0m'   # Reset
 
-# Gets the standard flags CC, CCX, etc.
-env = SConscript("godot-cpp/SConstruct")
+print(f"{B}🚀 Building {PROJECT_NAME}{X}")
 
-# Dojo.C
-## Helper variables
-rust_libname = "libdojo_c" + env['SHLIBSUFFIX']
-rust_extra_args = ""
-rust_lib = ""
-rust_target = ""
+# Detectar si estamos en modo clean
+is_cleaning = GetOption('clean')
 
-# Platform specifics
-if env['platform'] == "windows":
-    # Con msvc, todo es dojo_c
-    # Con mingw (linux, no probe en windows) es dojo_c para el dll
-    # el resto es libdojo_c
-    rust_libname = rust_libname[3:]
+if is_cleaning:
+    print(f"{Y}🧹 Cleaning mode detected{X}")
+    
+    # Limpiar dojo.c con cargo clean
+    print(f"{Y}🦀 Cleaning dojo.c (cargo clean)...{X}")
+    try:
+        os.chdir("external/dojo.c")
+        subprocess.run(["cargo", "clean"], check=True)
+        os.chdir("../..")
+        print(f"{G}✅ dojo.c cleaned{X}")
+    except subprocess.CalledProcessError as e:
+        print(f"{R}❌ Failed to clean dojo.c: {e}{X}")
+        os.chdir("../..")
+    except Exception as e:
+        print(f"{R}❌ Error cleaning dojo.c: {e}{X}")
+        os.chdir("../..")
+    
+    # Limpiar archivos generados adicionales
+    print(f"{Y}🧹 Cleaning generated files...{X}")
+    files_to_clean = [
+        "demo/bin/",
+        "external/dojo.c/dojo.hpp.backup"  # Si existe un backup del patch
+    ]
+    
+    for path in files_to_clean:
+        try:
+            if os.path.isdir(path):
+                shutil.rmtree(path, ignore_errors=True)
+                print(f"  🗑️  Removed directory: {path}")
+            elif os.path.isfile(path):
+                os.remove(path)
+                print(f"  🗑️  Removed file: {path}")
+        except Exception as e:
+            print(f"{Y}⚠️  Could not remove {path}: {e}{X}")
+    
+    print(f"{G}✅ Additional cleanup complete{X}")
+    
+    # Cargar environment para que SCons pueda hacer su limpieza normal
+    try:
+        print(f"{Y}🔧 Loading godot-cpp environment for SCons cleanup...{X}")
+        env = SConscript("external/godot-cpp/SConstruct")
+        
+        # Configurar para quitar prefijo "lib"
+        env['SHLIBPREFIX'] = ''
+        
+        # Detectar parámetros básicos para definir targets
+        platform = ARGUMENTS.get('platform', 'linux')
+        target = ARGUMENTS.get('target', 'template_debug')
+        arch = ARGUMENTS.get('arch', 'x86_64')
+        
+        # Definir los mismos targets que en build normal para que SCons los conozca
+        # Buscar fuentes recursivamente pero eliminar duplicados
+        project_sources = []
+        project_sources.extend(glob.glob("src/**/*.cpp", recursive=True))
+        project_sources = sorted(list(set(project_sources)))  # Eliminar duplicados
+        
+        if platform == "linux":
+            lib_suffix = f".linux.{target}.{arch}.so"
+        elif platform == "windows":
+            lib_suffix = f".windows.{target}.{arch}.dll"
+        elif platform == "macos":
+            if arch == "arm64":
+                lib_suffix = f".macos.{target}.arm64.dylib"
+            elif arch == "x86_64":
+                lib_suffix = f".macos.{target}.x86_64.dylib"
+            else:
+                lib_suffix = f".macos.{target}.universal.dylib"
+        
+        lib_output = f"demo/bin/{PROJECT_NAME}{lib_suffix}"
+        library = env.SharedLibrary(target=lib_output, source=project_sources)
+        Default(library)
+        
+        print(f"{G}✅ Ready for SCons cleanup{X}")
+    except Exception as e:
+        print(f"{Y}⚠️ Could not load environment for cleanup: {e}{X}")
+        print(f"{Y}   SCons will continue with basic cleanup{X}")
 
-    if env.get("is_msvc", False):
-        rust_target = "x86_64-pc-windows-msvc"
-        rust_libname = rust_libname.replace(".dll", ".dll.lib")
-        #env['CXXFLAGS'].remove("/std:c++17")
-        #env.Append(CXXFLAGS=["/std:c++20"])
-        env.Append(
-            LINKFLAGS=[
-                '/NODEFAULTLIB:MSVCRT'
-            ]
-        )
+# Si no estamos limpiando, continuar con el build normal
+if not is_cleaning:
+    # Detectar plataforma del sistema
+    def detect_platform():
+        system = py_platform.system().lower()
+        if system == "linux":
+            return "linux"
+        elif system == "windows":
+            return "windows"
+        elif system == "darwin":
+            return "macos"
+        else:
+            print(f"{Y}⚠️ Unknown system '{system}', defaulting to linux{X}")
+            return "linux"
+
+    # Detectar arquitectura del sistema
+    def detect_arch():
+        machine = py_platform.machine().lower()
+        if machine in ["x86_64", "amd64"]:
+            return "x86_64"
+        elif machine in ["aarch64", "arm64"]:
+            return "arm64"
+        elif machine.startswith("arm"):
+            return "arm32"
+        else:
+            print(f"{Y}⚠️ Unknown architecture '{machine}', defaulting to x86_64{X}")
+            return "x86_64"
+
+    # Detectar si MSVC está disponible en Windows
+    def has_msvc():
+        if py_platform.system().lower() != "windows":
+            return False
+        
+        try:
+            # Verificar si cl.exe está disponible
+            result = subprocess.run(['where', 'cl'], 
+                                  capture_output=True, 
+                                  text=True, 
+                                  shell=True)
+            return result.returncode == 0
+        except:
+            return False
+
+    # Obtener parámetros con detección automática
+    platform = ARGUMENTS.get('platform', detect_platform())
+    target = ARGUMENTS.get('target', 'template_debug')
+    arch = ARGUMENTS.get('arch', detect_arch())
+
+    # Detectar host system para decisiones de toolchain
+    host_platform = detect_platform()
+    use_msvc = has_msvc() and platform == "windows" and host_platform == "windows"
+
+    # Mostrar información del sistema detectado
+    detected_platform = detect_platform()
+    detected_arch = detect_arch()
+    print(f"{B}System detected: {detected_platform} ({detected_arch}){X}")
+    print(f"{B}Building for: {platform} ({arch}) - {target}{X}")
+    if use_msvc:
+        print(f"{B}Toolchain: MSVC (native Windows){X}")
+    elif platform == "windows":
+        print(f"{B}Toolchain: MinGW/GCC (cross-compile){X}")
     else:
-        # rust_libname = rust_libname.replace(".dll", ".dll.a")
-        rust_target = "x86_64-pc-windows-gnu"
+        print(f"{B}Toolchain: GCC/Clang{X}")
 
-elif env['platform'] == "linux":
-    rust_target = "x86_64-unknown-linux-gnu"
-    env.Append(
-        LINKFLAGS=["-ldbus-1"],
-    )
+    # Crear directorios necesarios
+    os.makedirs("demo/bin", exist_ok=True)
 
-elif env['platform'] == "macos":
-    if env['arch'] == "arm64":
-        rust_target = "aarch64-apple-darwin"
-    else:
-        rust_target = "x86_64-apple-darwin"
+    # 1. COMPILAR DOJO.C
+    print(f"{Y}📦 Step 1: Compiling dojo.c...{X}")
+    os.chdir("external/dojo.c")
 
-rust_libname = rust_libname.replace(".so", ".a")
+    # Configurar target de Rust basado en plataforma, arquitectura y toolchain
+    def get_rust_target(platform, arch, use_msvc):
+        if platform == "windows":
+            if use_msvc:
+                # MSVC targets
+                if arch == "x86_64":
+                    return "x86_64-pc-windows-msvc"
+                elif arch == "arm64":
+                    return "aarch64-pc-windows-msvc"
+            else:
+                # MinGW targets
+                if arch == "x86_64":
+                    return "x86_64-pc-windows-gnu"
+                elif arch == "arm64":
+                    return "aarch64-pc-windows-gnullvm"
+        elif platform == "linux":
+            if arch == "x86_64":
+                return "x86_64-unknown-linux-gnu"
+            elif arch == "arm64":
+                return "aarch64-unknown-linux-gnu"
+            elif arch == "arm32":
+                return "armv7-unknown-linux-gnueabihf"
+        elif platform == "macos":
+            if arch == "x86_64":
+                return "x86_64-apple-darwin"
+            elif arch == "arm64":
+                return "aarch64-apple-darwin"
+        
+        # Default fallback
+        return "x86_64-unknown-linux-gnu"
 
-## Build rust
-if env["target"] == "template_release":
-    rust_extra_args += "--release"
+    rust_target = get_rust_target(platform, arch, use_msvc)
+    print(f"  🦀 Rust target: {rust_target}")
 
-rust_lib_path = 'dojo.c/target/{}/{}'.format(rust_target, env["target"].replace("template_", ""))
-rust_lib = "{}/{}".format(rust_lib_path, rust_libname)
+    # Comando cargo
+    cargo_cmd = ["cargo", "build", "--target", rust_target]
+    if target == "template_release":
+        cargo_cmd.append("--release")
 
-env.Execute(
-    action="cargo build --target {} {}".format(rust_target, rust_extra_args),
-    chdir="dojo.c"
-)
-os.chdir("..")
-# Copy compiled library into base directory
-# local_rust = env.Command(
-#     target=rust_libname,
-#     source=rust_lib,
-#     action=Copy('$TARGET', '$SOURCE'))
+    print(f"  🦀 Running: {' '.join(cargo_cmd)}")
+    subprocess.run(cargo_cmd, check=True)
 
-# For reference:
-# - CCFLAGS are compilation flags shared between C and C++
-# - CFLAGS are for C-specific compilation flags
-# - CXXFLAGS are for C++-specific compilation flags
-# - CPPFLAGS are for pre-processor flags
-# - CPPDEFINES are for pre-processor defines
-# - LINKFLAGS are for linking flags
-env.Append(
-    CPPPATH=[
+    os.chdir("../..")
+    print(f"{G}✅ Step 1 complete: dojo.c compiled{X}")
+
+    # 2. PARCHEAR DOJO.HPP
+    print(f"{Y}🔧 Step 2: Patching dojo.hpp...{X}")
+    dojo_hpp_path = "external/dojo.c/dojo.hpp"
+
+    with open(dojo_hpp_path, 'r') as f:
+        content = f.read()
+
+    # Buscar la declaración del namespace y agregar struct Clause; después
+    if "struct Clause;" not in content:
+        # Buscar patrón del namespace (puede variar)
+        import re
+        namespace_pattern = r'(namespace\s+\w+\s*{)'
+        match = re.search(namespace_pattern, content)
+        
+        if match:
+            # Insertar después del namespace
+            insert_pos = match.end()
+            content = content[:insert_pos] + '\nstruct Clause;' + content[insert_pos:]
+        else:
+            # Fallback: agregar al inicio del archivo
+            content = "struct Clause;\n" + content
+        
+        with open(dojo_hpp_path, 'w') as f:
+            f.write(content)
+        
+        print(f"  ✏️  Added 'struct Clause;' declaration")
+
+    print(f"{G}✅ Step 2 complete: dojo.hpp patched{X}")
+
+    # 3. COMPILAR GODOT-CPP Y CARGAR SU ENVIRONMENT
+    print(f"{Y}⚙️ Step 3: Compiling godot-cpp and loading environment...{X}")
+
+    # Configurar use_mingw para godot-cpp si estamos cross-compilando
+    if platform == "windows" and not use_msvc:
+        print(f"  🔧 Setting use_mingw=yes for cross-compilation")
+        ARGUMENTS['use_mingw'] = 'yes'
+
+    # Cargar environment de godot-cpp usando SConscript
+    print(f"  🔨 Loading godot-cpp environment...")
+    env = SConscript("external/godot-cpp/SConstruct")
+
+    print(f"{G}✅ Step 3 complete: godot-cpp compiled and environment loaded{X}")
+
+    # 4. COMPILAR LIBRERÍA GDEXTENSION USANDO ENVIRONMENT DE GODOT-CPP
+    print(f"{Y}🏗️ Step 4: Compiling GDExtension library with godot-cpp environment...{X}")
+
+    # Configurar para quitar prefijo "lib" en shared libraries
+    env['SHLIBPREFIX'] = ''
+    print(f"  🔧 Removed 'lib' prefix from shared library names")
+
+    # Agregar paths del proyecto al environment de godot-cpp
+    env.Append(CPPPATH=[
         "src/",
         "include/",
-        "dojo.c",
-        "godot-cpp/include/godot_cpp",
-        "godot-cpp/gen/include/godot_cpp",
-        "godot-cpp/gdextension"
-    ],
-    LIBS=[
-        File("./" + rust_lib)
-    ]
+        "external/dojo.c"
+    ])
 
-)
+    # Configuración por plataforma para linking adicional
+    if platform == "linux":
+        env.Append(LINKFLAGS=['-ldbus-1'])
+    elif platform == "windows":
+        if use_msvc:
+            print(f"  🔧 Using MSVC toolchain")
+        else:
+            print(f"  🔧 Using MinGW toolchain")
 
-sources = Glob("src/*.cpp")
-sources += Glob("src/classes/*.cpp")
-sources += Glob("src/variant/*.cpp")
+    # Buscar fuentes del proyecto - AHORA RECURSIVO pero sin duplicados
+    print(f"  🔍 Looking for source files recursively in src/...")
+    
+    # Buscar recursivamente en src/ y subdirectorios
+    project_sources = []
+    project_sources.extend(glob.glob("src/**/*.cpp", recursive=True))
+    
+    # Eliminar duplicados usando set y ordenar para consistencia
+    project_sources = sorted(list(set(project_sources)))
+    
+    print(f"  📁 Found {len(project_sources)} source files:")
+    for src in project_sources:
+        print(f"    📄 {src}")
 
-addon_dir = "demo/bin/"
+    if not project_sources:
+        print(f"{R}❌ No source files found in src/ (including subdirectories)!{X}")
+        Exit(1)
 
-if env["platform"] == "macos":
-    library = env.SharedLibrary(
-        addon_dir + "/libdojoc.{}.{}.framework/dojoc.{}.{}".format(
-            env["platform"], env["target"], env["platform"], env["target"]
-        ),
-        source=sources,
-    )
-elif env["platform"] == "ios":  # No lo borro por las dudas si surge que hay que hacer ios
-    if env["ios_simulator"]:
-        library = env.StaticLibrary(
-            addon_dir + "/dojoc.{}.{}.simulator.a".format(env["platform"], env["target"]),
-            source=sources,
-        )
+    # Agregar librería de Rust (dojo.c) - CORREGIDO para linking directo
+    build_mode = "release" if target == "template_release" else "debug"
+
+    # Para Windows, linking es diferente entre MSVC y MinGW
+    if platform == "windows":
+        if rust_target.endswith("-msvc"):
+            # MSVC usa .dll.lib para import libraries
+            rust_lib_name = "dojo_c.dll.lib"
+            print(f"  📚 Using MSVC import library: {rust_lib_name}")
+        else:
+            # MinGW linkea directamente contra la DLL
+            rust_lib_name = "dojo_c.dll"
+            print(f"  📚 Using MinGW direct DLL linking: {rust_lib_name}")
     else:
-        library = env.StaticLibrary(
-            addon_dir + "/dojoc.{}.{}.a".format(env["platform"], env["target"]),
-            source=sources,
-        )
-elif env["platform"] == "windows":
-    if env.get("is_msvc", False):
-        library = env.SharedLibrary(
-            addon_dir + "libdojoc{}{}".format(env["suffix"], env["SHLIBSUFFIX"]),
-            source=sources,
-        )
-    else:
-        library = env.SharedLibrary(
-            addon_dir + "dojoc{}{}".format(env["suffix"], env["SHLIBSUFFIX"]),
-            source=sources,
-        )
+        # Linux/macOS usan librerías estáticas normales
+        rust_lib_name = "libdojo_c.a"
+        print(f"  📚 Using static library: {rust_lib_name}")
 
-Default(library)
+    rust_lib_path = f"external/dojo.c/target/{rust_target}/{build_mode}/{rust_lib_name}"
+
+    if os.path.exists(rust_lib_path):
+        env.Append(LIBS=[File(rust_lib_path)])
+        print(f"  📚 Linked dojo.c: {rust_lib_path}")
+    else:
+        print(f"{R}❌ dojo.c library not found: {rust_lib_path}{X}")
+        if platform == "windows":
+            if rust_target.endswith("-msvc"):
+                print(f"  💡 Expected MSVC import library (.dll.lib)")
+            else:
+                print(f"  💡 Expected DLL for direct MinGW linking")
+
+    # Determinar sufijo de librería basado en plataforma y arquitectura
+    if platform == "linux":
+        lib_suffix = f".linux.{target}.{arch}.so"
+    elif platform == "windows":
+        lib_suffix = f".windows.{target}.{arch}.dll"
+    elif platform == "macos":
+        # macOS usa "universal" para múltiples arquitecturas o específica
+        if arch == "arm64":
+            lib_suffix = f".macos.{target}.arm64.dylib"
+        elif arch == "x86_64":
+            lib_suffix = f".macos.{target}.x86_64.dylib"
+        else:
+            lib_suffix = f".macos.{target}.universal.dylib"
+
+    # Compilar la librería compartida usando environment de godot-cpp
+    lib_output = f"demo/bin/{PROJECT_NAME}{lib_suffix}"
+    library = env.SharedLibrary(target=lib_output, source=project_sources)
+
+    print(f"  🎯 Target: {lib_output}")
+    print(f"{G}✅ Step 4 complete: GDExtension library configured with godot-cpp environment{X}")
+
+    # 5. GENERAR ARCHIVO .GDEXTENSION
+    print(f"{Y}📝 Step 5: Generating .gdextension file...{X}")
+
+    # Leer template
+    with open("plugin_template.gdextension.in", 'r') as f:
+        template_content = f.read()
+
+    # Reemplazar variables
+    gdext_content = template_content.replace("${PROJECT_NAME}", PROJECT_NAME)
+    gdext_content = gdext_content.replace("${ENTRY_POINT}", ENTRY_POINT)
+    gdext_content = gdext_content.replace("${GODOT_MIN_REQUIREMENT}", GODOT_MIN_REQUIREMENT)
+
+    # Guardar archivo
+    gdext_output = f"demo/bin/{PROJECT_NAME}.gdextension"
+    with open(gdext_output, 'w') as f:
+        f.write(gdext_content)
+
+    print(f"  📄 Generated: {gdext_output}")
+    print(f"{G}✅ Step 5 complete: .gdextension file generated{X}")
+
+    # 6. COPIAR ARCHIVOS ADICIONALES
+    print(f"{Y}📋 Step 6: Copying additional files...{X}")
+
+    # Copiar dojo_c.dll para Windows (nombre es siempre el mismo)
+    if platform == "windows":
+        dll_name = "dojo_c.dll"  # Nombre siempre igual para Rust
+        dll_source = f"external/dojo.c/target/{rust_target}/{build_mode}/{dll_name}"
+        dll_dest = f"demo/bin/{dll_name}"
+        
+        if os.path.exists(dll_source):
+            shutil.copy2(dll_source, dll_dest)
+            print(f"  📁 Copied: {dll_source} → {dll_dest}")
+        else:
+            print(f"{Y}⚠️  Warning: {dll_source} not found{X}")
+
+    print(f"{G}✅ Step 6 complete: Additional files copied{X}")
+
+    # Configurar targets por defecto
+    Default(library)
+
+    print(f"{G}🎉 Build configuration complete!{X}")
