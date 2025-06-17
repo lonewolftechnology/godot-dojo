@@ -202,7 +202,7 @@ if not is_cleaning:
             
             # Método 2: Test con cargo check en dojo.c directory
             result = subprocess.run([
-                'cargo', 'check', '--target', 'x86_64-pc-windows-msvc', '--quiet'
+                'cargo', 'check', '--target', 'x86_64-pc-windows-msvc'
             ], capture_output=True, text=True, cwd='external/dojo.c')
             
             if result.returncode == 0:
