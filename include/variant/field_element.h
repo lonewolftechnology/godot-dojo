@@ -5,11 +5,11 @@
 #ifndef FIELD_ELEMENT_H
 #define FIELD_ELEMENT_H
 
-#include <dojo_types.h>
+#include "dojo_types.hpp"
 
-#include <godot_cpp/classes/ref_counted.hpp>
+#include "godot_cpp/classes/ref_counted.hpp"
 
-// #include <variant/ty.h>
+// #include "variant/ty.h"
 
 using namespace godot;
 
@@ -20,7 +20,8 @@ public:
     FieldElement();
     FieldElement(const String& hex_str, size_t max_bytes = 32);
     FieldElement(int enum_value);
-    FieldElement(dojo_bindings::FieldElement* existing_felt);
+    FieldElement(DOJO::FieldElement* existing_felt);
+    FieldElement(DOJO::FieldElement existing_felt);
     ~FieldElement();
 
     static PackedByteArray to_packed_array(const void* data, int size = 32);
@@ -32,13 +33,13 @@ public:
     String parse_cairo();
     String bytearray_deserialize();
 
-    static String get_as_string(dojo_bindings::FieldElement* _felt);
+    static String get_as_string(DOJO::FieldElement* _felt);
 
-    dojo_bindings::FieldElement* get_felt() const { return felt; }
-    dojo_bindings::FieldElement get_felt_no_ptr() const { return *felt; }
+    DOJO::FieldElement* get_felt() const { return felt; }
+    DOJO::FieldElement get_felt_no_ptr() const { return *felt; }
 
 protected:
-    dojo_bindings::FieldElement* felt = new dojo_bindings::FieldElement();
+    DOJO::FieldElement* felt = new DOJO::FieldElement();
 
     static void _bind_methods() {
         ClassDB::bind_method(D_METHOD("as_packed_array"), &FieldElement::as_packed_array);

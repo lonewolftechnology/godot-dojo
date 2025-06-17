@@ -1,7 +1,7 @@
 //
 // Created by hazel on 3/06/25.
 //
-#include <variant/field_element.h>
+#include "variant/field_element.h"
 
 #include "debug_macros.h"
 
@@ -49,13 +49,19 @@ FieldElement::FieldElement(const String& hex_str, size_t max_bytes)
 
 FieldElement::FieldElement(int enum_value)
 {
+    // Create from enum
     memset(felt->data, 0, 32);
     felt->data[31] = static_cast<uint8_t>(enum_value);
 }
 
-FieldElement::FieldElement(dojo_bindings::FieldElement* existing_felt)
+FieldElement::FieldElement(DOJO::FieldElement* existing_felt)
 {
     felt = existing_felt;
+}
+
+FieldElement::FieldElement(DOJO::FieldElement existing_felt)
+{
+    felt = &existing_felt;
 }
 
 FieldElement::~FieldElement()
@@ -107,7 +113,7 @@ Ref<FieldElement> FieldElement::from_enum(int enum_value)
     {
         LOG_ERROR("felt is null after instantiation");
         // Limpiar e inicializar
-        field_element->felt = new dojo_bindings::FieldElement();
+        field_element->felt = new DOJO::FieldElement();
     }
     memset(field_element->felt->data, 0, 32);
     field_element->felt->data[31] = static_cast<uint8_t>(enum_value);
@@ -118,20 +124,20 @@ Ref<FieldElement> FieldElement::from_enum(int enum_value)
 
 String FieldElement::bytearray_deserialize()
 {
-    dojo_bindings::Resultc_char testing = dojo_bindings::bytearray_deserialize(get_felt(), 32);
-    if (testing.tag == dojo_bindings::Resultc_char_Tag::Errc_char)
+    DOJO::Result<const char*> testing = DOJO::bytearray_deserialize(get_felt(), 32);
+    if (testing.IsErr())
     {
         LOG_DEBUG("Can't deserialize... Trying Cairo String");
         return parse_cairo();
     }
     else
     {
-        LOG_SUCCESS("Felt:", testing.ok);
+        LOG_SUCCESS("Felt:", GET_DOJO_OK(testing));
     }
-    return {testing.ok};
+    return {GET_DOJO_OK(testing)};
 }
 
-String FieldElement::get_as_string(dojo_bindings::FieldElement* _felt)
+String FieldElement::get_as_string(DOJO::FieldElement* _felt)
 {
     String ret = "0x";
     for (size_t i = 0; i < 32; i++)
@@ -144,15 +150,15 @@ String FieldElement::get_as_string(dojo_bindings::FieldElement* _felt)
 
 String FieldElement::parse_cairo()
 {
-    dojo_bindings::Resultc_char testing = dojo_bindings::parse_cairo_short_string(get_felt_no_ptr());
-    if (testing.tag == dojo_bindings::Resultc_char_Tag::Errc_char)
+    DOJO::Result<const char*> testing = DOJO::parse_cairo_short_string(get_felt_no_ptr());
+    if (testing.IsErr())
     {
         LOG_DEBUG("No cairo string found, returning as string hex");
         return {to_string()};
     }
     else
     {
-        LOG_SUCCESS("Cairo String:", testing.ok);
+        LOG_SUCCESS("Cairo String:", GET_DOJO_OK(testing));
     }
-    return {testing.ok};
+    return {GET_DOJO_OK(testing)};
 }

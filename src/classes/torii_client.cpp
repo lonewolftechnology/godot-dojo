@@ -2,13 +2,15 @@
 // Created by hazel on 27/05/25.
 //
 
-#include <classes/torii_client.h>
-#include <godot_cpp/classes/engine.hpp>
-#include <godot_cpp/classes/json.hpp>
-#include <godot_cpp/core/class_db.hpp>
-#include <godot_cpp/variant/utility_functions.hpp>
-#include <debug_macros.h>
-#include <variant/primitive.h>
+#include "classes/torii_client.h"
+#include "godot_cpp/classes/engine.hpp"
+#include "godot_cpp/classes/json.hpp"
+#include "godot_cpp/core/class_db.hpp"
+#include "godot_cpp/variant/utility_functions.hpp"
+#include "debug_macros.h"
+#include "variant/primitive.h"
+
+#include "variant/ty/ty.h"
 
 ToriiClient* ToriiClient::singleton = nullptr;
 
@@ -131,23 +133,23 @@ bool ToriiClient::create_client(const String& world_addr, const String& torii_ur
     LOG_INFO("World Address: ", world_address);
 
     // Crear cliente
-    dojo_bindings::ResultToriiClient resClient = dojo_bindings::client_new(
+    DOJO::Result<DOJO::ToriiClient*> resClient = DOJO::client_new(
         torii_url.utf8().get_data(),
         *world.get_felt()
     );
 
-    if (resClient.tag == dojo_bindings::ErrToriiClient)
+    if (resClient.IsErr())
     {
-        LOG_ERROR("Error al crear cliente Torii: ", resClient.err.message);
+        LOG_ERROR("Error al crear cliente Torii: ", GET_DOJO_VALUE(resClient.err).message);
         emit_signal("client_connected", false);
         return false;
     }
 
-    client = resClient.ok;
+    client = GET_DOJO_VALUE(resClient.ok);
     is_connected = true;
 
     // Configurar logger
-    dojo_bindings::client_set_logger(client, [](const char* msg)
+    DOJO::client_set_logger(client, [](const char* msg)
     {
         LOG_INFO("ToriiClient: ", msg);
     });
@@ -217,44 +219,58 @@ Dictionary ToriiClient::get_world_metadata()
     if (!is_client_connected())
     {
         LOG_ERROR("Cliente no conectado");
-        return Dictionary();
+        return {};
     }
 
-    dojo_bindings::ResultWorldMetadata resMetadata = dojo_bindings::client_metadata(client);
+    DOJO::Result<DOJO::WorldMetadata> resMetadata = DOJO::client_metadata(client);
 
-    if (resMetadata.tag == dojo_bindings::ErrWorldMetadata)
+    if (resMetadata.IsErr())
     {
-        LOG_ERROR("Error al obtener metadatos: ", resMetadata.err.message);
-        return Dictionary();
+        LOG_ERROR("Error al obtener metadatos: ", GET_DOJO_VALUE(resMetadata.err).message);
+        return {};
     }
 
-    dojo_bindings::WorldMetadata metadata = resMetadata.ok;
+    DOJO::WorldMetadata metadata = GET_DOJO_VALUE(resMetadata.ok);
     Dictionary result = {};
 
     // Convertir modelos a Dictionary
     TypedArray<Dictionary> models_array = {};
-    std::vector<dojo_bindings::CHashItemFieldElementModelMetadata> models_vec(
+    std::vector<DOJO::CHashItem<DOJO::FieldElement, DOJO::ModelMetadata>> models_vec(
         metadata.models.data, metadata.models.data + metadata.models.data_len
     );
 
     for (const auto& model_item : models_vec)
     {
+
         Dictionary model_dict = {};
-        dojo_bindings::ModelMetadata model_metadata = model_item.value;
+        DOJO::ModelMetadata model_metadata = model_item.value;
+
+        LOG_DEBUG_EXTRA("METADATA",model_metadata.namespace_);
+        LOG_DEBUG_EXTRA("METADATA",model_metadata.name);
+        FieldElement key_felt = {model_item.key};
+        LOG_DEBUG_EXTRA("HEX",key_felt.to_string());
+        FieldElement testing_felt = {model_metadata.class_hash};
+        LOG_DEBUG_EXTRA("HEX",testing_felt.to_string());
+        FieldElement testing_felta = {model_metadata.contract_address};
+        LOG_DEBUG_EXTRA("HEX",testing_felt.to_string());
 
         model_dict["namespace"] = model_metadata.namespace_;
         model_dict["name"] = model_metadata.name;
-        model_dict["schema_type"] = String::num_int64(model_metadata.schema.tag);
+        model_dict["schema_type"] = String::num_int64(static_cast<int64_t>(model_metadata.schema.tag));
+        LOG_DEBUG_EXTRA("SCHEMA",String::num_int64(static_cast<int64_t>(model_metadata.schema.tag)));
 
         // Procesar esquema según el tipo
-        if (model_metadata.schema.tag == dojo_bindings::Ty_Tag::Struct_)
+        Ty testing_ty = {model_metadata.schema};
+
+        if (model_metadata.schema.IsStruct_())
         {
             Dictionary struct_info = {};
-            dojo_bindings::Struct meta_struct = model_metadata.schema.struct_;
+            DOJO::Struct meta_struct = GET_DOJO_VALUE(model_metadata.schema.struct_);
             struct_info["name"] = meta_struct.name;
+            LOG_DEBUG_EXTRA("STRUCT",meta_struct.name);
 
             TypedArray<Dictionary> members_array = {};
-            std::vector<dojo_bindings::Member> members(
+            std::vector<DOJO::Member> members(
                 meta_struct.children.data, meta_struct.children.data + meta_struct.children.data_len
             );
 
@@ -262,7 +278,11 @@ Dictionary ToriiClient::get_world_metadata()
             {
                 Dictionary member_dict = {};
                 member_dict["name"] = member.name;
-                member_dict["type"] = String::num_int64(member.ty->tag);
+                Ty member_ty = {*member.ty};
+
+                LOG_DEBUG_EXTRA("MEMBER",member.name);
+                LOG_DEBUG_EXTRA("TYPE",String::num_int64(static_cast<int64_t>(member.ty->tag)));
+                member_dict["type"] = String::num_int64(static_cast<int64_t>(member.ty->tag));
                 members_array.append(member_dict);
             }
 
@@ -297,20 +317,20 @@ TypedArray<Dictionary> ToriiClient::get_entities(const Dictionary& query_params)
         return TypedArray<Dictionary>();
     }
     LOG_DEBUG("Converting Query");
-    dojo_bindings::Query query = create_query_from_dict(query_params);
+    DOJO::Query query = create_query_from_dict(query_params);
     LOG_DEBUG("Query COnverted");
-    dojo_bindings::ResultPageEntity resPageEntities = dojo_bindings::client_entities(client, query);
+    DOJO::Result<DOJO::Page<DOJO::Entity>> resPageEntities = DOJO::client_entities(client, query);
 
-    if (resPageEntities.tag == dojo_bindings::ErrPageEntity)
+    if (resPageEntities.IsErr())
     {
-        LOG_ERROR("Error al obtener entidades: ", resPageEntities.err.message);
-        return TypedArray<Dictionary>();
+        LOG_ERROR("Error al obtener entidades: ", GET_DOJO_VALUE(resPageEntities.err).message);
+        return {};
     }
 
-    dojo_bindings::PageEntity pageEntities = resPageEntities.ok;
+    DOJO::Page<DOJO::Entity> pageEntities = GET_DOJO_VALUE(resPageEntities.ok);
     TypedArray<Dictionary> result = {};
 
-    std::vector<dojo_bindings::Entity> entities(
+    std::vector<DOJO::Entity> entities(
         pageEntities.items.data, pageEntities.items.data + pageEntities.items.data_len
     );
 
@@ -333,33 +353,28 @@ TypedArray<Dictionary> ToriiClient::get_controllers(const String& player_address
         return TypedArray<Dictionary>();
     }
 
-    dojo_bindings::COptionFieldElement player_filter = {};
+    DOJO::FieldElement player_filter = {};
 
     if (!player_address.is_empty())
     {
         FieldElement player_felt(player_address, 32);
-        player_filter.tag = dojo_bindings::SomeFieldElement;
-        player_filter.some = *player_felt.get_felt();
-    }
-    else
-    {
-        player_filter.tag = dojo_bindings::NoneFieldElement;
+        player_filter = *player_felt.get_felt();
     }
 
-    dojo_bindings::ResultCArrayController resControllers = dojo_bindings::client_controllers(
-        client, &player_filter.some, 0
+    DOJO::Result<DOJO::CArray<DOJO::Controller>> resControllers = DOJO::client_controllers(
+        client, &player_filter, 0
     );
 
-    if (resControllers.tag == dojo_bindings::ErrCArrayController)
+    if (resControllers.IsErr())
     {
-        LOG_ERROR("Error al obtener controladores: ", resControllers.err.message);
-        return TypedArray<Dictionary>();
+        LOG_ERROR("Error al obtener controladores: ", GET_DOJO_ERROR(resControllers));
+        return {};
     }
 
-    dojo_bindings::CArrayController controllers = resControllers.ok;
+    DOJO::CArray<DOJO::Controller> controllers = GET_DOJO_VALUE(resControllers.ok);
     TypedArray<Dictionary> result = {};
 
-    std::vector<dojo_bindings::Controller> controller_list(
+    std::vector<DOJO::Controller> controller_list(
         controllers.data, controllers.data + controllers.data_len
     );
 
@@ -396,19 +411,19 @@ Dictionary ToriiClient::get_controller_info(const String& controller_address)
 //     }
 //
 //     // Crear query básico para tokens
-//     dojo_bindings::Query query = create_query_from_dict(query_params);
+//     DOJO::Query query = create_query_from_dict(query_params);
 //
-//     dojo_bindings::ResultPageToken resPageTokens = dojo_bindings::client_tokens(client, query);
+//     DOJO::ResultPageToken resPageTokens = DOJO::client_tokens(client, query);
 //
-//     if (resPageTokens.tag == dojo_bindings::ErrPageToken) {
+//     if (resPageTokens.tag == DOJO::ErrPageToken) {
 //         LOG_ERROR("Error al obtener tokens: ", resPageTokens.err.message);
 //         return TypedArray<Dictionary>();
 //     }
 //
-//     dojo_bindings::PageToken pageTokens = resPageTokens.ok;
+//     DOJO::PageToken pageTokens = resPageTokens.ok;
 //     TypedArray<Dictionary> result = {};
 //
-//     std::vector<dojo_bindings::Token> tokens(
+//     std::vector<DOJO::Token> tokens(
 //         pageTokens.items.data, pageTokens.items.data + pageTokens.items.data_len
 //     );
 //
@@ -430,12 +445,12 @@ Dictionary ToriiClient::get_controller_info(const String& controller_address)
 //     // Convertir dirección a FieldElement
 //     FieldElement account_felt(account_address, 32);
 //
-//     dojo_bindings::Query query = {};
+//     DOJO::Query query = {};
 //     // Configurar query para balances específicos
 //
-//     dojo_bindings::ResultPageTokenBalance resPageBalances = dojo_bindings::client_token_balances(client, query);
+//     DOJO::ResultPageTokenBalance resPageBalances = DOJO::client_token_balances(client, query);
 //
-//     if (resPageBalances.tag == dojo_bindings::ErrPageTokenBalance) {
+//     if (resPageBalances.tag == DOJO::ErrPageTokenBalance) {
 //         LOG_ERROR("Error al obtener balances: ", resPageBalances.err.message);
 //         return TypedArray<Dictionary>();
 //     }
@@ -453,12 +468,12 @@ Dictionary ToriiClient::get_controller_info(const String& controller_address)
 //         return TypedArray<Dictionary>();
 //     }
 //
-//     dojo_bindings::Query query = {};
+//     DOJO::Query query = {};
 //     // Configurar query para colecciones
 //
-//     dojo_bindings::ResultPageTokenCollection resPageCollections = dojo_bindings::client_token_collections(client, query);
+//     DOJO::ResultPageTokenCollection resPageCollections = DOJO::client_token_collections(client, query);
 //
-//     if (resPageCollections.tag == dojo_bindings::ErrPageTokenCollection) {
+//     if (resPageCollections.tag == DOJO::ErrPageTokenCollection) {
 //         LOG_ERROR("Error al obtener colecciones: ", resPageCollections.err.message);
 //         return TypedArray<Dictionary>();
 //     }
@@ -492,11 +507,11 @@ bool ToriiClient::create_entity_subscription(const Callable& callback, const Dic
     }
 
     // Crear filtro de cláusulas
-    dojo_bindings::COptionClause event_clause = {};
-    event_clause.tag = dojo_bindings::NoneClause;
+    DOJO::COption<DOJO::Clause> event_clause = {};
+    event_clause = DOJO::COption<DOJO::Clause>::None();
 
     // Callback wrapper que llamará al callback de Godot
-    auto wrapper = [this, callback](dojo_bindings::FieldElement entity_id, dojo_bindings::CArrayStruct models)
+    auto wrapper = [this, callback](DOJO::FieldElement entity_id, DOJO::CArray<DOJO::Struct> models)
     {
         Dictionary entity_data = {};
         FieldElement felt_id(&entity_id);
@@ -513,17 +528,17 @@ bool ToriiClient::create_entity_subscription(const Callable& callback, const Dic
         emit_signal("entity_updated", entity_data);
     };
 
-    dojo_bindings::ResultSubscription resSubscription = dojo_bindings::client_on_entity_state_update(
-        client, event_clause, [](dojo_bindings::FieldElement entity_id, dojo_bindings::CArrayStruct models)
+    DOJO::Result<DOJO::Subscription*> resSubscription = DOJO::client_on_entity_state_update(
+        client, event_clause, [](DOJO::FieldElement entity_id, DOJO::CArray<DOJO::Struct> models)
         {
             // Implementar callback apropiado
         }
     );
 
-    if (resSubscription.tag == dojo_bindings::ErrSubscription)
+    if (resSubscription.IsErr())
     {
-        LOG_ERROR("Error al crear suscripción de entidades: ", resSubscription.err.message);
-        emit_signal("subscription_error", String(resSubscription.err.message));
+        LOG_ERROR("Error al crear suscripción de entidades: ", GET_DOJO_ERROR(resSubscription));
+        emit_signal("subscription_error", String(GET_DOJO_ERROR(resSubscription)));
         return false;
     }
 
@@ -539,20 +554,20 @@ bool ToriiClient::create_event_subscription(const Callable& callback, const Dict
         return false;
     }
 
-    dojo_bindings::COptionClause event_clause = {};
-    event_clause.tag = dojo_bindings::NoneClause;
+    DOJO::COption<DOJO::Clause> event_clause = {};
+    event_clause = DOJO::COption<DOJO::Clause>::None();
 
-    dojo_bindings::ResultSubscription resSubscription = dojo_bindings::client_on_event_message_update(
-        client, event_clause, [](dojo_bindings::FieldElement entity_id, dojo_bindings::CArrayStruct models)
+    DOJO::Result<DOJO::Subscription*> resSubscription = DOJO::client_on_event_message_update(
+        client, event_clause, [](DOJO::FieldElement entity_id, DOJO::CArray<DOJO::Struct> models)
         {
             // Implementar callback apropiado
         }
     );
 
-    if (resSubscription.tag == dojo_bindings::ErrSubscription)
+    if (resSubscription.IsErr())
     {
-        LOG_ERROR("Error al crear suscripción de eventos: ", resSubscription.err.message);
-        emit_signal("subscription_error", String(resSubscription.err.message));
+        LOG_ERROR("Error al crear suscripción de eventos: ", GET_DOJO_ERROR(resSubscription));
+        emit_signal("subscription_error", GET_DOJO_ERROR(resSubscription));
         return false;
     }
 
@@ -582,7 +597,7 @@ bool ToriiClient::publish_message(const String& message_data, const Array& signa
     }
 
     // Convertir Array a array de FieldElement
-    std::vector<dojo_bindings::FieldElement> felts;
+    std::vector<DOJO::FieldElement> felts;
     for (int i = 0; i < signature_felts.size(); i++)
     {
         Ref<FieldElement> felt_ref = signature_felts[i];
@@ -592,20 +607,20 @@ bool ToriiClient::publish_message(const String& message_data, const Array& signa
         }
     }
 
-    dojo_bindings::ResultFieldElement result = dojo_bindings::client_publish_message(
+    DOJO::Result<DOJO::FieldElement> result = DOJO::client_publish_message(
         client,
         message_data.utf8().get_data(),
         felts.data(),
         felts.size()
     );
 
-    if (result.tag == dojo_bindings::ErrFieldElement)
+    if (result.IsErr())
     {
-        LOG_ERROR("Error al publicar mensaje: ", result.err.message);
+        LOG_ERROR("Error al publicar mensaje: ", GET_DOJO_ERROR(result));
         return false;
     }
 
-    FieldElement msg_hash(&result.ok);
+    FieldElement msg_hash(GET_DOJO_OK(result));
     LOG_SUCCESS("Mensaje publicado: ", msg_hash.to_string());
     emit_signal("message_published", msg_hash.to_string());
 
@@ -632,7 +647,7 @@ void ToriiClient::set_logger_callback(const Callable& logger_callback)
 {
     if (!is_client_connected()) return;
     logger_callable = logger_callback;
-    dojo_bindings::client_set_logger(client, client_logger);
+    DOJO::client_set_logger(client, client_logger);
 }
 
 Dictionary ToriiClient::get_client_info() const
@@ -655,51 +670,50 @@ Dictionary ToriiClient::get_connection_status() const
 }
 
 // Métodos de conversión internos
-dojo_bindings::Query ToriiClient::create_query_from_dict(const Dictionary& query_params) const
+DOJO::Query ToriiClient::create_query_from_dict(const Dictionary& query_params) const
 {
-    dojo_bindings::Query query = {};
+    DOJO::Query query = {};
     LOG_INFO("Query Creation");
 
     // Configurar paginación
-    dojo_bindings::Pagination pagination = {};
+    DOJO::Pagination pagination = {};
     LOG_INFO("Pagination Creation");
     Dictionary pagination_dict = query_params.get("pagination", {});
     pagination.limit = query_params.get("limit", 10);
     String cursor = pagination_dict.get("cursor", "");
     if (cursor.is_empty())
     {
-        pagination.cursor.tag = dojo_bindings::COptionc_char_Tag::Nonec_char;
+        pagination.cursor = DOJO::COption<const char*>::None();
     }
     else
     {
-        pagination.cursor.tag = dojo_bindings::COptionc_char_Tag::Somec_char;
-        pagination.cursor.some = cursor.utf8().get_data();
+        pagination.cursor = DOJO::COption<const char*>::Some(cursor.utf8().get_data());
     }
     // TODO: Ver una forma "mas elegante"
     LOG_DEBUG(pagination_dict.get("direction", "NO HABIA"));
     if (pagination_dict.get("direction", "forward") == "backward")
     {
-        pagination.direction = dojo_bindings::PaginationDirection::Backward;
+        pagination.direction = DOJO::PaginationDirection::Backward;
     }
     else
     {
-        pagination.direction = dojo_bindings::PaginationDirection::Forward;
+        pagination.direction = DOJO::PaginationDirection::Forward;
     }
 
-    dojo_bindings::CArrayOrderBy orderBy = {};
+    DOJO::CArray<DOJO::OrderBy> orderBy = {};
     LOG_INFO("OrderBy Creation");
     Array orderBy_array = pagination_dict.get("order_by", {});
     if (!orderBy_array.is_empty())
     {
         orderBy.data_len = orderBy_array.size();
-        orderBy.data = new dojo_bindings::OrderBy[orderBy.data_len];
+        orderBy.data = new DOJO::OrderBy[orderBy.data_len];
         for (int i = 0; i < orderBy_array.size(); i++)
         {
             Dictionary data = orderBy_array[i];
             String model_name = data.get("model", "");
             String member_name = data.get("member", "");
             uint32_t direction = data.get("order_direction", 0);
-            dojo_bindings::OrderDirection order_direction = static_cast<dojo_bindings::OrderDirection>(direction);
+            DOJO::OrderDirection order_direction = static_cast<DOJO::OrderDirection>(direction);
             orderBy.data[i] = {
                 model_name.utf8().get_data(), member_name.utf8().get_data(), order_direction
             };
@@ -709,12 +723,12 @@ dojo_bindings::Query ToriiClient::create_query_from_dict(const Dictionary& query
 
     query.pagination = pagination;
 
-    query.clause.tag = dojo_bindings::NoneClause;
+    query.clause = DOJO::COption<DOJO::Clause>::None();
     query.no_hashed_keys = query_params.get("no_hashed_keys", false);
     query.historical = query_params.get("historical", false);
 
     // Configurar modelos si se especifican
-    dojo_bindings::CArrayc_char models = {};
+    DOJO::CArray<const char*> models = {};
     Array models_array = query_params.get("models", {});
     if (!models_array.is_empty())
     {
@@ -731,31 +745,31 @@ dojo_bindings::Query ToriiClient::create_query_from_dict(const Dictionary& query
     return query;
 }
 
-dojo_bindings::Pagination ToriiClient::create_pagination_from_dict(const Dictionary& pagination_params) const
+DOJO::Pagination ToriiClient::create_pagination_from_dict(const Dictionary& pagination_params) const
 {
-    dojo_bindings::Pagination pagination = {};
+    DOJO::Pagination pagination = {};
 
     pagination.limit = pagination_params.get("limit", 10);
-    pagination.cursor.tag = dojo_bindings::COptionc_char_Tag::Nonec_char;
+    pagination.cursor = DOJO::COption<const char*>::None();
 
     String direction = pagination_params.get("direction", "forward");
     pagination.direction = (direction == "backward")
-                               ? dojo_bindings::PaginationDirection::Backward
-                               : dojo_bindings::PaginationDirection::Forward;
+                               ? DOJO::PaginationDirection::Backward
+                               : DOJO::PaginationDirection::Forward;
 
-    dojo_bindings::CArrayOrderBy orderBy = {};
+    DOJO::CArray<DOJO::OrderBy> orderBy = {};
     pagination.order_by = orderBy;
 
     return pagination;
 }
 
-Dictionary ToriiClient::entity_to_dictionary(const dojo_bindings::Entity& entity) const
+Dictionary ToriiClient::entity_to_dictionary(const DOJO::Entity& entity) const
 {
     Dictionary entity_dict = {};
 
     // Procesar modelos
     TypedArray<Dictionary> models_array = {};
-    std::vector<dojo_bindings::Struct> c_structs(
+    std::vector<DOJO::Struct> c_structs(
         entity.models.data, entity.models.data + entity.models.data_len
     );
 
@@ -766,7 +780,7 @@ Dictionary ToriiClient::entity_to_dictionary(const dojo_bindings::Entity& entity
 
         // Procesar miembros del struct
         Dictionary members_dict = {};
-        std::vector<dojo_bindings::Member> members(
+        std::vector<DOJO::Member> members(
             c_struct.children.data, c_struct.children.data + c_struct.children.data_len
         );
 
@@ -774,30 +788,30 @@ Dictionary ToriiClient::entity_to_dictionary(const dojo_bindings::Entity& entity
         {
             String member_name = member.name;
 
-            if (member.ty->tag == dojo_bindings::Ty_Tag::Primitive_)
+            if (member.ty->IsPrimitive_())
             {
-                DojoPrimitive primitive(member.ty->primitive);
+                DojoPrimitive primitive(GET_DOJO_VALUE(member.ty->primitive));
                 members_dict[member_name] = primitive.get_value();
             }
-            else if (member.ty->tag == dojo_bindings::Ty_Tag::Struct_)
+            else if (member.ty->IsStruct_())
             {
                 // Procesar structs anidados (como Vec2, etc.)
                 Dictionary nested_struct = {};
-                dojo_bindings::Struct nested = member.ty->struct_;
+                DOJO::Struct nested = GET_DOJO_VALUE(member.ty->struct_);
                 nested_struct["type"] = nested.name;
 
                 if (String(nested.name) == "Vec2")
                 {
                     Vector2 vec2 = Vector2(0, 0);
-                    std::vector<dojo_bindings::Member> nested_members(
+                    std::vector<DOJO::Member> nested_members(
                         nested.children.data, nested.children.data + nested.children.data_len
                     );
 
                     for (const auto& nested_member : nested_members)
                     {
-                        if (nested_member.ty->tag == dojo_bindings::Ty_Tag::Primitive_)
+                        if (nested_member.ty->IsPrimitive_())
                         {
-                            DojoPrimitive nested_primitive(nested_member.ty->primitive);
+                            DojoPrimitive nested_primitive(GET_DOJO_VALUE(nested_member.ty->primitive));
                             real_t value = nested_primitive.get_value();
 
                             if (String(nested_member.name) == "x")
@@ -827,10 +841,10 @@ Dictionary ToriiClient::entity_to_dictionary(const dojo_bindings::Entity& entity
     return entity_dict;
 }
 
-Dictionary ToriiClient::controller_to_dictionary(const dojo_bindings::Controller& controller) const
+Dictionary ToriiClient::controller_to_dictionary(const DOJO::Controller& controller) const
 {
     Dictionary controller_dict = {};
-    dojo_bindings::FieldElement _felt = controller.address;
+    DOJO::FieldElement _felt = controller.address;
     FieldElement controller_addr{&_felt};
     controller_dict["address"] = controller_addr.to_string();
     controller_dict["username"] = controller.username;
@@ -839,7 +853,7 @@ Dictionary ToriiClient::controller_to_dictionary(const dojo_bindings::Controller
     return controller_dict;
 }
 
-// Dictionary ToriiClient::token_to_dictionary(const dojo_bindings::Token& token) const {
+// Dictionary ToriiClient::token_to_dictionary(const DOJO::Token& token) const {
 //     Dictionary token_dict = {};
 //
 //     // Implementar conversión de Token a Dictionary según la estructura disponible
@@ -850,7 +864,7 @@ Dictionary ToriiClient::controller_to_dictionary(const dojo_bindings::Controller
 //     return token_dict;
 // }
 
-// void ToriiClient::on_entity_update_internal(dojo_bindings::FieldElement entity_id, dojo_bindings::CArrayStruct models) {
+// void ToriiClient::on_entity_update_internal(DOJO::FieldElement entity_id, DOJO::CArrayStruct models) {
 //     // Procesar actualización de entidad y emitir señal
 //     Dictionary entity_data = {};
 //     FieldElement felt_id(&entity_id);
@@ -862,7 +876,7 @@ Dictionary ToriiClient::controller_to_dictionary(const dojo_bindings::Controller
 //     emit_signal("entity_updated", entity_data);
 // }
 //
-// void ToriiClient::on_event_update_internal(dojo_bindings::Event event) {
+// void ToriiClient::on_event_update_internal(DOJO::Event event) {
 //     // Procesar evento y emitir señal
 //     Dictionary event_data = {};
 //     // Convertir event a Dictionary

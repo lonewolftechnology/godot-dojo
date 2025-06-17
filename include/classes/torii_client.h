@@ -5,23 +5,23 @@
 #ifndef TORII_CLIENT_H
 #define TORII_CLIENT_H
 
-#include <godot_cpp/classes/ref_counted.hpp>
-#include <godot_cpp/core/class_db.hpp>
-#include <godot_cpp/variant/string.hpp>
-#include <godot_cpp/variant/variant.hpp>
-#include <godot_cpp/variant/dictionary.hpp>
-#include <godot_cpp/variant/typed_array.hpp>
-#include <godot_cpp/variant/callable.hpp>
+#include "godot_cpp/classes/ref_counted.hpp"
+#include "godot_cpp/core/class_db.hpp"
+#include "godot_cpp/variant/string.hpp"
+#include "godot_cpp/variant/variant.hpp"
+#include "godot_cpp/variant/dictionary.hpp"
+#include "godot_cpp/variant/typed_array.hpp"
+#include "godot_cpp/variant/callable.hpp"
 
-#include "dojo_types.h"
+#include "dojo_types.hpp"
 #include "variant/field_element.h"
 
 using namespace godot;
 
 /**
  * @class ToriiClient
- * @brief Wrapper completo para dojo_bindings::ToriiClient
- * 
+ * @brief Wrapper completo para DOJO::ToriiClient
+ *
  * Esta clase proporciona una interfaz Godot completa para interactuar con el cliente Torii
  * del ecosistema Dojo, incluyendo consultas de entidades, metadatos, tokens, suscripciones
  * y publicación de mensajes.
@@ -31,7 +31,7 @@ class ToriiClient : public RefCounted {
 
 private:
     static ToriiClient* singleton;
-    dojo_bindings::ToriiClient* client;
+    DOJO::ToriiClient* client;
     bool is_connected;
 
 
@@ -40,7 +40,7 @@ protected:
     String torii_url;
     String world_address;
     Callable logger_callable;
-    dojo_bindings::FieldElement* world;
+    DOJO::FieldElement* world;
 
 public:
     ToriiClient();
@@ -106,18 +106,18 @@ public:
     Dictionary get_connection_status() const;
 
     // Métodos internos de conversión
-    dojo_bindings::Query create_query_from_dict(const Dictionary& query_params) const;
-    dojo_bindings::Pagination create_pagination_from_dict(const Dictionary& pagination_params) const;
-    Dictionary entity_to_dictionary(const dojo_bindings::Entity& entity) const;
-    Dictionary controller_to_dictionary(const dojo_bindings::Controller& controller) const;
-    // Dictionary token_to_dictionary(const dojo_bindings::Token& token) const;
+    DOJO::Query create_query_from_dict(const Dictionary& query_params) const;
+    DOJO::Pagination create_pagination_from_dict(const Dictionary& pagination_params) const;
+    Dictionary entity_to_dictionary(const DOJO::Entity& entity) const;
+    Dictionary controller_to_dictionary(const DOJO::Controller& controller) const;
+    // Dictionary token_to_dictionary(const DOJO::Token& token) const;
 
     // Callbacks para suscripciones
-    // void on_entity_update_internal(dojo_bindings::FieldElement entity_id, dojo_bindings::CArrayStruct models);
-    // void on_event_update_internal(dojo_bindings::Event event);
+    // void on_entity_update_internal(DOJO::FieldElement entity_id, DOJO::CArrayStruct models);
+    // void on_event_update_internal(DOJO::Event event);
 
     // Getters para uso interno
-    dojo_bindings::ToriiClient* get_client() const { return client; }
+    DOJO::ToriiClient* get_client() const { return client; }
 };
 VARIANT_ENUM_CAST(ToriiClient::QueryOrderDirection);
 VARIANT_ENUM_CAST(ToriiClient::QueryPaginationDirection);

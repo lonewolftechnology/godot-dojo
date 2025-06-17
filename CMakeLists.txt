@@ -50,11 +50,11 @@ list(APPEND CMAKE_MODULE_PATH "${godot-cpp_SOURCE_DIR}/cmake")
 # FetchContent to acquire Dojo.C bindings
 include(FetchContent)
 FetchContent_Declare(
-        dojoc
+        dojo_c
         GIT_REPOSITORY https://github.com/dojoengine/dojo.c.git
         GIT_TAG v1.5.7
 )
-FetchContent_MakeAvailable(dojoc)
+FetchContent_MakeAvailable(dojo_c)
 ########################################################################################################################
 ## Build Dojoc
 
@@ -63,11 +63,25 @@ set(Rust_TOOLCHAIN "stable-x86_64-unknown-linux-gnu")
 find_package(Rust REQUIRED)
 
 add_rust_library(TARGET dojo_c
-        SOURCE_DIRECTORY "${dojoc_SOURCE_DIR}"
-        BINARY_DIRECTORY "${dojoc_BINARY_DIR}"
+        SOURCE_DIRECTORY ${dojo_c_SOURCE_DIR}
+        BINARY_DIRECTORY ${dojo_c_BINARY_DIR}
 )
 
 
+# FIX dojo.hpp
+# Crear un target personalizado que dependa de dojo_c
+add_custom_target(patch_dojo_header
+        COMMAND ${CMAKE_COMMAND} -E echo "=== Iniciando parche de dojo.hpp ==="
+        COMMAND ${CMAKE_COMMAND} 
+            -DDOJO_HEADER_FILE=${dojo_c_SOURCE_DIR}/dojo.hpp
+            -P "${CMAKE_SOURCE_DIR}/cmake/PatchDojoHpp.cmake"
+        COMMENT "Parcheando dojo.hpp con 'struct Clause;'"
+        VERBATIM
+)
+
+# Establecer las dependencias correctas
+add_dependencies(patch_dojo_header dojo_c)           # patch_dojo_header depende de dojo_c
+add_dependencies(${PROJECT_NAME} patch_dojo_header)  # tu proyecto depende de patch_dojo_header
 
 
 ########################################################################################################################
@@ -97,7 +111,7 @@ set(
         ${godot-cpp_SOURCE_DIR}/src
         ${godot-cpp_BINARY_DIR}/gen/src
         ${godot-cpp_BINARY_DIR}/gen/include/godot_cpp
-        ${dojoc_SOURCE_DIR}
+        ${dojo_c_SOURCE_DIR}
 )
 
 foreach (dir IN LISTS PUBLIC_INCLUDE_DIRS)
@@ -166,4 +180,3 @@ add_custom_command(
 
 
 ########################################################################################################################
-

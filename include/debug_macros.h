@@ -3,7 +3,7 @@
 //
 #ifndef DEBUG_MACROS_H
 #define DEBUG_MACROS_H
-#include <godot_cpp/variant/utility_functions.hpp>
+#include "godot_cpp/variant/utility_functions.hpp"
 using namespace godot;
 
 // Concatena los elementos en un String de Godot
@@ -41,6 +41,9 @@ UtilityFunctions::push_warning(concat_args(__VA_ARGS__))
 
 #define LOG_SUCCESS_EXTRA(type, ...) \
         LOG_SUCCESS("[" type "] ", __VA_ARGS__)
+
+#define LOG_DEBUG_EXTRA(type, ...) \
+        LOG_DEBUG("[" type "] ", __VA_ARGS__)
 
 #define TYPED_LOG_COLOR(color, type, ...) \
     UtilityFunctions::print_rich("[color=" #color "][b][" type "][/b][/color] ", concat_args(__VA_ARGS__))

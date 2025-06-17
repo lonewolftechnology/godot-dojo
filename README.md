@@ -14,7 +14,7 @@ Dojo no es soportado nativamente en Windows, por lo que en su caso hay que usar 
 - Clonar repos de godot-cpp y dojo.c
 ```bash
 git clone https://github.com/godotengine/godot-cpp -b godot-4.2.2-stable
-git clone https://github.com/dojoengine/dojo.c -b v1.5.0
+git clone https://github.com/dojoengine/dojo.c -b v1.5.7
 
 scons
 ```

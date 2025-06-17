@@ -2,11 +2,11 @@
 // Created by hazel on 16/06/25.
 //
 
-#include <classes/controller_account.h>
-#include <godot_cpp/classes/engine.hpp>
-#include <godot_cpp/core/class_db.hpp>
-#include <godot_cpp/variant/utility_functions.hpp>
-#include <debug_macros.h>
+#include "classes/controller_account.h"
+#include "godot_cpp/classes/engine.hpp"
+#include "godot_cpp/core/class_db.hpp"
+#include "godot_cpp/variant/utility_functions.hpp"
+#include "debug_macros.h"
 
 #include "classes/torii_client.h"
 
@@ -64,22 +64,22 @@ ControllerAccount* ControllerAccount::get_singleton() {
     return singleton;
 }
 
-void ControllerAccount::set_session_account(dojo_bindings::ControllerAccount* account) {
+void ControllerAccount::set_session_account(DOJO::ControllerAccount* account) {
     session_account = account;
     is_connected = (account != nullptr);
     emit_connection_status(is_connected);
 }
 
-dojo_bindings::ControllerAccount* ControllerAccount::get_session_account() const {
+DOJO::ControllerAccount* ControllerAccount::get_session_account() const {
     return session_account;
 }
 
-void on_account(dojo_bindings::ControllerAccount* account)
+void on_account(DOJO::ControllerAccount* account)
 {
     LOG_SUCCESS("Account Data received");
     ControllerAccount::get_singleton()->set_session_account(account);
-    dojo_bindings::FieldElement player_address = dojo_bindings::controller_address(account);
-    dojo_bindings::FieldElement player_chain_id = dojo_bindings::controller_chain_id(account);
+    DOJO::FieldElement player_address = DOJO::controller_address(account);
+    DOJO::FieldElement player_chain_id = DOJO::controller_chain_id(account);
     LOG_CUSTOM("PLAYER CHAIN IN", FieldElement::get_as_string(&player_chain_id));
     LOG_CUSTOM("PLAYER ID", FieldElement::get_as_string(&player_address));
     LOG_INFO("--\n\n");
@@ -91,10 +91,10 @@ void ControllerAccount::create(const String& controller_addr,
 {
     FieldElement target = {controller_addr, 32};
 
-    dojo_bindings::ResultProvider resControllerProvider = dojo_bindings::provider_new(rpc_url.utf8().get_data());
-    if (resControllerProvider.tag == dojo_bindings::ErrProvider)
+    DOJO::Result<DOJO::Provider*> resControllerProvider = DOJO::provider_new(rpc_url.utf8().get_data());
+    if (resControllerProvider.tag == DOJO::Result<DOJO::Provider*>::Tag::Err)
     {
-        UtilityFunctions::printerr("Error: ", resControllerProvider.err.message);
+        UtilityFunctions::printerr("Error: ", resControllerProvider.err._0.message);
         emit_signal("provider_status_updated", false);
 
         return;
@@ -102,31 +102,31 @@ void ControllerAccount::create(const String& controller_addr,
     else
     {
         LOG_SUCCESS("Controller Provider created");
-        provider = resControllerProvider.ok;
+        provider = resControllerProvider.ok._0;
         emit_signal("provider_status_updated", true);
     }
 
     // string_to_bytes(controller_addr, target.data, 32);
     // Por ahora hardcodeado
-    dojo_bindings::Policy policies[] = {
+    DOJO::Policy policies[] = {
         {*target.get_felt(), "reset_spawn", "Spawns at 0,0"},
         {*target.get_felt(), "spawn", "Spawns"},
         {*target.get_felt(), "move", "Move to a direction"},
     };
     uintptr_t policies_len = 3;
-    dojo_bindings::FieldElement katana = ToriiClient::get_singleton()->get_world().get_felt_no_ptr();
-    dojo_bindings::ResultControllerAccount resControllerAccount =
-        dojo_bindings::controller_account(policies, policies_len, katana);
-    if (resControllerAccount.tag == dojo_bindings::OkControllerAccount)
+    DOJO::FieldElement katana = ToriiClient::get_singleton()->get_world().get_felt_no_ptr();
+    DOJO::Result<DOJO::ControllerAccount*> resControllerAccount =
+        DOJO::controller_account(policies, policies_len, katana);
+    if (resControllerAccount.tag == DOJO::Result<DOJO::ControllerAccount*>::Tag::Ok)
     {
         LOG_INFO("Session account already connected");
-        session_account = resControllerAccount.ok;
+        session_account = resControllerAccount.ok._0;
         emit_signal("on_account");
     }
     else
     {
         LOG_INFO("Session account not connected, connecting...");
-        dojo_bindings::controller_connect(rpc_url.utf8().get_data(), policies, policies_len, on_account);
+        DOJO::controller_connect(rpc_url.utf8().get_data(), policies, policies_len, on_account);
     }
 }
 
@@ -149,14 +149,14 @@ String ControllerAccount::get_username() const {
     if (!is_controller_connected()) {
         return "";
     }
-    return String(dojo_bindings::controller_username(session_account));
+    return String(DOJO::controller_username(session_account));
 }
 
 String ControllerAccount::get_address() const {
     if (!is_controller_connected()) {
         return "0x0";
     }
-    dojo_bindings::FieldElement felt = dojo_bindings::controller_address(session_account);
+    DOJO::FieldElement felt = DOJO::controller_address(session_account);
     return FieldElement::get_as_string(&felt);
 }
 
@@ -164,13 +164,13 @@ String ControllerAccount::get_chain_id() const {
     if (!is_controller_connected()) {
         return "";
     }
-    dojo_bindings::FieldElement felt = dojo_bindings::controller_chain_id(session_account);
+    DOJO::FieldElement felt = DOJO::controller_chain_id(session_account);
     return FieldElement::get_as_string(&felt);
 }
 
-dojo_bindings::CArrayFieldElement array_to_felt_array(const Array& data) {
+DOJO::CArray<DOJO::FieldElement> array_to_felt_array(const Array& data) {
     // Implementar conversión de Array de Godot a CArrayFieldElement
-    dojo_bindings::CArrayFieldElement felt_array = {};
+    DOJO::CArray<DOJO::FieldElement> felt_array = {};
 
     if (data.size() == 0) {
         felt_array.data = nullptr;
@@ -184,8 +184,8 @@ dojo_bindings::CArrayFieldElement array_to_felt_array(const Array& data) {
 
     return felt_array;
 }
-dojo_bindings::Call create_call_from_data(const String& selector, const Array& calldata) {
-    dojo_bindings::Call call = {};
+DOJO::Call create_call_from_data(const String& selector, const Array& calldata) {
+    DOJO::Call call = {};
 
     call.selector = selector.utf8().get_data();
 
@@ -203,19 +203,19 @@ void ControllerAccount::execute_raw(const String& selector, const Array& calldat
         return ;
     }
 
-    dojo_bindings::Call call = create_call_from_data(selector, calldata);
+    DOJO::Call call = create_call_from_data(selector, calldata);
 
-    dojo_bindings::ResultFieldElement result = dojo_bindings::controller_execute_raw(
+    DOJO::Result<DOJO::FieldElement> result = DOJO::controller_execute_raw(
         session_account, &call, 1
     );
 
-    if (result.tag == dojo_bindings::ErrFieldElement) {
-        LOG_ERROR("Error al ejecutar transacción: ", result.err.message);
-        emit_signal("transaction_failed", String(result.err.message));
+    if (result.tag == DOJO::Result<DOJO::FieldElement>::Tag::Err) {
+        LOG_ERROR("Error al ejecutar transacción: ", result.err._0.message);
+        emit_signal("transaction_failed", String(result.err._0.message));
         return;
     } else
     {
-        dojo_bindings::wait_for_transaction(provider, result.ok);
+        DOJO::wait_for_transaction(provider, result.ok._0);
         LOG_SUCCESS_EXTRA("EXECUTED", call.selector);
     }
 }
@@ -227,19 +227,19 @@ void ControllerAccount::execute_from_outside(const String& selector, const Array
         emit_signal("transaction_failed", "Cuenta no conectada");
     }
 
-    dojo_bindings::Call call = create_call_from_data(selector, calldata);
+    DOJO::Call call = create_call_from_data(selector, calldata);
 
-    dojo_bindings::ResultFieldElement result = dojo_bindings::controller_execute_from_outside(
+    DOJO::Result<DOJO::FieldElement> result = DOJO::controller_execute_from_outside(
         session_account, &call, call.calldata.data_len
     );
     
-    if (result.tag == dojo_bindings::ErrFieldElement) {
-        LOG_ERROR(result.err.message);
-        emit_signal("transaction_failed", String(result.err.message));
+    if (result.tag == DOJO::Result<DOJO::FieldElement>::Tag::Err) {
+        LOG_ERROR(result.err._0.message);
+        emit_signal("transaction_failed", String(result.err._0.message));
         return;
     } else
     {
-        dojo_bindings::wait_for_transaction(provider, result.ok);
+        DOJO::wait_for_transaction(provider, result.ok._0);
         LOG_SUCCESS_EXTRA("EXECUTED", call.selector);
     }
 }

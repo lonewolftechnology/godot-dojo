@@ -2,10 +2,10 @@
 // Created by hazel on 5/06/25.
 //
 
-#include <classes/event_subscription.h>
+#include "classes/event_subscription.h"
 
 #include "variant/field_element.h"
-#include <variant/primitive.h>
+#include "variant/primitive.h"
 
 void EventSubscription::_bind_methods()
 {
@@ -31,8 +31,8 @@ void EventSubscription::set_callback(const Callable& p_callback)
     LOG_INFO("Callback Received");
 }
 
-void EventSubscription::on_entity_update(dojo_bindings::FieldElement* entity_id,
-                                         dojo_bindings::CArrayStruct models) const
+void EventSubscription::on_entity_update(DOJO::FieldElement* entity_id,
+                                         DOJO::CArray<DOJO::Struct> models) const
 {
     LOG_INFO("Entity Update Event Received");
     if (callback.is_null())
@@ -77,7 +77,7 @@ void EventSubscription::on_entity_update(dojo_bindings::FieldElement* entity_id,
     // std::cout << "children.data: " << children.data << std::endl;
 
     // Convertir `CArrayMember` a `std::vector`
-    std::vector<dojo_bindings::Member> members(children.data, children.data + children.data_len);
+    std::vector<DOJO::Member> members(children.data, children.data + children.data_len);
 
     // Iterar y procesar los elementos
     for (const auto& member : members)
@@ -87,17 +87,17 @@ void EventSubscription::on_entity_update(dojo_bindings::FieldElement* entity_id,
         LOG_INFO("member type: %s", typeid(member).name());
         LOG_INFO("member.name: %s", member.name);
 
-        if (member.ty->tag == dojo_bindings::Ty_Tag::Primitive_)
+        if (member.ty->tag == DOJO::Ty::Tag::Primitive_)
         {
             LOG_INFO("member_type is [color=YELLOW]Primitive[/color]");
-            dojo_bindings::Primitive primitive = member.ty->primitive;
-            if (primitive.tag == dojo_bindings::Primitive_Tag::Felt252)
+            DOJO::Primitive primitive = member.ty->primitive._0;
+            if (primitive.tag == DOJO::Primitive::Tag::Felt252)
             {
                 LOG_INFO("primitive.tag is [color=YELLOW]Felt252[/color]");
                 if (String(member.name) == "player")
                 {
                     LOG_DEBUG("Player");
-                    FieldElement felt = {&primitive.felt252};
+                    FieldElement felt = {&primitive.felt252._0};
                     arguments.append(felt.to_string());
                     felt.bytearray_deserialize();
                 }
@@ -106,12 +106,12 @@ void EventSubscription::on_entity_update(dojo_bindings::FieldElement* entity_id,
             DojoPrimitive _primitive = DojoPrimitive(primitive);
             // result.append(_primitive.get_value());
         }
-        else if (member.ty->tag == dojo_bindings::Ty_Tag::Struct_)
+        else if (member.ty->tag == DOJO::Ty::Tag::Struct_)
         {
             LOG_INFO("member_type is [color=YELLOW]Struct[/color]");
-            dojo_bindings::Struct struct_ = member.ty->struct_;
+            DOJO::Struct struct_ = member.ty->struct_._0;
             LOG_INFO("[color=Peru]struct_name[/color] [color=YELLOW]", struct_.name, "[/color]");
-            std::vector<dojo_bindings::Member> struct_child(struct_.children.data,
+            std::vector<DOJO::Member> struct_child(struct_.children.data,
                                                             struct_.children.data + struct_.children.data_len);
             String member_name = member.name;
             LOG_DEBUG(member_name);
@@ -122,9 +122,9 @@ void EventSubscription::on_entity_update(dojo_bindings::FieldElement* entity_id,
                 {
                     LOG_INFO("struct_child_member.name: ", struct_child_member.name);
 
-                    if (struct_child_member.ty->tag == dojo_bindings::Ty_Tag::Primitive_)
+                    if (struct_child_member.ty->tag == DOJO::Ty::Tag::Primitive_)
                     {
-                        DojoPrimitive s_value = {struct_child_member.ty->primitive};
+                        DojoPrimitive s_value = {struct_child_member.ty->primitive._0};
                         LOG_DEBUG(struct_child_member.name, " | ", s_value.get_value());
                         real_t s_value_converted = s_value.get_value();
                         if (String(struct_child_member.name) == "x")
@@ -145,22 +145,22 @@ void EventSubscription::on_entity_update(dojo_bindings::FieldElement* entity_id,
                 arguments.append(vec2);
             }
         }
-        else if (member.ty->tag == dojo_bindings::Ty_Tag::Array_)
+        else if (member.ty->tag == DOJO::Ty::Tag::Array_)
         {
             LOG_INFO("member_type is [color=YELLOW]CArrayTy[/color]");
         }
-        else if (member.ty->tag == dojo_bindings::Ty_Tag::ByteArray)
+        else if (member.ty->tag == DOJO::Ty::Tag::ByteArray)
         {
             LOG_INFO("member_type is [color=YELLOW]ByteArray[/color]");
         }
-        else if (member.ty->tag == dojo_bindings::Ty_Tag::Enum_)
+        else if (member.ty->tag == DOJO::Ty::Tag::Enum_)
         {
             LOG_INFO("member_type is [color=YELLOW]Enum[/color]");
-            dojo_bindings::Enum enum_ = member.ty->enum_;
+            DOJO::Enum enum_ = member.ty->enum_._0;
             // LOG_INFO("enum_name [color=YELLOW]", enum_.name, "[/color]");
             // LOG_INFO("enum_option [color=YELLOW]", enum_.option, "[/color]");
         }
-        else if (member.ty->tag == dojo_bindings::Ty_Tag::Tuple_)
+        else if (member.ty->tag == DOJO::Ty::Tag::Tuple_)
         {
             LOG_INFO("member_type is [color=YELLOW]Tuple[/color]");
         }

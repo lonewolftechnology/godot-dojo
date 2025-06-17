@@ -5,20 +5,20 @@
 #ifndef CONTROLLER_ACCOUNT_H
 #define CONTROLLER_ACCOUNT_H
 
-#include <godot_cpp/classes/ref_counted.hpp>
-#include <godot_cpp/core/class_db.hpp>
-#include <godot_cpp/variant/string.hpp>
-#include <godot_cpp/variant/variant.hpp>
-#include <godot_cpp/variant/dictionary.hpp>
+#include "godot_cpp/classes/ref_counted.hpp"
+#include "godot_cpp/core/class_db.hpp"
+#include "godot_cpp/variant/string.hpp"
+#include "godot_cpp/variant/variant.hpp"
+#include "godot_cpp/variant/dictionary.hpp"
 
-#include "dojo_types.h"
+#include "dojo_types.hpp"
 #include "variant/field_element.h"
 
 using namespace godot;
 
 /**
  * @class ControllerAccount
- * @brief Wrapper para dojo_bindings::ControllerAccount que gestiona cuentas de controlador en Dojo
+ * @brief Wrapper para DOJO::ControllerAccount que gestiona cuentas de controlador en Dojo
  *
  * Esta clase proporciona una interfaz Godot para interactuar con cuentas de controlador
  * del ecosistema Dojo, incluyendo funcionalidades de autenticación, ejecución de transacciones
@@ -28,8 +28,8 @@ class ControllerAccount : public RefCounted {
     GDCLASS(ControllerAccount, RefCounted)
 
 private:
-    dojo_bindings::ControllerAccount* session_account;
-    dojo_bindings::Provider* provider;
+    DOJO::ControllerAccount* session_account;
+    DOJO::Provider* provider;
     bool is_connected;
 
 protected:
@@ -45,8 +45,8 @@ public:
     static ControllerAccount* get_singleton();
 
     // Métodos principales de configuración
-    void set_session_account(dojo_bindings::ControllerAccount* account);
-    dojo_bindings::ControllerAccount* get_session_account() const;
+    void set_session_account(DOJO::ControllerAccount* account);
+    DOJO::ControllerAccount* get_session_account() const;
 
     // Métodos de conexión y autenticación
     void create(const String& controller_addr, const String& rpc_url);

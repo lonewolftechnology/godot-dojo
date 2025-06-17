@@ -5,10 +5,7 @@
 #ifndef DOJO_C_GDEXTENSION_H
 #define DOJO_C_GDEXTENSION_H
 
-#include <godot_cpp/classes/object.hpp>
-#include "dojo_types.h"
-#include "variant/field_element.h"
-#include "classes/event_subscription.h"
+#include "godot_cpp/classes/object.hpp"
 
 namespace godot {
 

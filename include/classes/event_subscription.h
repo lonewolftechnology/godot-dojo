@@ -5,9 +5,9 @@
 #ifndef EVENT_SUBSCRIPTION_H
 #define EVENT_SUBSCRIPTION_H
 
-#include <debug_macros.h>
-#include <dojo_types.h>
-#include <godot_cpp/classes/ref_counted.hpp>
+#include "debug_macros.h"
+#include "dojo_types.hpp"
+#include "godot_cpp/classes/ref_counted.hpp"
 
 using namespace godot;
 
@@ -17,7 +17,7 @@ using namespace godot;
 
     private:
         Callable callback;
-        dojo_bindings::Subscription* subscription = nullptr;
+        DOJO::Subscription* subscription = nullptr;
 
 
     protected:
@@ -30,8 +30,8 @@ using namespace godot;
         Callable get_callback() const;
         void set_callback(const Callable& p_callback);
 
-        void on_entity_update(dojo_bindings::FieldElement* entity_id, dojo_bindings::CArrayStruct models) const;
-        void set_subscription(dojo_bindings::Subscription* subscription) { this->subscription = subscription; }
+        void on_entity_update(DOJO::FieldElement* entity_id, DOJO::CArray<DOJO::Struct> models) const;
+        void set_subscription(DOJO::Subscription* subscription) { this->subscription = subscription; }
     };
 
 

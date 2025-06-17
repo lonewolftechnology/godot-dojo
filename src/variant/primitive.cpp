@@ -6,7 +6,6 @@
 #include "../../include/variant/primitive.h"
 
 #include "debug_macros.h"
-#include "variant/utility_functions.hpp"
 // Esto despues se borra, es para debugguear más fácil falsos positivos/bugs
 const char* DojoPrimitive::PrimitiveTagToString(int value)
 {
@@ -57,64 +56,64 @@ PackedByteArray DataArrayToPackedByteArray(const void* data, const int size = 32
     return _bytes;
 }
 
-DojoPrimitive::DojoPrimitive(const dojo_bindings::Primitive& primitive)
+DojoPrimitive::DojoPrimitive(const DOJO::Primitive& primitive)
 {
     switch (primitive.tag)
     {
     case Tag::I8:
-        value = Variant(primitive.i8);
+        value = Variant(primitive.i8._0);
         break;
     case Tag::I16:
-        value = Variant(primitive.i16);
+        value = Variant(primitive.i16._0);
         break;
     case Tag::I32:
-        value = Variant(primitive.i32);
+        value = Variant(primitive.i32._0);
         break;
     case Tag::I64:
-        value = Variant(primitive.i64);
+        value = Variant(primitive.i64._0);
         break;
     case Tag::I128:
-        value = Variant(primitive.i128);
+        value = Variant(primitive.i128._0);
         break;
     case Tag::U8:
-        value = Variant(primitive.u8);
+        value = Variant(primitive.u8._0);
         break;
     case Tag::U16:
-        value = Variant(primitive.u16);
+        value = Variant(primitive.u16._0);
         break;
     case Tag::U32:
-        value = Variant(primitive.u32);
+        value = Variant(primitive.u32._0);
         break;
     case Tag::U64:
-        value = Variant(primitive.u64);
+        value = Variant(primitive.u64._0);
         break;
     case Tag::U128:
-        value = DataArrayToPackedByteArray(primitive.u128, 16);
+        value = DataArrayToPackedByteArray(primitive.u128._0, 16);
         break;
     case Tag::U256_:
-        value = DataArrayToPackedByteArray(primitive.u256.data);
+        value = DataArrayToPackedByteArray(primitive.u256._0.data);
         break;
     case Tag::Bool:
-        value = Variant(primitive.bool_);
+        value = Variant(primitive.bool_._0);
         break;
     case Tag::Felt252:
         LOG_DEBUG("FELT");
-        value = DataArrayToPackedByteArray(primitive.felt252.data);
+        value = DataArrayToPackedByteArray(primitive.felt252._0.data);
         break;
     case Tag::ClassHash:
         LOG_DEBUG("CLASHASH");
-        value = DataArrayToPackedByteArray(primitive.class_hash.data);
+        value = DataArrayToPackedByteArray(primitive.class_hash._0.data);
         break;
     case Tag::ContractAddress:
         LOG_DEBUG("CONTRACT");
-        value = DataArrayToPackedByteArray(primitive.contract_address.data);
+        value = DataArrayToPackedByteArray(primitive.contract_address._0.data);
         break;
     case Tag::EthAddress:
         LOG_DEBUG("ETH");
-        value = DataArrayToPackedByteArray(primitive.eth_address.data);
+        value = DataArrayToPackedByteArray(primitive.eth_address._0.data);
         break;
     default:
-        UtilityFunctions::push_error("Primitive ", PrimitiveTagToString(primitive.tag), " doesn't have a Constructor");
+        UtilityFunctions::push_error("Primitive ", PrimitiveTagToString(static_cast<int>(primitive.tag)), " doesn't have a Constructor");
         break;
     }
     if (value.get_type() != Variant::NIL)

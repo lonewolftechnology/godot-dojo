@@ -3,21 +3,12 @@
 //
 #include "dojo_c_gdextension.h"
 
-#include <godot_cpp/classes/engine.hpp>
-#include <godot_cpp/classes/os.hpp>
-#include <godot_cpp/classes/json.hpp>
-#include <godot_cpp/core/class_db.hpp>
-#include <godot_cpp/classes/time.hpp>
-
-#include <debug_macros.h>
-#include <variant/primitive.h>
-
-#include "classes/controller_account.h"
-
+#include "godot_cpp/classes/engine.hpp"
+#include "godot_cpp/core/class_db.hpp"
+#include "debug_macros.h"
 
 using namespace godot;
 DojoC* DojoC::singleton = nullptr;
-dojo_bindings::FieldElement* actions;
 
 void DojoC::_bind_methods()
 {
