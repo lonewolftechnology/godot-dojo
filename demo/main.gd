@@ -44,36 +44,36 @@ func _ready() -> void:
 	OS.set_environment("BROWSER", "chromium")
 	if Engine.is_editor_hint(): return
 	button_toggle.set_pressed(true)
-	if not dojo_abi.is_empty() and FileAccess.file_exists(dojo_abi):
-		var json_file = FileAccess.get_file_as_string(dojo_abi)
-		var json = JSON.parse_string(json_file)
-		var contracts = json['contracts']
-		for data in contracts:
-			print(data['systems'])
-			var abi = data['abi']
-			for abi_item in abi:
-				if abi_item['type'] == "interface" and abi_item['name'] == "dojo_starter::systems::actions::IActions":
-					var items = abi_item['items']
-					print(items)
+	#if not dojo_abi.is_empty() and FileAccess.file_exists(dojo_abi):
+		#var json_file = FileAccess.get_file_as_string(dojo_abi)
+		#var json = JSON.parse_string(json_file)
+		#var contracts = json['contracts']
+		#for data in contracts:
+			#print(data['systems'])
+			#var abi = data['abi']
+			#for abi_item in abi:
+				#if abi_item['type'] == "interface" and abi_item['name'] == "dojo_starter::systems::actions::IActions":
+					#var items = abi_item['items']
+					#print(items)
 	
 func _on_subcribe_pressed() -> void:
 	client = ToriiClient.new()
 	client.client_connected.connect(client_status.set_status)
-	await client.create_client(dev_world_addr, "https://api.cartridge.gg/x/godot-demo-rookie/torii")
-	var query = {
-		"pagination":{
-			"limit": 10,
-			"cursor": "",
-			"order_by": [],
-			"direction": ToriiClient.QueryPaginationDirection.FORWARD
-		},
-		"clause": null,
-		"no_hashed_keys": true,
-		"models":[],
-		"historical": false
-	}
-	var data = client.get_entities(query)
-	print(data)
+	client.create_client(dev_world_addr, "https://api.cartridge.gg/x/godot-demo-rookie/torii")
+	#var query = {
+		#"pagination":{
+			#"limit": 10,
+			#"cursor": "",
+			#"order_by": [],
+			#"direction": ToriiClient.QueryPaginationDirection.FORWARD
+		#},
+		#"clause": null,
+		#"no_hashed_keys": true,
+		#"models":[],
+		#"historical": false
+	#}
+	#var data = client.get_entities(query)
+	#print(data)
 	#dojo.create_entity_subscription(call_test)
 	
 	#dojo.entity_subscription(callable_test)
@@ -148,3 +148,8 @@ func _on_arrow_right_pressed() -> void:
 func _on_testing_pressed() -> void:
 	pass
 	#dojo.move(FieldElement.from_enum(0),true,false)
+
+
+func _on_client_metadata_pressed() -> void:
+	var data = client.get_world_metadata()
+	print(data)

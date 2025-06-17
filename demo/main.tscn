@@ -123,6 +123,10 @@ text = "MOVE"
 layout_mode = 2
 text = "TESTING"
 
+[node name="ClientMetadata" type="Button" parent="UI/VBoxContainer/HBoxContainer/Tabs/Main"]
+layout_mode = 2
+text = "ClientMetadata"
+
 [node name="Chat" type="VBoxContainer" parent="UI/VBoxContainer/HBoxContainer/Tabs"]
 visible = false
 custom_minimum_size = Vector2(500, 200)
@@ -242,6 +246,7 @@ position_smoothing_speed = 4.0
 [connection signal="pressed" from="UI/VBoxContainer/HBoxContainer/Tabs/Main/Events/Spawn" to="." method="_on_spawn_pressed"]
 [connection signal="pressed" from="UI/VBoxContainer/HBoxContainer/Tabs/Main/Events/Move" to="." method="_on_move_pressed"]
 [connection signal="pressed" from="UI/VBoxContainer/HBoxContainer/Tabs/Main/Events/TESTING" to="." method="_on_testing_pressed"]
+[connection signal="pressed" from="UI/VBoxContainer/HBoxContainer/Tabs/Main/ClientMetadata" to="." method="_on_client_metadata_pressed"]
 [connection signal="pressed" from="UI/VBoxContainer/Arrows/ArrowLeft" to="." method="_on_arrow_left_pressed"]
 [connection signal="pressed" from="UI/VBoxContainer/Arrows/VBoxContainer/ArrowUp" to="." method="_on_arrow_up_pressed"]
 [connection signal="pressed" from="UI/VBoxContainer/Arrows/VBoxContainer/ArrowDown" to="." method="_on_arrow_down_pressed"]
