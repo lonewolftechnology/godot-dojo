@@ -89,18 +89,31 @@ def detect_arch():
         print(f"{Y}⚠️ Unknown architecture '{machine}', defaulting to x86_64{X}")
         return "x86_64"
 
+# Cache para has_msvc - evitar múltiples ejecuciones
+_msvc_cache = None
+
 def has_msvc():
-    """Detecta MSVC de forma simple - si Rust puede usarlo, nosotros también"""
+    """Detecta MSVC de forma simple - si Rust puede usarlo, nosotros también (CACHED)"""
+    global _msvc_cache
+    
+    # Si ya fue detectado, usar cache
+    if _msvc_cache is not None:
+        return _msvc_cache
+    
     if py_platform.system().lower() != "windows":
-        return False
+        _msvc_cache = False
+        return _msvc_cache
 
     try:
+        print(f"{B}🔍 Detecting MSVC toolchain...{X}")
+        
         # Método 1: Verificar directamente cl.exe
         result = subprocess.run(['where', 'cl'], 
                               capture_output=True, text=True, shell=True)
         if result.returncode == 0:
             print(f"  ✅ MSVC compiler found: {result.stdout.strip().split()[0]}")
-            return True
+            _msvc_cache = True
+            return _msvc_cache
         
         # Método 2: Test con cargo check en dojo.c directory
         result = subprocess.run([
@@ -109,9 +122,11 @@ def has_msvc():
         
         if result.returncode == 0:
             print(f"  ✅ MSVC toolchain confirmed (Rust can use it)")
-            return True
+            _msvc_cache = True
+            return _msvc_cache
         
-        return False
+        _msvc_cache = False
+        return _msvc_cache
         
     except Exception as e:
         print(f"  ⚠️ MSVC detection inconclusive: {e}")
@@ -122,11 +137,13 @@ def has_msvc():
                                   capture_output=True, text=True)
             if result.returncode == 0 and 'x86_64-pc-windows-msvc' in result.stdout:
                 print(f"  ✅ MSVC target available in rustup")
-                return True
+                _msvc_cache = True
+                return _msvc_cache
         except:
             pass
         
-        return False
+        _msvc_cache = False
+        return _msvc_cache
 
 # Detectar si estamos en modo clean
 is_cleaning = GetOption('clean')
@@ -134,25 +151,21 @@ is_cleaning = GetOption('clean')
 if is_cleaning:
     print(f"{Y}🧹 Cleaning mode detected{X}")
 
-    # Limpiar dojo.c con cargo clean
+    # 1. Limpiar dojo.c con cargo clean
     print(f"{Y}🦀 Cleaning dojo.c (cargo clean)...{X}")
     try:
-        os.chdir("external/dojo.c")
-        subprocess.run(["cargo", "clean"], check=True)
-        os.chdir("../..")
+        subprocess.run(["cargo", "clean"], cwd="external/dojo.c", check=True)
         print(f"{G}✅ dojo.c cleaned{X}")
     except subprocess.CalledProcessError as e:
         print(f"{R}❌ Failed to clean dojo.c: {e}{X}")
-        os.chdir("../..")
     except Exception as e:
         print(f"{R}❌ Error cleaning dojo.c: {e}{X}")
-        os.chdir("../..")
 
-    # Limpiar archivos generados adicionales
+    # 2. Limpiar archivos generados adicionales
     print(f"{Y}🧹 Cleaning generated files...{X}")
     files_to_clean = [
         "demo/bin/",
-        "external/dojo.c/dojo.hpp.backup"  # Si existe un backup del patch
+        "external/dojo.c/dojo.hpp.backup"
     ]
 
     for path in files_to_clean:
@@ -166,61 +179,24 @@ if is_cleaning:
         except Exception as e:
             print(f"{Y}⚠️  Could not remove {path}: {e}{X}")
 
-    print(f"{G}✅ Additional cleanup complete{X}")
-
-    # Cargar environment para que SCons pueda hacer su limpieza normal
+    # 3. Limpiar godot-cpp usando su propio SConstruct (simple)
+    print(f"{Y}🔧 Cleaning godot-cpp...{X}")
     try:
-        print(f"{Y}🔧 Loading godot-cpp environment for SCons cleanup...{X}")
+        # Simplemente pasar argumentos de limpieza a godot-cpp
+        cleanup_args = []
+        for key, value in ARGUMENTS.items():
+            cleanup_args.append(f"{key}={value}")
         
-        # Detectar plataforma para cleanup también
-        cleanup_platform = ARGUMENTS.get('platform', detect_platform())
-        cleanup_host = detect_platform()
-        
-        # Configurar MSVC para cleanup si estamos en Windows
-        if cleanup_platform == "windows" and cleanup_host == "windows" and has_msvc():
-            print(f"  🔧 Using MSVC for cleanup")
-            ARGUMENTS['use_msvc'] = 'yes'
-            if 'use_mingw' in ARGUMENTS:
-                del ARGUMENTS['use_mingw']
-        elif cleanup_platform == "windows":
-            ARGUMENTS['use_mingw'] = 'yes'
-            
-        env = SConscript("external/godot-cpp/SConstruct")
-
-        # Configurar para quitar prefijo "lib"
-        env['SHLIBPREFIX'] = ''
-
-        # Detectar parámetros básicos para definir targets
-        platform = ARGUMENTS.get('platform', 'linux')
-        target = ARGUMENTS.get('target', 'template_debug')
-        arch = ARGUMENTS.get('arch', 'x86_64')
-
-        # Definir los mismos targets que en build normal para que SCons los conozca
-        # Buscar fuentes recursivamente pero eliminar duplicados
-        project_sources = []
-        project_sources.extend(glob.glob("src/**/*.cpp", recursive=True))
-        project_sources = sorted(list(set(project_sources)))  # Eliminar duplicados
-
-        if platform == "linux":
-            lib_suffix = f".linux.{target}.{arch}.so"
-        elif platform == "windows":
-            lib_suffix = f".windows.{target}.{arch}.dll"
-        elif platform == "macos":
-            if arch == "arm64":
-                lib_suffix = f".macos.{target}.arm64.dylib"
-            elif arch == "x86_64":
-                lib_suffix = f".macos.{target}.x86_64.dylib"
-            else:
-                lib_suffix = f".macos.{target}.universal.dylib"
-
-        lib_output = f"demo/bin/{PROJECT_NAME}{lib_suffix}"
-        library = env.SharedLibrary(target=lib_output, source=project_sources)
-        Default(library)
-
-        print(f"{G}✅ Ready for SCons cleanup{X}")
+        cleanup_cmd = ["scons", "-C", "external/godot-cpp", "--clean"] + cleanup_args
+        subprocess.run(cleanup_cmd, check=False)  # No fallar si hay error
+        print(f"{G}✅ godot-cpp cleanup attempted{X}")
     except Exception as e:
-        print(f"{Y}⚠️ Could not load environment for cleanup: {e}{X}")
-        print(f"{Y}   SCons will continue with basic cleanup{X}")
+        print(f"{Y}⚠️ godot-cpp cleanup failed: {e}{X}")
+
+    print(f"{G}✅ Cleanup complete - SCons will handle the rest{X}")
+    
+    # No cargar environment complejo, solo dejar que SCons haga su trabajo básico
+    Return()
 
 # Si no estamos limpiando, continuar con el build normal
 if not is_cleaning:
@@ -232,7 +208,7 @@ if not is_cleaning:
     # Detectar host system para decisiones de toolchain
     host_platform = detect_platform()
     
-    # Auto-configuración simple para Windows + MSVC
+    # Auto-configuración simple para Windows + MSVC (usa cache)
     def auto_setup_windows():
         """Setup automático para Windows - configura target MSVC en línea de comandos"""
         if py_platform.system().lower() != "windows":
@@ -240,7 +216,7 @@ if not is_cleaning:
         
         print(f"{B}Windows detected - checking for MSVC...{X}")
         
-        # Verificar si MSVC está disponible
+        # Verificar si MSVC está disponible (usa cache)
         if has_msvc():
             print(f"{G}✅ MSVC detected - will use x86_64-pc-windows-msvc target{X}")
             
@@ -259,9 +235,9 @@ if not is_cleaning:
     # Llamar automáticamente para determinar el target
     auto_msvc_target = auto_setup_windows()
     
-    # LÓGICA MODIFICADA: Siempre preferir MSVC en Windows si está disponible
+    # LÓGICA MODIFICADA: Siempre preferir MSVC en Windows si está disponible (usa cache)
     if host_platform == "windows" and platform == "windows":
-        use_msvc = has_msvc()
+        use_msvc = has_msvc()  # Usa cache
         if use_msvc:
             print(f"{B}Windows detected: Forcing MSVC toolchain{X}")
         else:
@@ -383,7 +359,7 @@ if not is_cleaning:
     # 3. COMPILAR GODOT-CPP Y CARGAR SU ENVIRONMENT
     print(f"{Y}⚙️ Step 3: Compiling godot-cpp and loading environment...{X}")
 
-    # FORZAR MSVC EN WINDOWS ANTES DE CARGAR GODOT-CPP
+    # FORZAR MSVC EN WINDOWS ANTES DE CARGAR GODOT-CPP (usa cache)
     if platform == "windows" and host_platform == "windows":
         if use_msvc:
             print(f"  🔧 Forcing MSVC toolchain for Windows build")
