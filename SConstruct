@@ -10,12 +10,26 @@ PROJECT_NAME = "godot-dojo"
 ENTRY_POINT = "dojoc_library_init"
 GODOT_MIN_REQUIREMENT = "4.2"
 
-# Colors para output
-G = '\033[92m'  # Green
-B = '\033[94m'  # Blue
-R = '\033[91m'  # Red
-Y = '\033[1;33m'  # Yellow
-X = '\033[0m'   # Reset
+# Intentar importar colorama para Windows
+try:
+    from colorama import init, Fore, Back, Style
+    init()  # Inicializar colorama para Windows
+
+    # Colores usando colorama
+    G = Fore.GREEN      # Green
+    B = Fore.BLUE       # Blue
+    R = Fore.RED        # Red
+    Y = Fore.YELLOW     # Yellow
+    X = Style.RESET_ALL # Reset
+
+except ImportError:
+    # Fallback a códigos ANSI normales si colorama no está disponible
+    G = '\033[92m'  # Green
+    B = '\033[94m'  # Blue
+    R = '\033[91m'  # Red
+    Y = '\033[1;33m'  # Yellow
+    X = '\033[0m'   # Reset
+
 
 print(f"{B}🚀 Building {PROJECT_NAME}{X}")
 
@@ -24,7 +38,7 @@ is_cleaning = GetOption('clean')
 
 if is_cleaning:
     print(f"{Y}🧹 Cleaning mode detected{X}")
-    
+
     # Limpiar dojo.c con cargo clean
     print(f"{Y}🦀 Cleaning dojo.c (cargo clean)...{X}")
     try:
@@ -38,14 +52,14 @@ if is_cleaning:
     except Exception as e:
         print(f"{R}❌ Error cleaning dojo.c: {e}{X}")
         os.chdir("../..")
-    
+
     # Limpiar archivos generados adicionales
     print(f"{Y}🧹 Cleaning generated files...{X}")
     files_to_clean = [
         "demo/bin/",
         "external/dojo.c/dojo.hpp.backup"  # Si existe un backup del patch
     ]
-    
+
     for path in files_to_clean:
         try:
             if os.path.isdir(path):
@@ -56,28 +70,42 @@ if is_cleaning:
                 print(f"  🗑️  Removed file: {path}")
         except Exception as e:
             print(f"{Y}⚠️  Could not remove {path}: {e}{X}")
-    
+
     print(f"{G}✅ Additional cleanup complete{X}")
-    
+
     # Cargar environment para que SCons pueda hacer su limpieza normal
     try:
         print(f"{Y}🔧 Loading godot-cpp environment for SCons cleanup...{X}")
-        env = SConscript("external/godot-cpp/SConstruct")
         
+        # Detectar plataforma para cleanup también
+        cleanup_platform = ARGUMENTS.get('platform', detect_platform())
+        cleanup_host = detect_platform()
+        
+        # Configurar MSVC para cleanup si estamos en Windows
+        if cleanup_platform == "windows" and cleanup_host == "windows" and has_msvc():
+            print(f"  🔧 Using MSVC for cleanup")
+            ARGUMENTS['use_msvc'] = 'yes'
+            if 'use_mingw' in ARGUMENTS:
+                del ARGUMENTS['use_mingw']
+        elif cleanup_platform == "windows":
+            ARGUMENTS['use_mingw'] = 'yes'
+            
+        env = SConscript("external/godot-cpp/SConstruct")
+
         # Configurar para quitar prefijo "lib"
         env['SHLIBPREFIX'] = ''
-        
+
         # Detectar parámetros básicos para definir targets
         platform = ARGUMENTS.get('platform', 'linux')
         target = ARGUMENTS.get('target', 'template_debug')
         arch = ARGUMENTS.get('arch', 'x86_64')
-        
+
         # Definir los mismos targets que en build normal para que SCons los conozca
         # Buscar fuentes recursivamente pero eliminar duplicados
         project_sources = []
         project_sources.extend(glob.glob("src/**/*.cpp", recursive=True))
         project_sources = sorted(list(set(project_sources)))  # Eliminar duplicados
-        
+
         if platform == "linux":
             lib_suffix = f".linux.{target}.{arch}.so"
         elif platform == "windows":
@@ -89,11 +117,11 @@ if is_cleaning:
                 lib_suffix = f".macos.{target}.x86_64.dylib"
             else:
                 lib_suffix = f".macos.{target}.universal.dylib"
-        
+
         lib_output = f"demo/bin/{PROJECT_NAME}{lib_suffix}"
         library = env.SharedLibrary(target=lib_output, source=project_sources)
         Default(library)
-        
+
         print(f"{G}✅ Ready for SCons cleanup{X}")
     except Exception as e:
         print(f"{Y}⚠️ Could not load environment for cleanup: {e}{X}")
@@ -127,18 +155,31 @@ if not is_cleaning:
             print(f"{Y}⚠️ Unknown architecture '{machine}', defaulting to x86_64{X}")
             return "x86_64"
 
-    # Detectar si MSVC está disponible en Windows
+    # Detectar si MSVC está disponible en Windows (versión mejorada)
     def has_msvc():
         if py_platform.system().lower() != "windows":
             return False
-        
+
         try:
             # Verificar si cl.exe está disponible
-            result = subprocess.run(['where', 'cl'], 
-                                  capture_output=True, 
-                                  text=True, 
+            result = subprocess.run(['where', 'cl'],
+                                  capture_output=True,
+                                  text=True,
                                   shell=True)
-            return result.returncode == 0
+            if result.returncode == 0:
+                print(f"  🔍 Found MSVC compiler: {result.stdout.strip().split()[0]}")
+                return True
+                
+            # Verificar si hay Visual Studio instalado
+            result = subprocess.run(['where', 'devenv'],
+                                  capture_output=True,
+                                  text=True,
+                                  shell=True)
+            if result.returncode == 0:
+                print(f"  🔍 Found Visual Studio, MSVC might be available")
+                return True
+                
+            return False
         except:
             return False
 
@@ -149,7 +190,16 @@ if not is_cleaning:
 
     # Detectar host system para decisiones de toolchain
     host_platform = detect_platform()
-    use_msvc = has_msvc() and platform == "windows" and host_platform == "windows"
+    
+    # LÓGICA MODIFICADA: Siempre preferir MSVC en Windows si está disponible
+    if host_platform == "windows" and platform == "windows":
+        use_msvc = has_msvc()
+        if use_msvc:
+            print(f"{B}Windows detected: Forcing MSVC toolchain{X}")
+        else:
+            print(f"{Y}⚠️ MSVC not found, falling back to MinGW{X}")
+    else:
+        use_msvc = False
 
     # Mostrar información del sistema detectado
     detected_platform = detect_platform()
@@ -197,7 +247,7 @@ if not is_cleaning:
                 return "x86_64-apple-darwin"
             elif arch == "arm64":
                 return "aarch64-apple-darwin"
-        
+
         # Default fallback
         return "x86_64-unknown-linux-gnu"
 
@@ -228,7 +278,7 @@ if not is_cleaning:
         import re
         namespace_pattern = r'(namespace\s+\w+\s*{)'
         match = re.search(namespace_pattern, content)
-        
+
         if match:
             # Insertar después del namespace
             insert_pos = match.end()
@@ -236,10 +286,10 @@ if not is_cleaning:
         else:
             # Fallback: agregar al inicio del archivo
             content = "struct Clause;\n" + content
-        
+
         with open(dojo_hpp_path, 'w') as f:
             f.write(content)
-        
+
         print(f"  ✏️  Added 'struct Clause;' declaration")
 
     print(f"{G}✅ Step 2 complete: dojo.hpp patched{X}")
@@ -247,8 +297,19 @@ if not is_cleaning:
     # 3. COMPILAR GODOT-CPP Y CARGAR SU ENVIRONMENT
     print(f"{Y}⚙️ Step 3: Compiling godot-cpp and loading environment...{X}")
 
-    # Configurar use_mingw para godot-cpp si estamos cross-compilando
-    if platform == "windows" and not use_msvc:
+    # FORZAR MSVC EN WINDOWS ANTES DE CARGAR GODOT-CPP
+    if platform == "windows" and host_platform == "windows":
+        if use_msvc:
+            print(f"  🔧 Forcing MSVC toolchain for Windows build")
+            # Configurar argumentos para forzar MSVC en godot-cpp
+            ARGUMENTS['use_msvc'] = 'yes'
+            # Remover use_mingw si existe
+            if 'use_mingw' in ARGUMENTS:
+                del ARGUMENTS['use_mingw']
+        else:
+            print(f"  🔧 MSVC not available, falling back to MinGW")
+            ARGUMENTS['use_mingw'] = 'yes'
+    elif platform == "windows" and not use_msvc:
         print(f"  🔧 Setting use_mingw=yes for cross-compilation")
         ARGUMENTS['use_mingw'] = 'yes'
 
@@ -283,14 +344,14 @@ if not is_cleaning:
 
     # Buscar fuentes del proyecto - AHORA RECURSIVO pero sin duplicados
     print(f"  🔍 Looking for source files recursively in src/...")
-    
+
     # Buscar recursivamente en src/ y subdirectorios
     project_sources = []
     project_sources.extend(glob.glob("src/**/*.cpp", recursive=True))
-    
+
     # Eliminar duplicados usando set y ordenar para consistencia
     project_sources = sorted(list(set(project_sources)))
-    
+
     print(f"  📁 Found {len(project_sources)} source files:")
     for src in project_sources:
         print(f"    📄 {src}")
@@ -332,7 +393,28 @@ if not is_cleaning:
 
     # Determinar sufijo de librería basado en plataforma y arquitectura
     if platform == "linux":
-        lib_suffix = f".linux.{target}.{arch}.so"
+        lib_suffix = f<pad><pad><pad>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+".linux.{target}.{arch}.so"
     elif platform == "windows":
         lib_suffix = f".windows.{target}.{arch}.dll"
     elif platform == "macos":
@@ -379,7 +461,7 @@ if not is_cleaning:
         dll_name = "dojo_c.dll"  # Nombre siempre igual para Rust
         dll_source = f"external/dojo.c/target/{rust_target}/{build_mode}/{dll_name}"
         dll_dest = f"demo/bin/{dll_name}"
-        
+
         if os.path.exists(dll_source):
             shutil.copy2(dll_source, dll_dest)
             print(f"  📁 Copied: {dll_source} → {dll_dest}")
