@@ -10,26 +10,57 @@ PROJECT_NAME = "godot-dojo"
 ENTRY_POINT = "dojoc_library_init"
 GODOT_MIN_REQUIREMENT = "4.2"
 
-# Intentar importar colorama para Windows
-try:
-    from colorama import init, Fore, Back, Style
-    init()  # Inicializar colorama para Windows
+def init_colors():
+    """Inicializa colores ANSI de forma compatible con Windows"""
 
-    # Colores usando colorama
-    G = Fore.GREEN      # Green
-    B = Fore.BLUE       # Blue
-    R = Fore.RED        # Red
-    Y = Fore.YELLOW     # Yellow
-    X = Style.RESET_ALL # Reset
+    # Si no es Windows, usar ANSI directamente
+    if py_platform.system().lower() != "windows":
+        return {
+            'G': '\033[92m',  # Green
+            'B': '\033[94m',  # Blue
+            'R': '\033[91m',  # Red
+            'Y': '\033[1;33m',  # Yellow
+            'X': '\033[0m'    # Reset
+        }
 
-except ImportError:
-    # Fallback a códigos ANSI normales si colorama no está disponible
-    G = '\033[92m'  # Green
-    B = '\033[94m'  # Blue
-    R = '\033[91m'  # Red
-    Y = '\033[1;33m'  # Yellow
-    X = '\033[0m'   # Reset
+    # En Windows, intentar habilitar ANSI
+    try:
+        # Truco simple: llamar a os.system con string vacío
+        # Esto a menudo habilita el modo ANSI en terminales modernos
+        os.system("")
 
+        # Verificar si estamos en Windows Terminal o PowerShell moderno
+        if os.getenv('WT_SESSION') or 'WindowsPowerShell' in str(os.getenv('PSModulePath', '')):
+            return {
+                'G': '\033[92m',
+                'B': '\033[94m',
+                'R': '\033[91m',
+                'Y': '\033[1;33m',
+                'X': '\033[0m'
+            }
+
+        # Intentar con API de Windows
+        import ctypes
+        kernel32 = ctypes.windll.kernel32
+        kernel32.SetConsoleMode(kernel32.GetStdHandle(-11), 7)
+
+        return {
+            'G': '\033[92m',
+            'B': '\033[94m',
+            'R': '\033[91m',
+            'Y': '\033[1;33m',
+            'X': '\033[0m'
+        }
+
+    except:
+        # Si todo falla, sin colores
+        return {
+            'G': '', 'B': '', 'R': '', 'Y': '', 'X': ''
+        }
+
+# Inicializar colores
+colors = init_colors()
+G, B, R, Y, X = colors['G'], colors['B'], colors['R'], colors['Y'], colors['X']
 
 print(f"{B}🚀 Building {PROJECT_NAME}{X}")
 
