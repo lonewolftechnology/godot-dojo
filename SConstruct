@@ -257,7 +257,11 @@ if not is_cleaning:
     os.chdir("external/dojo.c")
 
     # Configurar target de Rust basado en plataforma, arquitectura y toolchain
-    def get_rust_target(platform, arch, use_msvc):
+    def get_rust_target(platform, arch, use_msvc, auto_target=None):
+        # Si hay auto-detección de MSVC, usarla
+        if auto_target and platform == "windows":
+            return auto_target
+        
         if platform == "windows":
             if use_msvc:
                 # MSVC targets
@@ -287,7 +291,8 @@ if not is_cleaning:
         # Default fallback
         return "x86_64-unknown-linux-gnu"
 
-    rust_target = get_rust_target(platform, arch, use_msvc)
+    # Y actualizar la llamada:
+    rust_target = get_rust_target(platform, arch, use_msvc, auto_msvc_target)
     print(f"  🦀 Rust target: {rust_target}")
 
     # Comando cargo
@@ -489,3 +494,76 @@ if not is_cleaning:
     Default(library)
 
     print(f"{G}🎉 Build configuration complete!{X}")
+
+def detect_rust_target():
+    """Detecta y configura el target correcto de Rust"""
+    if py_platform.system().lower() != "windows":
+        return None
+    
+    try:
+        # Forzar MSVC si está disponible
+        if has_msvc():
+            # Verificar si el target MSVC está instalado
+            result = subprocess.run(['rustup', 'target', 'list', '--installed'], 
+                                  capture_output=True, text=True)
+            
+            if result.returncode == 0 and 'x86_64-pc-windows-msvc' in result.stdout:
+                print(f"  🎯 Forcing Rust target to x86_64-pc-windows-msvc")
+                return "x86_64-pc-windows-msvc"
+            else:
+                # Instalar el target MSVC
+                print(f"  🔧 Installing MSVC target for Rust...")
+                install_result = subprocess.run(['rustup', 'target', 'add', 'x86_64-pc-windows-msvc'], 
+                                              capture_output=True, text=True)
+                if install_result.returncode == 0:
+                    return "x86_64-pc-windows-msvc"
+        
+        # Fallback al target por defecto
+        result = subprocess.run(['rustc', '--version', '--verbose'], 
+                              capture_output=True, text=True)
+        if result.returncode == 0:
+            for line in result.stdout.split('\n'):
+                if line.startswith('host:'):
+                    return line.split(':', 1)[1].strip()
+        
+        return None
+        
+    except Exception as e:
+        print(f"  ⚠️ Error detecting Rust target: {e}")
+        return None
+
+# Auto-configuración simple para Windows + MSVC
+def auto_setup_windows():
+    """Setup automático para Windows - configura target MSVC en línea de comandos"""
+    if py_platform.system().lower() != "windows":
+        return None
+    
+    print(f"{B}Windows detected - checking for MSVC...{X}")
+    
+    # Verificar si MSVC está disponible
+    if has_msvc():
+        print(f"{G}✅ MSVC detected - will use x86_64-pc-windows-msvc target{X}")
+        
+        # Instalar target MSVC si no existe (silenciosamente)
+        try:
+            subprocess.run(['rustup', 'target', 'add', 'x86_64-pc-windows-msvc'], 
+                          capture_output=True, check=False)
+        except:
+            pass
+        
+        return "x86_64-pc-windows-msvc"
+    else:
+        print(f"{Y}⚠️ MSVC not detected - will use GNU target{X}")
+        return None
+
+# Llamar automáticamente al inicio para determinar el target
+auto_msvc_target = auto_setup_windows()
+
+# Usar en tu código principal
+rust_target = detect_rust_target()
+if rust_target:
+    print(f"  🎯 Using Rust target: {rust_target}")
+    # Agregar el target a los comandos de cargo
+    cargo_build_args = ['--target', rust_target] if rust_target else []
+else:
+    cargo_build_args = []
