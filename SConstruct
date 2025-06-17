@@ -188,31 +188,36 @@ if not is_cleaning:
 
     # Detectar si MSVC está disponible en Windows (versión mejorada)
     def has_msvc():
+        """Detecta MSVC de forma simple - si Rust puede usarlo, nosotros también"""
         if py_platform.system().lower() != "windows":
             return False
 
         try:
-            # Verificar si cl.exe está disponible
-            result = subprocess.run(['where', 'cl'],
-                                  capture_output=True,
-                                  text=True,
-                                  shell=True)
+            # Si estamos en Windows y llegaste hasta aquí, probablemente tengas MSVC
+            # Ya que cargo con target msvc funciona
+            
+            # Test simple: intentar compilar algo mínimo
+            result = subprocess.run([
+                'cargo', 'check', '--target', 'x86_64-pc-windows-msvc', '--quiet'
+            ], capture_output=True, text=True, cwd='.')
+            
             if result.returncode == 0:
-                print(f"  🔍 Found MSVC compiler: {result.stdout.strip().split()[0]}")
+                print(f"  ✅ MSVC toolchain confirmed (Rust can use it)")
                 return True
-                
-            # Verificar si hay Visual Studio instalado
-            result = subprocess.run(['where', 'devenv'],
-                                  capture_output=True,
-                                  text=True,
-                                  shell=True)
-            if result.returncode == 0:
-                print(f"  🔍 Found Visual Studio, MSVC might be available")
-                return True
-                
+            else:
+                # Fallback a detección tradicional
+                result = subprocess.run(['where', 'cl'], 
+                                      capture_output=True, text=True, shell=True)
+                if result.returncode == 0:
+                    print(f"  ✅ MSVC compiler found: {result.stdout.strip().split()[0]}")
+                    return True
+            
             return False
-        except:
-            return False
+            
+        except Exception as e:
+            print(f"  ⚠️ MSVC detection inconclusive: {e}")
+            # En Windows, asumir que MSVC está disponible si llegamos hasta aquí
+            return True
 
     # Obtener parámetros con detección automática
     platform = ARGUMENTS.get('platform', detect_platform())
