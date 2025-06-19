@@ -15,7 +15,7 @@ const dev_actions_addr = "0x00a92391c5bcde7af4bad5fd0fff3834395b1ab8055a9abb8387
 @onready var tabs: TabContainer = %Tabs
 @onready var reset_spawn: CheckBox = %ResetSpawn
 
-@onready var controllers: Node2D = $Controllers
+@onready var controllers_manager: Node2D = $ControllersManager
 
 @onready var button_toggle: Button = %ButtonToggle
 
@@ -60,6 +60,12 @@ func _on_subcribe_pressed() -> void:
 	client = ToriiClient.new()
 	client.client_connected.connect(client_status.set_status)
 	client.create_client(dev_world_addr, "https://api.cartridge.gg/x/godot-demo-rookie/torii")
+	controller = ControllerAccount.new()
+	controller.controller_connected.connect(controller_account_status.set_status)
+	controller.controller_disconnected.connect(controller_account_status.set_status.bind(false))
+	controller.provider_status_updated.connect(provider_status.set_status)
+	controller.create(dev_actions_addr, "https://api.cartridge.gg/x/godot-demo-rookie/katana")
+
 	#var query = {
 		#"pagination":{
 			#"limit": 10,
@@ -83,7 +89,8 @@ func _on_subcribe_pressed() -> void:
 
 
 func _on_spawn_pressed() -> void:
-	dojo.spawn(reset_spawn.button_pressed,false)
+	controller.execute_from_outside(dev_actions_addr, "spawn", [])
+	#dojo.spawn(reset_spawn.button_pressed,false)
 
 func update_event_subscription_status(_value:bool, _event:String, _status_node:HBoxContainer):
 	update_status(_value, _status_node)
@@ -153,3 +160,7 @@ func _on_testing_pressed() -> void:
 func _on_client_metadata_pressed() -> void:
 	var data = client.get_world_metadata()
 	print(data)
+
+
+func _on_spawn_raw_pressed() -> void:
+	controller.execute_raw(dev_actions_addr, "spawn", [])

@@ -94,7 +94,6 @@ layout_mode = 2
 text = "Login"
 
 [node name="Events" type="VBoxContainer" parent="UI/VBoxContainer/HBoxContainer/Tabs/Main"]
-visible = false
 layout_mode = 2
 alignment = 1
 
@@ -112,7 +111,12 @@ text = "Spawn at 0,0"
 [node name="Spawn" type="Button" parent="UI/VBoxContainer/HBoxContainer/Tabs/Main/Events"]
 layout_mode = 2
 size_flags_horizontal = 3
-text = "SPAWN"
+text = "SPAWN Outside"
+
+[node name="SpawnRaw" type="Button" parent="UI/VBoxContainer/HBoxContainer/Tabs/Main/Events"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "SPAWN Raw"
 
 [node name="Move" type="Button" parent="UI/VBoxContainer/HBoxContainer/Tabs/Main/Events"]
 visible = false
@@ -120,10 +124,12 @@ layout_mode = 2
 text = "MOVE"
 
 [node name="TESTING" type="Button" parent="UI/VBoxContainer/HBoxContainer/Tabs/Main/Events"]
+visible = false
 layout_mode = 2
 text = "TESTING"
 
 [node name="ClientMetadata" type="Button" parent="UI/VBoxContainer/HBoxContainer/Tabs/Main"]
+visible = false
 layout_mode = 2
 text = "ClientMetadata"
 
@@ -233,7 +239,7 @@ unique_name_in_owner = true
 layout_mode = 2
 type_name = "EntitiesUpdates"
 
-[node name="Controllers" type="Node2D" parent="."]
+[node name="ControllersManager" type="Node2D" parent="."]
 script = ExtResource("14_w48qg")
 
 [node name="Camera2D" type="Camera2D" parent="."]
@@ -244,6 +250,7 @@ position_smoothing_speed = 4.0
 [connection signal="pressed" from="UI/VBoxContainer/HBoxContainer/Tabs/Main/StartToriiClient" to="." method="_on_subcribe_pressed"]
 [connection signal="pressed" from="UI/VBoxContainer/HBoxContainer/Tabs/Main/ConnectController" to="." method="_on_connect_controller_pressed"]
 [connection signal="pressed" from="UI/VBoxContainer/HBoxContainer/Tabs/Main/Events/Spawn" to="." method="_on_spawn_pressed"]
+[connection signal="pressed" from="UI/VBoxContainer/HBoxContainer/Tabs/Main/Events/SpawnRaw" to="." method="_on_spawn_raw_pressed"]
 [connection signal="pressed" from="UI/VBoxContainer/HBoxContainer/Tabs/Main/Events/Move" to="." method="_on_move_pressed"]
 [connection signal="pressed" from="UI/VBoxContainer/HBoxContainer/Tabs/Main/Events/TESTING" to="." method="_on_testing_pressed"]
 [connection signal="pressed" from="UI/VBoxContainer/HBoxContainer/Tabs/Main/ClientMetadata" to="." method="_on_client_metadata_pressed"]
