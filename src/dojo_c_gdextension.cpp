@@ -27,7 +27,6 @@ DojoC::DojoC()
         UtilityFunctions::push_warning("DojoC is running in editor mode");
         return;
     }
-    // Initialize any variables here.
     singleton = this;
     enabled = true;
 }

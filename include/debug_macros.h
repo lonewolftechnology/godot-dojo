@@ -57,8 +57,9 @@ UtilityFunctions::push_warning(concat_args(__VA_ARGS__))
     #define LOG_SUCCESS(...) ((void)0)
     #define LOG_DEBUG(...) ((void)0)
     #define LOG_COLOR(color, ...) ((void)0)
-#define LOG_CUSTOM(type, ...) ((void)0)
+    #define LOG_CUSTOM(type, ...) ((void)0)
     #define LOG_SUCCESS_EXTRA(type, ...) ((void)0)
+    #define LOG_DEBUG_EXTRA(type, ...) ((void)0)
     #define TYPED_LOG_COLOR(color, type, ...) ((void)0)
 #endif
 

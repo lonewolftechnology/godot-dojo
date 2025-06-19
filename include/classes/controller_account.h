@@ -11,7 +11,7 @@
 #include "godot_cpp/variant/variant.hpp"
 #include "godot_cpp/variant/dictionary.hpp"
 
-#include "dojo_types.hpp"
+#include "dojo_types.h"
 #include "variant/field_element.h"
 
 using namespace godot;
@@ -59,8 +59,8 @@ public:
     String get_chain_id() const;
 
     // Ejecución de transacciones
-    void execute_raw(const String& selector, const Array& calldata = Array());
-    void execute_from_outside(const String& selector, const Array& calldata = Array());
+    void execute_raw(const String& contract_address, const String& selector, const Array& calldata = Array());
+    void execute_from_outside(const String& contract_address, const String& selector, const Array& calldata = Array());
 
     // Métodos de utilidad
     Dictionary get_account_info() const;
