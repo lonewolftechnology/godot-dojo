@@ -17,6 +17,7 @@
 #include <classes/event_subscription.h>
 
 #include "classes/controller_account.h"
+#include "variant/ty/ty.h"
 
 
 using namespace godot;
@@ -30,6 +31,7 @@ void initialize_dojoc_module(ModuleInitializationLevel p_level) {
     GDREGISTER_CLASS(ToriiClient);
     GDREGISTER_CLASS(EventSubscription);
     GDREGISTER_CLASS(ControllerAccount);
+    GDREGISTER_CLASS(Ty);
     GDREGISTER_CLASS(DojoC);
 }
 

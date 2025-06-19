@@ -6,33 +6,84 @@
 #include "../../include/variant/primitive.h"
 
 #include "debug_macros.h"
-// Esto despues se borra, es para debugguear más fácil falsos positivos/bugs
-const char* DojoPrimitive::PrimitiveTagToString(int value)
-{
-    static const char* names[] = {
-        "I8",
-        "I16",
-        "I32",
-        "I64",
-        "I128",
-        "U8",
-        "U16",
-        "U32",
-        "U64",
-        "U128",
-        "U256",
-        "Bool",
-        "Felt252",
-        "ClassHash",
-        "ContractAddress",
-        "EthAddress"
-    };
 
-    if (value >= 0 && value < std::size(names))
+Variant DojoPrimitive::VariantFromPrimitive(dojo_bindings::Primitive primitive)
+{
+    if (primitive.IsI8())
     {
-        return names[value];
+        return {GET_DOJO_VALUE(primitive.i8)};
     }
-    return "Unknown";
+    if (primitive.IsI16())
+    {
+        return {GET_DOJO_VALUE(primitive.i16)};
+    }
+    if (primitive.IsI32())
+    {
+        return {GET_DOJO_VALUE(primitive.i32)};
+    }
+    if (primitive.IsI64())
+    {
+        return {GET_DOJO_VALUE(primitive.i64)};
+    }
+    if (primitive.IsI128())
+    {
+        uint8_t* data = GET_DOJO_VALUE(primitive.i128);
+        // return FieldElement::to_packed_array(data,16);
+        return {Variant(data)};
+    }
+    if (primitive.IsU8())
+    {
+        return {GET_DOJO_VALUE(primitive.u8)};
+    }
+    if (primitive.IsU16())
+    {
+        return {GET_DOJO_VALUE(primitive.u16)};
+    }
+    if (primitive.IsU32())
+    {
+        return {GET_DOJO_VALUE(primitive.u32)};
+    }
+    if (primitive.IsU64())
+    {
+        return {GET_DOJO_VALUE(primitive.u64)};
+    }
+    if (primitive.IsU128())
+    {
+        uint8_t* data = GET_DOJO_VALUE(primitive.u128);
+        // return FieldElement::to_packed_array(data,16);
+        return {Variant(data)};
+    }
+    if (primitive.IsU256_())
+    {
+        uint8_t* data = GET_DOJO_VALUE(primitive.u256).data;
+        return FieldElement::to_packed_array(data);
+    }
+    if (primitive.IsBool())
+    {
+        return {GET_DOJO_VALUE(primitive.bool_)};
+    }
+    return {};
+}
+
+FieldElement DojoPrimitive::FieldElementFromPrimitive(DOJO::Primitive primitive)
+{
+    if (primitive.IsFelt252())
+    {
+        return {GET_DOJO_VALUE(primitive.felt252)};
+    }
+    if (primitive.IsClassHash())
+    {
+        return {GET_DOJO_VALUE(primitive.class_hash)};
+    }
+    if (primitive.IsContractAddress())
+    {
+        return {GET_DOJO_VALUE(primitive.contract_address)};
+    }
+    if (primitive.IsEthAddress())
+    {
+        return {GET_DOJO_VALUE(primitive.eth_address)};
+    }
+    return {};
 }
 
 
@@ -48,79 +99,31 @@ DojoPrimitive::DojoPrimitive()
     LOG_DEBUG("Primitive constructor called");
 }
 
-PackedByteArray DataArrayToPackedByteArray(const void* data, const int size = 32)
-{
-    PackedByteArray _bytes;
-    _bytes.resize(size);
-    memcpy(_bytes.ptrw(), data, size);
-    return _bytes;
-}
-
 DojoPrimitive::DojoPrimitive(const DOJO::Primitive& primitive)
 {
     switch (primitive.tag)
     {
-    case Tag::I8:
-        value = Variant(primitive.i8._0);
+    case DOJO::Primitive::Tag::I8:
+    case DOJO::Primitive::Tag::I16:
+    case DOJO::Primitive::Tag::I32:
+    case DOJO::Primitive::Tag::I64:
+    case DOJO::Primitive::Tag::I128:
+    case DOJO::Primitive::Tag::U8:
+    case DOJO::Primitive::Tag::U16:
+    case DOJO::Primitive::Tag::U32:
+    case DOJO::Primitive::Tag::U64:
+    case DOJO::Primitive::Tag::U128:
+    case DOJO::Primitive::Tag::U256_:
+    case DOJO::Primitive::Tag::Bool:
+        value = VariantFromPrimitive(primitive);
         break;
-    case Tag::I16:
-        value = Variant(primitive.i16._0);
+    case DOJO::Primitive::Tag::Felt252:
+    case DOJO::Primitive::Tag::ClassHash:
+    case DOJO::Primitive::Tag::ContractAddress:
+    case DOJO::Primitive::Tag::EthAddress:
+        FieldElement data = FieldElementFromPrimitive(primitive);
+        felt = &data;
+        is_felt = true;
         break;
-    case Tag::I32:
-        value = Variant(primitive.i32._0);
-        break;
-    case Tag::I64:
-        value = Variant(primitive.i64._0);
-        break;
-    case Tag::I128:
-        value = Variant(primitive.i128._0);
-        break;
-    case Tag::U8:
-        value = Variant(primitive.u8._0);
-        break;
-    case Tag::U16:
-        value = Variant(primitive.u16._0);
-        break;
-    case Tag::U32:
-        value = Variant(primitive.u32._0);
-        break;
-    case Tag::U64:
-        value = Variant(primitive.u64._0);
-        break;
-    case Tag::U128:
-        value = DataArrayToPackedByteArray(primitive.u128._0, 16);
-        break;
-    case Tag::U256_:
-        value = DataArrayToPackedByteArray(primitive.u256._0.data);
-        break;
-    case Tag::Bool:
-        value = Variant(primitive.bool_._0);
-        break;
-    case Tag::Felt252:
-        LOG_DEBUG("FELT");
-        value = DataArrayToPackedByteArray(primitive.felt252._0.data);
-        break;
-    case Tag::ClassHash:
-        LOG_DEBUG("CLASHASH");
-        value = DataArrayToPackedByteArray(primitive.class_hash._0.data);
-        break;
-    case Tag::ContractAddress:
-        LOG_DEBUG("CONTRACT");
-        value = DataArrayToPackedByteArray(primitive.contract_address._0.data);
-        break;
-    case Tag::EthAddress:
-        LOG_DEBUG("ETH");
-        value = DataArrayToPackedByteArray(primitive.eth_address._0.data);
-        break;
-    default:
-        UtilityFunctions::push_error("Primitive ", PrimitiveTagToString(static_cast<int>(primitive.tag)), " doesn't have a Constructor");
-        break;
-    }
-    if (value.get_type() != Variant::NIL)
-    {
-        UtilityFunctions::print_rich("[color=Cyan]Primitive Constructor Concluded");
-        UtilityFunctions::print_rich(
-            "[color=Yellow]Primitive " + String(value) + "\n[color=Green]Type: " + Variant::get_type_name(
-                value.get_type()));
     }
 }

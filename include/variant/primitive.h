@@ -5,30 +5,36 @@
 #ifndef PRIMITIVE_H
 #define PRIMITIVE_H
 
+#include "dojo_types.hpp"
 #include "godot_cpp/classes/ref_counted.hpp"
 #include "godot_cpp/variant/variant.hpp"
-#include "dojo_types.hpp"
+#include "field_element.h"
 
 using namespace godot;
 
-class DojoPrimitive : public RefCounted {
+class DojoPrimitive : public RefCounted
+{
     GDCLASS(DojoPrimitive, RefCounted);
 
-using Tag = DOJO::Primitive::Tag;
+    using Tag = DOJO::Primitive::Tag;
 
 private:
     Variant value = Variant::NIL;
+    FieldElement* felt = {};
+    bool is_felt = false;
 
 protected:
     static void _bind_methods();
 
 public:
-    static const char* PrimitiveTagToString(int value);
+    static Variant VariantFromPrimitive(DOJO::Primitive primitive);
+    static FieldElement FieldElementFromPrimitive(DOJO::Primitive primitive);
     DojoPrimitive();
-    DojoPrimitive(const DOJO::Primitive &primitive);
+    DojoPrimitive(const DOJO::Primitive& primitive);
 
-    Variant get_value() const { return value; }
-    void set_value(const Variant &p_value) { value = p_value; }
+    Variant get_value() const {return value;}
+
+    void set_value(const Variant& p_value) { value = p_value; }
 };
 
 #endif //PRIMITIVE_H
