@@ -48,31 +48,18 @@ if target == "template_release":
 # Variables de entorno para WebAssembly
 if platform == "web":
     env_vars = os.environ.copy()
-    
-    print(f"{Y}🦀 Compilando dojo.c para Godot Web (forzando modo C)...{X}")
-    
-    cmd = ["cargo", "+nightly", "build", "--target", rust_target]
-    if target == "template_release":
-        cmd.append("--release")
-    
+    # cmd.append("--lib")
     cmd.extend(["-Z", "build-std=std,panic_abort"])
-    
-    # RUSTFLAGS para forzar modo C en lugar de wasm-bindgen
+    cmd.extend(["--target-dir", "target-web"])  # Usar directorio separado
+
     rustflags = "-C target-feature=+atomics,+bulk-memory,+mutable-globals"
     rustflags += " -C relocation-model=pic"
-    rustflags += " -C symbol-mangling-version=v0"
-    rustflags += " -C opt-level=s"
-    rustflags += " -C panic=abort"
-    rustflags += " -C embed-bitcode=no"
-    rustflags += " -C link-arg=--no-entry"
-    rustflags += " -C link-arg=--export-dynamic"
-    
-    # IMPORTANTE: Deshabilitar características de wasm-bindgen
-    env_vars["RUSTFLAGS"] = rustflags
-    
-    # Características para forzar el modo C
-    cmd.extend(["--no-default-features"])
+    rustflags += " -C opt-level=s"  # Optimizar para tamaño
+    rustflags += " -C panic=abort"  # Usar panic=abort
 
+    env_vars["RUSTFLAGS"] = rustflags
+
+    print(f"  🚀 {' '.join(cmd)} (WebAssembly)")
     subprocess.run(cmd, check=True, cwd="external/dojo.c", env=env_vars)
 else:
     print(f"  🚀 {' '.join(cmd)}")
@@ -108,14 +95,12 @@ if platform == "linux":
     env.Append(LINKFLAGS=['-ldbus-1'])
 
 elif platform == "web":
-    env.Append(LINKFLAGS = [
-        '-sALLOW_MEMORY_GROWTH',
-        '--no-entry'
-    ])
+    env.Append(LINKFLAGS = ['-sALLOW_MEMORY_GROWTH'])
 
 # Linkear librerías de Rust
 build_mode = "release" if target == "template_release" else "debug"
 rust_lib_dir = f"external/dojo.c/target/{rust_target}/{build_mode}"
+
 if platform == "windows":
     rust_lib = f"{rust_lib_dir}/dojo_c.lib"
 else:
