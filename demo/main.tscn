@@ -1,4 +1,4 @@
-[gd_scene load_steps=15 format=3 uid="uid://buvlply3axqqi"]
+[gd_scene load_steps=20 format=3 uid="uid://buvlply3axqqi"]
 
 [ext_resource type="Script" uid="uid://ck323bl4c38kw" path="res://main.gd" id="1_ig7tw"]
 [ext_resource type="PackedScene" uid="uid://b5vmo8llucetx" path="res://ui/status_indicator.tscn" id="2_0xm2m"]
@@ -12,6 +12,27 @@
 [ext_resource type="Texture2D" uid="uid://bkiqp5xd7g5mf" path="res://assets/arrow_down_p.png" id="9_w48qg"]
 [ext_resource type="Texture2D" uid="uid://dn0lmukjhns5l" path="res://assets/arrow_right_p.png" id="11_vivmo"]
 [ext_resource type="Script" uid="uid://c63vfoblqmxxg" path="res://tools/controllers.gd" id="14_w48qg"]
+
+[sub_resource type="DojoPolicy" id="DojoPolicy_dg77c"]
+method = "Spawn"
+description = "Spawns in the world"
+
+[sub_resource type="DojoPolicy" id="DojoPolicy_ycdy4"]
+method = "Move"
+description = "Moves in the world"
+
+[sub_resource type="DojoPolicies" id="DojoPolicies_dg77c"]
+contract = "0x00a92391c5bcde7af4bad5fd0fff3834395b1ab8055a9abb8387c0e050a34edf"
+policies = Array[DojoPolicy]([SubResource("DojoPolicy_dg77c"), SubResource("DojoPolicy_ycdy4")])
+
+[sub_resource type="DojoCall" id="DojoCall_ycdy4"]
+to = "0x00a92391c5bcde7af4bad5fd0fff3834395b1ab8055a9abb8387c0e050a34edf"
+selector = "spawn"
+
+[sub_resource type="DojoCall" id="DojoCall_dg77c"]
+to = "0x00a92391c5bcde7af4bad5fd0fff3834395b1ab8055a9abb8387c0e050a34edf"
+selector = "Move"
+calldata = [0]
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_lquwl"]
 atlas = ExtResource("2_1bvp3")
@@ -31,6 +52,10 @@ dojo_abi = "/home/hazel/Proyectos/Godot/GDE/starting/dojo-starter/manifest_dev.j
 [node name="ToriiClient" type="ToriiClient" parent="."]
 torii_url = "https://api.cartridge.gg/x/godot-demo-rookie/torii"
 world_address = "0x07cb912d0029e3799c4b8f2253b21481b2ec814c5daf72de75164ca82e7c42a5"
+
+[node name="ControllerAccount" type="ControllerAccount" parent="."]
+policies = SubResource("DojoPolicies_dg77c")
+actions = Array[DojoCall]([SubResource("DojoCall_ycdy4"), SubResource("DojoCall_dg77c")])
 
 [node name="Parallax" type="ParallaxBackground" parent="."]
 layer = -1

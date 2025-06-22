@@ -9,7 +9,6 @@ enum Directions{
 
 const dev_world_addr = "0x07cb912d0029e3799c4b8f2253b21481b2ec814c5daf72de75164ca82e7c42a5"
 const dev_actions_addr = "0x00a92391c5bcde7af4bad5fd0fff3834395b1ab8055a9abb8387c0e050a34edf"
-@onready var dojo:DojoC = DojoC.new()
 
 @onready var chat_box: TextEdit = %ChatBox
 @onready var tabs: TabContainer = %Tabs
@@ -32,13 +31,11 @@ const dev_actions_addr = "0x00a92391c5bcde7af4bad5fd0fff3834395b1ab8055a9abb8387
 @onready var suscription_status: DojoStatusIndicator = %SuscriptionStatus
 @onready var entities_status: DojoStatusIndicator = %EntitiesStatus
 
-@export var policy:Policy
-
 var count: int = 0
 var packed: String
 
-var controller:ControllerAccount
 @onready var client: ToriiClient = $ToriiClient
+@onready var controller_account: ControllerAccount = $ControllerAccount
 
 func _ready() -> void:
 	OS.set_environment("RUST_BACKTRACE", "full")
@@ -61,10 +58,9 @@ func _ready() -> void:
 func _on_subcribe_pressed() -> void:
 	client.client_connected.connect(client_status.set_status)
 	client.create_client()
-	controller = ControllerAccount.new()
-	controller.controller_connected.connect(controller_account_status.set_status)
-	controller.controller_disconnected.connect(controller_account_status.set_status.bind(false))
-	controller.provider_status_updated.connect(provider_status.set_status)
+	controller_account.controller_connected.connect(controller_account_status.set_status)
+	controller_account.controller_disconnected.connect(controller_account_status.set_status.bind(false))
+	controller_account.provider_status_updated.connect(provider_status.set_status)
 
 	#controller.create(dev_actions_addr, "https://api.cartridge.gg/x/godot-demo-rookie/katana")
 
@@ -91,21 +87,11 @@ func _on_subcribe_pressed() -> void:
 
 
 func _on_spawn_pressed() -> void:
-	var action = {
-		"dojo_contract": dev_actions_addr,
-		"selector": "spawn",
-		"calldata": []
-	}
-	controller.execute_from_outside(action)
+	controller_account.execute_from_outside(controller_account.actions[0])
 	#dojo.spawn(reset_spawn.button_pressed,false)
 
 func _on_spawn_raw_pressed() -> void:
-	var action = {
-		"dojo_contract": dev_actions_addr,
-		"selector": "spawn",
-		"calldata": []
-	}
-	controller.execute_raw(action)
+	controller_account.execute_raw(controller_account.actions[0])
 
 func update_event_subscription_status(_value:bool, _event:String, _status_node:HBoxContainer):
 	update_status(_value, _status_node)
@@ -133,25 +119,17 @@ func _unhandled_input(event: InputEvent) -> void:
 	elif event.is_action_pressed("ui_right"):
 		#direction = FieldElement.from_enum(Directions.RIGHT)
 		get_viewport().set_input_as_handled()
-	
-	if not direction == null:
-		dojo.move(direction,false,false)
-		count+=1
-		print(count)
-	
+		
 	if event.is_action("ui_accept"):
 		get_viewport().set_input_as_handled()
-		if chat_box.is_visible_in_tree() and not chat_box.text.is_empty():
-			dojo.send_message(chat_box.text)
+		#if chat_box.is_visible_in_tree() and not chat_box.text.is_empty():
+			#dojo.send_message(chat_box.text)
 
 
 func _on_button_toggle_toggled(toggled_on: bool) -> void:
 	tabs.visible = toggled_on
 
 func _move(dir:Directions) -> void:
-	var direction:FieldElement
-	#direction = FieldElement.from_enum(int(dir))
-	dojo.move(direction,false,false)
 	count += 1
 	
 func _on_arrow_left_pressed() -> void:
@@ -178,12 +156,4 @@ func _on_client_metadata_pressed() -> void:
 
 
 func _on_setup_policies_pressed() -> void:
-	var policies = {
-		"name": "actions",
-		"dojo_contract": dev_actions_addr,
-		"actions": {
-			"spawn": "Spawns in the world",
-			"move": "Moves in the world"
-			}
-	}
-	controller.create(policies)
+	controller_account.setup()

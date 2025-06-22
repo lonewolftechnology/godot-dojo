@@ -24,8 +24,6 @@ ToriiClient::ToriiClient()
     singleton = this;
     client = nullptr;
     is_connected = false;
-    torii_url = "";
-    world_address = "";
     DOJO::ResultFieldElement test_felt = DOJO::cairo_short_string_to_felt("WP_GODOT_DEMO_ROOKIE");
     if (test_felt.tag == DOJO::ErrFieldElement)
     {

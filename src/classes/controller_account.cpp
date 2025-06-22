@@ -13,49 +13,20 @@
 #include "classes/torii_client.h"
 #include <vector>
 
+#include "resources/dojo_policy.h"
+
 
 ControllerAccount* ControllerAccount::singleton = nullptr;
 
-void ControllerAccount::_bind_methods()
-{
-    // Métodos de conexión
-    // ClassDB::bind_method(D_METHOD("create", "rpc_url"),&ControllerAccount::create);
-    ClassDB::bind_method(D_METHOD("create", "policies_data"), &ControllerAccount::create);
-    // ClassDB::bind_method(D_METHOD("setup_policies", "policies"), &ControllerAccount::setup_policies);
-    ClassDB::bind_method(D_METHOD("disconnect_controller"), &ControllerAccount::disconnect_controller);
-    ClassDB::bind_method(D_METHOD("is_controller_connected"), &ControllerAccount::is_controller_connected);
-
-    // Información de la cuenta
-    ClassDB::bind_method(D_METHOD("get_username"), &ControllerAccount::get_username);
-    ClassDB::bind_method(D_METHOD("get_address"), &ControllerAccount::get_address);
-    ClassDB::bind_method(D_METHOD("get_chain_id"), &ControllerAccount::get_chain_id);
-
-    // Ejecución de transacciones
-    ClassDB::bind_method(D_METHOD("execute_raw", "action"),
-                         &ControllerAccount::execute_raw, DEFVAL(Array()));
-    ClassDB::bind_method(D_METHOD("execute_from_outside", "action"),
-                         &ControllerAccount::execute_from_outside, DEFVAL(Array()));
-
-    // Métodos de utilidad
-    ClassDB::bind_method(D_METHOD("get_account_info"), &ControllerAccount::get_account_info);
-    // ClassDB::bind_method(D_METHOD("sign_message", "message"), &ControllerAccount::sign_message);
-
-    // Señales
-    ADD_SIGNAL(MethodInfo("controller_connected", PropertyInfo(Variant::BOOL, "success")));
-    ADD_SIGNAL(MethodInfo("provider_status_updated", PropertyInfo(Variant::BOOL, "success")));
-    ADD_SIGNAL(MethodInfo("controller_disconnected"));
-    ADD_SIGNAL(MethodInfo("transaction_executed", PropertyInfo(Variant::STRING, "transaction_hash")));
-    ADD_SIGNAL(MethodInfo("transaction_failed", PropertyInfo(Variant::STRING, "error_message")));
-}
 
 ControllerAccount::ControllerAccount()
 {
+    singleton = this;
     if (Engine::get_singleton()->is_editor_hint())
     {
         LOG_DEBUG_EXTRA("ControllerAccount", "Desactivando en modo editor");
         return;
     }
-    singleton = this;
     session_account = nullptr;
     is_connected = false;
 }
@@ -97,61 +68,12 @@ void on_account(DOJO::ControllerAccount* account)
     LOG_CUSTOM("PLAYER ID", FieldElement::get_as_string(&player_address));
 }
 
-void ControllerAccount::add_dojo_contract(const String& name, const String& contract_address)
+void ControllerAccount::setup()
 {
-    contracts[name] = contract_address;
-}
-void ControllerAccount::remove(const String& name)
-{
-    contracts.erase(name);
+    create(policies);
 }
 
-std::vector<DOJO::Policy> policy_builder(const Dictionary& data)
-{
-    String dojo_contract = data["dojo_contract"];
-    FieldElement contract = {dojo_contract};
-    Dictionary actions = data["actions"];
-
-    if (actions.is_empty())
-    {
-        return {};
-    }
-    Array action_keys = actions.keys();
-    size_t policies_len = action_keys.size();
-
-    // Usar std::vector en lugar de VLA
-    std::vector<DOJO::Policy> policies(policies_len);
-
-    // Mantener los CharString vivos durante toda la operación
-    std::vector<CharString> name_strings;
-    std::vector<CharString> desc_strings;
-    name_strings.reserve(policies_len);
-    desc_strings.reserve(policies_len);
-
-    // Llenar los arrays manteniendo las referencias
-    for (size_t i = 0; i < policies_len; i++)
-    {
-        String aname = action_keys[i];
-        String adescription = actions[aname];
-
-        // Guardar los CharString para que no se destruyan
-        name_strings.push_back(aname.utf8());
-        desc_strings.push_back(adescription.utf8());
-
-        policies[i] = {
-            *contract.get_felt(),
-            name_strings[i].get_data(),
-            desc_strings[i].get_data()
-        };
-    }
-    return policies;
-}
-
-/***
- * { name : contract_ref_name, dojo_contract : contract_addr, actions : ['action' : description] }
- ***/
-
-void ControllerAccount::create(const Dictionary& policies_data)
+void ControllerAccount::create(const Ref<DojoPolicies>& policies_data)
 {
     String rpc_url = ProjectSettings::get_singleton()->get("dojo/rpc_url");
     
@@ -170,15 +92,14 @@ void ControllerAccount::create(const Dictionary& policies_data)
         emit_signal("provider_status_updated", true);
     }
 
-    std::vector<DOJO::Policy> policies = policy_builder(policies_data);
-    size_t policies_len = policies.size();
-
-    // Controller
-    if (policies_data.is_empty() || !policies_data.has("dojo_contract") || !policies_data.has("actions"))
+    if (policies_data->is_empty())
     {
         LOG_ERROR("Invalid policies data");
         return;
     }
+
+    std::vector<DOJO::Policy> policies = policies_data->build();
+    uintptr_t policies_len = policies.size();
 
     DOJO::FieldElement katana = ToriiClient::get_singleton()->get_world().get_felt_no_ptr();
 
@@ -278,7 +199,7 @@ DOJO::Call create_call_from_data(const String& contract_address, const String& s
     return call;
 }
 
-void ControllerAccount::execute_raw(const Dictionary& action)
+void ControllerAccount::execute_raw(const Ref<DojoCall>& action)
 {
     if (!is_controller_connected())
     {
@@ -286,17 +207,9 @@ void ControllerAccount::execute_raw(const Dictionary& action)
         emit_signal("transaction_failed", "Cuenta no conectada");
         return;
     }
-    String selector = action["selector"];
-    String contract_address = action["dojo_contract"];
-    Array calldata = action["calldata"];
 
-    // DOJO::Call call = create_call_from_data(contract_address,selector, calldata);
-    FieldElement contract = {contract_address};
-    DOJO::Call call = {
-        contract.get_felt_no_ptr(),
-        selector.utf8().get_data(),
-        {}
-    };
+    DOJO::Call call = action->build();
+
     DOJO::ResultFieldElement result = DOJO::controller_execute_raw(
         session_account, &call, 1
     );
@@ -315,33 +228,14 @@ void ControllerAccount::execute_raw(const Dictionary& action)
 }
 
 
-void ControllerAccount::execute_from_outside(const Dictionary& action)
+void ControllerAccount::execute_from_outside(const Ref<DojoCall>& action)
 {
     if (!is_controller_connected())
     {
         LOG_ERROR("ControllerAccount no está conectado");
         emit_signal("transaction_failed", "Cuenta no conectada");
     }
-    String selector = action["selector"];
-    String contract_address = action["dojo_contract"];
-    Array calldata = action["calldata"];
-    LOG_DEBUG_EXTRA("CONTRACT", contract_address);
-    LOG_DEBUG_EXTRA("SELECTOR", selector);
-    LOG_DEBUG_EXTRA("CALLDATA", calldata);
-
-    // DOJO::Call call = create_call_from_data(contract_address, selector, calldata);
-    FieldElement contract = {contract_address };
-    DOJO::Call call = {
-        contract.get_felt_no_ptr(),
-        selector.utf8().get_data(),
-        {}
-    };
-
-    if (!calldata.is_empty())
-    {
-        LOG_DEBUG_EXTRA("CALLDATA", Variant(calldata.size()));
-        call.calldata = array_to_felt_array(calldata);
-    }
+    DOJO::Call call = action->build();
 
     LOG_DEBUG_EXTRA("CALL", call.selector);
     LOG_CUSTOM("USERNAME", dojo_bindings::controller_username(session_account));
