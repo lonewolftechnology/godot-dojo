@@ -5,7 +5,7 @@
 #ifndef FIELD_ELEMENT_H
 #define FIELD_ELEMENT_H
 
-#include "dojo_types.hpp"
+#include "dojo_types.h"
 
 #include "godot_cpp/classes/ref_counted.hpp"
 
@@ -24,12 +24,13 @@ public:
     FieldElement(DOJO::FieldElement existing_felt);
     ~FieldElement();
 
+    static Ref<FieldElement> from_enum(int enum_value);
     static PackedByteArray to_packed_array(const void* data, int size = 32);
+    static dojo_bindings::FieldElement from_string(const String& hex_str, size_t max_bytes = 32);
 
     PackedByteArray as_packed_array() const;
     String to_string() const;
     const char* to_string_c_str() const;
-    static Ref<FieldElement> from_enum(int enum_value);
     String parse_cairo();
     String bytearray_deserialize();
 

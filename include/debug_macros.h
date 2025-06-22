@@ -11,7 +11,7 @@ template <typename... Args>
 String concat_args(Args&&... args)
 {
     String result;
-    ((result += String(args)), ...);
+    ((result += Variant(args).stringify()), ...);
     return result;
 }
 

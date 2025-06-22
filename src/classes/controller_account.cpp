@@ -6,9 +6,13 @@
 #include "godot_cpp/classes/engine.hpp"
 #include "godot_cpp/core/class_db.hpp"
 #include "godot_cpp/variant/utility_functions.hpp"
+#include "godot_cpp/classes/project_settings.hpp"
+#include "godot_cpp/classes/os.hpp"
 #include "debug_macros.h"
 
 #include "classes/torii_client.h"
+#include <vector>
+
 
 ControllerAccount* ControllerAccount::singleton = nullptr;
 
@@ -16,7 +20,8 @@ void ControllerAccount::_bind_methods()
 {
     // Métodos de conexión
     // ClassDB::bind_method(D_METHOD("create", "rpc_url"),&ControllerAccount::create);
-    ClassDB::bind_method(D_METHOD("create", "controller_addr", "rpc_url"), &ControllerAccount::create);
+    ClassDB::bind_method(D_METHOD("create", "policies_data"), &ControllerAccount::create);
+    // ClassDB::bind_method(D_METHOD("setup_policies", "policies"), &ControllerAccount::setup_policies);
     ClassDB::bind_method(D_METHOD("disconnect_controller"), &ControllerAccount::disconnect_controller);
     ClassDB::bind_method(D_METHOD("is_controller_connected"), &ControllerAccount::is_controller_connected);
 
@@ -26,9 +31,9 @@ void ControllerAccount::_bind_methods()
     ClassDB::bind_method(D_METHOD("get_chain_id"), &ControllerAccount::get_chain_id);
 
     // Ejecución de transacciones
-    ClassDB::bind_method(D_METHOD("execute_raw", "contract", "selector", "calldata"),
+    ClassDB::bind_method(D_METHOD("execute_raw", "action"),
                          &ControllerAccount::execute_raw, DEFVAL(Array()));
-    ClassDB::bind_method(D_METHOD("execute_from_outside", "contract", "selector", "calldata"),
+    ClassDB::bind_method(D_METHOD("execute_from_outside", "action"),
                          &ControllerAccount::execute_from_outside, DEFVAL(Array()));
 
     // Métodos de utilidad
@@ -50,7 +55,6 @@ ControllerAccount::ControllerAccount()
         LOG_DEBUG_EXTRA("ControllerAccount", "Desactivando en modo editor");
         return;
     }
-
     singleton = this;
     session_account = nullptr;
     is_connected = false;
@@ -93,50 +97,107 @@ void on_account(DOJO::ControllerAccount* account)
     LOG_CUSTOM("PLAYER ID", FieldElement::get_as_string(&player_address));
 }
 
-void ControllerAccount::create(const String& controller_addr,
-                               const String& rpc_url = "http://localhost:5050"
-)
+void ControllerAccount::add_dojo_contract(const String& name, const String& contract_address)
 {
-    FieldElement target = {controller_addr, 32};
+    contracts[name] = contract_address;
+}
+void ControllerAccount::remove(const String& name)
+{
+    contracts.erase(name);
+}
 
-    DOJO::Result<DOJO::Provider*> resControllerProvider = DOJO::provider_new(rpc_url.utf8().get_data());
-    if (resControllerProvider.tag == DOJO::Result<DOJO::Provider*>::Tag::Err)
+std::vector<DOJO::Policy> policy_builder(const Dictionary& data)
+{
+    String dojo_contract = data["dojo_contract"];
+    FieldElement contract = {dojo_contract};
+    Dictionary actions = data["actions"];
+
+    if (actions.is_empty())
     {
-        UtilityFunctions::printerr("Error: ", resControllerProvider.err._0.message);
-        emit_signal("provider_status_updated", false);
+        return {};
+    }
+    Array action_keys = actions.keys();
+    size_t policies_len = action_keys.size();
 
+    // Usar std::vector en lugar de VLA
+    std::vector<DOJO::Policy> policies(policies_len);
+
+    // Mantener los CharString vivos durante toda la operación
+    std::vector<CharString> name_strings;
+    std::vector<CharString> desc_strings;
+    name_strings.reserve(policies_len);
+    desc_strings.reserve(policies_len);
+
+    // Llenar los arrays manteniendo las referencias
+    for (size_t i = 0; i < policies_len; i++)
+    {
+        String aname = action_keys[i];
+        String adescription = actions[aname];
+
+        // Guardar los CharString para que no se destruyan
+        name_strings.push_back(aname.utf8());
+        desc_strings.push_back(adescription.utf8());
+
+        policies[i] = {
+            *contract.get_felt(),
+            name_strings[i].get_data(),
+            desc_strings[i].get_data()
+        };
+    }
+    return policies;
+}
+
+/***
+ * { name : contract_ref_name, dojo_contract : contract_addr, actions : ['action' : description] }
+ ***/
+
+void ControllerAccount::create(const Dictionary& policies_data)
+{
+    String rpc_url = ProjectSettings::get_singleton()->get("dojo/rpc_url");
+    
+    // Provider
+    DOJO::ResultProvider resControllerProvider = DOJO::provider_new(rpc_url.utf8().get_data());
+    if (resControllerProvider.tag == DOJO::ErrProvider)
+    {
+        UtilityFunctions::printerr("Error: ", GET_DOJO_ERROR(resControllerProvider));
+        emit_signal("provider_status_updated", false);
         return;
     }
     else
     {
         LOG_SUCCESS("Controller Provider created");
-        provider = resControllerProvider.ok._0;
+        provider = GET_DOJO_OK(resControllerProvider);
         emit_signal("provider_status_updated", true);
     }
 
-    // string_to_bytes(controller_addr, target.data, 32);
-    // Por ahora hardcodeado
-    DOJO::Policy policies[] = {
-        {*target.get_felt(), "reset_spawn", "Spawns at 0,0"},
-        {*target.get_felt(), "spawn", "Spawns"},
-        {*target.get_felt(), "move", "Move to a direction"},
-    };
-    uintptr_t policies_len = 3;
+    std::vector<DOJO::Policy> policies = policy_builder(policies_data);
+    size_t policies_len = policies.size();
+
+    // Controller
+    if (policies_data.is_empty() || !policies_data.has("dojo_contract") || !policies_data.has("actions"))
+    {
+        LOG_ERROR("Invalid policies data");
+        return;
+    }
 
     DOJO::FieldElement katana = ToriiClient::get_singleton()->get_world().get_felt_no_ptr();
-    DOJO::Result<DOJO::ControllerAccount*> resControllerAccount =
-        DOJO::controller_account(policies, policies_len, katana);
-    if (resControllerAccount.tag == DOJO::Result<DOJO::ControllerAccount*>::Tag::Ok)
+
+    // Usar .data() para obtener el puntero al array C
+    DOJO::ResultControllerAccount resControllerAccount =
+        DOJO::controller_account(policies.data(), policies_len, katana);
+        
+    if (resControllerAccount.tag == DOJO::OkControllerAccount)
     {
         LOG_INFO("Session account already connected");
-        session_account = resControllerAccount.ok._0;
-        emit_signal("on_account");
+        session_account = GET_DOJO_OK(resControllerAccount);
+        on_account(session_account);
     }
     else
     {
         LOG_INFO("Session account not connected, connecting...");
-        DOJO::controller_connect(rpc_url.utf8().get_data(), policies, policies_len, on_account);
+        DOJO::controller_connect(rpc_url.utf8().get_data(), policies.data(), policies_len, on_account);
     }
+
 }
 
 
@@ -186,10 +247,9 @@ String ControllerAccount::get_chain_id() const
     return FieldElement::get_as_string(&felt);
 }
 
-DOJO::CArray<DOJO::FieldElement> array_to_felt_array(const Array& data)
+DOJO::CArrayFieldElement array_to_felt_array(const Array& data)
 {
-    // Implementar conversión de Array de Godot a CArrayFieldElement
-    DOJO::CArray<DOJO::FieldElement> felt_array = {};
+    DOJO::CArrayFieldElement felt_array = {};
 
     if (data.size() == 0)
     {
@@ -198,17 +258,15 @@ DOJO::CArray<DOJO::FieldElement> array_to_felt_array(const Array& data)
         return felt_array;
     }
 
-    // Aquí necesitarías alocar memoria y convertir cada elemento
-    // Esta es una implementación simplificada
     felt_array.data_len = data.size();
 
     return felt_array;
 }
 
-DOJO::Call create_call_from_data(DOJO::FieldElement contract, const String& selector, const Array& calldata)
+DOJO::Call create_call_from_data(const String& contract_address, const String& selector, const Array& calldata)
 {
     DOJO::Call call = {};
-    call.to = contract;
+    call.to = FieldElement::from_string(contract_address);
     call.selector = selector.utf8().get_data();
 
     if (!calldata.is_empty())
@@ -220,7 +278,7 @@ DOJO::Call create_call_from_data(DOJO::FieldElement contract, const String& sele
     return call;
 }
 
-void ControllerAccount::execute_raw(const String& contract_address, const String& selector, const Array& calldata)
+void ControllerAccount::execute_raw(const Dictionary& action)
 {
     if (!is_controller_connected())
     {
@@ -228,52 +286,78 @@ void ControllerAccount::execute_raw(const String& contract_address, const String
         emit_signal("transaction_failed", "Cuenta no conectada");
         return;
     }
+    String selector = action["selector"];
+    String contract_address = action["dojo_contract"];
+    Array calldata = action["calldata"];
+
+    // DOJO::Call call = create_call_from_data(contract_address,selector, calldata);
     FieldElement contract = {contract_address};
-    DOJO::Call call = create_call_from_data(contract.get_felt_no_ptr(), selector, calldata);
-    DOJO::Result<DOJO::FieldElement> result = DOJO::controller_execute_raw(
+    DOJO::Call call = {
+        contract.get_felt_no_ptr(),
+        selector.utf8().get_data(),
+        {}
+    };
+    DOJO::ResultFieldElement result = DOJO::controller_execute_raw(
         session_account, &call, 1
     );
 
-    if (result.tag == DOJO::Result<DOJO::FieldElement>::Tag::Err)
+    if (result.tag == DOJO::ErrFieldElement)
     {
-        LOG_ERROR("Error al ejecutar transacción: ", result.err._0.message);
-        emit_signal("transaction_failed", String(result.err._0.message));
+        LOG_ERROR("Error al ejecutar transacción: ", GET_DOJO_ERROR(result));
+        emit_signal("transaction_failed", GET_DOJO_ERROR(result));
         return;
     }
     else
     {
-        DOJO::wait_for_transaction(provider, result.ok._0);
+        DOJO::wait_for_transaction(provider, GET_DOJO_OK(result));
         LOG_SUCCESS_EXTRA("EXECUTED", call.selector);
     }
 }
 
 
-void ControllerAccount::execute_from_outside(const String& contract_address, const String& selector,
-                                             const Array& calldata)
+void ControllerAccount::execute_from_outside(const Dictionary& action)
 {
     if (!is_controller_connected())
     {
         LOG_ERROR("ControllerAccount no está conectado");
         emit_signal("transaction_failed", "Cuenta no conectada");
     }
-    FieldElement contract = {contract_address};
+    String selector = action["selector"];
+    String contract_address = action["dojo_contract"];
+    Array calldata = action["calldata"];
+    LOG_DEBUG_EXTRA("CONTRACT", contract_address);
+    LOG_DEBUG_EXTRA("SELECTOR", selector);
+    LOG_DEBUG_EXTRA("CALLDATA", calldata);
 
-    DOJO::Call call = create_call_from_data(contract.get_felt_no_ptr(), selector, calldata);
+    // DOJO::Call call = create_call_from_data(contract_address, selector, calldata);
+    FieldElement contract = {contract_address };
+    DOJO::Call call = {
+        contract.get_felt_no_ptr(),
+        selector.utf8().get_data(),
+        {}
+    };
+
+    if (!calldata.is_empty())
+    {
+        LOG_DEBUG_EXTRA("CALLDATA", Variant(calldata.size()));
+        call.calldata = array_to_felt_array(calldata);
+    }
+
     LOG_DEBUG_EXTRA("CALL", call.selector);
     LOG_CUSTOM("USERNAME", dojo_bindings::controller_username(session_account));
 
-    DOJO::Result<DOJO::FieldElement> result = DOJO::controller_execute_from_outside(
+    DOJO::ResultFieldElement result = DOJO::controller_execute_from_outside(
         session_account, &call, call.calldata.data_len
     );
-    if (result.tag == DOJO::Result<DOJO::FieldElement>::Tag::Err)
+    if (result.tag == DOJO::ErrFieldElement)
     {
-        LOG_ERROR(result.err._0.message);
-        emit_signal("transaction_failed", String(result.err._0.message));
+        LOG_ERROR(GET_DOJO_ERROR(result));
+        emit_signal("transaction_failed", GET_DOJO_ERROR(result));
         return;
     }
     else
     {
-        DOJO::wait_for_transaction(provider, result.ok._0);
+        DOJO::wait_for_transaction(provider, GET_DOJO_OK(result));
         LOG_SUCCESS_EXTRA("EXECUTED", call.selector);
     }
 }

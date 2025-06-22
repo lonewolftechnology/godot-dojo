@@ -32,11 +32,13 @@ const dev_actions_addr = "0x00a92391c5bcde7af4bad5fd0fff3834395b1ab8055a9abb8387
 @onready var suscription_status: DojoStatusIndicator = %SuscriptionStatus
 @onready var entities_status: DojoStatusIndicator = %EntitiesStatus
 
+@export var policy:Policy
+
 var count: int = 0
 var packed: String
 
-var client:ToriiClient
 var controller:ControllerAccount
+@onready var client: ToriiClient = $ToriiClient
 
 func _ready() -> void:
 	OS.set_environment("RUST_BACKTRACE", "full")
@@ -57,14 +59,14 @@ func _ready() -> void:
 					#print(items)
 	
 func _on_subcribe_pressed() -> void:
-	client = ToriiClient.new()
 	client.client_connected.connect(client_status.set_status)
-	client.create_client(dev_world_addr, "https://api.cartridge.gg/x/godot-demo-rookie/torii")
+	client.create_client()
 	controller = ControllerAccount.new()
 	controller.controller_connected.connect(controller_account_status.set_status)
 	controller.controller_disconnected.connect(controller_account_status.set_status.bind(false))
 	controller.provider_status_updated.connect(provider_status.set_status)
-	controller.create(dev_actions_addr, "https://api.cartridge.gg/x/godot-demo-rookie/katana")
+
+	#controller.create(dev_actions_addr, "https://api.cartridge.gg/x/godot-demo-rookie/katana")
 
 	#var query = {
 		#"pagination":{
@@ -89,8 +91,21 @@ func _on_subcribe_pressed() -> void:
 
 
 func _on_spawn_pressed() -> void:
-	controller.execute_from_outside(dev_actions_addr, "spawn", [])
+	var action = {
+		"dojo_contract": dev_actions_addr,
+		"selector": "spawn",
+		"calldata": []
+	}
+	controller.execute_from_outside(action)
 	#dojo.spawn(reset_spawn.button_pressed,false)
+
+func _on_spawn_raw_pressed() -> void:
+	var action = {
+		"dojo_contract": dev_actions_addr,
+		"selector": "spawn",
+		"calldata": []
+	}
+	controller.execute_raw(action)
 
 func update_event_subscription_status(_value:bool, _event:String, _status_node:HBoxContainer):
 	update_status(_value, _status_node)
@@ -162,5 +177,13 @@ func _on_client_metadata_pressed() -> void:
 	print(data)
 
 
-func _on_spawn_raw_pressed() -> void:
-	controller.execute_raw(dev_actions_addr, "spawn", [])
+func _on_setup_policies_pressed() -> void:
+	var policies = {
+		"name": "actions",
+		"dojo_contract": dev_actions_addr,
+		"actions": {
+			"spawn": "Spawns in the world",
+			"move": "Moves in the world"
+			}
+	}
+	controller.create(policies)

@@ -5,7 +5,7 @@
 #ifndef PRIMITIVE_H
 #define PRIMITIVE_H
 
-#include "dojo_types.hpp"
+#include "dojo_types.h"
 #include "godot_cpp/classes/ref_counted.hpp"
 #include "godot_cpp/variant/variant.hpp"
 #include "field_element.h"
@@ -16,7 +16,7 @@ class DojoPrimitive : public RefCounted
 {
     GDCLASS(DojoPrimitive, RefCounted);
 
-    using Tag = DOJO::Primitive::Tag;
+    using Tag = DOJO::Primitive_Tag;
 
 private:
     Variant value = Variant::NIL;

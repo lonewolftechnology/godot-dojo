@@ -28,6 +28,10 @@ bg_color = Color(0.2484, 0.2484, 0.2484, 1)
 script = ExtResource("1_ig7tw")
 dojo_abi = "/home/hazel/Proyectos/Godot/GDE/starting/dojo-starter/manifest_dev.json"
 
+[node name="ToriiClient" type="ToriiClient" parent="."]
+torii_url = "https://api.cartridge.gg/x/godot-demo-rookie/torii"
+world_address = "0x07cb912d0029e3799c4b8f2253b21481b2ec814c5daf72de75164ca82e7c42a5"
+
 [node name="Parallax" type="ParallaxBackground" parent="."]
 layer = -1
 
@@ -93,6 +97,11 @@ visible = false
 layout_mode = 2
 text = "Login"
 
+[node name="SetupPolicies" type="Button" parent="UI/VBoxContainer/HBoxContainer/Tabs/Main"]
+layout_mode = 2
+text = "SetupPolicies
+"
+
 [node name="Events" type="VBoxContainer" parent="UI/VBoxContainer/HBoxContainer/Tabs/Main"]
 layout_mode = 2
 alignment = 1
@@ -129,7 +138,6 @@ layout_mode = 2
 text = "TESTING"
 
 [node name="ClientMetadata" type="Button" parent="UI/VBoxContainer/HBoxContainer/Tabs/Main"]
-visible = false
 layout_mode = 2
 text = "ClientMetadata"
 
@@ -249,6 +257,7 @@ position_smoothing_speed = 4.0
 [connection signal="toggled" from="UI/VBoxContainer/HBoxContainer/ButtonToggle" to="." method="_on_button_toggle_toggled"]
 [connection signal="pressed" from="UI/VBoxContainer/HBoxContainer/Tabs/Main/StartToriiClient" to="." method="_on_subcribe_pressed"]
 [connection signal="pressed" from="UI/VBoxContainer/HBoxContainer/Tabs/Main/ConnectController" to="." method="_on_connect_controller_pressed"]
+[connection signal="pressed" from="UI/VBoxContainer/HBoxContainer/Tabs/Main/SetupPolicies" to="." method="_on_setup_policies_pressed"]
 [connection signal="pressed" from="UI/VBoxContainer/HBoxContainer/Tabs/Main/Events/Spawn" to="." method="_on_spawn_pressed"]
 [connection signal="pressed" from="UI/VBoxContainer/HBoxContainer/Tabs/Main/Events/SpawnRaw" to="." method="_on_spawn_raw_pressed"]
 [connection signal="pressed" from="UI/VBoxContainer/HBoxContainer/Tabs/Main/Events/Move" to="." method="_on_move_pressed"]

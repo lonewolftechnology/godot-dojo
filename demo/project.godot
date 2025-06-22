@@ -23,6 +23,10 @@ window/size/viewport_height=720
 window/stretch/mode="viewport"
 window/stretch/aspect="expand"
 
+[dojo]
+
+rpc_url="https://api.cartridge.gg/x/godot-demo-rookie/katana"
+
 [input]
 
 zoom_in={

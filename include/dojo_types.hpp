@@ -1,6 +1,6 @@
 // dojo.hpp
-#ifndef DOJO_TYPES_HPP
-#define DOJO_TYPES_HPP
+#ifndef dojo_types.h
+#define dojo_types.h
 
 #include "dojo.hpp"
 #define DOJO dojo_bindings
@@ -78,4 +78,4 @@ struct Page;
 
 } // namespace dojo_bindings
 
-#endif // DOJO_TYPES_HPP
+#endif // dojo_types.h

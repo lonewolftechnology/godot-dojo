@@ -77,6 +77,41 @@ PackedByteArray FieldElement::to_packed_array(const void* data, const int size)
     return _bytes;
 }
 
+dojo_bindings::FieldElement FieldElement::from_string(const String& hex_str, size_t max_bytes)
+{
+    DOJO::FieldElement result = {};
+    size_t start_idx = (hex_str.substr(0, 2) == "0x") ? 2 : 0;
+
+    size_t hex_length = hex_str.length() - start_idx;
+
+    bool is_odd = hex_length % 2 != 0;
+    size_t num_bytes = (hex_length + is_odd) / 2;
+
+    // Ensure we don't overflow the output buffer
+    if (num_bytes > max_bytes)
+    {
+        LOG_ERROR("Input hex string too long for output buffer");
+        return {};
+    }
+
+    size_t out_idx = 0;
+
+    // Handle first nibble separately if we have odd number of characters
+    if (is_odd)
+    {
+        String nibble = hex_str.substr(start_idx, 1);
+        result.data[out_idx++] = static_cast<uint8_t>(nibble.hex_to_int());
+    }
+
+    // Process two hex digits at a time
+    for (size_t i = is_odd ? 1 : 0; i < hex_length; i += 2)
+    {
+        String byte_str = hex_str.substr(start_idx + i, 2);
+        result.data[out_idx++] = static_cast<uint8_t>(byte_str.hex_to_int());
+    }
+    return result;
+}
+
 PackedByteArray FieldElement::as_packed_array() const
 {
     return to_packed_array(felt->data);
@@ -124,8 +159,8 @@ Ref<FieldElement> FieldElement::from_enum(int enum_value)
 
 String FieldElement::bytearray_deserialize()
 {
-    DOJO::Result<const char*> testing = DOJO::bytearray_deserialize(get_felt(), 32);
-    if (testing.IsErr())
+    DOJO::Resultc_char testing = DOJO::bytearray_deserialize(get_felt(), 32);
+    if (testing.tag == DOJO::Errc_char)
     {
         LOG_DEBUG("Can't deserialize... Trying Cairo String");
         return parse_cairo();
@@ -150,8 +185,8 @@ String FieldElement::get_as_string(DOJO::FieldElement* _felt)
 
 String FieldElement::parse_cairo()
 {
-    DOJO::Result<const char*> testing = DOJO::parse_cairo_short_string(get_felt_no_ptr());
-    if (testing.IsErr())
+    DOJO::Resultc_char testing = DOJO::parse_cairo_short_string(get_felt_no_ptr());
+    if (testing.tag == DOJO::Errc_char)
     {
         LOG_DEBUG("No cairo string found, returning as string hex");
         return {to_string()};

@@ -13,7 +13,6 @@
 
 #include "dojo_types.h"
 #include "variant/field_element.h"
-
 using namespace godot;
 
 /**
@@ -24,18 +23,17 @@ using namespace godot;
  * del ecosistema Dojo, incluyendo funcionalidades de autenticación, ejecución de transacciones
  * y gestión de sesiones.
  */
-class ControllerAccount : public RefCounted {
+class ControllerAccount : public RefCounted
+{
     GDCLASS(ControllerAccount, RefCounted)
-
-private:
     DOJO::ControllerAccount* session_account;
     DOJO::Provider* provider;
     bool is_connected;
+    friend class FieldElementDictionary;
 
 protected:
     static void _bind_methods();
     static ControllerAccount* singleton;
-
 
 public:
     ControllerAccount();
@@ -43,13 +41,17 @@ public:
 
     // Singleton pattern
     static ControllerAccount* get_singleton();
+    Dictionary contracts = {};
 
     // Métodos principales de configuración
     void set_session_account(DOJO::ControllerAccount* account);
     DOJO::ControllerAccount* get_session_account() const;
+    void add_dojo_contract(const String& name, const String& contract_address);
+    void remove(const String& name);
 
+    void setup_policies(const Dictionary& policies_data);
     // Métodos de conexión y autenticación
-    void create(const String& controller_addr, const String& rpc_url);
+    void create(const Dictionary& policies_data);
     void disconnect_controller();
     bool is_controller_connected() const;
 
@@ -59,15 +61,14 @@ public:
     String get_chain_id() const;
 
     // Ejecución de transacciones
-    void execute_raw(const String& contract_address, const String& selector, const Array& calldata = Array());
-    void execute_from_outside(const String& contract_address, const String& selector, const Array& calldata = Array());
+    void execute_raw(const Dictionary& action);
+    void execute_from_outside(const Dictionary& action);
 
     // Métodos de utilidad
     Dictionary get_account_info() const;
 
     // Señales de estado
     void emit_connection_status(bool connected);
-
 };
 
 #endif // CONTROLLER_ACCOUNT_H

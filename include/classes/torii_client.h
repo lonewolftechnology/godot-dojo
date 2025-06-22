@@ -5,7 +5,7 @@
 #ifndef TORII_CLIENT_H
 #define TORII_CLIENT_H
 
-#include "godot_cpp/classes/ref_counted.hpp"
+#include "godot_cpp/classes/node.hpp"
 #include "godot_cpp/core/class_db.hpp"
 #include "godot_cpp/variant/string.hpp"
 #include "godot_cpp/variant/variant.hpp"
@@ -13,57 +13,121 @@
 #include "godot_cpp/variant/typed_array.hpp"
 #include "godot_cpp/variant/callable.hpp"
 
-#include "dojo_types.hpp"
+#include "dojo_types.h"
 #include "variant/field_element.h"
 
 using namespace godot;
 
-/**
- * @class ToriiClient
- * @brief Wrapper completo para DOJO::ToriiClient
- *
- * Esta clase proporciona una interfaz Godot completa para interactuar con el cliente Torii
- * del ecosistema Dojo, incluyendo consultas de entidades, metadatos, tokens, suscripciones
- * y publicación de mensajes.
- */
-class ToriiClient : public RefCounted {
-    GDCLASS(ToriiClient, RefCounted)
+class ToriiClient : public Node
+{
+    GDCLASS(ToriiClient, Node)
 
 private:
     static ToriiClient* singleton;
     DOJO::ToriiClient* client;
     bool is_connected;
 
-
 protected:
-    static void _bind_methods();
     String torii_url;
     String world_address;
-    Callable logger_callable;
+    Callable logger_callback;
+
+    static void _bind_methods()
+    {
+        // Métodos de conexión
+        ClassDB::bind_method(D_METHOD("create_client"),
+                             &ToriiClient::create_client);
+        ClassDB::bind_method(D_METHOD("disconnect_client"), &ToriiClient::disconnect_client);
+        ClassDB::bind_method(D_METHOD("is_client_connected"), &ToriiClient::is_client_connected);
+
+        // Metadatos
+        ClassDB::bind_method(D_METHOD("get_world_metadata"), &ToriiClient::get_world_metadata);
+        ClassDB::bind_method(D_METHOD("refresh_metadata"), &ToriiClient::refresh_metadata);
+
+        // Consulta de entidades
+        ClassDB::bind_method(D_METHOD("get_entities", "query_params"),
+                             &ToriiClient::get_entities);
+
+        // Controladores
+        ClassDB::bind_method(D_METHOD("get_controllers", "player_address"),
+                             &ToriiClient::get_controllers, DEFVAL(""));
+        ClassDB::bind_method(D_METHOD("get_controller_info", "controller_address"),
+                             &ToriiClient::get_controller_info);
+
+        // Suscripciones
+        ClassDB::bind_method(D_METHOD("create_entity_subscription", "callback", "filter_params"),
+                             &ToriiClient::create_entity_subscription, DEFVAL(Dictionary()));
+        ClassDB::bind_method(D_METHOD("create_event_subscription", "callback", "filter_params"),
+                             &ToriiClient::create_event_subscription, DEFVAL(Dictionary()));
+        ClassDB::bind_method(D_METHOD("create_token_subscription", "callback", "account_address"),
+                             &ToriiClient::create_token_subscription);
+        ClassDB::bind_method(D_METHOD("cancel_all_subscriptions"), &ToriiClient::cancel_all_subscriptions);
+
+        // Publicación de mensajes
+        ClassDB::bind_method(D_METHOD("publish_message", "message_data", "signature_felts"),
+                             &ToriiClient::publish_message);
+        ClassDB::bind_method(D_METHOD("publish_typed_message", "typed_data", "signature_felts"),
+                             &ToriiClient::publish_typed_message);
+
+        ClassDB::bind_method(D_METHOD("get_client_info"), &ToriiClient::get_client_info);
+
+        // Utilidades
+        ClassDB::bind_method(D_METHOD("get_connection_status"), &ToriiClient::get_connection_status);
+
+        // Señales
+        ADD_SIGNAL(MethodInfo("client_connected", PropertyInfo(Variant::BOOL, "success")));
+        ADD_SIGNAL(MethodInfo("client_disconnected"));
+        ADD_SIGNAL(MethodInfo("entity_updated", PropertyInfo(Variant::DICTIONARY, "entity_data")));
+        ADD_SIGNAL(MethodInfo("event_received", PropertyInfo(Variant::DICTIONARY, "event_data")));
+        ADD_SIGNAL(MethodInfo("subscription_error", PropertyInfo(Variant::STRING, "error_message")));
+        ADD_SIGNAL(MethodInfo("metadata_updated", PropertyInfo(Variant::DICTIONARY, "metadata")));
+        ADD_SIGNAL(MethodInfo("message_published", PropertyInfo(Variant::STRING, "message_hash")));
+        ADD_SIGNAL(MethodInfo("transaction_confirmed", PropertyInfo(Variant::STRING, "transaction_hash")));
+
+        // Enums
+        BIND_ENUM_CONSTANT(ASC);
+        BIND_ENUM_CONSTANT(DESC);
+        BIND_ENUM_CONSTANT(FORWARD);
+        BIND_ENUM_CONSTANT(BACKWARD);
+
+        ClassDB::bind_method(D_METHOD("set_logger_callback", "logger_callback"), &ToriiClient::set_logger_callback);
+        ClassDB::bind_method(D_METHOD("get_logger_callback"), &ToriiClient::get_logger_callback);
+        ADD_PROPERTY(PropertyInfo(Variant::CALLABLE, "logger_callback"), "set_logger_callback", "get_logger_callback");
+
+        ClassDB::bind_method(D_METHOD("get_torii_url"), &ToriiClient::get_torii_url);
+        ClassDB::bind_method(D_METHOD("set_torii_url", "torii_url"), &ToriiClient::set_torii_url);
+        ADD_PROPERTY(PropertyInfo(Variant::STRING, "torii_url"), "set_torii_url", "get_torii_url");
+
+        ClassDB::bind_method(D_METHOD("set_world_address", "world_address"), &ToriiClient::set_world_address);
+        ClassDB::bind_method(D_METHOD("get_world_address"), &ToriiClient::get_world_address);
+        ADD_PROPERTY(PropertyInfo(Variant::STRING, "world_address"), "set_world_address", "get_world_address");
+    }
+
     DOJO::FieldElement* world;
 
 public:
     ToriiClient();
     ~ToriiClient();
 
-    enum QueryOrderDirection {
+    enum QueryOrderDirection
+    {
         ASC,
         DESC,
-      };
+    };
 
-    enum QueryPaginationDirection {
+    enum QueryPaginationDirection
+    {
         FORWARD,
         BACKWARD,
-      };
+    };
+
     // Singleton pattern
     static ToriiClient* get_singleton();
 
     // Métodos de conexión
-    bool create_client(const String& world_addr, const String& torii_url = "http://localhost:8080");
+    bool create_client();
     void disconnect_client();
     bool is_client_connected() const;
-    String get_torii_url() const;
-    String get_world_address() const;
     bool is_calable_valid();
     void callable_call(const char* msg);
     FieldElement get_world() const;
@@ -99,7 +163,6 @@ public:
     // Métodos de consulta avanzados
 
     // Configuración del cliente
-    void set_logger_callback(const Callable& logger_callback);
     Dictionary get_client_info() const;
 
     // Métodos de utilidad
@@ -118,8 +181,19 @@ public:
 
     // Getters para uso interno
     DOJO::ToriiClient* get_client() const { return client; }
+
+    Callable get_logger_callback() const { return logger_callback; }
+    void set_logger_callback(const Callable& p_logger_callback);
+
+    String get_torii_url() const { return torii_url; }
+    void set_torii_url(const String& p_torii_url) { torii_url = p_torii_url; }
+
+    void set_world_address(const String& p_world_address) { world_address = p_world_address; }
+    String get_world_address() const { return world_address; }
 };
+
 VARIANT_ENUM_CAST(ToriiClient::QueryOrderDirection);
+
 VARIANT_ENUM_CAST(ToriiClient::QueryPaginationDirection);
 
 #endif // TORII_CLIENT_H

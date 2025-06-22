@@ -6,7 +6,7 @@
 #define EVENT_SUBSCRIPTION_H
 
 #include "debug_macros.h"
-#include "dojo_types.hpp"
+#include "dojo_types.h"
 #include "godot_cpp/classes/ref_counted.hpp"
 
 using namespace godot;
@@ -30,7 +30,7 @@ using namespace godot;
         Callable get_callback() const;
         void set_callback(const Callable& p_callback);
 
-        void on_entity_update(DOJO::FieldElement* entity_id, DOJO::CArray<DOJO::Struct> models) const;
+        void on_entity_update(DOJO::FieldElement* entity_id, DOJO::CArrayStruct models) const;
         void set_subscription(DOJO::Subscription* subscription) { this->subscription = subscription; }
     };
 

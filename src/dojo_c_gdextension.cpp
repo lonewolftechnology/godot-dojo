@@ -3,6 +3,8 @@
 //
 #include "dojo_c_gdextension.h"
 
+#include "godot_cpp/classes/project_settings.hpp"
+
 #include "godot_cpp/classes/engine.hpp"
 #include "godot_cpp/core/class_db.hpp"
 #include "debug_macros.h"
@@ -24,7 +26,14 @@ DojoC::DojoC()
 {
     if (Engine::get_singleton()->is_editor_hint())
     {
-        UtilityFunctions::push_warning("DojoC is running in editor mode");
+        LOG_DEBUG_EXTRA("DojoC", "is running in editor mode");
+        ProjectSettings* settings = ProjectSettings::get_singleton();
+        if (settings->has_setting("dojo/rpc_url") == false)
+        {
+            settings->set_setting("dojo/rpc_url", "");
+            settings->set_initial_value("dojo/rpc_url", "http://localhost:5050");
+            settings->save();
+        }
         return;
     }
     singleton = this;

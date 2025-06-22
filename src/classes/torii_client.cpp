@@ -2,11 +2,10 @@
 // Created by hazel on 27/05/25.
 //
 
-#include "classes/torii_client.h"
 #include "godot_cpp/classes/engine.hpp"
 #include "godot_cpp/classes/json.hpp"
-#include "godot_cpp/core/class_db.hpp"
-#include "godot_cpp/variant/utility_functions.hpp"
+
+#include "classes/torii_client.h"
 #include "debug_macros.h"
 #include "variant/primitive.h"
 
@@ -14,84 +13,11 @@
 
 ToriiClient* ToriiClient::singleton = nullptr;
 
-void ToriiClient::_bind_methods()
-{
-    // Métodos de conexión
-    ClassDB::bind_method(D_METHOD("create_client", "world_addr", "torii_url"),
-                         &ToriiClient::create_client, DEFVAL("http://localhost:8080"));
-    ClassDB::bind_method(D_METHOD("disconnect_client"), &ToriiClient::disconnect_client);
-    ClassDB::bind_method(D_METHOD("is_client_connected"), &ToriiClient::is_client_connected);
-    ClassDB::bind_method(D_METHOD("get_torii_url"), &ToriiClient::get_torii_url);
-    ClassDB::bind_method(D_METHOD("get_world_address"), &ToriiClient::get_world_address);
-
-    // Metadatos
-    ClassDB::bind_method(D_METHOD("get_world_metadata"), &ToriiClient::get_world_metadata);
-    ClassDB::bind_method(D_METHOD("refresh_metadata"), &ToriiClient::refresh_metadata);
-
-    // Consulta de entidades
-    ClassDB::bind_method(D_METHOD("get_entities", "query_params"),
-                         &ToriiClient::get_entities);
-
-    // Controladores
-    ClassDB::bind_method(D_METHOD("get_controllers", "player_address"),
-                         &ToriiClient::get_controllers, DEFVAL(""));
-    ClassDB::bind_method(D_METHOD("get_controller_info", "controller_address"),
-                         &ToriiClient::get_controller_info);
-
-    // Tokens
-    // ClassDB::bind_method(D_METHOD("get_tokens", "query_params"),
-    // &ToriiClient::get_tokens, DEFVAL(Dictionary()));
-    // ClassDB::bind_method(D_METHOD("get_token_balances", "account_address"),
-    // &ToriiClient::get_token_balances);
-    // ClassDB::bind_method(D_METHOD("get_token_collections"), &ToriiClient::get_token_collections);
-    // ClassDB::bind_method(D_METHOD("get_token_info", "token_address"), &ToriiClient::get_token_info);
-
-    // Suscripciones
-    ClassDB::bind_method(D_METHOD("create_entity_subscription", "callback", "filter_params"),
-                         &ToriiClient::create_entity_subscription, DEFVAL(Dictionary()));
-    ClassDB::bind_method(D_METHOD("create_event_subscription", "callback", "filter_params"),
-                         &ToriiClient::create_event_subscription, DEFVAL(Dictionary()));
-    ClassDB::bind_method(D_METHOD("create_token_subscription", "callback", "account_address"),
-                         &ToriiClient::create_token_subscription);
-    ClassDB::bind_method(D_METHOD("cancel_all_subscriptions"), &ToriiClient::cancel_all_subscriptions);
-
-    // Publicación de mensajes
-    ClassDB::bind_method(D_METHOD("publish_message", "message_data", "signature_felts"),
-                         &ToriiClient::publish_message);
-    ClassDB::bind_method(D_METHOD("publish_typed_message", "typed_data", "signature_felts"),
-                         &ToriiClient::publish_typed_message);
-
-
-    // Configuración
-    ClassDB::bind_method(D_METHOD("set_logger_callback", "logger_callback"),
-                         &ToriiClient::set_logger_callback);
-    ClassDB::bind_method(D_METHOD("get_client_info"), &ToriiClient::get_client_info);
-
-    // Utilidades
-    ClassDB::bind_method(D_METHOD("get_connection_status"), &ToriiClient::get_connection_status);
-
-    // Señales
-    ADD_SIGNAL(MethodInfo("client_connected", PropertyInfo(Variant::BOOL, "success")));
-    ADD_SIGNAL(MethodInfo("client_disconnected"));
-    ADD_SIGNAL(MethodInfo("entity_updated", PropertyInfo(Variant::DICTIONARY, "entity_data")));
-    ADD_SIGNAL(MethodInfo("event_received", PropertyInfo(Variant::DICTIONARY, "event_data")));
-    ADD_SIGNAL(MethodInfo("subscription_error", PropertyInfo(Variant::STRING, "error_message")));
-    ADD_SIGNAL(MethodInfo("metadata_updated", PropertyInfo(Variant::DICTIONARY, "metadata")));
-    ADD_SIGNAL(MethodInfo("message_published", PropertyInfo(Variant::STRING, "message_hash")));
-    ADD_SIGNAL(MethodInfo("transaction_confirmed", PropertyInfo(Variant::STRING, "transaction_hash")));
-
-    // Enums
-    BIND_ENUM_CONSTANT(ASC);
-    BIND_ENUM_CONSTANT(DESC);
-    BIND_ENUM_CONSTANT(FORWARD);
-    BIND_ENUM_CONSTANT(BACKWARD);
-}
-
 ToriiClient::ToriiClient()
 {
     if (Engine::get_singleton()->is_editor_hint())
     {
-        UtilityFunctions::push_warning("ToriiClient está ejecutándose en modo editor");
+        LOG_DEBUG_EXTRA("Torii", "Editor mode, ignoring constructor");
         return;
     }
 
@@ -100,7 +26,17 @@ ToriiClient::ToriiClient()
     is_connected = false;
     torii_url = "";
     world_address = "";
-
+    DOJO::ResultFieldElement test_felt = DOJO::cairo_short_string_to_felt("WP_GODOT_DEMO_ROOKIE");
+    if (test_felt.tag == DOJO::ErrFieldElement)
+    {
+        LOG_ERROR("Error al crear FieldElement: ", GET_DOJO_ERROR(test_felt));
+        return;
+    }
+    else
+    {
+        LOG_SUCCESS("FieldElement creado exitosamente");
+        LOG_DEBUG(FieldElement::get_as_string(&GET_DOJO_OK(test_felt)));
+    }
     LOG_INFO("ToriiClient inicializado");
 }
 
@@ -116,36 +52,47 @@ ToriiClient* ToriiClient::get_singleton()
     return singleton;
 }
 
-bool ToriiClient::create_client(const String& world_addr, const String& torii_url_param)
+bool ToriiClient::create_client()
 {
     // Limpiar cliente anterior si existe
     disconnect_client();
 
+    if (world_address.is_empty())
+    {
+        LOG_ERROR("Missing world address");
+        emit_signal("client_connected", false);
+        return false;
+    }
+
+    if (torii_url.is_empty())
+    {
+        LOG_ERROR("Missing torii url");
+        emit_signal("client_connected", false);
+        return false;
+    }
     // Convertir world address a FieldElement
-    FieldElement world(world_addr, 32);
+    FieldElement world(world_address, 32);
     set_world(world);
     world.bytearray_deserialize();
-    torii_url = torii_url_param;
-    world_address = world_addr;
 
     LOG_INFO("Creando cliente Torii...");
     LOG_INFO("URL: ", torii_url);
     LOG_INFO("World Address: ", world_address);
 
     // Crear cliente
-    DOJO::Result<DOJO::ToriiClient*> resClient = DOJO::client_new(
+    DOJO::ResultToriiClient resClient = DOJO::client_new(
         torii_url.utf8().get_data(),
         *world.get_felt()
     );
 
-    if (resClient.IsErr())
+    if (resClient.tag == DOJO::ErrToriiClient)
     {
-        LOG_ERROR("Error al crear cliente Torii: ", GET_DOJO_VALUE(resClient.err).message);
+        LOG_ERROR("Error al crear cliente Torii: ", GET_DOJO_ERROR(resClient));
         emit_signal("client_connected", false);
         return false;
     }
 
-    client = GET_DOJO_VALUE(resClient.ok);
+    client = resClient.ok;
     is_connected = true;
 
     // Configurar logger
@@ -180,27 +127,16 @@ bool ToriiClient::is_client_connected() const
     return is_connected && client != nullptr;
 }
 
-String ToriiClient::get_torii_url() const
-{
-    return torii_url;
-}
-
-String ToriiClient::get_world_address() const
-{
-    return world_address;
-}
-
-
 bool ToriiClient::is_calable_valid()
 {
-    return logger_callable.is_valid();
+    return logger_callback.is_valid();
 }
 
 void ToriiClient::callable_call(const char* msg)
 {
     if (is_calable_valid())
     {
-        logger_callable.call(String(msg));
+        logger_callback.call(String(msg));
     }
 }
 
@@ -222,20 +158,20 @@ Dictionary ToriiClient::get_world_metadata()
         return {};
     }
 
-    DOJO::Result<DOJO::WorldMetadata> resMetadata = DOJO::client_metadata(client);
+    DOJO::ResultWorldMetadata resMetadata = DOJO::client_metadata(client);
 
-    if (resMetadata.IsErr())
+    if (resMetadata.tag == DOJO::ErrWorldMetadata)
     {
-        LOG_ERROR("Error al obtener metadatos: ", GET_DOJO_VALUE(resMetadata.err).message);
+        LOG_ERROR("Error al obtener metadatos: ", GET_DOJO_ERROR(resMetadata));
         return {};
     }
 
-    DOJO::WorldMetadata metadata = GET_DOJO_VALUE(resMetadata.ok);
+    DOJO::WorldMetadata metadata = GET_DOJO_OK(resMetadata);
     Dictionary result = {};
 
     // Convertir modelos a Dictionary
     TypedArray<Dictionary> models_array = {};
-    std::vector<DOJO::CHashItem<DOJO::FieldElement, DOJO::ModelMetadata>> models_vec(
+    std::vector<DOJO::CHashItemFieldElementModelMetadata> models_vec(
         metadata.models.data, metadata.models.data + metadata.models.data_len
     );
 
@@ -262,10 +198,10 @@ Dictionary ToriiClient::get_world_metadata()
         // Procesar esquema según el tipo
         Ty testing_ty = {model_metadata.schema};
 
-        if (model_metadata.schema.IsStruct_())
+        if (model_metadata.schema.tag == DOJO::Ty_Tag::Struct_)
         {
             Dictionary struct_info = {};
-            DOJO::Struct meta_struct = GET_DOJO_VALUE(model_metadata.schema.struct_);
+            DOJO::Struct meta_struct = model_metadata.schema.struct_;
             struct_info["name"] = meta_struct.name;
             LOG_DEBUG_EXTRA("STRUCT",meta_struct.name);
 
@@ -319,15 +255,15 @@ TypedArray<Dictionary> ToriiClient::get_entities(const Dictionary& query_params)
     LOG_DEBUG("Converting Query");
     DOJO::Query query = create_query_from_dict(query_params);
     LOG_DEBUG("Query COnverted");
-    DOJO::Result<DOJO::Page<DOJO::Entity>> resPageEntities = DOJO::client_entities(client, query);
+    DOJO::ResultPageEntity resPageEntities = DOJO::client_entities(client, query);
 
-    if (resPageEntities.IsErr())
+    if (resPageEntities.tag == DOJO::ErrPageEntity)
     {
-        LOG_ERROR("Error al obtener entidades: ", GET_DOJO_VALUE(resPageEntities.err).message);
+        LOG_ERROR("Error al obtener entidades: ", GET_DOJO_ERROR(resPageEntities));
         return {};
     }
 
-    DOJO::Page<DOJO::Entity> pageEntities = GET_DOJO_VALUE(resPageEntities.ok);
+    DOJO::PageEntity pageEntities = resPageEntities.ok;
     TypedArray<Dictionary> result = {};
 
     std::vector<DOJO::Entity> entities(
@@ -361,17 +297,17 @@ TypedArray<Dictionary> ToriiClient::get_controllers(const String& player_address
         player_filter = *player_felt.get_felt();
     }
 
-    DOJO::Result<DOJO::CArray<DOJO::Controller>> resControllers = DOJO::client_controllers(
+    DOJO::ResultCArrayController resControllers = DOJO::client_controllers(
         client, &player_filter, 0
     );
 
-    if (resControllers.IsErr())
+    if (resControllers.tag == DOJO::ErrCArrayController)
     {
         LOG_ERROR("Error al obtener controladores: ", GET_DOJO_ERROR(resControllers));
         return {};
     }
 
-    DOJO::CArray<DOJO::Controller> controllers = GET_DOJO_VALUE(resControllers.ok);
+    DOJO::CArrayController controllers = resControllers.ok;
     TypedArray<Dictionary> result = {};
 
     std::vector<DOJO::Controller> controller_list(
@@ -416,7 +352,7 @@ Dictionary ToriiClient::get_controller_info(const String& controller_address)
 //     DOJO::ResultPageToken resPageTokens = DOJO::client_tokens(client, query);
 //
 //     if (resPageTokens.tag == DOJO::ErrPageToken) {
-//         LOG_ERROR("Error al obtener tokens: ", resPageTokens.err.message);
+//         LOG_ERROR("Error al obtener tokens: ", GET_DOJO_ERROR(resPageTokens));
 //         return TypedArray<Dictionary>();
 //     }
 //
@@ -451,7 +387,7 @@ Dictionary ToriiClient::get_controller_info(const String& controller_address)
 //     DOJO::ResultPageTokenBalance resPageBalances = DOJO::client_token_balances(client, query);
 //
 //     if (resPageBalances.tag == DOJO::ErrPageTokenBalance) {
-//         LOG_ERROR("Error al obtener balances: ", resPageBalances.err.message);
+//         LOG_ERROR("Error al obtener balances: ", GET_DOJO_ERROR(resPageBalances));
 //         return TypedArray<Dictionary>();
 //     }
 //
@@ -474,7 +410,7 @@ Dictionary ToriiClient::get_controller_info(const String& controller_address)
 //     DOJO::ResultPageTokenCollection resPageCollections = DOJO::client_token_collections(client, query);
 //
 //     if (resPageCollections.tag == DOJO::ErrPageTokenCollection) {
-//         LOG_ERROR("Error al obtener colecciones: ", resPageCollections.err.message);
+//         LOG_ERROR("Error al obtener colecciones: ", GET_DOJO_ERROR(resPageCollections));
 //         return TypedArray<Dictionary>();
 //     }
 //
@@ -507,11 +443,11 @@ bool ToriiClient::create_entity_subscription(const Callable& callback, const Dic
     }
 
     // Crear filtro de cláusulas
-    DOJO::COption<DOJO::Clause> event_clause = {};
-    event_clause = DOJO::COption<DOJO::Clause>::None();
+    DOJO::COptionClause event_clause = {};
+    event_clause.tag = DOJO::COptionClause_Tag::NoneClause;
 
     // Callback wrapper que llamará al callback de Godot
-    auto wrapper = [this, callback](DOJO::FieldElement entity_id, DOJO::CArray<DOJO::Struct> models)
+    auto wrapper = [this, callback](DOJO::FieldElement entity_id, DOJO::CArrayStruct models)
     {
         Dictionary entity_data = {};
         FieldElement felt_id(&entity_id);
@@ -528,17 +464,17 @@ bool ToriiClient::create_entity_subscription(const Callable& callback, const Dic
         emit_signal("entity_updated", entity_data);
     };
 
-    DOJO::Result<DOJO::Subscription*> resSubscription = DOJO::client_on_entity_state_update(
-        client, event_clause, [](DOJO::FieldElement entity_id, DOJO::CArray<DOJO::Struct> models)
+    DOJO::ResultSubscription resSubscription = DOJO::client_on_entity_state_update(
+        client, event_clause, [](DOJO::FieldElement entity_id, DOJO::CArrayStruct models)
         {
             // Implementar callback apropiado
         }
     );
 
-    if (resSubscription.IsErr())
+    if (resSubscription.tag == DOJO::ErrSubscription)
     {
         LOG_ERROR("Error al crear suscripción de entidades: ", GET_DOJO_ERROR(resSubscription));
-        emit_signal("subscription_error", String(GET_DOJO_ERROR(resSubscription)));
+        emit_signal("subscription_error", GET_DOJO_ERROR(resSubscription));
         return false;
     }
 
@@ -554,17 +490,17 @@ bool ToriiClient::create_event_subscription(const Callable& callback, const Dict
         return false;
     }
 
-    DOJO::COption<DOJO::Clause> event_clause = {};
-    event_clause = DOJO::COption<DOJO::Clause>::None();
+    DOJO::COptionClause event_clause = {};
+    event_clause.tag = DOJO::COptionClause_Tag::NoneClause;
 
-    DOJO::Result<DOJO::Subscription*> resSubscription = DOJO::client_on_event_message_update(
-        client, event_clause, [](DOJO::FieldElement entity_id, DOJO::CArray<DOJO::Struct> models)
+    DOJO::ResultSubscription resSubscription = DOJO::client_on_event_message_update(
+        client, event_clause, [](DOJO::FieldElement entity_id, DOJO::CArrayStruct models)
         {
             // Implementar callback apropiado
         }
     );
 
-    if (resSubscription.IsErr())
+    if (resSubscription.tag == DOJO::ErrSubscription)
     {
         LOG_ERROR("Error al crear suscripción de eventos: ", GET_DOJO_ERROR(resSubscription));
         emit_signal("subscription_error", GET_DOJO_ERROR(resSubscription));
@@ -607,14 +543,14 @@ bool ToriiClient::publish_message(const String& message_data, const Array& signa
         }
     }
 
-    DOJO::Result<DOJO::FieldElement> result = DOJO::client_publish_message(
+    DOJO::ResultFieldElement result = DOJO::client_publish_message(
         client,
         message_data.utf8().get_data(),
         felts.data(),
         felts.size()
     );
 
-    if (result.IsErr())
+    if (result.tag == DOJO::ErrFieldElement)
     {
         LOG_ERROR("Error al publicar mensaje: ", GET_DOJO_ERROR(result));
         return false;
@@ -633,9 +569,9 @@ bool ToriiClient::publish_typed_message(const Dictionary& typed_data, const Arra
     return publish_message(json_data, signature_felts);
 }
 
-void client_logger(const char* msg)
+void logger_callback_wrapper(const char* msg)
 {
-    LOG_INFO(msg);
+    LOG_DEBUG_EXTRA("Torii",msg);
     ToriiClient* _singleton = ToriiClient::get_singleton();
     if (_singleton->is_calable_valid())
     {
@@ -643,11 +579,13 @@ void client_logger(const char* msg)
     }
 }
 
-void ToriiClient::set_logger_callback(const Callable& logger_callback)
+void ToriiClient::set_logger_callback(const Callable& p_logger_callback)
 {
-    if (!is_client_connected()) return;
-    logger_callable = logger_callback;
-    DOJO::client_set_logger(client, client_logger);
+    {
+        if (!is_client_connected()) return;
+        logger_callback = p_logger_callback;
+        DOJO::client_set_logger(client, logger_callback_wrapper);
+    }
 }
 
 Dictionary ToriiClient::get_client_info() const
@@ -683,11 +621,12 @@ DOJO::Query ToriiClient::create_query_from_dict(const Dictionary& query_params) 
     String cursor = pagination_dict.get("cursor", "");
     if (cursor.is_empty())
     {
-        pagination.cursor = DOJO::COption<const char*>::None();
+        pagination.cursor.tag = DOJO::COptionc_char_Tag::Nonec_char;
     }
     else
     {
-        pagination.cursor = DOJO::COption<const char*>::Some(cursor.utf8().get_data());
+        pagination.cursor.tag = DOJO::COptionc_char_Tag::Somec_char;
+        pagination.cursor.some = cursor.utf8().get_data();
     }
     // TODO: Ver una forma "mas elegante"
     LOG_DEBUG(pagination_dict.get("direction", "NO HABIA"));
@@ -700,7 +639,7 @@ DOJO::Query ToriiClient::create_query_from_dict(const Dictionary& query_params) 
         pagination.direction = DOJO::PaginationDirection::Forward;
     }
 
-    DOJO::CArray<DOJO::OrderBy> orderBy = {};
+    DOJO::CArrayOrderBy orderBy = {};
     LOG_INFO("OrderBy Creation");
     Array orderBy_array = pagination_dict.get("order_by", {});
     if (!orderBy_array.is_empty())
@@ -723,12 +662,12 @@ DOJO::Query ToriiClient::create_query_from_dict(const Dictionary& query_params) 
 
     query.pagination = pagination;
 
-    query.clause = DOJO::COption<DOJO::Clause>::None();
+    query.clause.tag = DOJO::COptionClause_Tag::NoneClause;
     query.no_hashed_keys = query_params.get("no_hashed_keys", false);
     query.historical = query_params.get("historical", false);
 
     // Configurar modelos si se especifican
-    DOJO::CArray<const char*> models = {};
+    DOJO::CArrayc_char models = {};
     Array models_array = query_params.get("models", {});
     if (!models_array.is_empty())
     {
@@ -750,14 +689,14 @@ DOJO::Pagination ToriiClient::create_pagination_from_dict(const Dictionary& pagi
     DOJO::Pagination pagination = {};
 
     pagination.limit = pagination_params.get("limit", 10);
-    pagination.cursor = DOJO::COption<const char*>::None();
+    pagination.cursor.tag = DOJO::COptionc_char_Tag::Nonec_char;
 
     String direction = pagination_params.get("direction", "forward");
     pagination.direction = (direction == "backward")
                                ? DOJO::PaginationDirection::Backward
                                : DOJO::PaginationDirection::Forward;
 
-    DOJO::CArray<DOJO::OrderBy> orderBy = {};
+    DOJO::CArrayOrderBy orderBy = {};
     pagination.order_by = orderBy;
 
     return pagination;
@@ -787,17 +726,17 @@ Dictionary ToriiClient::entity_to_dictionary(const DOJO::Entity& entity) const
         for (const auto& member : members)
         {
             String member_name = member.name;
-
-            if (member.ty->IsPrimitive_())
+            Ty member_data = {member};
+            if (member.ty->tag == DOJO::Ty_Tag::Primitive_)
             {
-                DojoPrimitive primitive(GET_DOJO_VALUE(member.ty->primitive));
-                members_dict[member_name] = primitive.get_value();
+                DojoPrimitive primitive(member.ty->primitive);
+                members_dict[member_name] = member_data.get_value();
             }
-            else if (member.ty->IsStruct_())
+            else if (member.ty->tag == DOJO::Ty_Tag::Struct_)
             {
                 // Procesar structs anidados (como Vec2, etc.)
                 Dictionary nested_struct = {};
-                DOJO::Struct nested = GET_DOJO_VALUE(member.ty->struct_);
+                DOJO::Struct nested = member.ty->struct_;
                 nested_struct["type"] = nested.name;
 
                 if (String(nested.name) == "Vec2")
@@ -809,9 +748,9 @@ Dictionary ToriiClient::entity_to_dictionary(const DOJO::Entity& entity) const
 
                     for (const auto& nested_member : nested_members)
                     {
-                        if (nested_member.ty->IsPrimitive_())
+                        if (nested_member.ty->tag == DOJO::Ty_Tag::Primitive_)
                         {
-                            DojoPrimitive nested_primitive(GET_DOJO_VALUE(nested_member.ty->primitive));
+                            DojoPrimitive nested_primitive(nested_member.ty->primitive);
                             real_t value = nested_primitive.get_value();
 
                             if (String(nested_member.name) == "x")

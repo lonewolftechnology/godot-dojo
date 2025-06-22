@@ -17,6 +17,7 @@
 #include <classes/event_subscription.h>
 
 #include "classes/controller_account.h"
+#include "resources/policy.h"
 #include "variant/ty/ty.h"
 
 
@@ -32,6 +33,7 @@ void initialize_dojoc_module(ModuleInitializationLevel p_level) {
     GDREGISTER_CLASS(EventSubscription);
     GDREGISTER_CLASS(ControllerAccount);
     GDREGISTER_CLASS(Ty);
+    GDREGISTER_CLASS(Policy);
     GDREGISTER_CLASS(DojoC);
 }
 
