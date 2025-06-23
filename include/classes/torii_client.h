@@ -31,6 +31,9 @@ protected:
     String torii_url;
     String world_address;
     Callable logger_callback;
+    String chain_id;
+
+    DOJO::FieldElement* world;
 
     static void _bind_methods()
     {
@@ -90,9 +93,9 @@ protected:
         BIND_ENUM_CONSTANT(FORWARD);
         BIND_ENUM_CONSTANT(BACKWARD);
 
-        ClassDB::bind_method(D_METHOD("set_logger_callback", "logger_callback"), &ToriiClient::set_logger_callback);
-        ClassDB::bind_method(D_METHOD("get_logger_callback"), &ToriiClient::get_logger_callback);
-        ADD_PROPERTY(PropertyInfo(Variant::CALLABLE, "logger_callback"), "set_logger_callback", "get_logger_callback");
+        ClassDB::bind_method(D_METHOD("set_chain_id", "chain_id"), &ToriiClient::set_chain_id);
+        ClassDB::bind_method(D_METHOD("get_chain_id"), &ToriiClient::get_chain_id);
+        ADD_PROPERTY(PropertyInfo(Variant::STRING, "chain_id"), "set_chain_id", "get_chain_id");
 
         ClassDB::bind_method(D_METHOD("get_torii_url"), &ToriiClient::get_torii_url);
         ClassDB::bind_method(D_METHOD("set_torii_url", "torii_url"), &ToriiClient::set_torii_url);
@@ -101,9 +104,11 @@ protected:
         ClassDB::bind_method(D_METHOD("set_world_address", "world_address"), &ToriiClient::set_world_address);
         ClassDB::bind_method(D_METHOD("get_world_address"), &ToriiClient::get_world_address);
         ADD_PROPERTY(PropertyInfo(Variant::STRING, "world_address"), "set_world_address", "get_world_address");
-    }
 
-    DOJO::FieldElement* world;
+        ClassDB::bind_method(D_METHOD("set_logger_callback", "logger_callback"), &ToriiClient::set_logger_callback);
+        ClassDB::bind_method(D_METHOD("get_logger_callback"), &ToriiClient::get_logger_callback);
+        ADD_PROPERTY(PropertyInfo(Variant::CALLABLE, "logger_callback"), "set_logger_callback", "get_logger_callback");
+    }
 
 public:
     ToriiClient();
@@ -190,6 +195,10 @@ public:
 
     void set_world_address(const String& p_world_address) { world_address = p_world_address; }
     String get_world_address() const { return world_address; }
+
+    void set_chain_id(const String& p_chain_id) { chain_id = p_chain_id; }
+    String get_chain_id() const { return chain_id; }
+
 };
 
 VARIANT_ENUM_CAST(ToriiClient::QueryOrderDirection);

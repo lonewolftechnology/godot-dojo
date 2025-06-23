@@ -72,7 +72,7 @@ void ControllerAccount::setup()
 {
     create(policies);
 }
-
+// TODO: refactor a estatico
 void ControllerAccount::create(const Ref<DojoPolicies>& policies_data)
 {
     String rpc_url = ProjectSettings::get_singleton()->get("dojo/rpc_url");
@@ -100,8 +100,13 @@ void ControllerAccount::create(const Ref<DojoPolicies>& policies_data)
 
     std::vector<DOJO::Policy> policies = policies_data->build();
     uintptr_t policies_len = policies.size();
-
-    DOJO::FieldElement katana = ToriiClient::get_singleton()->get_world().get_felt_no_ptr();
+    String torii_chain_id = ToriiClient::get_singleton()->get_chain_id();
+    DOJO::ResultFieldElement resKatana = DOJO::cairo_short_string_to_felt(torii_chain_id.utf8().get_data());
+    if (resKatana.tag == DOJO::ErrFieldElement)
+    {
+        LOG_ERROR("Error al convertir Chain ID: ", GET_DOJO_ERROR(resKatana));
+    }
+    DOJO::FieldElement katana = resKatana.ok;
 
     // Usar .data() para obtener el puntero al array C
     DOJO::ResultControllerAccount resControllerAccount =
@@ -126,7 +131,20 @@ void ControllerAccount::disconnect_controller()
 {
     if (session_account != nullptr)
     {
-        // TODO: Controller_free
+        std::vector<DOJO::Policy> policy = policies->build();
+        uintptr_t policies_len = policy.size();
+        DOJO::FieldElement chain_id = DOJO::controller_chain_id(session_account);
+
+        DOJO::Resultbool resClear = DOJO::controller_clear(policy.data(), policies_len, chain_id);
+        if (resClear.tag == DOJO::Errbool)
+        {
+            LOG_ERROR("Failed to clear Controller", resClear.err.message);
+            return;
+        }else
+        {
+            LOG_SUCCESS("Controller cleared");
+        }
+
         session_account = nullptr;
         is_connected = false;
         emit_signal("controller_disconnected");
@@ -209,16 +227,16 @@ void ControllerAccount::execute_raw(const Ref<DojoCall>& action)
     }
 
     DOJO::Call call = action->build();
-
+    uintptr_t calldata_len = action->get_size();
+    
     DOJO::ResultFieldElement result = DOJO::controller_execute_raw(
-        session_account, &call, 1
+        session_account, &call, calldata_len
     );
 
     if (result.tag == DOJO::ErrFieldElement)
     {
         LOG_ERROR("Error al ejecutar transacción: ", GET_DOJO_ERROR(result));
         emit_signal("transaction_failed", GET_DOJO_ERROR(result));
-        return;
     }
     else
     {
@@ -236,18 +254,15 @@ void ControllerAccount::execute_from_outside(const Ref<DojoCall>& action)
         emit_signal("transaction_failed", "Cuenta no conectada");
     }
     DOJO::Call call = action->build();
-
-    LOG_DEBUG_EXTRA("CALL", call.selector);
-    LOG_CUSTOM("USERNAME", dojo_bindings::controller_username(session_account));
+    uintptr_t calldata_len = action->get_size();
 
     DOJO::ResultFieldElement result = DOJO::controller_execute_from_outside(
-        session_account, &call, call.calldata.data_len
+        session_account, &call, calldata_len
     );
     if (result.tag == DOJO::ErrFieldElement)
     {
         LOG_ERROR(GET_DOJO_ERROR(result));
         emit_signal("transaction_failed", GET_DOJO_ERROR(result));
-        return;
     }
     else
     {

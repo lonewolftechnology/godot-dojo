@@ -14,7 +14,6 @@
 #include "dojo_types.h"
 #include "resources/dojo_call.h"
 #include "resources/dojo_policies.h"
-#include "variant/field_element.h"
 using namespace godot;
 
 /**
@@ -31,7 +30,8 @@ class ControllerAccount : public Node
     DOJO::ControllerAccount* session_account;
     DOJO::Provider* provider;
     bool is_connected;
-    friend class FieldElementDictionary;
+    static ControllerAccount* singleton;
+    Ref<DojoPolicies> policies;
 
 public:
     ControllerAccount();
@@ -66,17 +66,14 @@ public:
     // Señales de estado
     void emit_connection_status(bool connected);
 
-    void set_actions(const TypedArray<DojoCall>& p_actions){actions = p_actions;};
     void set_policies(const Ref<DojoPolicies>& p_policies){policies = p_policies;};
 
     Ref<DojoPolicies> get_policies() {return policies;};
-    TypedArray<DojoCall> get_actions(){return actions;};
 
 
 protected:
-    static ControllerAccount* singleton;
-    Ref<DojoPolicies> policies;
-    TypedArray<DojoCall> actions = {};
+
+
     static void _bind_methods()
     {
         // Métodos de conexión
@@ -112,10 +109,6 @@ protected:
         ClassDB::bind_method(D_METHOD("get_policies"), &ControllerAccount::get_policies);
         ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "policies", PROPERTY_HINT_RESOURCE_TYPE, "DojoPolicies"), "set_policies", "get_policies");
 
-        ClassDB::bind_method(D_METHOD("set_actions", "actions"), &ControllerAccount::set_actions);
-        ClassDB::bind_method(D_METHOD("get_actions"), &ControllerAccount::get_actions);
-        ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "actions", PROPERTY_HINT_TYPE_STRING, String::num(Variant::OBJECT) + "/" +
-                String::num(PROPERTY_HINT_RESOURCE_TYPE) + ":DojoCall"), "set_actions", "get_actions");
     }
 
 };

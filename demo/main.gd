@@ -37,6 +37,8 @@ var packed: String
 @onready var client: ToriiClient = $ToriiClient
 @onready var controller_account: ControllerAccount = $ControllerAccount
 
+@export var spawn_call:DojoCall
+
 func _ready() -> void:
 	OS.set_environment("RUST_BACKTRACE", "full")
 	OS.set_environment("RUST_LOG", "debug")
@@ -56,11 +58,7 @@ func _ready() -> void:
 					#print(items)
 	
 func _on_subcribe_pressed() -> void:
-	client.client_connected.connect(client_status.set_status)
 	client.create_client()
-	controller_account.controller_connected.connect(controller_account_status.set_status)
-	controller_account.controller_disconnected.connect(controller_account_status.set_status.bind(false))
-	controller_account.provider_status_updated.connect(provider_status.set_status)
 
 	#controller.create(dev_actions_addr, "https://api.cartridge.gg/x/godot-demo-rookie/katana")
 
@@ -87,11 +85,11 @@ func _on_subcribe_pressed() -> void:
 
 
 func _on_spawn_pressed() -> void:
-	controller_account.execute_from_outside(controller_account.actions[0])
+	controller_account.execute_from_outside(spawn_call)
 	#dojo.spawn(reset_spawn.button_pressed,false)
 
 func _on_spawn_raw_pressed() -> void:
-	controller_account.execute_raw(controller_account.actions[0])
+	controller_account.execute_raw(spawn_call)
 
 func update_event_subscription_status(_value:bool, _event:String, _status_node:HBoxContainer):
 	update_status(_value, _status_node)
@@ -157,3 +155,23 @@ func _on_client_metadata_pressed() -> void:
 
 func _on_setup_policies_pressed() -> void:
 	controller_account.setup()
+
+
+func _on_disconnect_pressed() -> void:
+	controller_account.disconnect_controller()
+
+
+func _on_torii_client_client_connected(success: bool) -> void:
+	client_status.set_status(success)
+
+func _on_torii_client_client_disconnected() -> void:
+	client_status.set_status(false)
+
+func _on_controller_account_provider_status_updated(success: bool) -> void:
+	provider_status.set_status(success)
+
+func _on_controller_account_controller_connected(success: bool) -> void:
+	controller_account_status.set_status(success)
+
+func _on_controller_account_controller_disconnected() -> void:
+	controller_account_status.set_status(false)

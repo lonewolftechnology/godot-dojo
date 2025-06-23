@@ -17,9 +17,13 @@ class DojoPolicies : public Resource
     GDCLASS(DojoPolicies, Resource);
 
 public:
-    DojoPolicies(){};
+    DojoPolicies()
+    {
+    };
 
-    ~DojoPolicies(){};
+    ~DojoPolicies()
+    {
+    };
 
     void set_dojo_contract(const String& p_contract)
     {
@@ -34,38 +38,55 @@ public:
         emit_changed();
     };
     TypedArray<DojoPolicy> get_policies() { return policies; };
+
+    String get_name() const { return name; }
+
+    void set_name(const String& p_name)
+    {
+        name = p_name;
+        emit_changed();
+    }
+
     bool is_empty() const { return policies.is_empty(); }
 
-    std::vector<DOJO::Policy> build() const {
-    if (dojo_contract.is_empty() || policies.is_empty()) {
-        return {};
+    std::vector<DOJO::Policy> build() const
+    {
+        if (dojo_contract.is_empty() || policies.is_empty())
+        {
+            return {};
+        }
+
+        DOJO::FieldElement contract = FieldElement::from_string(dojo_contract);
+        std::vector<DOJO::Policy> result;
+        result.reserve(policies.size());
+
+        for (int i = 0; i < policies.size(); i++)
+        {
+            Ref<DojoPolicy> policy = policies[i];
+            if (!policy.is_valid()) continue;
+
+            DOJO::Policy dojo_policy = {};
+            dojo_policy.target = contract;
+            dojo_policy.method = policy->get_method_ctr();
+            dojo_policy.description = policy->get_description_ctr();
+
+            result.push_back(dojo_policy);
+        }
+
+        return result;
     }
-
-    DOJO::FieldElement contract = FieldElement::from_string(dojo_contract);
-    std::vector<DOJO::Policy> result;
-    result.reserve(policies.size());
-
-    for (int i = 0; i < policies.size(); i++) {
-        Ref<DojoPolicy> policy = policies[i];
-        if (!policy.is_valid()) continue;
-
-        DOJO::Policy dojo_policy = {};
-        dojo_policy.target = contract;
-        dojo_policy.method = policy->get_method_ctr();
-        dojo_policy.description = policy->get_description_ctr();
-        
-        result.push_back(dojo_policy);
-    }
-
-    return result;
-}
 
 protected:
+    String name;
     String dojo_contract;
     TypedArray<DojoPolicy> policies;
 
     static void _bind_methods()
     {
+        ClassDB::bind_method(D_METHOD("get_name"), &DojoPolicies::get_name);
+        ClassDB::bind_method(D_METHOD("set_name", "name"), &DojoPolicies::set_name);
+        ADD_PROPERTY(PropertyInfo(Variant::STRING, "name"), "set_name", "get_name");
+
         ClassDB::bind_method(D_METHOD("set_dojo_contract", "contract"), &DojoPolicies::set_dojo_contract);
         ClassDB::bind_method(D_METHOD("get_dojo_contract"), &DojoPolicies::get_dojo_contract);
         ADD_PROPERTY(PropertyInfo(Variant::STRING, "contract"), "set_dojo_contract", "get_dojo_contract");

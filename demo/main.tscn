@@ -1,4 +1,4 @@
-[gd_scene load_steps=20 format=3 uid="uid://buvlply3axqqi"]
+[gd_scene load_steps=19 format=3 uid="uid://buvlply3axqqi"]
 
 [ext_resource type="Script" uid="uid://ck323bl4c38kw" path="res://main.gd" id="1_ig7tw"]
 [ext_resource type="PackedScene" uid="uid://b5vmo8llucetx" path="res://ui/status_indicator.tscn" id="2_0xm2m"]
@@ -13,26 +13,22 @@
 [ext_resource type="Texture2D" uid="uid://dn0lmukjhns5l" path="res://assets/arrow_right_p.png" id="11_vivmo"]
 [ext_resource type="Script" uid="uid://c63vfoblqmxxg" path="res://tools/controllers.gd" id="14_w48qg"]
 
-[sub_resource type="DojoPolicy" id="DojoPolicy_dg77c"]
-method = "Spawn"
-description = "Spawns in the world"
-
-[sub_resource type="DojoPolicy" id="DojoPolicy_ycdy4"]
-method = "Move"
-description = "Moves in the world"
-
-[sub_resource type="DojoPolicies" id="DojoPolicies_dg77c"]
-contract = "0x00a92391c5bcde7af4bad5fd0fff3834395b1ab8055a9abb8387c0e050a34edf"
-policies = Array[DojoPolicy]([SubResource("DojoPolicy_dg77c"), SubResource("DojoPolicy_ycdy4")])
-
-[sub_resource type="DojoCall" id="DojoCall_ycdy4"]
+[sub_resource type="DojoCall" id="DojoCall_dg77c"]
 to = "0x00a92391c5bcde7af4bad5fd0fff3834395b1ab8055a9abb8387c0e050a34edf"
 selector = "spawn"
 
-[sub_resource type="DojoCall" id="DojoCall_dg77c"]
-to = "0x00a92391c5bcde7af4bad5fd0fff3834395b1ab8055a9abb8387c0e050a34edf"
-selector = "Move"
-calldata = [0]
+[sub_resource type="DojoPolicy" id="DojoPolicy_dg77c"]
+method = "spawn"
+description = "Spawns in the world"
+
+[sub_resource type="DojoPolicy" id="DojoPolicy_ycdy4"]
+method = "move"
+description = "Moves in the world"
+
+[sub_resource type="DojoPolicies" id="DojoPolicies_w48qg"]
+name = "actions"
+contract = "0x00a92391c5bcde7af4bad5fd0fff3834395b1ab8055a9abb8387c0e050a34edf"
+policies = Array[DojoPolicy]([SubResource("DojoPolicy_dg77c"), SubResource("DojoPolicy_ycdy4")])
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_lquwl"]
 atlas = ExtResource("2_1bvp3")
@@ -48,14 +44,15 @@ bg_color = Color(0.2484, 0.2484, 0.2484, 1)
 [node name="Main" type="Node"]
 script = ExtResource("1_ig7tw")
 dojo_abi = "/home/hazel/Proyectos/Godot/GDE/starting/dojo-starter/manifest_dev.json"
+spawn_call = SubResource("DojoCall_dg77c")
 
 [node name="ToriiClient" type="ToriiClient" parent="."]
+chain_id = "WP_GODOT_DEMO_ROOKIE"
 torii_url = "https://api.cartridge.gg/x/godot-demo-rookie/torii"
 world_address = "0x07cb912d0029e3799c4b8f2253b21481b2ec814c5daf72de75164ca82e7c42a5"
 
 [node name="ControllerAccount" type="ControllerAccount" parent="."]
-policies = SubResource("DojoPolicies_dg77c")
-actions = Array[DojoCall]([SubResource("DojoCall_ycdy4"), SubResource("DojoCall_dg77c")])
+policies = SubResource("DojoPolicies_w48qg")
 
 [node name="Parallax" type="ParallaxBackground" parent="."]
 layer = -1
@@ -126,6 +123,10 @@ text = "Login"
 layout_mode = 2
 text = "SetupPolicies
 "
+
+[node name="Disconnect" type="Button" parent="UI/VBoxContainer/HBoxContainer/Tabs/Main"]
+layout_mode = 2
+text = "Disconnect"
 
 [node name="Events" type="VBoxContainer" parent="UI/VBoxContainer/HBoxContainer/Tabs/Main"]
 layout_mode = 2
@@ -279,10 +280,16 @@ script = ExtResource("14_w48qg")
 position_smoothing_enabled = true
 position_smoothing_speed = 4.0
 
+[connection signal="client_connected" from="ToriiClient" to="." method="_on_torii_client_client_connected"]
+[connection signal="client_disconnected" from="ToriiClient" to="." method="_on_torii_client_client_disconnected"]
+[connection signal="controller_connected" from="ControllerAccount" to="." method="_on_controller_account_controller_connected"]
+[connection signal="controller_disconnected" from="ControllerAccount" to="." method="_on_controller_account_controller_disconnected"]
+[connection signal="provider_status_updated" from="ControllerAccount" to="." method="_on_controller_account_provider_status_updated"]
 [connection signal="toggled" from="UI/VBoxContainer/HBoxContainer/ButtonToggle" to="." method="_on_button_toggle_toggled"]
 [connection signal="pressed" from="UI/VBoxContainer/HBoxContainer/Tabs/Main/StartToriiClient" to="." method="_on_subcribe_pressed"]
 [connection signal="pressed" from="UI/VBoxContainer/HBoxContainer/Tabs/Main/ConnectController" to="." method="_on_connect_controller_pressed"]
 [connection signal="pressed" from="UI/VBoxContainer/HBoxContainer/Tabs/Main/SetupPolicies" to="." method="_on_setup_policies_pressed"]
+[connection signal="pressed" from="UI/VBoxContainer/HBoxContainer/Tabs/Main/Disconnect" to="." method="_on_disconnect_pressed"]
 [connection signal="pressed" from="UI/VBoxContainer/HBoxContainer/Tabs/Main/Events/Spawn" to="." method="_on_spawn_pressed"]
 [connection signal="pressed" from="UI/VBoxContainer/HBoxContainer/Tabs/Main/Events/SpawnRaw" to="." method="_on_spawn_raw_pressed"]
 [connection signal="pressed" from="UI/VBoxContainer/HBoxContainer/Tabs/Main/Events/Move" to="." method="_on_move_pressed"]

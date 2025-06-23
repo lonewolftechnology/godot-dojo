@@ -80,35 +80,36 @@ PackedByteArray FieldElement::to_packed_array(const void* data, const int size)
 dojo_bindings::FieldElement FieldElement::from_string(const String& hex_str, size_t max_bytes)
 {
     DOJO::FieldElement result = {};
+    
+    // Asegurar que el buffer esté inicializado con ceros
+    memset(result.data, 0, max_bytes);
+    
     size_t start_idx = (hex_str.substr(0, 2) == "0x") ? 2 : 0;
-
     size_t hex_length = hex_str.length() - start_idx;
 
-    bool is_odd = hex_length % 2 != 0;
-    size_t num_bytes = (hex_length + is_odd) / 2;
-
-    // Ensure we don't overflow the output buffer
-    if (num_bytes > max_bytes)
-    {
-        LOG_ERROR("Input hex string too long for output buffer");
-        return {};
+    // Para un FieldElement de 32 bytes, esperamos exactamente 64 caracteres hex
+    if (hex_length > 64) {
+        LOG_ERROR("Hex string too long for FieldElement");
+        return result;
     }
 
-    size_t out_idx = 0;
-
-    // Handle first nibble separately if we have odd number of characters
-    if (is_odd)
-    {
-        String nibble = hex_str.substr(start_idx, 1);
-        result.data[out_idx++] = static_cast<uint8_t>(nibble.hex_to_int());
+    // Pad con ceros si es necesario (llenar desde la izquierda)
+    String padded_hex = hex_str.substr(start_idx);
+    while (padded_hex.length() < 64) {
+        padded_hex = "0" + padded_hex;
     }
 
-    // Process two hex digits at a time
-    for (size_t i = is_odd ? 1 : 0; i < hex_length; i += 2)
-    {
-        String byte_str = hex_str.substr(start_idx + i, 2);
-        result.data[out_idx++] = static_cast<uint8_t>(byte_str.hex_to_int());
+    // Procesar de dos en dos desde el inicio
+    for (size_t i = 0; i < 64; i += 2) {
+        String byte_str = padded_hex.substr(i, 2);
+        int byte_value = byte_str.hex_to_int();
+        if (byte_value < 0) {
+            LOG_ERROR("Invalid hex character in string");
+            return result;
+        }
+        result.data[i / 2] = static_cast<uint8_t>(byte_value);
     }
+
     return result;
 }
 
