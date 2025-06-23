@@ -5,34 +5,38 @@
 #ifndef EVENT_SUBSCRIPTION_H
 #define EVENT_SUBSCRIPTION_H
 
-#include "debug_macros.h"
 #include "dojo_types.h"
+#include "torii_client.h"
 #include "godot_cpp/classes/ref_counted.hpp"
 
 using namespace godot;
 
-    class EventSubscription : public  RefCounted
-    {
-        GDCLASS(EventSubscription, RefCounted);
+class EventSubscription : public RefCounted
+{
+    GDCLASS(EventSubscription, RefCounted);
 
-    private:
-        Callable callback;
-        DOJO::Subscription* subscription = nullptr;
+    Callable callback;
+    DOJO::Subscription* subscription = nullptr;
 
+    static Ref<EventSubscription> g_active_instance;
 
-    protected:
-        static void _bind_methods();
+protected:
+    static void _bind_methods();
 
-    public:
-        EventSubscription();
-        ~EventSubscription();
+public:
+    EventSubscription();
+    ~EventSubscription();
 
-        Callable get_callback() const;
-        void set_callback(const Callable& p_callback);
+    Callable get_callback() const;
+    void set_callback(const Callable& p_callback);
+    bool setup(ToriiClient* torii, const dojo_bindings::COptionClause& event_clause, const Callable& p_callback);
 
-        void on_entity_update(DOJO::FieldElement* entity_id, DOJO::CArrayStruct models) const;
-        void set_subscription(DOJO::Subscription* subscription) { this->subscription = subscription; }
-    };
+    void on_event_update(DOJO::FieldElement* entity_id, DOJO::CArrayStruct models) const;
+    void set_subscription(DOJO::Subscription* subscription) { this->subscription = subscription; }
+
+    static EventSubscription* get_active_instance();
+    static void set_active_instance(EventSubscription* instance);
+};
 
 
 #endif //EVENT_SUBSCRIPTION_H

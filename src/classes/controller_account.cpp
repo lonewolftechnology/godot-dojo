@@ -15,7 +15,7 @@
 
 #include "resources/dojo_policy.h"
 
-
+//TODO: refactor a instancia global en vez de singleton
 ControllerAccount* ControllerAccount::singleton = nullptr;
 
 
@@ -72,11 +72,12 @@ void ControllerAccount::setup()
 {
     create(policies);
 }
+
 // TODO: refactor a estatico
 void ControllerAccount::create(const Ref<DojoPolicies>& policies_data)
 {
     String rpc_url = ProjectSettings::get_singleton()->get("dojo/rpc_url");
-    
+
     // Provider
     DOJO::ResultProvider resControllerProvider = DOJO::provider_new(rpc_url.utf8().get_data());
     if (resControllerProvider.tag == DOJO::ErrProvider)
@@ -85,12 +86,9 @@ void ControllerAccount::create(const Ref<DojoPolicies>& policies_data)
         emit_signal("provider_status_updated", false);
         return;
     }
-    else
-    {
-        LOG_SUCCESS("Controller Provider created");
-        provider = GET_DOJO_OK(resControllerProvider);
-        emit_signal("provider_status_updated", true);
-    }
+    LOG_SUCCESS("Controller Provider created");
+    provider = GET_DOJO_OK(resControllerProvider);
+    emit_signal("provider_status_updated", true);
 
     if (policies_data->is_empty())
     {
@@ -108,10 +106,9 @@ void ControllerAccount::create(const Ref<DojoPolicies>& policies_data)
     }
     DOJO::FieldElement katana = resKatana.ok;
 
-    // Usar .data() para obtener el puntero al array C
     DOJO::ResultControllerAccount resControllerAccount =
         DOJO::controller_account(policies.data(), policies_len, katana);
-        
+
     if (resControllerAccount.tag == DOJO::OkControllerAccount)
     {
         LOG_INFO("Session account already connected");
@@ -123,7 +120,6 @@ void ControllerAccount::create(const Ref<DojoPolicies>& policies_data)
         LOG_INFO("Session account not connected, connecting...");
         DOJO::controller_connect(rpc_url.utf8().get_data(), policies.data(), policies_len, on_account);
     }
-
 }
 
 
@@ -140,7 +136,8 @@ void ControllerAccount::disconnect_controller()
         {
             LOG_ERROR("Failed to clear Controller", resClear.err.message);
             return;
-        }else
+        }
+        else
         {
             LOG_SUCCESS("Controller cleared");
         }
@@ -228,7 +225,7 @@ void ControllerAccount::execute_raw(const Ref<DojoCall>& action)
 
     DOJO::Call call = action->build();
     uintptr_t calldata_len = action->get_size();
-    
+
     DOJO::ResultFieldElement result = DOJO::controller_execute_raw(
         session_account, &call, calldata_len
     );

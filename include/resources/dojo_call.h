@@ -17,87 +17,100 @@ class DojoCall : public Resource
     String to;
     String selector;
     Array calldata;
-private:
-    // Mantener estos datos vivos
+
     DOJO::FieldElement stored_to;
     std::string stored_selector;
     std::vector<DOJO::FieldElement> stored_calldata;
     DOJO::CArrayFieldElement c_array_calldata;
 
 public:
-    DojoCall(){};
-    ~DojoCall(){};
+    DojoCall()
+    {
+    };
 
-    String get_to() const{return to;};
+    ~DojoCall()
+    {
+    };
+
+    String get_to() const { return to; };
+
     void set_to(const String& p_to)
     {
         to = p_to;
+        emit_changed();
     };
 
-    String get_selector() const{return selector;};
+    String get_selector() const { return selector; };
+
     void set_selector(const String& p_selector)
     {
         selector = p_selector;
-        selector_buffer = CharString();
-            emit_changed();
+        emit_changed();
     };
 
-    Array get_calldata() const{return calldata;};
+    Array get_calldata() const { return calldata; };
+
     void set_calldata(const Array& p_calldata)
     {
         calldata = p_calldata;
-        selector_buffer = CharString();
         emit_changed();
     };
 
     uintptr_t get_size()
     {
-        if (calldata.size() == 0)
+        LOG_DEBUG_EXTRA("Call", "calldata size: ", calldata.size());
+        uintptr_t size = 1;
+        if (calldata.size() > 0)
         {
-            return 1;
+            size = calldata.size();
         }
-        return calldata.size();
+        LOG_DEBUG_EXTRA("Call", "final calldata size: ", size);
+        return size;
     }
-
-    CharString get_selector_buffer() const { return selector_buffer; }
-    CharString get_to_buffer() const { return to_buffer; }
 
     DOJO::Call build()
     {
         DOJO::Call call = {};
-        
-        // Almacenar en miembros de la clase (que permanecen vivos)
+
         stored_to = FieldElement::from_string(to);
         stored_selector = selector.utf8().get_data();
-        
-        // Usar los miembros almacenados
+
         call.to = stored_to;
         call.selector = stored_selector.c_str();
-        
-        // Manejar calldata si existe
-        if (!calldata.is_empty()) {
+
+        if (!calldata.is_empty())
+        {
+            LOG_DEBUG("Building Calldata");
             stored_calldata.clear();
             stored_calldata.reserve(calldata.size());
-            
-            for (int i = 0; i < calldata.size(); i++) {
-                Ref<FieldElement> felt = calldata[i];
-                if (felt.is_valid()) {
-                    stored_calldata.push_back(*felt->get_felt());
+
+            for (int i = 0; i < calldata.size(); i++)
+            {
+                Ref<FieldElement> felt;
+                felt.instantiate();
+                felt = calldata[i];
+
+                LOG_DEBUG_EXTRA("Call Build", felt->to_string());
+                if (felt.is_valid())
+                {
+                    stored_calldata.push_back(felt->get_felt_no_ptr());
                 }
             }
-            
+
             c_array_calldata.data = stored_calldata.data();
             c_array_calldata.data_len = stored_calldata.size();
             call.calldata = c_array_calldata;
         }
-        
+        else
+        {
+            LOG_DEBUG_EXTRA("Call Build", "no calldata found, ignoring");
+            // call.calldata = {};
+        }
+
         return call;
     }
 
 protected:
-    mutable CharString to_buffer;
-    mutable CharString selector_buffer;
-
     static void _bind_methods()
     {
         ClassDB::bind_method(D_METHOD("get_to"), &DojoCall::get_to);

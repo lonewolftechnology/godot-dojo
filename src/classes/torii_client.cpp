@@ -7,6 +7,7 @@
 
 #include "classes/torii_client.h"
 #include "debug_macros.h"
+#include "classes/event_subscription.h"
 #include "variant/primitive.h"
 
 #include "variant/ty/ty.h"
@@ -52,7 +53,6 @@ ToriiClient* ToriiClient::get_singleton()
 
 bool ToriiClient::create_client()
 {
-    // Limpiar cliente anterior si existe
     disconnect_client();
 
     if (world_address.is_empty())
@@ -68,7 +68,6 @@ bool ToriiClient::create_client()
         emit_signal("client_connected", false);
         return false;
     }
-    // Convertir world address a FieldElement
     FieldElement world(world_address, 32);
     set_world(world);
     world.bytearray_deserialize();
@@ -77,10 +76,9 @@ bool ToriiClient::create_client()
     LOG_INFO("URL: ", torii_url);
     LOG_INFO("World Address: ", world_address);
 
-    // Crear cliente
     DOJO::ResultToriiClient resClient = DOJO::client_new(
         torii_url.utf8().get_data(),
-        *world.get_felt()
+        world.get_felt_no_ptr()
     );
 
     if (resClient.tag == DOJO::ErrToriiClient)
@@ -93,7 +91,6 @@ bool ToriiClient::create_client()
     client = resClient.ok;
     is_connected = true;
 
-    // Configurar logger
     DOJO::client_set_logger(client, [](const char* msg)
     {
         LOG_INFO("ToriiClient: ", msg);
@@ -108,10 +105,8 @@ void ToriiClient::disconnect_client()
 {
     if (client != nullptr)
     {
-        // Cancelar suscripciones
         cancel_all_subscriptions();
 
-        // Aquí podrías agregar limpieza específica del cliente si es necesaria
         client = nullptr;
         is_connected = false;
 
@@ -167,7 +162,6 @@ Dictionary ToriiClient::get_world_metadata()
     DOJO::WorldMetadata metadata = GET_DOJO_OK(resMetadata);
     Dictionary result = {};
 
-    // Convertir modelos a Dictionary
     TypedArray<Dictionary> models_array = {};
     std::vector<DOJO::CHashItemFieldElementModelMetadata> models_vec(
         metadata.models.data, metadata.models.data + metadata.models.data_len
@@ -193,7 +187,6 @@ Dictionary ToriiClient::get_world_metadata()
         model_dict["schema_type"] = String::num_int64(static_cast<int64_t>(model_metadata.schema.tag));
         LOG_DEBUG_EXTRA("SCHEMA",String::num_int64(static_cast<int64_t>(model_metadata.schema.tag)));
 
-        // Procesar esquema según el tipo
         Ty testing_ty = {model_metadata.schema};
 
         if (model_metadata.schema.tag == DOJO::Ty_Tag::Struct_)
@@ -338,99 +331,6 @@ Dictionary ToriiClient::get_controller_info(const String& controller_address)
     return Dictionary();
 }
 
-// TypedArray<Dictionary> ToriiClient::get_tokens(const Dictionary& query_params) {
-//     if (!is_client_connected()) {
-//         LOG_ERROR("Cliente no conectado");
-//         return TypedArray<Dictionary>();
-//     }
-//
-//     // Crear query básico para tokens
-//     DOJO::Query query = create_query_from_dict(query_params);
-//
-//     DOJO::ResultPageToken resPageTokens = DOJO::client_tokens(client, query);
-//
-//     if (resPageTokens.tag == DOJO::ErrPageToken) {
-//         LOG_ERROR("Error al obtener tokens: ", GET_DOJO_ERROR(resPageTokens));
-//         return TypedArray<Dictionary>();
-//     }
-//
-//     DOJO::PageToken pageTokens = resPageTokens.ok;
-//     TypedArray<Dictionary> result = {};
-//
-//     std::vector<DOJO::Token> tokens(
-//         pageTokens.items.data, pageTokens.items.data + pageTokens.items.data_len
-//     );
-//
-//     for (const auto& token : tokens) {
-//         Dictionary token_dict = token_to_dictionary(token);
-//         result.append(token_dict);
-//     }
-//
-//     LOG_SUCCESS("Tokens obtenidos: ", String::num_int64(result.size()));
-//     return result;
-// }
-//
-// TypedArray<Dictionary> ToriiClient::get_token_balances(const String& account_address) {
-//     if (!is_client_connected()) {
-//         LOG_ERROR("Cliente no conectado");
-//         return TypedArray<Dictionary>();
-//     }
-//
-//     // Convertir dirección a FieldElement
-//     FieldElement account_felt(account_address, 32);
-//
-//     DOJO::Query query = {};
-//     // Configurar query para balances específicos
-//
-//     DOJO::ResultPageTokenBalance resPageBalances = DOJO::client_token_balances(client, query);
-//
-//     if (resPageBalances.tag == DOJO::ErrPageTokenBalance) {
-//         LOG_ERROR("Error al obtener balances: ", GET_DOJO_ERROR(resPageBalances));
-//         return TypedArray<Dictionary>();
-//     }
-//
-//     // Procesar resultados
-//     TypedArray<Dictionary> result = {};
-//     // Implementar conversión de balances
-//
-//     return result;
-// }
-//
-// TypedArray<Dictionary> ToriiClient::get_token_collections() {
-//     if (!is_client_connected()) {
-//         LOG_ERROR("Cliente no conectado");
-//         return TypedArray<Dictionary>();
-//     }
-//
-//     DOJO::Query query = {};
-//     // Configurar query para colecciones
-//
-//     DOJO::ResultPageTokenCollection resPageCollections = DOJO::client_token_collections(client, query);
-//
-//     if (resPageCollections.tag == DOJO::ErrPageTokenCollection) {
-//         LOG_ERROR("Error al obtener colecciones: ", GET_DOJO_ERROR(resPageCollections));
-//         return TypedArray<Dictionary>();
-//     }
-//
-//     // Procesar resultados
-//     TypedArray<Dictionary> result = {};
-//     // Implementar conversión de colecciones
-//
-//     return result;
-// }
-//
-// Dictionary ToriiClient::get_token_info(const String& token_address) {
-//     TypedArray<Dictionary> tokens = get_tokens();
-//
-//     for (int i = 0; i < tokens.size(); i++) {
-//         Dictionary token = tokens[i];
-//         if (token.get("address", "") == token_address) {
-//             return token;
-//         }
-//     }
-//
-//     return Dictionary();
-// }
 
 bool ToriiClient::create_entity_subscription(const Callable& callback, const Dictionary& filter_params)
 {
@@ -439,45 +339,26 @@ bool ToriiClient::create_entity_subscription(const Callable& callback, const Dic
         LOG_ERROR("Cliente no conectado");
         return false;
     }
+    
+    LOG_INFO("Creating entity subscription...");
+    
+    Ref<EventSubscription> entity_subscription;
+    entity_subscription.instantiate();
 
-    // Crear filtro de cláusulas
+    LOG_INFO("EventSubscription instance created successfully at: ", entity_subscription);
+    
     DOJO::COptionClause event_clause = {};
     event_clause.tag = DOJO::COptionClause_Tag::NoneClause;
-
-    // Callback wrapper que llamará al callback de Godot
-    auto wrapper = [this, callback](DOJO::FieldElement entity_id, DOJO::CArrayStruct models)
-    {
-        Dictionary entity_data = {};
-        FieldElement felt_id(&entity_id);
-        entity_data["id"] = felt_id.to_string();
-
-        // Procesar modelos
-        // Implementar conversión de models a Dictionary
-
-        if (callback.is_valid())
-        {
-            callback.call(entity_data);
-        }
-
-        emit_signal("entity_updated", entity_data);
-    };
-
-    DOJO::ResultSubscription resSubscription = DOJO::client_on_entity_state_update(
-        client, event_clause, [](DOJO::FieldElement entity_id, DOJO::CArrayStruct models)
-        {
-            // Implementar callback apropiado
-        }
-    );
-
-    if (resSubscription.tag == DOJO::ErrSubscription)
-    {
-        LOG_ERROR("Error al crear suscripción de entidades: ", GET_DOJO_ERROR(resSubscription));
-        emit_signal("subscription_error", GET_DOJO_ERROR(resSubscription));
-        return false;
+    
+    bool result = entity_subscription->setup(this, event_clause, callback);
+    
+    if (result) {
+        LOG_SUCCESS("Entity subscription created successfully");
+    } else {
+        LOG_ERROR("Failed to setup entity subscription");
     }
-
-    LOG_SUCCESS("Suscripción de entidades creada");
-    return true;
+    
+    return result;
 }
 
 bool ToriiClient::create_event_subscription(const Callable& callback, const Dictionary& filter_params)
@@ -488,37 +369,34 @@ bool ToriiClient::create_event_subscription(const Callable& callback, const Dict
         return false;
     }
 
+    LOG_INFO("Creating entity subscription...");
+
+    Ref<EventSubscription> event_subscription;
+    event_subscription.instantiate();
+
+    LOG_INFO("EventSubscription instance created successfully at: ", event_subscription);
+
     DOJO::COptionClause event_clause = {};
     event_clause.tag = DOJO::COptionClause_Tag::NoneClause;
 
-    DOJO::ResultSubscription resSubscription = DOJO::client_on_event_message_update(
-        client, event_clause, [](DOJO::FieldElement entity_id, DOJO::CArrayStruct models)
-        {
-            // Implementar callback apropiado
-        }
-    );
+    bool result = event_subscription->setup(this, event_clause, callback);
 
-    if (resSubscription.tag == DOJO::ErrSubscription)
-    {
-        LOG_ERROR("Error al crear suscripción de eventos: ", GET_DOJO_ERROR(resSubscription));
-        emit_signal("subscription_error", GET_DOJO_ERROR(resSubscription));
-        return false;
+    if (result) {
+        LOG_SUCCESS("Entity subscription created successfully");
+    } else {
+        LOG_ERROR("Failed to setup entity subscription");
     }
-
-    LOG_SUCCESS("Suscripción de eventos creada");
-    return true;
+    return result;
 }
 
 bool ToriiClient::create_token_subscription(const Callable& callback, const String& account_address)
 {
-    // Implementar suscripción específica para tokens
     LOG_INFO("Creando suscripción de tokens para: ", account_address);
     return true;
 }
 
 void ToriiClient::cancel_all_subscriptions()
 {
-    // Implementar cancelación de todas las suscripciones activas
     LOG_INFO("Cancelando todas las suscripciones");
 }
 
@@ -530,7 +408,6 @@ bool ToriiClient::publish_message(const String& message_data, const Array& signa
         return false;
     }
 
-    // Convertir Array a array de FieldElement
     std::vector<DOJO::FieldElement> felts;
     for (int i = 0; i < signature_felts.size(); i++)
     {
@@ -605,13 +482,11 @@ Dictionary ToriiClient::get_connection_status() const
     return status;
 }
 
-// Métodos de conversión internos
-DOJO::Query ToriiClient::create_query_from_dict(const Dictionary& query_params) const
+DOJO::Query ToriiClient::create_query_from_dict(const Dictionary& query_params)
 {
     DOJO::Query query = {};
     LOG_INFO("Query Creation");
 
-    // Configurar paginación
     DOJO::Pagination pagination = {};
     LOG_INFO("Pagination Creation");
     Dictionary pagination_dict = query_params.get("pagination", {});
@@ -664,7 +539,6 @@ DOJO::Query ToriiClient::create_query_from_dict(const Dictionary& query_params) 
     query.no_hashed_keys = query_params.get("no_hashed_keys", false);
     query.historical = query_params.get("historical", false);
 
-    // Configurar modelos si se especifican
     DOJO::CArrayc_char models = {};
     Array models_array = query_params.get("models", {});
     if (!models_array.is_empty())
@@ -682,7 +556,7 @@ DOJO::Query ToriiClient::create_query_from_dict(const Dictionary& query_params) 
     return query;
 }
 
-DOJO::Pagination ToriiClient::create_pagination_from_dict(const Dictionary& pagination_params) const
+DOJO::Pagination ToriiClient::create_pagination_from_dict(const Dictionary& pagination_params)
 {
     DOJO::Pagination pagination = {};
 
@@ -700,11 +574,10 @@ DOJO::Pagination ToriiClient::create_pagination_from_dict(const Dictionary& pagi
     return pagination;
 }
 
-Dictionary ToriiClient::entity_to_dictionary(const DOJO::Entity& entity) const
+Dictionary ToriiClient::entity_to_dictionary(const DOJO::Entity& entity)
 {
     Dictionary entity_dict = {};
 
-    // Procesar modelos
     TypedArray<Dictionary> models_array = {};
     std::vector<DOJO::Struct> c_structs(
         entity.models.data, entity.models.data + entity.models.data_len
@@ -715,7 +588,6 @@ Dictionary ToriiClient::entity_to_dictionary(const DOJO::Entity& entity) const
         Dictionary model_dict = {};
         model_dict["name"] = c_struct.name;
 
-        // Procesar miembros del struct
         Dictionary members_dict = {};
         std::vector<DOJO::Member> members(
             c_struct.children.data, c_struct.children.data + c_struct.children.data_len
@@ -732,7 +604,6 @@ Dictionary ToriiClient::entity_to_dictionary(const DOJO::Entity& entity) const
             }
             else if (member.ty->tag == DOJO::Ty_Tag::Struct_)
             {
-                // Procesar structs anidados (como Vec2, etc.)
                 Dictionary nested_struct = {};
                 DOJO::Struct nested = member.ty->struct_;
                 nested_struct["type"] = nested.name;
@@ -778,7 +649,7 @@ Dictionary ToriiClient::entity_to_dictionary(const DOJO::Entity& entity) const
     return entity_dict;
 }
 
-Dictionary ToriiClient::controller_to_dictionary(const DOJO::Controller& controller) const
+Dictionary ToriiClient::controller_to_dictionary(const DOJO::Controller& controller)
 {
     Dictionary controller_dict = {};
     DOJO::FieldElement _felt = controller.address;
@@ -793,7 +664,6 @@ Dictionary ToriiClient::controller_to_dictionary(const DOJO::Controller& control
 // Dictionary ToriiClient::token_to_dictionary(const DOJO::Token& token) const {
 //     Dictionary token_dict = {};
 //
-//     // Implementar conversión de Token a Dictionary según la estructura disponible
 //     // token_dict["address"] = ...;
 //     // token_dict["name"] = ...;
 //     // token_dict["symbol"] = ...;
@@ -802,22 +672,16 @@ Dictionary ToriiClient::controller_to_dictionary(const DOJO::Controller& control
 // }
 
 // void ToriiClient::on_entity_update_internal(DOJO::FieldElement entity_id, DOJO::CArrayStruct models) {
-//     // Procesar actualización de entidad y emitir señal
 //     Dictionary entity_data = {};
 //     FieldElement felt_id(&entity_id);
 //     entity_data["id"] = felt_id.to_string();
 //
-//     // Procesar modelos
-//     // ...
 //
 //     emit_signal("entity_updated", entity_data);
 // }
 //
 // void ToriiClient::on_event_update_internal(DOJO::Event event) {
-//     // Procesar evento y emitir señal
 //     Dictionary event_data = {};
-//     // Convertir event a Dictionary
-//     // ...
 //
 //     emit_signal("event_received", event_data);
 // }

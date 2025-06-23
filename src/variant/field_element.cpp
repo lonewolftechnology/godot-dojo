@@ -12,7 +12,6 @@ FieldElement::FieldElement()
 
 FieldElement::FieldElement(const String& hex_str, size_t max_bytes)
 {
-    // const std::string& hex_str{hex_str_godot.utf8()};
     // Skip "0x" prefix if present
     size_t start_idx = (hex_str.substr(0, 2) == "0x") ? 2 : 0;
 
@@ -49,7 +48,6 @@ FieldElement::FieldElement(const String& hex_str, size_t max_bytes)
 
 FieldElement::FieldElement(int enum_value)
 {
-    // Create from enum
     memset(felt->data, 0, 32);
     felt->data[31] = static_cast<uint8_t>(enum_value);
 }
@@ -81,25 +79,21 @@ dojo_bindings::FieldElement FieldElement::from_string(const String& hex_str, siz
 {
     DOJO::FieldElement result = {};
     
-    // Asegurar que el buffer esté inicializado con ceros
     memset(result.data, 0, max_bytes);
     
     size_t start_idx = (hex_str.substr(0, 2) == "0x") ? 2 : 0;
     size_t hex_length = hex_str.length() - start_idx;
 
-    // Para un FieldElement de 32 bytes, esperamos exactamente 64 caracteres hex
     if (hex_length > 64) {
         LOG_ERROR("Hex string too long for FieldElement");
         return result;
     }
 
-    // Pad con ceros si es necesario (llenar desde la izquierda)
     String padded_hex = hex_str.substr(start_idx);
     while (padded_hex.length() < 64) {
         padded_hex = "0" + padded_hex;
     }
 
-    // Procesar de dos en dos desde el inicio
     for (size_t i = 0; i < 64; i += 2) {
         String byte_str = padded_hex.substr(i, 2);
         int byte_value = byte_str.hex_to_int();
@@ -138,7 +132,6 @@ Ref<FieldElement> FieldElement::from_enum(int enum_value)
 {
     Ref<FieldElement> field_element;
     field_element.instantiate();
-    // Debug: Verificar estado del objeto
     if (field_element.is_null())
     {
         LOG_ERROR("Failed to instantiate FieldElement");
@@ -148,7 +141,6 @@ Ref<FieldElement> FieldElement::from_enum(int enum_value)
     if (field_element->felt == nullptr)
     {
         LOG_ERROR("felt is null after instantiation");
-        // Limpiar e inicializar
         field_element->felt = new DOJO::FieldElement();
     }
     memset(field_element->felt->data, 0, 32);
