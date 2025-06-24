@@ -22,20 +22,15 @@ ControllerAccount* ControllerAccount::singleton = nullptr;
 ControllerAccount::ControllerAccount()
 {
     singleton = this;
-    if (Engine::get_singleton()->is_editor_hint())
-    {
-        LOG_DEBUG_EXTRA("ControllerAccount", "Desactivando en modo editor");
-        return;
-    }
     session_account = nullptr;
     is_connected = false;
+    provider = nullptr;
 }
 
 ControllerAccount::~ControllerAccount()
 {
     // disconnect_controller();
-    // singleton = nullptr;
-    // LOG_INFO("ControllerAccount destruido");
+    singleton = nullptr;
     LOG_DEBUG_EXTRA("ControllerAccount", "DESTRUCTOR CALLED");
 }
 

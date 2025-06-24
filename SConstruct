@@ -53,7 +53,7 @@ if target == "template_release":
 # Variables de entorno para WebAssembly
 if platform == "web":
     env_vars = os.environ.copy()
-    cmd.extend(["--target-dir", "target-web"])
+    # cmd.extend(["--target-dir", "target-web"])
     rustflags = "-C target-feature=+atomics,+bulk-memory,+mutable-globals"
     rustflags += " -C relocation-model=pic -C opt-level=s -C panic=abort"
     env_vars["RUSTFLAGS"] = rustflags
@@ -69,6 +69,10 @@ if platform == "linux":
     env.Append(LINKFLAGS=['-ldbus-1'])
 elif platform == "web":
     env.Append(LINKFLAGS=['-sALLOW_MEMORY_GROWTH'])
+# Va forzado porque por alguna razón me usa un standard mas viejo
+env.Append(
+    CXXFLAGS=["-std=c++17"]
+)
 
 # Linkear librerías de Rust
 build_mode = "release" if target == "template_release" else "debug"

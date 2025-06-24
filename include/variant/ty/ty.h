@@ -42,7 +42,9 @@ public:
     DojoTy();
     ~DojoTy();
     DojoTy(const DOJO::Ty &ty);
-    DojoTy(const DOJO::Member& member);
+    DojoTy(const DOJO::Ty* ty);
+    DojoTy(const DOJO::Member &member);
+    DojoTy(const DOJO::CArrayTy &array_ty);
     // Ty(const DOJO::Ty* ty);
 
     void init_form_ty(const DOJO::Ty &ty);

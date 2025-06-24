@@ -397,13 +397,13 @@ bool ToriiClient::create_event_subscription(const Callable& callback, const Dict
 
 bool ToriiClient::create_token_subscription(const Callable& callback, const String& account_address)
 {
-    LOG_INFO("Creando suscripción de tokens para: ", account_address);
+    LOG_INFO("[TODO] Creating token subscription for: ", account_address);
     return true;
 }
 
 void ToriiClient::cancel_all_subscriptions()
 {
-    LOG_INFO("Cancelando todas las suscripciones");
+    Logger::debug_extra("ToriiClient", "[TODO] Cancelling all subscription");
 }
 
 bool ToriiClient::publish_message(const String& message_data, const Array& signature_felts)
