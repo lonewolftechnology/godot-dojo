@@ -10,7 +10,7 @@
 #include "godot_cpp/classes/ref_counted.hpp"
 #include "godot_cpp/variant/variant.hpp"
 
-#include "debug_macros.h"
+#include "tools/logger.h"
 #include "variant/field_element.h"
 #include "primitive.h"
 

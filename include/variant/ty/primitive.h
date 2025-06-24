@@ -9,7 +9,7 @@
 #include "godot_cpp/classes/ref_counted.hpp"
 #include "godot_cpp/variant/variant.hpp"
 #include "variant/field_element.h"
-#include "debug_macros.h"
+#include "tools/logger.h"
 using namespace godot;
 
 class DojoPrimitive : public RefCounted

@@ -3,7 +3,7 @@
 //
 #include "variant/field_element.h"
 
-#include "debug_macros.h"
+#include "tools/logger.h"
 
 using namespace godot;
 

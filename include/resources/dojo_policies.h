@@ -5,7 +5,7 @@
 #ifndef DOJO_POLICIES_H
 #define DOJO_POLICIES_H
 
-#include "debug_macros.h"
+#include "tools/logger.h"
 #include "godot_cpp/classes/resource.hpp"
 #include "variant/field_element.h"
 #include "dojo_policy.h"

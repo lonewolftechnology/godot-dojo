@@ -4,7 +4,7 @@
 
 #ifndef DOJO_ACTION_H
 #define DOJO_ACTION_H
-#include "debug_macros.h"
+#include "tools/logger.h"
 #include "godot_cpp/classes/resource.hpp"
 #include "variant/field_element.h"
 

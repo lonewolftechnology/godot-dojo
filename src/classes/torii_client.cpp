@@ -6,9 +6,9 @@
 #include "godot_cpp/classes/json.hpp"
 
 #include "classes/torii_client.h"
-#include "debug_macros.h"
+#include "tools/logger.h"
 #include "classes/event_subscription.h"
-#include "../../include/variant/ty/primitive.h"
+#include "variant/ty/primitive.h"
 #include "variant/ty/struct.h"
 
 #include "variant/ty/ty.h"

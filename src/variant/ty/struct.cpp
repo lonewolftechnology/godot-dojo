@@ -2,7 +2,7 @@
 // Created by hazel on 24/06/25.
 //
 #include "variant/ty/struct.h"
-#include "debug_macros.h"
+#include "tools/logger.h"
 #include "variant/ty/ty.h"
 
 DojoStruct::DojoStruct(DOJO::Struct struct_)

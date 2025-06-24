@@ -1,6 +1,6 @@
 #include "export_plugin/dojo_export.h"
 
-#include "debug_macros.h"
+#include "tools/logger.h"
 #include "godot_cpp/classes/engine.hpp"
 
 void DojoExportPlugin::_bind_methods() {

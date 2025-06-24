@@ -7,7 +7,7 @@
 
 #include "godot_cpp/classes/engine.hpp"
 #include "godot_cpp/core/class_db.hpp"
-#include "debug_macros.h"
+#include "tools/logger.h"
 
 using namespace godot;
 DojoC* DojoC::singleton = nullptr;

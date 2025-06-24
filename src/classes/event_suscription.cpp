@@ -6,8 +6,8 @@
 #include "classes/torii_client.h"
 
 #include "variant/field_element.h"
-#include "../../include/variant/ty/primitive.h"
-#include "debug_macros.h"
+#include "variant/ty/primitive.h"
+#include "tools/logger.h"
 #include "variant/ty/ty.h"
 
 Ref<EventSubscription> EventSubscription::g_active_instance = nullptr;
