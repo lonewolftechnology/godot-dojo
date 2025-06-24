@@ -40,10 +40,10 @@ UtilityFunctions::push_warning(concat_args(__VA_ARGS__))
         TYPED_LOG_COLOR(magenta, type, __VA_ARGS__)
 
 #define LOG_SUCCESS_EXTRA(type, ...) \
-        LOG_SUCCESS("[" type "] ", __VA_ARGS__)
+        LOG_SUCCESS("[color=green][b][" type "][/b][/color]", __VA_ARGS__)
 
 #define LOG_DEBUG_EXTRA(type, ...) \
-        LOG_DEBUG("[" type "] ", __VA_ARGS__)
+        LOG_DEBUG("[color=cyan][b][" type "][/b][/color] ", __VA_ARGS__)
 
 #define TYPED_LOG_COLOR(color, type, ...) \
     UtilityFunctions::print_rich("[color=" #color "][b][" type "][/b][/color] ", concat_args(__VA_ARGS__))
