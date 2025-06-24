@@ -12,13 +12,13 @@
 
 #include "debug_macros.h"
 #include "variant/field_element.h"
-#include "variant/primitive.h"
+#include "primitive.h"
 
 using namespace godot;
 
-class Ty : public RefCounted
+class DojoTy : public RefCounted
 {
-    GDCLASS(Ty, RefCounted);
+    GDCLASS(DojoTy, RefCounted);
     friend class Variant;
 
     using Tag = DOJO::Ty_Tag;
@@ -33,29 +33,41 @@ class Ty : public RefCounted
         NIL
       };
 
-private:
     Variant value = Variant::NIL;
-    DojoPrimitive* primitive = {};
     Type type = Type::NIL;
     String name = {};
 
 public:
-    Ty();
-    ~Ty();
-    Ty(const DOJO::Ty &ty);
-    Ty(const DOJO::Member& member);
+    bool is_felt = false;
+    DojoTy();
+    ~DojoTy();
+    DojoTy(const DOJO::Ty &ty);
+    DojoTy(const DOJO::Member& member);
     // Ty(const DOJO::Ty* ty);
+
+    void init_form_ty(const DOJO::Ty &ty);
 
     void set_value(const Variant &p_value) { value = p_value; }
     //
     Variant get_value() const
     {
-        if (type == Type::Primitive_)
-        {
-            return primitive->get_value();
-        }
         return value;
     }
+    FieldElement get_felt() const
+    {
+        if (is_felt)
+        {
+            return {value.stringify()};
+        }else
+        {
+            LOG_WARNING("No felt found, returning empty one");
+            return {};
+        }
+    }
+
+    String get_name() const { return name; }
+    void set_name(const String &p_name) { name = p_name; }
+
     //
     // String get_type() const { return type; }
     // void set_type(const String &p_type) { type = p_type; }

@@ -9,7 +9,7 @@
 #include <godot_cpp/core/defs.hpp>
 #include <godot_cpp/godot.hpp>
 
-#include <variant/primitive.h>
+#include <../include/variant/ty/primitive.h>
 #include <classes/torii_client.h>
 
 #include <variant/field_element.h>
@@ -20,6 +20,7 @@
 #include "resources/dojo_policies.h"
 #include "resources/dojo_policy.h"
 #include "resources/dojo_call.h"
+#include "variant/ty/struct.h"
 #include "variant/ty/ty.h"
 
 
@@ -29,16 +30,20 @@ void initialize_dojoc_module(ModuleInitializationLevel p_level) {
     if (p_level != MODULE_INITIALIZATION_LEVEL_SCENE) {
         return;
     }
-    GDREGISTER_CLASS(FieldElement);
+    // DojoTypes
+    GDREGISTER_CLASS(DojoTy);
     GDREGISTER_CLASS(DojoPrimitive);
+    GDREGISTER_CLASS(DojoStruct);
+    GDREGISTER_CLASS(FieldElement);
+    // Dojo Classes
+    GDREGISTER_CLASS(DojoC);
     GDREGISTER_CLASS(ToriiClient);
-    GDREGISTER_CLASS(EventSubscription);
     GDREGISTER_CLASS(ControllerAccount);
-    GDREGISTER_CLASS(Ty);
+    GDREGISTER_CLASS(EventSubscription);
+    // Dojo Resources
+    GDREGISTER_CLASS(DojoCall);
     GDREGISTER_CLASS(DojoPolicy);
     GDREGISTER_CLASS(DojoPolicies);
-    GDREGISTER_CLASS(DojoCall);
-    GDREGISTER_CLASS(DojoC);
 }
 
 void uninitialize_dojoc_module(ModuleInitializationLevel p_level) {
