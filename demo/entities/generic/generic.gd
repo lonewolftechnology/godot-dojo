@@ -16,7 +16,7 @@ var id:String
 
 func setup(entity_data:Dictionary) -> void:
 	username = entity_data['username']
-	id = entity_data['id']
+	id = entity_data['address']
 	name += "-%s" % username
 	_setup(entity_data)
 
