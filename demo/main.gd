@@ -38,6 +38,7 @@ var packed: String
 @onready var controller_account: ControllerAccount = $ControllerAccount
 
 @export var spawn_call:DojoCall
+@export var spawn_reset_call:DojoCall
 
 func _ready() -> void:
 	OS.set_environment("RUST_BACKTRACE", "full")
@@ -56,40 +57,82 @@ func _ready() -> void:
 				#if abi_item['type'] == "interface" and abi_item['name'] == "dojo_starter::systems::actions::IActions":
 					#var items = abi_item['items']
 					#print(items)
+
+func callable_test(args:Array):
+	prints("Callable size:", args.size() ,"Result:",args)
+	#prints("\n\n", packed)
+	push_warning("Updates entities EVENT", args)
+	var _packed = args.filter(func(c): return c is String)
+	var _vector = args.filter(func(c): return c is Vector2 )
 	
+	if _vector.is_empty(): return
+	
+	var vec:Vector2 = _vector[0]
+	#if player:
+		#if _packed[0] != player.id: 
+			#push_warning("No es el player")
+			#var _id = _packed[0]
+			#await get_tree().process_frame
+			#controllers.move_controller(_id, vec)
+		#else:
+			#await get_tree().process_frame
+			#player.move(vec)
+
+func call_test(args:Array):
+	push_warning("Updates entities", args)
+	var _packed = args.filter(func(c): return c is String)
+	var _vector = args.filter(func(c): return c is Vector2)
+	if _vector.is_empty(): return
+	var vec:Vector2 = _vector[0]
+	#
+	#if player and _packed[0] != player.id: 
+		#push_warning("SON LO MISMo")
+		#var _id = _packed[0]
+		#await get_tree().process_frame
+		#controllers.move_controller(_id, vec)
+
 func _on_subcribe_pressed() -> void:
 	client.create_client()
 
 	#controller.create(dev_actions_addr, "https://api.cartridge.gg/x/godot-demo-rookie/katana")
 
-	#var query = {
-		#"pagination":{
-			#"limit": 10,
-			#"cursor": "",
-			#"order_by": [],
-			#"direction": ToriiClient.QueryPaginationDirection.FORWARD
-		#},
-		#"clause": null,
-		#"no_hashed_keys": true,
-		#"models":[],
-		#"historical": false
-	#}
-	#var data = client.get_entities(query)
-	#print(data)
-	#dojo.create_entity_subscription(call_test)
+	var query = {
+		"pagination":{
+			"limit": 10,
+			"cursor": "",
+			"order_by": [],
+			"direction": ToriiClient.QueryPaginationDirection.FORWARD
+		},
+		"clause": null,
+		"no_hashed_keys": true,
+		"models":[],
+		"historical": false
+	}
+	var data = client.get_entities(query)
+	print(data)
+	#var controllers_data = client.get_controllers()
+	#print(controllers_data)
+	#client.create_entity_subscription(call_test, {})
 	
-	#dojo.entity_subscription(callable_test)
+	#client.create_event_subscription(callable_test, {})
+	
 	
 	#await get_tree().process_frame
 	#dojo.client_metadata()
 
 
 func _on_spawn_pressed() -> void:
-	controller_account.execute_from_outside(spawn_call)
+	if reset_spawn.button_pressed:
+		controller_account.execute_from_outside(spawn_reset_call)
+	else:
+		controller_account.execute_from_outside(spawn_call)
 	#dojo.spawn(reset_spawn.button_pressed,false)
 
 func _on_spawn_raw_pressed() -> void:
-	controller_account.execute_raw(spawn_call)
+	if reset_spawn.button_pressed:
+		controller_account.execute_raw(spawn_reset_call)
+	else:
+		controller_account.execute_raw(spawn_call)
 
 func update_event_subscription_status(_value:bool, _event:String, _status_node:HBoxContainer):
 	update_status(_value, _status_node)
@@ -175,3 +218,20 @@ func _on_controller_account_controller_connected(success: bool) -> void:
 
 func _on_controller_account_controller_disconnected() -> void:
 	controller_account_status.set_status(false)
+
+
+func _on_torii_client_entity_updated(entity_data: Dictionary) -> void:
+	prints("Entity update", entity_data)
+
+func _on_torii_client_event_received(event_data: Dictionary) -> void:
+	prints("event", event_data)
+
+func _on_torii_client_subscription_error(error_message: String) -> void:
+	push_error(error_message)
+
+func _on_controller_account_current_user_info(user_info: Dictionary) -> void:
+	var address:String = user_info['address']
+	username_status.text = user_info['username']
+	controllers_manager.spawn_entity(user_info,true)
+	var data = client.get_controller_info(address)
+	print(data)

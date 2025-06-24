@@ -1,3 +1,4 @@
+class_name ControllersManager
 extends Node2D
 
 @export var generic_entity_scene:PackedScene
@@ -38,7 +39,7 @@ func spawn_entity(_data:Dictionary, is_player:bool = false):
 		new_entity = generic_entity_scene.instantiate()
 	await get_tree().process_frame
 	add_child(new_entity)
-	new_entity.setup(_data)	
+	new_entity.setup(_data)
 
 func _unhandled_input(event: InputEvent) -> void:
 				
