@@ -26,7 +26,7 @@ public:
 
     static Ref<FieldElement> from_enum(int enum_value);
     static PackedByteArray to_packed_array(const void* data, int size = 32);
-    static dojo_bindings::FieldElement from_string(const String& hex_str, size_t max_bytes = 32);
+    static DOJO::FieldElement from_string(const String& hex_str, size_t max_bytes = 32);
 
     PackedByteArray as_packed_array() const;
     String to_string() const;
