@@ -6,8 +6,9 @@
 #include "classes/torii_client.h"
 
 #include "variant/field_element.h"
-#include "variant/primitive.h"
+#include "../../include/variant/ty/primitive.h"
 #include "debug_macros.h"
+#include "variant/ty/ty.h"
 
 Ref<EventSubscription> EventSubscription::g_active_instance = nullptr;
 
@@ -168,79 +169,8 @@ void EventSubscription::on_event_update(DOJO::FieldElement* entity_id, DOJO::CAr
     for (const auto& member : members)
     {
         LOG_INFO("[color=MAGENTA]Procesando member... [/color]");
-        LOG_INFO("member.name: %s", member.name);
+        DojoTy ty = DojoTy(member);
 
-        if (member.ty->tag == DOJO::Ty_Tag::Primitive_)
-        {
-            LOG_INFO("member_type is [color=YELLOW]Primitive[/color]");
-            DOJO::Primitive primitive = member.ty->primitive;
-            if (primitive.tag == DOJO::Primitive_Tag::Felt252)
-            {
-                LOG_INFO("primitive.tag is [color=YELLOW]Felt252[/color]");
-                if (String(member.name) == "player")
-                {
-                    LOG_DEBUG("Player");
-                    FieldElement felt = {&primitive.felt252};
-                    arguments.append(felt.to_string());
-                    felt.bytearray_deserialize();
-                }
-            }
-            DojoPrimitive _primitive = DojoPrimitive(primitive);
-        }
-        else if (member.ty->tag == DOJO::Ty_Tag::Struct_)
-        {
-            LOG_INFO("member_type is [color=YELLOW]Struct[/color]");
-            DOJO::Struct struct_ = member.ty->struct_;
-            LOG_INFO("[color=Peru]struct_name[/color] [color=YELLOW]", struct_.name, "[/color]");
-            std::vector<DOJO::Member> struct_child(struct_.children.data,
-                                                   struct_.children.data + struct_.children.data_len);
-            String member_name = member.name;
-            LOG_DEBUG(member_name);
-            if (member_name == "vec")
-            {
-                Vector2 vec2 = {0, 0};
-                for (const auto& struct_child_member : struct_child)
-                {
-                    LOG_INFO("struct_child_member.name: ", struct_child_member.name);
-
-                    if (struct_child_member.ty->tag == DOJO::Ty_Tag::Primitive_)
-                    {
-                        DojoPrimitive s_value = {struct_child_member.ty->primitive};
-                        LOG_DEBUG(struct_child_member.name, " | ", s_value.get_value());
-                        real_t s_value_converted = s_value.get_value();
-                        if (String(struct_child_member.name) == "x")
-                        {
-                            LOG_WARNING("UPDATING X");
-                            vec2.x = s_value_converted;
-                        }
-                        else if (String(struct_child_member.name) == "y")
-                        {
-                            LOG_WARNING("UPDATING Y");
-                            vec2.y = s_value_converted;
-                        }
-                    }
-                }
-                LOG_SUCCESS("[color=MAGENTA]NEW VECTOR2 [/color]", vec2);
-                arguments.append(vec2);
-            }
-        }
-        else if (member.ty->tag == DOJO::Ty_Tag::Array_)
-        {
-            LOG_INFO("member_type is [color=YELLOW]CArrayTy[/color]");
-        }
-        else if (member.ty->tag == DOJO::Ty_Tag::ByteArray)
-        {
-            LOG_INFO("member_type is [color=YELLOW]ByteArray[/color]");
-        }
-        else if (member.ty->tag == DOJO::Ty_Tag::Enum_)
-        {
-            LOG_INFO("member_type is [color=YELLOW]Enum[/color]");
-            DOJO::Enum enum_ = member.ty->enum_;
-        }
-        else if (member.ty->tag == DOJO::Ty_Tag::Tuple_)
-        {
-            LOG_INFO("member_type is [color=YELLOW]Tuple[/color]");
-        }
     }
 
     for (int i = 0; i < arguments.size(); i++)

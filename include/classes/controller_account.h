@@ -92,6 +92,7 @@ protected:
         ADD_SIGNAL(MethodInfo("controller_disconnected"));
         ADD_SIGNAL(MethodInfo("transaction_executed", PropertyInfo(Variant::STRING, "transaction_hash")));
         ADD_SIGNAL(MethodInfo("transaction_failed", PropertyInfo(Variant::STRING, "error_message")));
+        ADD_SIGNAL(MethodInfo("current_user_info", PropertyInfo(Variant::DICTIONARY, "user_info")));
 
         ClassDB::bind_method(D_METHOD("set_policies", "policies"), &ControllerAccount::set_policies);
         ClassDB::bind_method(D_METHOD("get_policies"), &ControllerAccount::get_policies);

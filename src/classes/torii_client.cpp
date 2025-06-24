@@ -8,7 +8,8 @@
 #include "classes/torii_client.h"
 #include "debug_macros.h"
 #include "classes/event_subscription.h"
-#include "variant/primitive.h"
+#include "../../include/variant/ty/primitive.h"
+#include "variant/ty/struct.h"
 
 #include "variant/ty/ty.h"
 
@@ -169,32 +170,31 @@ Dictionary ToriiClient::get_world_metadata()
 
     for (const auto& model_item : models_vec)
     {
-
         Dictionary model_dict = {};
         DOJO::ModelMetadata model_metadata = model_item.value;
 
-        LOG_DEBUG_EXTRA("METADATA",model_metadata.namespace_);
-        LOG_DEBUG_EXTRA("METADATA",model_metadata.name);
+        LOG_DEBUG_EXTRA("METADATA", model_metadata.namespace_);
+        LOG_DEBUG_EXTRA("METADATA", model_metadata.name);
         FieldElement key_felt = {model_item.key};
-        LOG_DEBUG_EXTRA("HEX",key_felt.to_string());
+        LOG_DEBUG_EXTRA("HEX", key_felt.to_string());
         FieldElement testing_felt = {model_metadata.class_hash};
-        LOG_DEBUG_EXTRA("HEX",testing_felt.to_string());
+        LOG_DEBUG_EXTRA("HEX", testing_felt.to_string());
         FieldElement testing_felta = {model_metadata.contract_address};
-        LOG_DEBUG_EXTRA("HEX",testing_felt.to_string());
+        LOG_DEBUG_EXTRA("HEX", testing_felt.to_string());
 
         model_dict["namespace"] = model_metadata.namespace_;
         model_dict["name"] = model_metadata.name;
         model_dict["schema_type"] = String::num_int64(static_cast<int64_t>(model_metadata.schema.tag));
-        LOG_DEBUG_EXTRA("SCHEMA",String::num_int64(static_cast<int64_t>(model_metadata.schema.tag)));
+        LOG_DEBUG_EXTRA("SCHEMA", String::num_int64(static_cast<int64_t>(model_metadata.schema.tag)));
 
-        Ty testing_ty = {model_metadata.schema};
+        DojoTy testing_ty = {model_metadata.schema};
 
         if (model_metadata.schema.tag == DOJO::Ty_Tag::Struct_)
         {
             Dictionary struct_info = {};
             DOJO::Struct meta_struct = model_metadata.schema.struct_;
             struct_info["name"] = meta_struct.name;
-            LOG_DEBUG_EXTRA("STRUCT",meta_struct.name);
+            LOG_DEBUG_EXTRA("STRUCT", meta_struct.name);
 
             TypedArray<Dictionary> members_array = {};
             std::vector<DOJO::Member> members(
@@ -205,10 +205,10 @@ Dictionary ToriiClient::get_world_metadata()
             {
                 Dictionary member_dict = {};
                 member_dict["name"] = member.name;
-                Ty member_ty = {*member.ty};
+                DojoTy member_ty = {*member.ty};
 
-                LOG_DEBUG_EXTRA("MEMBER",member.name);
-                LOG_DEBUG_EXTRA("TYPE",String::num_int64(static_cast<int64_t>(member.ty->tag)));
+                LOG_DEBUG_EXTRA("MEMBER", member.name);
+                LOG_DEBUG_EXTRA("TYPE", String::num_int64(static_cast<int64_t>(member.ty->tag)));
                 member_dict["type"] = String::num_int64(static_cast<int64_t>(member.ty->tag));
                 members_array.append(member_dict);
             }
@@ -339,25 +339,28 @@ bool ToriiClient::create_entity_subscription(const Callable& callback, const Dic
         LOG_ERROR("Cliente no conectado");
         return false;
     }
-    
+
     LOG_INFO("Creating entity subscription...");
-    
+
     Ref<EventSubscription> entity_subscription;
     entity_subscription.instantiate();
 
     LOG_INFO("EventSubscription instance created successfully at: ", entity_subscription);
-    
+
     DOJO::COptionClause event_clause = {};
     event_clause.tag = DOJO::COptionClause_Tag::NoneClause;
-    
+
     bool result = entity_subscription->setup(this, event_clause, callback);
-    
-    if (result) {
+
+    if (result)
+    {
         LOG_SUCCESS("Entity subscription created successfully");
-    } else {
+    }
+    else
+    {
         LOG_ERROR("Failed to setup entity subscription");
     }
-    
+
     return result;
 }
 
@@ -381,9 +384,12 @@ bool ToriiClient::create_event_subscription(const Callable& callback, const Dict
 
     bool result = event_subscription->setup(this, event_clause, callback);
 
-    if (result) {
+    if (result)
+    {
         LOG_SUCCESS("Entity subscription created successfully");
-    } else {
+    }
+    else
+    {
         LOG_ERROR("Failed to setup entity subscription");
     }
     return result;
@@ -446,7 +452,7 @@ bool ToriiClient::publish_typed_message(const Dictionary& typed_data, const Arra
 
 void logger_callback_wrapper(const char* msg)
 {
-    LOG_DEBUG_EXTRA("Torii",msg);
+    LOG_DEBUG_EXTRA("Torii", msg);
     ToriiClient* _singleton = ToriiClient::get_singleton();
     if (_singleton->is_calable_valid())
     {
@@ -577,8 +583,11 @@ DOJO::Pagination ToriiClient::create_pagination_from_dict(const Dictionary& pagi
 Dictionary ToriiClient::entity_to_dictionary(const DOJO::Entity& entity)
 {
     Dictionary entity_dict = {};
+    FieldElement hashed_keys = {entity.hashed_keys};
+    entity_dict["hashed_key"] = hashed_keys.to_string();
 
     TypedArray<Dictionary> models_array = {};
+
     std::vector<DOJO::Struct> c_structs(
         entity.models.data, entity.models.data + entity.models.data_len
     );
@@ -586,63 +595,18 @@ Dictionary ToriiClient::entity_to_dictionary(const DOJO::Entity& entity)
     for (const auto& c_struct : c_structs)
     {
         Dictionary model_dict = {};
+        LOG_CUSTOM("MODEL", c_struct.name);
+
+        DojoStruct data = {c_struct};
+
         model_dict["name"] = c_struct.name;
 
-        Dictionary members_dict = {};
-        std::vector<DOJO::Member> members(
-            c_struct.children.data, c_struct.children.data + c_struct.children.data_len
-        );
-
-        for (const auto& member : members)
-        {
-            String member_name = member.name;
-            Ty member_data = {member};
-            if (member.ty->tag == DOJO::Ty_Tag::Primitive_)
-            {
-                DojoPrimitive primitive(member.ty->primitive);
-                members_dict[member_name] = member_data.get_value();
-            }
-            else if (member.ty->tag == DOJO::Ty_Tag::Struct_)
-            {
-                Dictionary nested_struct = {};
-                DOJO::Struct nested = member.ty->struct_;
-                nested_struct["type"] = nested.name;
-
-                if (String(nested.name) == "Vec2")
-                {
-                    Vector2 vec2 = Vector2(0, 0);
-                    std::vector<DOJO::Member> nested_members(
-                        nested.children.data, nested.children.data + nested.children.data_len
-                    );
-
-                    for (const auto& nested_member : nested_members)
-                    {
-                        if (nested_member.ty->tag == DOJO::Ty_Tag::Primitive_)
-                        {
-                            DojoPrimitive nested_primitive(nested_member.ty->primitive);
-                            real_t value = nested_primitive.get_value();
-
-                            if (String(nested_member.name) == "x")
-                            {
-                                vec2.x = value;
-                            }
-                            else if (String(nested_member.name) == "y")
-                            {
-                                vec2.y = value;
-                            }
-                        }
-                    }
-                    members_dict[member_name] = vec2;
-                }
-                else
-                {
-                    members_dict[member_name] = nested_struct;
-                }
-            }
-        }
+        Array members_dict = {};
+        members_dict.append(data.get_value());
 
         model_dict["data"] = members_dict;
         models_array.append(model_dict);
+        LOG_CUSTOM("SPACE", "\n");
     }
 
     entity_dict["models"] = models_array;

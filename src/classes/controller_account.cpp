@@ -49,6 +49,7 @@ void ControllerAccount::set_session_account(DOJO::ControllerAccount* account)
     session_account = account;
     is_connected = (account != nullptr);
     emit_connection_status(is_connected);
+
 }
 
 DOJO::ControllerAccount* ControllerAccount::get_session_account() const
@@ -292,6 +293,7 @@ void ControllerAccount::emit_connection_status(bool connected)
     if (connected)
     {
         call_deferred("emit_signal", "controller_connected", connected);
+        call_deferred("emit_signal", "current_user_info", get_account_info());
     }
     else
     {

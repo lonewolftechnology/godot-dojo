@@ -142,7 +142,7 @@ public:
 
     bool create_entity_subscription(const Callable& callback, const Dictionary& filter_params = Dictionary());
     bool create_event_subscription(const Callable& callback, const Dictionary& filter_params = Dictionary());
-    static bool create_token_subscription(const Callable& callback, const String& account_address);
+    bool create_token_subscription(const Callable& callback, const String& account_address);
     void cancel_all_subscriptions();
 
     bool publish_message(const String& message_data, const Array& signature_felts);
