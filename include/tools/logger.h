@@ -107,6 +107,7 @@ public:
         UtilityFunctions::print_rich(formatted);
 #endif
     }
+
 };
 
 // Alias para compatibilidad (los voy a borrar despues)
