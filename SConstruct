@@ -143,5 +143,10 @@ gdext = gdext.replace("${GODOT_MIN_REQUIREMENT}", "4.2")
 with open("demo/bin/godot-dojo.gdextension", 'w') as f:
     f.write(gdext)
 
-Default(library)
-print(f"{G}🎉 Build complete!{X}")
+def build_complete_callback(target, source, env):
+    print(f"{G}🎉 Build complete!{X}")
+    return None
+
+env.AddPostAction(library, build_complete_callback)
+
+env.Default(library)
