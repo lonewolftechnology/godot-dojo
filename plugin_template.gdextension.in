@@ -31,3 +31,12 @@ android.release.arm64 = "res://bin/${PROJECT_NAME}.android.template_release.arm6
 
 web.debug.wasm32 = "res://bin/${PROJECT_NAME}.web.template_debug.wasm32.wasm"
 web.release.wasm32 = "res://bin/${PROJECT_NAME}.web.template_release.wasm32.wasm"
+
+[dependencies]
+
+windows.debug = {
+    "res://bin/dojo_c.debug.dll" : "libraries",
+}
+windows.release = {
+    "res://bin/dojo_c.release.dll" : "libraries",
+}
