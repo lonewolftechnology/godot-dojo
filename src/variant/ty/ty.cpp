@@ -7,8 +7,10 @@
 #include "variant/ty/array_ty.h"
 #include "variant/ty/enum.h"
 #include "variant/ty/struct.h"
+// Esto solo para debug, no va a formar parte del logger.
 #define COLORED_TYPE(class_type, type) \
 LOG_DEBUG_EXTRA(class_type, "[color=red][b]" type "[/b][/color] ")
+
 DojoTy::DojoTy()
 {
     value = Variant();
@@ -75,7 +77,6 @@ void DojoTy::init_form_ty(const DOJO::Ty& ty)
         ArrayDojoTy data = {ty.array};
         name = data.get_name();
         value = data.get_value();
-        Logger::debug_extra("TY ARRAY", name);
     }
     else if (ty.tag == Tag::Tuple_)
     {
@@ -84,12 +85,14 @@ void DojoTy::init_form_ty(const DOJO::Ty& ty)
         ArrayDojoTy data = {ty.tuple};
         name = data.get_name();
         value = data.get_value();
-        Logger::debug_extra("TY TUPLE", name);
     }
     else if (ty.tag == Tag::ByteArray)
     {
         COLORED_TYPE("DojoTy", "bytearray");
         type = Type::ByteArray;
+        String data = ty.byte_array;
+        value = data;
+        Logger::debug_extra("TY BYTEARRAY", data);
     }
 }
 

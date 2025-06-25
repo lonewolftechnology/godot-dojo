@@ -34,5 +34,6 @@ Variant DojoEnum::VariantFromEnum(const DOJO::Enum &enum_)
     result["name"] = name;
     result["value"] = value;
     result["string_value"] = string_option;
+    Logger::debug_extra("DojoEnumRRRRR", result);
     return result;
 }

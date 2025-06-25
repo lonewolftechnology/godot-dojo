@@ -35,6 +35,7 @@ public:
     String bytearray_deserialize();
 
     static String get_as_string(DOJO::FieldElement* _felt);
+    static String get_as_string_no_ptr(dojo_bindings::FieldElement _felt);
 
     DOJO::FieldElement* get_felt() const { return felt; }
     DOJO::FieldElement get_felt_no_ptr() const { return *felt; }

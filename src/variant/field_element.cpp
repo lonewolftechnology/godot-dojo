@@ -176,17 +176,26 @@ String FieldElement::get_as_string(DOJO::FieldElement* _felt)
     return ret;
 }
 
+String FieldElement::get_as_string_no_ptr(DOJO::FieldElement _felt)
+{
+    String ret = "0x";
+    for (size_t i = 0; i < 32; i++)
+    {
+        ret += String::num_int64(_felt.data[i], 16, false);
+    };
+
+    return ret;
+}
+
 String FieldElement::parse_cairo()
 {
-    DOJO::Resultc_char testing = DOJO::parse_cairo_short_string(get_felt_no_ptr());
-    if (testing.tag == DOJO::Errc_char)
+    DOJO::Resultc_char resCairo = DOJO::parse_cairo_short_string(get_felt_no_ptr());
+    if (resCairo.tag == DOJO::Errc_char)
     {
         LOG_DEBUG("No cairo string found, returning as string hex");
         return {to_string()};
     }
-    else
-    {
-        LOG_SUCCESS("Cairo String:", GET_DOJO_OK(testing));
-    }
-    return {GET_DOJO_OK(testing)};
+    String result = GET_DOJO_OK(resCairo);
+    LOG_SUCCESS("Cairo String: ", result);
+    return result;
 }
