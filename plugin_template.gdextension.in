@@ -35,8 +35,8 @@ web.release.wasm32 = "res://bin/${PROJECT_NAME}.web.template_release.wasm32.wasm
 [dependencies]
 
 windows.debug = {
-    "res://bin/dojo_c.debug.dll" : "libraries",
+    "res://bin/dojo_c.debug.dll" : "",
 }
 windows.release = {
-    "res://bin/dojo_c.release.dll" : "libraries",
+    "res://bin/dojo_c.release.dll" : "",
 }
