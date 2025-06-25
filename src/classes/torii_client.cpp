@@ -8,6 +8,7 @@
 #include "classes/torii_client.h"
 #include "tools/logger.h"
 #include "classes/event_subscription.h"
+#include "variant/ty/array_ty.h"
 #include "variant/ty/primitive.h"
 #include "variant/ty/struct.h"
 
@@ -164,6 +165,7 @@ Dictionary ToriiClient::get_world_metadata()
     Dictionary result = {};
 
     TypedArray<Dictionary> models_array = {};
+    // TODO: DojoArray
     std::vector<DOJO::CHashItemFieldElementModelMetadata> models_vec(
         metadata.models.data, metadata.models.data + metadata.models.data_len
     );
@@ -175,47 +177,20 @@ Dictionary ToriiClient::get_world_metadata()
 
         LOG_DEBUG_EXTRA("METADATA", model_metadata.namespace_);
         LOG_DEBUG_EXTRA("METADATA", model_metadata.name);
-        FieldElement key_felt = {model_item.key};
-        LOG_DEBUG_EXTRA("HEX", key_felt.to_string());
-        FieldElement testing_felt = {model_metadata.class_hash};
-        LOG_DEBUG_EXTRA("HEX", testing_felt.to_string());
-        FieldElement testing_felta = {model_metadata.contract_address};
-        LOG_DEBUG_EXTRA("HEX", testing_felt.to_string());
-
+        model_dict["key"] = FieldElement(model_item.key).bytearray_deserialize();
         model_dict["namespace"] = model_metadata.namespace_;
         model_dict["name"] = model_metadata.name;
         model_dict["schema_type"] = String::num_int64(static_cast<int64_t>(model_metadata.schema.tag));
-        LOG_DEBUG_EXTRA("SCHEMA", String::num_int64(static_cast<int64_t>(model_metadata.schema.tag)));
 
-        DojoTy testing_ty = {model_metadata.schema};
+        DojoTy metadata_ty = {model_metadata.schema};
+        model_dict["schema"] = metadata_ty.get_value();
 
-        if (model_metadata.schema.tag == DOJO::Ty_Tag::Struct_)
-        {
-            Dictionary struct_info = {};
-            DOJO::Struct meta_struct = model_metadata.schema.struct_;
-            struct_info["name"] = meta_struct.name;
-            LOG_DEBUG_EXTRA("STRUCT", meta_struct.name);
-
-            TypedArray<Dictionary> members_array = {};
-            std::vector<DOJO::Member> members(
-                meta_struct.children.data, meta_struct.children.data + meta_struct.children.data_len
-            );
-
-            for (const auto& member : members)
-            {
-                Dictionary member_dict = {};
-                member_dict["name"] = member.name;
-                DojoTy member_ty = {*member.ty};
-
-                LOG_DEBUG_EXTRA("MEMBER", member.name);
-                LOG_DEBUG_EXTRA("TYPE", String::num_int64(static_cast<int64_t>(member.ty->tag)));
-                member_dict["type"] = String::num_int64(static_cast<int64_t>(member.ty->tag));
-                members_array.append(member_dict);
-            }
-
-            struct_info["members"] = members_array;
-            model_dict["schema"] = struct_info;
-        }
+        model_dict["packed_size"] = Variant(model_metadata.packed_size);
+        model_dict["unpacked_size"] = Variant(model_metadata.unpacked_size);
+        model_dict["class_hash"] = FieldElement::get_as_string(&model_metadata.class_hash);
+        model_dict["contract_address"] = FieldElement::get_as_string(&model_metadata.contract_address);
+        ArrayDojoTy layout = {model_metadata.layout};
+        model_dict["layout"] = layout.get_value();
 
         models_array.append(model_dict);
     }
@@ -245,7 +220,6 @@ TypedArray<Dictionary> ToriiClient::get_entities(const Dictionary& query_params)
     }
     LOG_DEBUG("Converting Query");
     DOJO::Query query = create_query_from_dict(query_params);
-    LOG_DEBUG("Query COnverted");
     DOJO::ResultPageEntity resPageEntities = DOJO::client_entities(client, query);
 
     if (resPageEntities.tag == DOJO::ErrPageEntity)

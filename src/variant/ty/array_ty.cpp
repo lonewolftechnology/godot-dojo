@@ -20,6 +20,11 @@ ArrayDojoTy::ArrayDojoTy(DOJO::CArrayTy array_ty)
     value = ArrayDojoTyToVariant(array_ty);
 }
 
+ArrayDojoTy::ArrayDojoTy(dojo_bindings::CArrayFieldElement array_felt)
+{
+    value = ArrayDojoFieldElementToVariant(array_felt);
+}
+
 Variant ArrayDojoTy::ArrayDojoTyToVariant(DOJO::CArrayTy array_ty)
 {
     Array result = {};
@@ -39,5 +44,14 @@ Variant ArrayDojoTy::ArrayDojoTyToVariant(DOJO::CArrayTy array_ty)
     return result;
 }
 
-
+Variant ArrayDojoTy::ArrayDojoFieldElementToVariant(DOJO::CArrayFieldElement array_felt)
+{
+    FieldElement felt = {array_felt.data};
+    String testing = felt.parse_cairo();
+    Dictionary data = {};
+    data["address"] = felt.to_string();
+    data["data"] = felt.parse_cairo();
+    data["data_len"] = array_felt.data_len;
+    return data;
+}
 

@@ -20,8 +20,10 @@ public:
     ArrayDojoTy();
     ~ArrayDojoTy();
     ArrayDojoTy(DOJO::CArrayTy array_ty);
+    ArrayDojoTy(DOJO::CArrayFieldElement array_felt);
 
     Variant ArrayDojoTyToVariant(DOJO::CArrayTy array_ty);
+    Variant ArrayDojoFieldElementToVariant(dojo_bindings::CArrayFieldElement array_felt);
 
     Variant get_value() const {return value;}
     void set_value(const Variant& p_value) { value = p_value; }
