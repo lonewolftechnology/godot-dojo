@@ -20,7 +20,7 @@ ToriiClient::ToriiClient()
 {
     if (Engine::get_singleton()->is_editor_hint())
     {
-        LOG_DEBUG_EXTRA("Torii", "Editor mode, ignoring constructor");
+        Logger::debug_extra("Torii", "Editor mode, ignoring constructor");
         return;
     }
 
@@ -175,8 +175,9 @@ Dictionary ToriiClient::get_world_metadata()
         Dictionary model_dict = {};
         DOJO::ModelMetadata model_metadata = model_item.value;
 
-        LOG_DEBUG_EXTRA("METADATA", model_metadata.namespace_);
-        LOG_DEBUG_EXTRA("METADATA", model_metadata.name);
+        Logger::debug_extra("METADATA", model_metadata.namespace_);
+        Logger::debug_extra("METADATA", model_metadata.name);
+
         model_dict["key"] = FieldElement(model_item.key).bytearray_deserialize();
         model_dict["namespace"] = model_metadata.namespace_;
         model_dict["name"] = model_metadata.name;
@@ -191,7 +192,7 @@ Dictionary ToriiClient::get_world_metadata()
         model_dict["contract_address"] = FieldElement::get_as_string(&model_metadata.contract_address);
         ArrayDojoTy layout = {model_metadata.layout};
         model_dict["layout"] = layout.get_value();
-
+        Logger::empty_line();
         models_array.append(model_dict);
     }
 
@@ -426,7 +427,7 @@ bool ToriiClient::publish_typed_message(const Dictionary& typed_data, const Arra
 
 void logger_callback_wrapper(const char* msg)
 {
-    LOG_DEBUG_EXTRA("Torii", msg);
+    Logger::debug_extra("Torii", msg);
     ToriiClient* _singleton = ToriiClient::get_singleton();
     if (_singleton->is_calable_valid())
     {

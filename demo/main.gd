@@ -118,8 +118,6 @@ func _on_subcribe_pressed() -> void:
 	
 	
 	#await get_tree().process_frame
-	var world_data = client.get_world_metadata()
-	print(world_data)
 
 
 func _on_spawn_pressed() -> void:
@@ -236,3 +234,11 @@ func _on_controller_account_current_user_info(user_info: Dictionary) -> void:
 	controllers_manager.spawn_entity(user_info,true)
 	var data = client.get_controller_info(address)
 	print(data)
+
+
+func _on_controller_account_transaction_executed(transaction_hash: String) -> void:
+	pass # Replace with function body.
+
+
+func _on_controller_account_transaction_failed(error_message: String) -> void:
+	pass # Replace with function body.

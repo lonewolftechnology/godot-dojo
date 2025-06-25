@@ -108,6 +108,11 @@ public:
 #endif
     }
 
+
+    static void empty_line()
+    {
+        UtilityFunctions::print_rich("\n");
+    }
 };
 
 // Alias para compatibilidad (los voy a borrar despues)

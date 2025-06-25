@@ -271,6 +271,16 @@ player_entity_scene = ExtResource("14_vivmo")
 position_smoothing_enabled = true
 position_smoothing_speed = 4.0
 
+[connection signal="client_connected" from="ToriiClient" to="." method="_on_torii_client_client_connected"]
+[connection signal="client_disconnected" from="ToriiClient" to="." method="_on_torii_client_client_disconnected"]
+[connection signal="entity_updated" from="ToriiClient" to="." method="_on_torii_client_entity_updated"]
+[connection signal="event_received" from="ToriiClient" to="." method="_on_torii_client_event_received"]
+[connection signal="controller_connected" from="ControllerAccount" to="." method="_on_controller_account_controller_connected"]
+[connection signal="controller_disconnected" from="ControllerAccount" to="." method="_on_controller_account_controller_disconnected"]
+[connection signal="current_user_info" from="ControllerAccount" to="." method="_on_controller_account_current_user_info"]
+[connection signal="provider_status_updated" from="ControllerAccount" to="." method="_on_controller_account_provider_status_updated"]
+[connection signal="transaction_executed" from="ControllerAccount" to="." method="_on_controller_account_transaction_executed"]
+[connection signal="transaction_failed" from="ControllerAccount" to="." method="_on_controller_account_transaction_failed"]
 [connection signal="toggled" from="UI/VBoxContainer/HBoxContainer/ButtonToggle" to="." method="_on_button_toggle_toggled"]
 [connection signal="pressed" from="UI/VBoxContainer/HBoxContainer/Tabs/Main/StartToriiClient" to="." method="_on_subcribe_pressed"]
 [connection signal="pressed" from="UI/VBoxContainer/HBoxContainer/Tabs/Main/ConnectController" to="." method="_on_connect_controller_pressed"]
