@@ -1,14 +1,14 @@
 extends Node
-
+# CHAIN ID WP_GODOT_DEMO_ROOKIE
+# TORII https://api.cartridge.gg/x/godot-demo-rookie/torii
+# WORLD 0x07cb912d0029e3799c4b8f2253b21481b2ec814c5daf72de75164ca82e7c42a5
+# Actions 0x03ee3ddd82fd914aaa2c03bf6d0b1a90a4d7e24a6c9934c037b2ee9f5f7acb5b
 enum Directions{
 	LEFT = 0,
 	RIGHT = 1,
 	UP = 2,
 	DOWN = 3,
 }
-
-const dev_world_addr = "0x07cb912d0029e3799c4b8f2253b21481b2ec814c5daf72de75164ca82e7c42a5"
-const dev_actions_addr = "0x00a92391c5bcde7af4bad5fd0fff3834395b1ab8055a9abb8387c0e050a34edf"
 
 @onready var chat_box: TextEdit = %ChatBox
 @onready var tabs: TabContainer = %Tabs
@@ -108,8 +108,8 @@ func _on_subcribe_pressed() -> void:
 		"models":[],
 		"historical": false
 	}
-	var data = client.get_entities(query)
-	print(data)
+	#var data = client.get_entities(query)
+	#print(data)
 	#var controllers_data = client.get_controllers()
 	#print(controllers_data)
 	#client.create_entity_subscription(call_test, {})
@@ -118,7 +118,8 @@ func _on_subcribe_pressed() -> void:
 	
 	
 	#await get_tree().process_frame
-	#dojo.client_metadata()
+	var world_data = client.get_world_metadata()
+	print(world_data)
 
 
 func _on_spawn_pressed() -> void:

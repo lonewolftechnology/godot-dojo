@@ -1,0 +1,10 @@
+[gd_resource type="DojoPolicies" load_steps=4 format=3 uid="uid://tfmm84euv0h4"]
+
+[ext_resource type="DojoPolicy" uid="uid://bv5g6pmeq3pt1" path="res://resources/move_policy.tres" id="1_6wr50"]
+[ext_resource type="DojoPolicy" uid="uid://btj7knthulhjp" path="res://resources/spawn_policy.tres" id="2_aiqrk"]
+[ext_resource type="DojoPolicy" uid="uid://dcfsvjg7rt33n" path="res://resources/reset_spawn_policy.tres" id="3_1hqg0"]
+
+[resource]
+name = "actions"
+contract = "0x03ee3ddd82fd914aaa2c03bf6d0b1a90a4d7e24a6c9934c037b2ee9f5f7acb5b"
+policies = Array[DojoPolicy]([ExtResource("1_6wr50"), ExtResource("2_aiqrk"), ExtResource("3_1hqg0")])
