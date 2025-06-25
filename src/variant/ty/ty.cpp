@@ -4,7 +4,7 @@
 
 #include "variant/ty/ty.h"
 
-#include "variant/ty/array_ty.h"
+#include "variant/ty/dojo_array.h"
 #include "variant/ty/enum.h"
 #include "variant/ty/struct.h"
 // Esto solo para debug, no va a formar parte del logger.
@@ -74,7 +74,7 @@ void DojoTy::init_form_ty(const DOJO::Ty& ty)
     {
         COLORED_TYPE("DojoTy", "array");
         type = Type::Array_;
-        ArrayDojoTy data = {ty.array};
+        ArrayDojo data = {ty.array};
         name = data.get_name();
         value = data.get_value();
     }
@@ -82,7 +82,7 @@ void DojoTy::init_form_ty(const DOJO::Ty& ty)
     {
         COLORED_TYPE("DojoTy", "tuple");
         type = Type::Tuple_;
-        ArrayDojoTy data = {ty.tuple};
+        ArrayDojo data = {ty.tuple};
         name = data.get_name();
         value = data.get_value();
     }

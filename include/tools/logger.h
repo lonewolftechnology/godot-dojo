@@ -9,23 +9,28 @@ using namespace godot;
 namespace logger_internal
 {
     // Helper para convertir tipos problemáticos a tipos seguros
-    template<typename T>
+    template <typename T>
     auto make_safe_variant(const T& value) -> Variant
     {
-        if constexpr (std::is_same_v<T, const char*>) {
+        if constexpr (std::is_same_v<T, const char*>)
+        {
             return Variant(String(value));
         }
-        else if constexpr (std::is_same_v<T, char*>) {
+        else if constexpr (std::is_same_v<T, char*>)
+        {
             return Variant(String(value));
         }
-        else if constexpr (std::is_arithmetic_v<T> && std::is_unsigned_v<T> && sizeof(T) >= sizeof(uint32_t)) {
+        else if constexpr (std::is_arithmetic_v<T> && std::is_unsigned_v<T> && sizeof(T) >= sizeof(uint32_t))
+        {
             // Para unsigned long, size_t, uintptr_t, etc.
             return Variant(static_cast<int64_t>(value));
         }
-        else if constexpr (std::is_arithmetic_v<T>) {
+        else if constexpr (std::is_arithmetic_v<T>)
+        {
             return Variant(value);
         }
-        else {
+        else
+        {
             return Variant(value);
         }
     }

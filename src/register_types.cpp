@@ -20,7 +20,7 @@
 #include "resources/dojo_policies.h"
 #include "resources/dojo_policy.h"
 #include "resources/dojo_call.h"
-#include "variant/ty/array_ty.h"
+#include "variant/ty/dojo_array.h"
 #include "variant/ty/enum.h"
 #include "variant/ty/struct.h"
 #include "variant/ty/ty.h"
@@ -28,8 +28,10 @@
 
 using namespace godot;
 
-void initialize_dojoc_module(ModuleInitializationLevel p_level) {
-    if (p_level != MODULE_INITIALIZATION_LEVEL_SCENE) {
+void initialize_dojoc_module(ModuleInitializationLevel p_level)
+{
+    if (p_level != MODULE_INITIALIZATION_LEVEL_SCENE)
+    {
         return;
     }
     // DojoTypes
@@ -37,7 +39,7 @@ void initialize_dojoc_module(ModuleInitializationLevel p_level) {
     GDREGISTER_CLASS(DojoPrimitive);
     GDREGISTER_CLASS(DojoStruct);
     GDREGISTER_CLASS(DojoEnum);
-    GDREGISTER_CLASS(ArrayDojoTy);
+    GDREGISTER_CLASS(ArrayDojo);
     GDREGISTER_CLASS(FieldElement);
     // Dojo Classes
     GDREGISTER_CLASS(DojoC);
@@ -50,21 +52,26 @@ void initialize_dojoc_module(ModuleInitializationLevel p_level) {
     GDREGISTER_CLASS(DojoPolicies);
 }
 
-void uninitialize_dojoc_module(ModuleInitializationLevel p_level) {
-    if (p_level != MODULE_INITIALIZATION_LEVEL_SCENE) {
+void uninitialize_dojoc_module(ModuleInitializationLevel p_level)
+{
+    if (p_level != MODULE_INITIALIZATION_LEVEL_SCENE)
+    {
         return;
     }
 }
 
 extern "C" {
-    // Initialization.
-    GDExtensionBool GDE_EXPORT dojoc_library_init(GDExtensionInterfaceGetProcAddress p_get_proc_address, const GDExtensionClassLibraryPtr p_library, GDExtensionInitialization *r_initialization) {
-        godot::GDExtensionBinding::InitObject init_obj(p_get_proc_address, p_library, r_initialization);
+// Initialization.
+GDExtensionBool GDE_EXPORT dojoc_library_init(GDExtensionInterfaceGetProcAddress p_get_proc_address,
+                                              const GDExtensionClassLibraryPtr p_library,
+                                              GDExtensionInitialization* r_initialization)
+{
+    godot::GDExtensionBinding::InitObject init_obj(p_get_proc_address, p_library, r_initialization);
 
-        init_obj.register_initializer(initialize_dojoc_module);
-        init_obj.register_terminator(uninitialize_dojoc_module);
-        init_obj.set_minimum_library_initialization_level(MODULE_INITIALIZATION_LEVEL_SCENE);
+    init_obj.register_initializer(initialize_dojoc_module);
+    init_obj.register_terminator(uninitialize_dojoc_module);
+    init_obj.set_minimum_library_initialization_level(MODULE_INITIALIZATION_LEVEL_SCENE);
 
-        return init_obj.init();
-    }
+    return init_obj.init();
+}
 }

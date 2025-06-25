@@ -78,26 +78,30 @@ PackedByteArray FieldElement::to_packed_array(const void* data, const int size)
 dojo_bindings::FieldElement FieldElement::from_string(const String& hex_str, size_t max_bytes)
 {
     DOJO::FieldElement result = {};
-    
+
     memset(result.data, 0, max_bytes);
-    
+
     size_t start_idx = (hex_str.substr(0, 2) == "0x") ? 2 : 0;
     size_t hex_length = hex_str.length() - start_idx;
 
-    if (hex_length > 64) {
+    if (hex_length > 64)
+    {
         Logger::error("Hex string too long for FieldElement");
         return result;
     }
 
     String padded_hex = hex_str.substr(start_idx);
-    while (padded_hex.length() < 64) {
+    while (padded_hex.length() < 64)
+    {
         padded_hex = "0" + padded_hex;
     }
 
-    for (size_t i = 0; i < 64; i += 2) {
+    for (size_t i = 0; i < 64; i += 2)
+    {
         String byte_str = padded_hex.substr(i, 2);
         int byte_value = byte_str.hex_to_int();
-        if (byte_value < 0) {
+        if (byte_value < 0)
+        {
             Logger::error("Invalid hex character in string");
             return result;
         }
@@ -155,12 +159,12 @@ String FieldElement::bytearray_deserialize()
     DOJO::Resultc_char testing = DOJO::bytearray_deserialize(get_felt(), 32);
     if (testing.tag == DOJO::Errc_char)
     {
-        Logger::debug("Can't deserialize... Trying Cairo String");
+        Logger::debug_extra("FieldElement","Can't deserialize... Trying Cairo String");
         return parse_cairo();
     }
     else
     {
-        Logger::success("Felt:", GET_DOJO_OK(testing));
+        Logger::success_extra("FieldElement", GET_DOJO_OK(testing));
     }
     return {GET_DOJO_OK(testing)};
 }

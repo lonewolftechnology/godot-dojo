@@ -8,7 +8,7 @@
 #include "classes/torii_client.h"
 #include "tools/logger.h"
 #include "classes/event_subscription.h"
-#include "variant/ty/array_ty.h"
+#include "variant/ty/dojo_array.h"
 #include "variant/ty/primitive.h"
 #include "variant/ty/struct.h"
 
@@ -190,7 +190,7 @@ Dictionary ToriiClient::get_world_metadata()
         model_dict["unpacked_size"] = Variant(model_metadata.unpacked_size);
         model_dict["class_hash"] = FieldElement::get_as_string(&model_metadata.class_hash);
         model_dict["contract_address"] = FieldElement::get_as_string(&model_metadata.contract_address);
-        ArrayDojoTy layout = {model_metadata.layout};
+        ArrayDojo layout = {model_metadata.layout};
         model_dict["layout"] = layout.get_value();
         Logger::empty_line();
         models_array.append(model_dict);
