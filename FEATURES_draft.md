@@ -19,7 +19,7 @@ A **GDExtension for Godot** that integrates the **Dojo framework** (StarkNet) wi
 - - Primitive types (u8, u16, u32, u64, u128, u256, felt252) **DojoPrimitive**
 - - Cairo structures with automatic Godot conversion **DojoStruct**
 - - Cairo enumerations **DojoEnum**
-- - Cairo arrays and tuples **ArrayDojoTy**
+- - Cairo arrays and tuples **ArrayDojo**
 
 ### **Special Conversions**
 - **Automatic Vec2**: Detects "vec2" structs and converts them to Godot's `Vector2`
