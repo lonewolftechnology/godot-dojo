@@ -51,12 +51,29 @@ if target == "template_release":
     cmd.append("--release")
 
 # Variables de entorno para WebAssembly
-if platform == "web":
+if env["platform"] == "web":
     env_vars = os.environ.copy()
-    # cmd.extend(["--target-dir", "target-web"])
-    rustflags = "-C target-feature=+atomics,+bulk-memory,+mutable-globals"
-    rustflags += " -C relocation-model=pic -C opt-level=s -C panic=abort"
-    env_vars["RUSTFLAGS"] = rustflags
+    # rustflags = "-C target-feature=+atomics,+bulk-memory,+mutable-globals"
+    # rustflags += " -C relocation-model=pic"
+    # rustflags += " -C panic=abort"
+    # rustflags += " -C opt-level=z"
+
+    # env_vars["RUSTFLAGS"] = rustflags
+
+    # env_vars["CC"] = "emcc"
+    # env_vars["CXX"] = "em++"
+    # env_vars["AR"] = "emar"
+    # env.Append(LINKFLAGS=[
+    #     '-sALLOW_MEMORY_GROWTH',
+    #     '-sWASM=1',
+    #     '-sEXPORTED_FUNCTIONS=["_malloc","_free"]',
+    #     '-sEXPORTED_RUNTIME_METHODS=["ccall","cwrap"]',
+    #     '-sMODULARIZE=1',
+    #     '-sEXPORT_NAME="GodotDojo"',
+    #     '--no-entry'
+    # ])
+
+
     subprocess.run(cmd, check=True, cwd="external/dojo.c", env=env_vars)
 else:
     subprocess.run(cmd, check=True, cwd="external/dojo.c")
@@ -78,9 +95,12 @@ env.Append(
 build_mode = "release" if target == "template_release" else "debug"
 rust_lib_dir = f"external/dojo.c/target/{rust_target}/{build_mode}"
 
-if platform == "windows" and is_host_windows and not use_mingw:
-    # Usar .lib para MSVC en Windows cuando el host es Windows y NO usa MinGW
-    rust_lib = f"{rust_lib_dir}/dojo_c.lib"
+if platform == "windows":
+    if use_mingw:
+        rust_lib = f"{rust_lib_dir}/dojo_c.dll"
+    elif is_host_windows:
+        rust_lib = f"{rust_lib_dir}/dojo_c.lib"
+
 else:
     rust_lib = f"{rust_lib_dir}/libdojo_c.a"
 

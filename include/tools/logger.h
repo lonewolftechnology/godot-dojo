@@ -4,7 +4,6 @@
 #ifndef DEBUG_MACROS_H
 #define DEBUG_MACROS_H
 #include "godot_cpp/variant/utility_functions.hpp"
-#include <type_traits>
 using namespace godot;
 
 namespace logger_internal
