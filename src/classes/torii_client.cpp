@@ -30,22 +30,22 @@ ToriiClient::ToriiClient()
     DOJO::ResultFieldElement test_felt = DOJO::cairo_short_string_to_felt("WP_GODOT_DEMO_ROOKIE");
     if (test_felt.tag == DOJO::ErrFieldElement)
     {
-        LOG_ERROR("Error al crear FieldElement: ", GET_DOJO_ERROR(test_felt));
+        Logger::error("Error al crear FieldElement: ", GET_DOJO_ERROR(test_felt));
         return;
     }
     else
     {
-        LOG_SUCCESS("FieldElement creado exitosamente");
-        LOG_DEBUG(FieldElement::get_as_string(&GET_DOJO_OK(test_felt)));
+        Logger::success("FieldElement creado exitosamente");
+        Logger::debug(FieldElement::get_as_string(&GET_DOJO_OK(test_felt)));
     }
-    LOG_INFO("ToriiClient inicializado");
+    Logger::info("ToriiClient inicializado");
 }
 
 ToriiClient::~ToriiClient()
 {
     disconnect_client();
     singleton = nullptr;
-    LOG_INFO("ToriiClient destruido");
+    Logger::info("ToriiClient destruido");
 }
 
 ToriiClient* ToriiClient::get_singleton()
@@ -59,14 +59,14 @@ bool ToriiClient::create_client()
 
     if (world_address.is_empty())
     {
-        LOG_ERROR("Missing world address");
+        Logger::error("Missing world address");
         emit_signal("client_connected", false);
         return false;
     }
 
     if (torii_url.is_empty())
     {
-        LOG_ERROR("Missing torii url");
+        Logger::error("Missing torii url");
         emit_signal("client_connected", false);
         return false;
     }
@@ -74,9 +74,9 @@ bool ToriiClient::create_client()
     set_world(world);
     world.bytearray_deserialize();
 
-    LOG_INFO("Creando cliente Torii...");
-    LOG_INFO("URL: ", torii_url);
-    LOG_INFO("World Address: ", world_address);
+    Logger::info("Creando cliente Torii...");
+    Logger::info("URL: ", torii_url);
+    Logger::info("World Address: ", world_address);
 
     DOJO::ResultToriiClient resClient = DOJO::client_new(
         torii_url.utf8().get_data(),
@@ -85,7 +85,7 @@ bool ToriiClient::create_client()
 
     if (resClient.tag == DOJO::ErrToriiClient)
     {
-        LOG_ERROR("Error al crear cliente Torii: ", GET_DOJO_ERROR(resClient));
+        Logger::error("Error al crear cliente Torii: ", GET_DOJO_ERROR(resClient));
         emit_signal("client_connected", false);
         return false;
     }
@@ -95,10 +95,10 @@ bool ToriiClient::create_client()
 
     DOJO::client_set_logger(client, [](const char* msg)
     {
-        LOG_INFO("ToriiClient: ", msg);
+        Logger::info("ToriiClient: ", msg);
     });
 
-    LOG_SUCCESS("Cliente Torii creado exitosamente");
+    Logger::success("Cliente Torii creado exitosamente");
     emit_signal("client_connected", true);
     return true;
 }
@@ -113,7 +113,7 @@ void ToriiClient::disconnect_client()
         is_connected = false;
 
         emit_signal("client_disconnected");
-        LOG_INFO("Cliente Torii desconectado");
+        Logger::info("Cliente Torii desconectado");
     }
 }
 
@@ -149,7 +149,7 @@ Dictionary ToriiClient::get_world_metadata()
 {
     if (!is_client_connected())
     {
-        LOG_ERROR("Cliente no conectado");
+        Logger::error("Cliente no conectado");
         return {};
     }
 
@@ -157,7 +157,7 @@ Dictionary ToriiClient::get_world_metadata()
 
     if (resMetadata.tag == DOJO::ErrWorldMetadata)
     {
-        LOG_ERROR("Error al obtener metadatos: ", GET_DOJO_ERROR(resMetadata));
+        Logger::error("Error al obtener metadatos: ", GET_DOJO_ERROR(resMetadata));
         return {};
     }
 
@@ -199,7 +199,7 @@ Dictionary ToriiClient::get_world_metadata()
     result["models"] = models_array;
     result["world_address"] = world_address;
 
-    LOG_SUCCESS("Metadatos obtenidos");
+    Logger::success("Metadatos obtenidos");
     emit_signal("metadata_updated", result);
 
     return result;
@@ -213,19 +213,19 @@ bool ToriiClient::refresh_metadata()
 
 TypedArray<Dictionary> ToriiClient::get_entities(const Dictionary& query_params)
 {
-    LOG_INFO("Obteniendo entidades...");
+    Logger::info("Obteniendo entidades...");
     if (!is_client_connected())
     {
-        LOG_ERROR("Cliente no conectado");
+        Logger::error("Cliente no conectado");
         return TypedArray<Dictionary>();
     }
-    LOG_DEBUG("Converting Query");
+    Logger::debug("Converting Query");
     DOJO::Query query = create_query_from_dict(query_params);
     DOJO::ResultPageEntity resPageEntities = DOJO::client_entities(client, query);
 
     if (resPageEntities.tag == DOJO::ErrPageEntity)
     {
-        LOG_ERROR("Error al obtener entidades: ", GET_DOJO_ERROR(resPageEntities));
+        Logger::error("Error al obtener entidades: ", GET_DOJO_ERROR(resPageEntities));
         return {};
     }
 
@@ -242,7 +242,7 @@ TypedArray<Dictionary> ToriiClient::get_entities(const Dictionary& query_params)
         result.append(entity_dict);
     }
 
-    LOG_SUCCESS("Entidades obtenidas: ", String::num_int64(result.size()));
+    Logger::success("Entidades obtenidas: ", String::num_int64(result.size()));
     return result;
 }
 
@@ -251,7 +251,7 @@ TypedArray<Dictionary> ToriiClient::get_controllers(const String& player_address
 {
     if (!is_client_connected())
     {
-        LOG_ERROR("Cliente no conectado");
+        Logger::error("Cliente no conectado");
         return TypedArray<Dictionary>();
     }
 
@@ -269,7 +269,7 @@ TypedArray<Dictionary> ToriiClient::get_controllers(const String& player_address
 
     if (resControllers.tag == DOJO::ErrCArrayController)
     {
-        LOG_ERROR("Error al obtener controladores: ", GET_DOJO_ERROR(resControllers));
+        Logger::error("Error al obtener controladores: ", GET_DOJO_ERROR(resControllers));
         return {};
     }
 
@@ -286,7 +286,7 @@ TypedArray<Dictionary> ToriiClient::get_controllers(const String& player_address
         result.append(controller_dict);
     }
 
-    LOG_SUCCESS("Controladores obtenidos: ", String::num_int64(result.size()));
+    Logger::success("Controladores obtenidos: ", String::num_int64(result.size()));
     return result;
 }
 
@@ -311,16 +311,16 @@ bool ToriiClient::create_entity_subscription(const Callable& callback, const Dic
 {
     if (!is_client_connected())
     {
-        LOG_ERROR("Cliente no conectado");
+        Logger::error("Cliente no conectado");
         return false;
     }
 
-    LOG_INFO("Creating entity subscription...");
+    Logger::info("Creating entity subscription...");
 
     Ref<EventSubscription> entity_subscription;
     entity_subscription.instantiate();
 
-    LOG_INFO("EventSubscription instance created successfully at: ", entity_subscription);
+    Logger::info("EventSubscription instance created successfully at: ", entity_subscription);
 
     DOJO::COptionClause event_clause = {};
     event_clause.tag = DOJO::COptionClause_Tag::NoneClause;
@@ -329,11 +329,11 @@ bool ToriiClient::create_entity_subscription(const Callable& callback, const Dic
 
     if (result)
     {
-        LOG_SUCCESS("Entity subscription created successfully");
+        Logger::success("Entity subscription created successfully");
     }
     else
     {
-        LOG_ERROR("Failed to setup entity subscription");
+        Logger::error("Failed to setup entity subscription");
     }
 
     return result;
@@ -343,16 +343,16 @@ bool ToriiClient::create_event_subscription(const Callable& callback, const Dict
 {
     if (!is_client_connected())
     {
-        LOG_ERROR("Cliente no conectado");
+        Logger::error("Cliente no conectado");
         return false;
     }
 
-    LOG_INFO("Creating entity subscription...");
+    Logger::info("Creating entity subscription...");
 
     Ref<EventSubscription> event_subscription;
     event_subscription.instantiate();
 
-    LOG_INFO("EventSubscription instance created successfully at: ", event_subscription);
+    Logger::info("EventSubscription instance created successfully at: ", event_subscription);
 
     DOJO::COptionClause event_clause = {};
     event_clause.tag = DOJO::COptionClause_Tag::NoneClause;
@@ -361,18 +361,18 @@ bool ToriiClient::create_event_subscription(const Callable& callback, const Dict
 
     if (result)
     {
-        LOG_SUCCESS("Entity subscription created successfully");
+        Logger::success("Entity subscription created successfully");
     }
     else
     {
-        LOG_ERROR("Failed to setup entity subscription");
+        Logger::error("Failed to setup entity subscription");
     }
     return result;
 }
 
 bool ToriiClient::create_token_subscription(const Callable& callback, const String& account_address)
 {
-    LOG_INFO("[TODO] Creating token subscription for: ", account_address);
+    Logger::info("[TODO] Creating token subscription for: ", account_address);
     return true;
 }
 
@@ -385,7 +385,7 @@ bool ToriiClient::publish_message(const String& message_data, const Array& signa
 {
     if (!is_client_connected())
     {
-        LOG_ERROR("Cliente no conectado");
+        Logger::error("Cliente no conectado");
         return false;
     }
 
@@ -408,12 +408,12 @@ bool ToriiClient::publish_message(const String& message_data, const Array& signa
 
     if (result.tag == DOJO::ErrFieldElement)
     {
-        LOG_ERROR("Error al publicar mensaje: ", GET_DOJO_ERROR(result));
+        Logger::error("Error al publicar mensaje: ", GET_DOJO_ERROR(result));
         return false;
     }
 
     FieldElement msg_hash(GET_DOJO_OK(result));
-    LOG_SUCCESS("Mensaje publicado: ", msg_hash.to_string());
+    Logger::success("Mensaje publicado: ", msg_hash.to_string());
     emit_signal("message_published", msg_hash.to_string());
 
     return true;
@@ -466,10 +466,10 @@ Dictionary ToriiClient::get_connection_status() const
 DOJO::Query ToriiClient::create_query_from_dict(const Dictionary& query_params)
 {
     DOJO::Query query = {};
-    LOG_INFO("Query Creation");
+    Logger::info("Query Creation");
 
     DOJO::Pagination pagination = {};
-    LOG_INFO("Pagination Creation");
+    Logger::info("Pagination Creation");
     Dictionary pagination_dict = query_params.get("pagination", {});
     pagination.limit = query_params.get("limit", 10);
     String cursor = pagination_dict.get("cursor", "");
@@ -483,7 +483,7 @@ DOJO::Query ToriiClient::create_query_from_dict(const Dictionary& query_params)
         pagination.cursor.some = cursor.utf8().get_data();
     }
     // TODO: Ver una forma "mas elegante"
-    LOG_DEBUG(pagination_dict.get("direction", "NO HABIA"));
+    Logger::debug(pagination_dict.get("direction", "NO HABIA"));
     if (pagination_dict.get("direction", "forward") == "backward")
     {
         pagination.direction = DOJO::PaginationDirection::Backward;
@@ -494,7 +494,7 @@ DOJO::Query ToriiClient::create_query_from_dict(const Dictionary& query_params)
     }
 
     DOJO::CArrayOrderBy orderBy = {};
-    LOG_INFO("OrderBy Creation");
+    Logger::info("OrderBy Creation");
     Array orderBy_array = pagination_dict.get("order_by", {});
     if (!orderBy_array.is_empty())
     {
@@ -570,7 +570,7 @@ Dictionary ToriiClient::entity_to_dictionary(const DOJO::Entity& entity)
     for (const auto& c_struct : c_structs)
     {
         Dictionary model_dict = {};
-        LOG_CUSTOM("MODEL", c_struct.name);
+        Logger::custom("MODEL", c_struct.name);
 
         DojoStruct data = {c_struct};
 
@@ -581,7 +581,7 @@ Dictionary ToriiClient::entity_to_dictionary(const DOJO::Entity& entity)
 
         model_dict["data"] = members_dict;
         models_array.append(model_dict);
-        LOG_CUSTOM("SPACE", "\n");
+        Logger::custom("SPACE", "\n");
     }
 
     entity_dict["models"] = models_array;

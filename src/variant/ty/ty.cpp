@@ -9,7 +9,7 @@
 #include "variant/ty/struct.h"
 // Esto solo para debug, no va a formar parte del logger.
 #define COLORED_TYPE(class_type, type) \
-LOG_DEBUG_EXTRA(class_type, "[color=red][b]" type "[/b][/color] ")
+Logger::debug_extra(class_type, "[color=red][b]" type "[/b][/color] ")
 
 DojoTy::DojoTy()
 {
@@ -33,7 +33,7 @@ DojoTy::DojoTy(const DOJO::Ty* ty)
 DojoTy::DojoTy(const DOJO::Member &member)
 {
     name = member.name;
-    LOG_DEBUG_EXTRA("Member", name);
+    Logger::debug_extra("Member", name);
     init_form_ty(*member.ty);
 }
 
@@ -58,7 +58,7 @@ void DojoTy::init_form_ty(const DOJO::Ty& ty)
         type = Type::Struct_;
         DojoStruct data = {ty.struct_};
         value = data.get_value();
-        LOG_DEBUG(name, data.get_name());
+        Logger::debug(name, data.get_name());
         name = data.get_name();
     }
     else if (ty.tag == Tag::Enum_)

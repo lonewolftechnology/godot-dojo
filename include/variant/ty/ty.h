@@ -62,7 +62,7 @@ public:
             return {value.stringify()};
         }else
         {
-            LOG_WARNING("No felt found, returning empty one");
+            Logger::warning("No felt found, returning empty one");
             return {};
         }
     }

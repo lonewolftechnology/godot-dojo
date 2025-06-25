@@ -51,7 +51,8 @@ Variant ArrayDojoTy::ArrayDojoFieldElementToVariant(DOJO::CArrayFieldElement arr
     Dictionary data = {};
     data["address"] = felt.to_string();
     data["data"] = felt.parse_cairo();
-    data["data_len"] = array_felt.data_len;
+    // data["data_len"] = array_felt.data_len;
+    data["data_len"] = static_cast<int64_t>(array_felt.data_len);
     return data;
 }
 

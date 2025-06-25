@@ -31,7 +31,7 @@ ControllerAccount::~ControllerAccount()
 {
     // disconnect_controller();
     singleton = nullptr;
-    LOG_DEBUG_EXTRA("ControllerAccount", "DESTRUCTOR CALLED");
+    Logger::debug_extra("ControllerAccount", "DESTRUCTOR CALLED");
 }
 
 ControllerAccount* ControllerAccount::get_singleton()
@@ -54,14 +54,14 @@ DOJO::ControllerAccount* ControllerAccount::get_session_account() const
 
 void on_account(DOJO::ControllerAccount* account)
 {
-    LOG_SUCCESS("Account Data received");
+    Logger::success("Account Data received");
     ControllerAccount::get_singleton()->set_session_account(account);
 
     DOJO::FieldElement player_address = DOJO::controller_address(account);
     DOJO::FieldElement player_chain_id = DOJO::controller_chain_id(account);
 
-    LOG_CUSTOM("PLAYER CHAIN ID", FieldElement::get_as_string(&player_chain_id));
-    LOG_CUSTOM("PLAYER ID", FieldElement::get_as_string(&player_address));
+    Logger::custom("PLAYER CHAIN ID", FieldElement::get_as_string(&player_chain_id));
+    Logger::custom("PLAYER ID", FieldElement::get_as_string(&player_address));
 }
 
 void ControllerAccount::setup()
@@ -73,7 +73,7 @@ void ControllerAccount::setup()
 void ControllerAccount::create(const Ref<DojoPolicies>& policies_data)
 {
     String rpc_url = ProjectSettings::get_singleton()->get("dojo/rpc_url");
-
+    Logger::info("RPC URL: ", rpc_url);
     // Provider
     DOJO::ResultProvider resControllerProvider = DOJO::provider_new(rpc_url.utf8().get_data());
     if (resControllerProvider.tag == DOJO::ErrProvider)
@@ -82,13 +82,13 @@ void ControllerAccount::create(const Ref<DojoPolicies>& policies_data)
         emit_signal("provider_status_updated", false);
         return;
     }
-    LOG_SUCCESS("Controller Provider created");
+    Logger::success("Controller Provider created");
     provider = GET_DOJO_OK(resControllerProvider);
     emit_signal("provider_status_updated", true);
 
     if (policies_data->is_empty())
     {
-        LOG_ERROR("Invalid policies data");
+        Logger::error("Invalid policies data");
         return;
     }
 
@@ -98,7 +98,7 @@ void ControllerAccount::create(const Ref<DojoPolicies>& policies_data)
     DOJO::ResultFieldElement resKatana = DOJO::cairo_short_string_to_felt(torii_chain_id.utf8().get_data());
     if (resKatana.tag == DOJO::ErrFieldElement)
     {
-        LOG_ERROR("Error al convertir Chain ID: ", GET_DOJO_ERROR(resKatana));
+        Logger::error("Error al convertir Chain ID: ", GET_DOJO_ERROR(resKatana));
     }
     DOJO::FieldElement katana = resKatana.ok;
 
@@ -107,13 +107,13 @@ void ControllerAccount::create(const Ref<DojoPolicies>& policies_data)
 
     if (resControllerAccount.tag == DOJO::OkControllerAccount)
     {
-        LOG_INFO("Session account already connected");
+        Logger::info("Session account already connected");
         session_account = GET_DOJO_OK(resControllerAccount);
         on_account(session_account);
     }
     else
     {
-        LOG_INFO("Session account not connected, connecting...");
+        Logger::info("Session account not connected, connecting...");
         DOJO::controller_connect(rpc_url.utf8().get_data(), policies.data(), policies_len, on_account);
     }
 }
@@ -130,18 +130,18 @@ void ControllerAccount::disconnect_controller()
         DOJO::Resultbool resClear = DOJO::controller_clear(policy.data(), policies_len, chain_id);
         if (resClear.tag == DOJO::Errbool)
         {
-            LOG_ERROR("Failed to clear Controller", resClear.err.message);
+            Logger::error("Failed to clear Controller", resClear.err.message);
             return;
         }
         else
         {
-            LOG_SUCCESS("Controller cleared");
+            Logger::success("Controller cleared");
         }
 
         session_account = nullptr;
         is_connected = false;
         emit_signal("controller_disconnected");
-        LOG_INFO("ControllerAccount desconectado");
+        Logger::info("ControllerAccount desconectado");
     }
 }
 
@@ -203,7 +203,7 @@ DOJO::Call create_call_from_data(const String& contract_address, const String& s
 
     if (!calldata.is_empty())
     {
-        LOG_DEBUG_EXTRA("CALLDATA", Variant(calldata.size()));
+        Logger::debug_extra("CALLDATA", Variant(calldata.size()));
         call.calldata = array_to_felt_array(calldata);
     }
 
@@ -214,13 +214,27 @@ void ControllerAccount::execute_raw(const Ref<DojoCall>& action)
 {
     if (!is_controller_connected())
     {
-        LOG_ERROR("ControllerAccount no está conectado");
+        Logger::error("ControllerAccount no está conectado");
         emit_signal("transaction_failed", "Cuenta no conectada");
+        return;
+    }
+
+    if (action.is_null())
+    {
+        Logger::error("DojoCall es null");
+        emit_signal("transaction_failed", "Acción inválida");
         return;
     }
 
     DOJO::Call call = action->build();
     uintptr_t calldata_len = action->get_size();
+    
+    if (call.selector == nullptr || strlen(call.selector) == 0)
+    {
+        Logger::error("Selector inválido");
+        emit_signal("transaction_failed", "Selector inválido");
+        return;
+    }
 
     DOJO::ResultFieldElement result = DOJO::controller_execute_raw(
         session_account, &call, calldata_len
@@ -228,13 +242,14 @@ void ControllerAccount::execute_raw(const Ref<DojoCall>& action)
 
     if (result.tag == DOJO::ErrFieldElement)
     {
-        LOG_ERROR("Error al ejecutar transacción: ", GET_DOJO_ERROR(result));
+        Logger::error("Error al ejecutar transacción: ", GET_DOJO_ERROR(result));
         emit_signal("transaction_failed", GET_DOJO_ERROR(result));
     }
     else
     {
+        Logger::debug_extra("RAW", "SUCEEDED");
         DOJO::wait_for_transaction(provider, GET_DOJO_OK(result));
-        LOG_SUCCESS_EXTRA("EXECUTED", call.selector);
+        Logger::success_extra("EXECUTED", call.selector);
     }
 }
 
@@ -243,7 +258,7 @@ void ControllerAccount::execute_from_outside(const Ref<DojoCall>& action)
 {
     if (!is_controller_connected())
     {
-        LOG_ERROR("ControllerAccount no está conectado");
+        Logger::error("ControllerAccount no está conectado");
         emit_signal("transaction_failed", "Cuenta no conectada");
     }
     DOJO::Call call = action->build();
@@ -254,13 +269,13 @@ void ControllerAccount::execute_from_outside(const Ref<DojoCall>& action)
     );
     if (result.tag == DOJO::ErrFieldElement)
     {
-        LOG_ERROR(GET_DOJO_ERROR(result));
+        Logger::error(GET_DOJO_ERROR(result));
         emit_signal("transaction_failed", GET_DOJO_ERROR(result));
     }
     else
     {
         DOJO::wait_for_transaction(provider, GET_DOJO_OK(result));
-        LOG_SUCCESS_EXTRA("EXECUTED", call.selector);
+        Logger::success_extra("EXECUTED", call.selector);
     }
 }
 

@@ -4,26 +4,39 @@
 #ifndef DEBUG_MACROS_H
 #define DEBUG_MACROS_H
 #include "godot_cpp/variant/utility_functions.hpp"
+#include <type_traits>
 using namespace godot;
 
 namespace logger_internal
 {
-    template <typename T>
-    inline String to_string(const T& value)
+    // Helper para convertir tipos problemáticos a tipos seguros
+    template<typename T>
+    auto make_safe_variant(const T& value) -> Variant
     {
-        return Variant(value).stringify();
-    }
-
-    template <>
-    inline String to_string<String>(const String& value)
-    {
-        return value;
+        if constexpr (std::is_same_v<T, const char*>) {
+            return Variant(String(value));
+        }
+        else if constexpr (std::is_same_v<T, char*>) {
+            return Variant(String(value));
+        }
+        else if constexpr (std::is_arithmetic_v<T> && std::is_unsigned_v<T> && sizeof(T) >= sizeof(uint32_t)) {
+            // Para unsigned long, size_t, uintptr_t, etc.
+            return Variant(static_cast<int64_t>(value));
+        }
+        else if constexpr (std::is_arithmetic_v<T>) {
+            return Variant(value);
+        }
+        else {
+            return Variant(value);
+        }
     }
 
     template <typename... Args>
     inline String concat_all(Args... args)
     {
-        return (to_string(args) + ...);
+        String result;
+        ((result += make_safe_variant(args).stringify()), ...);
+        return result;
     }
 }
 
@@ -108,33 +121,10 @@ public:
 #endif
     }
 
-
     static void empty_line()
     {
         UtilityFunctions::print_rich("\n");
     }
 };
-
-// Alias para compatibilidad (los voy a borrar despues)
-#define LOG_ERROR(...) Logger::error(__VA_ARGS__)
-#define LOG_WARNING(...) Logger::warning(__VA_ARGS__)
-
-#ifdef DEBUG_ENABLED
-#define LOG_INFO(...) Logger::info(__VA_ARGS__)
-#define LOG_SUCCESS(...) Logger::success(__VA_ARGS__)
-#define LOG_DEBUG(...) Logger::debug(__VA_ARGS__)
-#define LOG_CUSTOM(type, ...) Logger::custom(type, __VA_ARGS__)
-#define LOG_SUCCESS_EXTRA(type, ...) Logger::success_extra(type, __VA_ARGS__)
-#define LOG_DEBUG_EXTRA(type, ...) Logger::debug_extra(type, __VA_ARGS__)
-#define LOG_COLOR(color, ...) Logger::log_color(color, __VA_ARGS__)
-#else
-#define LOG_INFO(...) ((void)0)
-#define LOG_SUCCESS(...) ((void)0)
-#define LOG_DEBUG(...) ((void)0)
-#define LOG_CUSTOM(type, ...) ((void)0)
-#define LOG_SUCCESS_EXTRA(type, ...) ((void)0)
-#define LOG_DEBUG_EXTRA(type, ...) ((void)0)
-#define LOG_COLOR(color, ...) ((void)0)
-#endif
 
 #endif // DEBUG_MACROS_H

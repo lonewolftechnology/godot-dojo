@@ -71,7 +71,7 @@ PackedByteArray FieldElement::to_packed_array(const void* data, const int size)
     PackedByteArray _bytes;
     _bytes.resize(size);
     memcpy(_bytes.ptrw(), data, size);
-    LOG_INFO("[FieldElement] -> [PackedByteArray] ", _bytes.hex_encode());
+    Logger::info("[FieldElement] -> [PackedByteArray] ", _bytes.hex_encode());
     return _bytes;
 }
 
@@ -85,7 +85,7 @@ dojo_bindings::FieldElement FieldElement::from_string(const String& hex_str, siz
     size_t hex_length = hex_str.length() - start_idx;
 
     if (hex_length > 64) {
-        LOG_ERROR("Hex string too long for FieldElement");
+        Logger::error("Hex string too long for FieldElement");
         return result;
     }
 
@@ -98,7 +98,7 @@ dojo_bindings::FieldElement FieldElement::from_string(const String& hex_str, siz
         String byte_str = padded_hex.substr(i, 2);
         int byte_value = byte_str.hex_to_int();
         if (byte_value < 0) {
-            LOG_ERROR("Invalid hex character in string");
+            Logger::error("Invalid hex character in string");
             return result;
         }
         result.data[i / 2] = static_cast<uint8_t>(byte_value);
@@ -134,13 +134,13 @@ Ref<FieldElement> FieldElement::from_enum(int enum_value)
     field_element.instantiate();
     if (field_element.is_null())
     {
-        LOG_ERROR("Failed to instantiate FieldElement");
+        Logger::error("Failed to instantiate FieldElement");
         return {};
     }
 
     if (field_element->felt == nullptr)
     {
-        LOG_ERROR("felt is null after instantiation");
+        Logger::error("felt is null after instantiation");
         field_element->felt = new DOJO::FieldElement();
     }
     memset(field_element->felt->data, 0, 32);
@@ -155,12 +155,12 @@ String FieldElement::bytearray_deserialize()
     DOJO::Resultc_char testing = DOJO::bytearray_deserialize(get_felt(), 32);
     if (testing.tag == DOJO::Errc_char)
     {
-        LOG_DEBUG("Can't deserialize... Trying Cairo String");
+        Logger::debug("Can't deserialize... Trying Cairo String");
         return parse_cairo();
     }
     else
     {
-        LOG_SUCCESS("Felt:", GET_DOJO_OK(testing));
+        Logger::success("Felt:", GET_DOJO_OK(testing));
     }
     return {GET_DOJO_OK(testing)};
 }
@@ -192,10 +192,10 @@ String FieldElement::parse_cairo()
     DOJO::Resultc_char resCairo = DOJO::parse_cairo_short_string(get_felt_no_ptr());
     if (resCairo.tag == DOJO::Errc_char)
     {
-        LOG_DEBUG("No cairo string found, returning as string hex");
+        Logger::debug("No cairo string found, returning as string hex");
         return {to_string()};
     }
     String result = GET_DOJO_OK(resCairo);
-    LOG_SUCCESS("Cairo String: ", result);
+    Logger::success("Cairo String: ", result);
     return result;
 }

@@ -11,7 +11,6 @@ Variant DojoPrimitive::VariantFromPrimitive(dojo_bindings::Primitive primitive)
     {
     case DOJO::Primitive_Tag::I8:
         return {primitive.i8};
-        break;
     case DOJO::Primitive_Tag::I16:
         return {primitive.i16};
     case DOJO::Primitive_Tag::I32:
@@ -58,7 +57,7 @@ FieldElement DojoPrimitive::FieldElementFromPrimitive(DOJO::Primitive primitive)
 
 DojoPrimitive::DojoPrimitive()
 {
-    LOG_DEBUG("Primitive constructor called");
+    Logger::debug("Primitive constructor called");
 }
 
 DojoPrimitive::DojoPrimitive(const DOJO::Primitive& primitive)

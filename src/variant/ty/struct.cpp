@@ -12,10 +12,10 @@ DojoStruct::DojoStruct(DOJO::Struct struct_)
 
 DojoStruct::DojoStruct(DOJO::Member member)
 {
-    LOG_CUSTOM("Struct", member.name);
+    Logger::custom("Struct", member.name);
     DojoTy t_struct = DojoTy(member);
     name = t_struct.get_name();
-    LOG_CUSTOM("DOJOTY", name, " ->>><<<-");
+    Logger::custom("DOJOTY", name, " ->>><<<-");
     value = t_struct.get_value();
 }
 
@@ -23,7 +23,7 @@ Variant DojoStruct::StructToVariant(DOJO::Struct struct_)
 {
     Array result_array = {};
     name = struct_.name;
-    LOG_CUSTOM("DojoStruct", name);
+    Logger::custom("DojoStruct", name);
     std::vector<DOJO::Member> struct_child(struct_.children.data,
                                            struct_.children.data + struct_.children.data_len);
     if (name.to_lower().contains("vec2"))
@@ -46,16 +46,16 @@ Variant DojoStruct::StructToVariant(DOJO::Struct struct_)
         }
         return vec;
     }
-    LOG_CUSTOM("Struct", name);
+    Logger::custom("Struct", name);
     for (const auto& struct_child_member : struct_child)
     {
         name = struct_child_member.name;
-        LOG_CUSTOM("Nested", name);
+        Logger::custom("Nested", name);
         DojoTy t_struct = DojoTy(struct_child_member);
         Dictionary data = {};
         data[t_struct.get_name()] = t_struct.get_value();
         result_array.append(data);
     }
-    LOG_DEBUG_EXTRA("FINAL STRUCT", result_array);
+    Logger::debug_extra("FINAL STRUCT", result_array);
     return result_array;
 }

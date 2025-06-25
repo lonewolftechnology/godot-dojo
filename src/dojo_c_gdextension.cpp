@@ -26,7 +26,7 @@ DojoC::DojoC()
 {
     if (Engine::get_singleton()->is_editor_hint())
     {
-        LOG_DEBUG_EXTRA("DojoC", "is running in editor mode");
+        Logger::debug_extra("DojoC", "is running in editor mode");
         ProjectSettings* settings = ProjectSettings::get_singleton();
         if (settings->has_setting("dojo/rpc_url") == false)
         {

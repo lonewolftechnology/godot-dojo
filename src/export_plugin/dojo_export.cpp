@@ -8,13 +8,13 @@ void DojoExportPlugin::_bind_methods() {
 }
 
 DojoExportPlugin::DojoExportPlugin() {
-    LOG_INFO("📦 DojoExportPlugin inicializado");
+    Logger::info("📦 DojoExportPlugin inicializado");
     export_path = "";
 
 }
 
 DojoExportPlugin::~DojoExportPlugin() {
-    LOG_INFO("📦 DojoExportPlugin destruido");
+    Logger::info("📦 DojoExportPlugin destruido");
 }
 
 String DojoExportPlugin::_get_name() const {
@@ -24,15 +24,15 @@ String DojoExportPlugin::_get_name() const {
 void DojoExportPlugin::_export_begin(const PackedStringArray &features, bool is_debug, const String &path, int flags) {
     export_path = path.get_base_dir();
 
-    LOG_INFO("🚀 Iniciando exportación desde consola/editor:");
-    LOG_INFO("🖥️  Modo headless detectado:", Variant(Engine::get_singleton()->is_editor_hint()));
-    LOG_INFO("📁 Path:", path);
-    LOG_INFO("🏗️  Export dir:", export_path);
+    Logger::info("🚀 Iniciando exportación desde consola/editor:");
+    Logger::info("🖥️  Modo headless detectado:", Variant(Engine::get_singleton()->is_editor_hint()));
+    Logger::info("📁 Path:", path);
+    Logger::info("🏗️  Export dir:", export_path);
 
-    // LOG_INFO("Features:", features);
-    LOG_INFO("Debug:", Variant(is_debug));
-    LOG_INFO("Path:", path);
-    LOG_INFO("Export dir:", export_path);
+    // Logger::info("Features:", features);
+    Logger::info("Debug:", Variant(is_debug));
+    Logger::info("Path:", path);
+    Logger::info("Export dir:", export_path);
     
     // Copiar archivos específicos según la plataforma
     if (features.has("linux")) {
@@ -52,25 +52,25 @@ void DojoExportPlugin::_export_file(const String &path, const String &type, cons
     // Por ejemplo, si quieres copiar archivos .dll específicos:
     
     if (path.ends_with(".dll") && path.begins_with("addons/dojo/")) {
-        LOG_INFO("📦 Procesando archivo DLL: ", path);
+        Logger::info("📦 Procesando archivo DLL: ", path);
         // El archivo se incluirá automáticamente en la exportación
     }
 }
 
 void DojoExportPlugin::_export_end() {
-    LOG_INFO("✅ Exportación completada");
+    Logger::info("✅ Exportación completada");
 }
 
 bool DojoExportPlugin::copy_file_to_export(const String &source_path, const String &dest_relative_path) {
     if (export_path.is_empty()) {
-        LOG_INFO("❌ Error: export_path no está definido");
+        Logger::info("❌ Error: export_path no está definido");
         return false;
     }
     
     // Verificar que el archivo fuente existe
     Ref<FileAccess> source_file = FileAccess::open(source_path, FileAccess::READ);
     if (source_file.is_null()) {
-        LOG_INFO("❌ No se puede leer el archivo fuente: ", source_path);
+        Logger::info("❌ No se puede leer el archivo fuente: ", source_path);
         return false;
     }
     
@@ -90,27 +90,27 @@ bool DojoExportPlugin::copy_file_to_export(const String &source_path, const Stri
     // Escribir archivo en destino
     Ref<FileAccess> dest_file = FileAccess::open(dest_path, FileAccess::WRITE);
     if (dest_file.is_null()) {
-        LOG_INFO("❌ No se puede escribir el archivo destino: ", dest_path);
+        Logger::info("❌ No se puede escribir el archivo destino: ", dest_path);
         return false;
     }
     
     dest_file->store_buffer(file_data);
     dest_file->close();
     
-    LOG_INFO("✅ Archivo copiado: ", source_path, " -> ", dest_path);
+    Logger::info("✅ Archivo copiado: ", source_path, " -> ", dest_path);
     return true;
 }
 
 bool DojoExportPlugin::ensure_directory_exists(const String &dir_path) {
     Ref<DirAccess> dir = DirAccess::open(".");
     if (dir.is_null()) {
-        LOG_INFO("❌ Error accediendo al sistema de archivos");
+        Logger::info("❌ Error accediendo al sistema de archivos");
         return false;
     }
     
     Error err = dir->make_dir_recursive(dir_path);
     if (err != OK && err != ERR_ALREADY_EXISTS) {
-        LOG_INFO("❌ Error creando directorio: ", dir_path);
+        Logger::info("❌ Error creando directorio: ", dir_path);
         return false;
     }
     
@@ -120,7 +120,7 @@ bool DojoExportPlugin::ensure_directory_exists(const String &dir_path) {
 void DojoExportPlugin::copy_files_from_folder(const String &source_folder, const String &dest_folder) {
     Ref<DirAccess> dir = DirAccess::open(source_folder);
     if (dir.is_null()) {
-        LOG_INFO("❌ No se puede acceder a la carpeta: ", source_folder);
+        Logger::info("❌ No se puede acceder a la carpeta: ", source_folder);
         return;
     }
     

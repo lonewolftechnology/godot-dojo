@@ -58,13 +58,13 @@ public:
 
     uintptr_t get_size()
     {
-        LOG_DEBUG_EXTRA("Call", "calldata size: ", calldata.size());
+        Logger::debug_extra("Call", "calldata size: ", calldata.size());
         uintptr_t size = 1;
         if (calldata.size() > 0)
         {
             size = calldata.size();
         }
-        LOG_DEBUG_EXTRA("Call", "final calldata size: ", size);
+        Logger::debug_extra("Call", "final calldata size: ", size);
         return size;
     }
 
@@ -80,7 +80,7 @@ public:
 
         if (!calldata.is_empty())
         {
-            LOG_DEBUG("Building Calldata");
+            Logger::debug("Building Calldata");
             stored_calldata.clear();
             stored_calldata.reserve(calldata.size());
 
@@ -90,7 +90,7 @@ public:
                 felt.instantiate();
                 felt = calldata[i];
 
-                LOG_DEBUG_EXTRA("Call Build", felt->to_string());
+                Logger::debug_extra("Call Build", felt->to_string());
                 if (felt.is_valid())
                 {
                     stored_calldata.push_back(felt->get_felt_no_ptr());
@@ -103,7 +103,7 @@ public:
         }
         else
         {
-            LOG_DEBUG_EXTRA("Call Build", "no calldata found, ignoring");
+            Logger::debug_extra("Call Build", "no calldata found, ignoring");
             // call.calldata = {};
         }
 

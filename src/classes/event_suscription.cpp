@@ -20,16 +20,16 @@ void EventSubscription::_bind_methods()
 
 EventSubscription::EventSubscription()
 {
-    LOG_INFO("EventSubscription constructor called");
+    Logger::info("EventSubscription constructor called");
 }
 
 EventSubscription::~EventSubscription()
 {
-    LOG_INFO("EventSubscription destructor called");
+    Logger::info("EventSubscription destructor called");
     if (g_active_instance.is_valid() && g_active_instance.ptr() == this)
     {
         g_active_instance.unref();
-        LOG_INFO("Active instance cleared");
+        Logger::info("Active instance cleared");
     }
 }
 
@@ -41,7 +41,7 @@ Callable EventSubscription::get_callback() const
 void EventSubscription::set_callback(const Callable& p_callback)
 {
     callback = p_callback;
-    LOG_INFO("Callback set successfully");
+    Logger::info("Callback set successfully");
 }
 
 EventSubscription* EventSubscription::get_active_instance()
@@ -58,109 +58,109 @@ void EventSubscription::set_active_instance(EventSubscription* instance)
     if (instance != nullptr)
     {
         g_active_instance = Ref<EventSubscription>(instance);
-        LOG_INFO("Active instance set successfully");
+        Logger::info("Active instance set successfully");
     }
     else
     {
         g_active_instance.unref();
-        LOG_INFO("Active instance cleared");
+        Logger::info("Active instance cleared");
     }
 }
 
 void subscription_wrapper(DOJO::FieldElement entity_id, DOJO::CArrayStruct models)
 {
-    LOG_INFO("Event received in subscription_wrapper");
+    Logger::info("Event received in subscription_wrapper");
 
     EventSubscription* instance = EventSubscription::get_active_instance();
     if (instance != nullptr)
     {
-        LOG_INFO("Processing event - instance found");
+        Logger::info("Processing event - instance found");
         instance->on_event_update(&entity_id, models);
     }
     else
     {
-        LOG_ERROR("Subscription instance is null - no active subscription found");
+        Logger::error("Subscription instance is null - no active subscription found");
     }
 }
 
 bool EventSubscription::setup(ToriiClient* torii, const DOJO::COptionClause& event_clause, const Callable& p_callback)
 {
-    LOG_INFO("Setting up EventSubscription");
+    Logger::info("Setting up EventSubscription");
 
     if (torii == nullptr)
     {
-        LOG_ERROR("ToriiClient is null");
+        Logger::error("ToriiClient is null");
         return false;
     }
 
     DOJO::ToriiClient* client = torii->get_client();
     if (client == nullptr)
     {
-        LOG_ERROR("ToriiClient->get_client() returned null");
+        Logger::error("ToriiClient->get_client() returned null");
         return false;
     }
-    LOG_INFO("Setting up EventSubscription - client found");
+    Logger::info("Setting up EventSubscription - client found");
     callback = p_callback;
-    LOG_INFO("Setting up EventSubscription - callback set");
+    Logger::info("Setting up EventSubscription - callback set");
     set_active_instance(this);
-    LOG_INFO("Setting up EventSubscription - active instance set");
-    LOG_INFO("Calling client_on_entity_state_update");
+    Logger::info("Setting up EventSubscription - active instance set");
+    Logger::info("Calling client_on_entity_state_update");
     DOJO::ResultSubscription resSubscription = DOJO::client_on_entity_state_update(
         client, event_clause, subscription_wrapper
     );
 
     if (resSubscription.tag == DOJO::ErrSubscription)
     {
-        LOG_ERROR("Error al crear suscripción de entidades: ", GET_DOJO_ERROR(resSubscription));
+        Logger::error("Error al crear suscripción de entidades: ", GET_DOJO_ERROR(resSubscription));
         torii->emit_signal("subscription_error", GET_DOJO_ERROR(resSubscription));
         set_active_instance(nullptr);
         return false;
     }
 
     subscription = resSubscription.ok;
-    LOG_SUCCESS("Suscripción de entidades creada exitosamente");
+    Logger::success("Suscripción de entidades creada exitosamente");
     return true;
 }
 
 void EventSubscription::on_event_update(DOJO::FieldElement* entity_id, DOJO::CArrayStruct models) const
 {
-    LOG_INFO("Entity Update Event Received");
+    Logger::info("Entity Update Event Received");
 
     if (callback.is_null())
     {
-        LOG_ERROR("NULL CALLABLE RECEIVED");
+        Logger::error("NULL CALLABLE RECEIVED");
         return;
     }
     if (!callback.is_valid())
     {
-        LOG_ERROR("INVALID CALLABLE RECEIVED");
+        Logger::error("INVALID CALLABLE RECEIVED");
         return;
     }
 
     FieldElement entity_felt = {entity_id};
-    LOG_INFO("Entity ID: ", entity_felt.to_string());
+    Logger::info("Entity ID: ", entity_felt.to_string());
     Array arguments = {};
     FieldElement nulledFelt = {0};
 
     if (entity_felt.as_packed_array().hex_encode() == nulledFelt.as_packed_array().hex_encode())
     {
-        LOG_WARNING("Entity ID is 0, first call?");
+        Logger::warning("Entity ID is 0, first call?");
         return;
     }
 
     if (models.data == nullptr)
     {
-        LOG_ERROR("models.data is null");
+        Logger::error("models.data is null");
         return;
     }
 
-    LOG_INFO("[color=RED]START EVENT SUBSCRIPTION[/color]");
-    LOG_INFO("model name ", models.data->name);
+    Logger::info("[color=RED]START EVENT SUBSCRIPTION[/color]");
+    Logger::info("model name ", models.data->name);
     auto children = models.data->children;
 
     if (children.data == nullptr)
     {
-        LOG_ERROR("children.data is null");
+        Logger::error("children.data is null");
         return;
     }
 
@@ -168,7 +168,7 @@ void EventSubscription::on_event_update(DOJO::FieldElement* entity_id, DOJO::CAr
 
     for (const auto& member : members)
     {
-        LOG_INFO("[color=MAGENTA]Procesando member... [/color]");
+        Logger::info("[color=MAGENTA]Procesando member... [/color]");
         DojoTy ty = DojoTy(member);
 
     }
@@ -176,10 +176,10 @@ void EventSubscription::on_event_update(DOJO::FieldElement* entity_id, DOJO::CAr
     for (int i = 0; i < arguments.size(); i++)
     {
         Variant arg = arguments[i];
-        LOG_DEBUG("ARG: ", arg);
+        Logger::debug("ARG: ", arg);
     }
 
-    LOG_INFO("Calling callback with arguments");
+    Logger::info("Calling callback with arguments");
     Variant callback_result = callback.call(Variant(arguments));
-    LOG_INFO("RESULT: ", callback_result);
+    Logger::info("RESULT: ", callback_result);
 }
