@@ -31,6 +31,15 @@ enum Directions{
 @onready var suscription_status: DojoStatusIndicator = %SuscriptionStatus
 @onready var entities_status: DojoStatusIndicator = %EntitiesStatus
 
+# Buttons with states
+@onready var disconnect_btn: Button = %Disconnect
+@onready var connect_btn: Button = %ConnectController
+
+# Tests Buttons
+@onready var get_controllers: Button = %GetControllers
+@onready var get_entities: Button = %GetEntities
+@onready var get_world_metadata: Button = %GetWorldMetadata
+
 var count: int = 0
 var packed: String
 
@@ -96,25 +105,9 @@ func _on_subcribe_pressed() -> void:
 
 	#controller.create(dev_actions_addr, "https://api.cartridge.gg/x/godot-demo-rookie/katana")
 
-	var query = {
-		"pagination":{
-			"limit": 10,
-			"cursor": "",
-			"order_by": [],
-			"direction": ToriiClient.QueryPaginationDirection.FORWARD
-		},
-		"clause": null,
-		"no_hashed_keys": true,
-		"models":[],
-		"historical": false
-	}
-	#var data = client.get_entities(query)
-	#print(data)
-	#var controllers_data = client.get_controllers()
-	#print(controllers_data)
-	#client.create_entity_subscription(call_test, {})
+	client.create_entity_subscription(call_test, {})
 	
-	#client.create_event_subscription(callable_test, {})
+	client.create_event_subscription(callable_test, {})
 	
 	
 	#await get_tree().process_frame
@@ -185,39 +178,33 @@ func _on_arrow_right_pressed() -> void:
 	_move(Directions.RIGHT)
 	
 	
-func _on_testing_pressed() -> void:
-	pass
-	#dojo.move(FieldElement.from_enum(0),true,false)
-
-
-func _on_client_metadata_pressed() -> void:
-	var data = client.get_world_metadata()
-	print(data)
-
-
-func _on_setup_policies_pressed() -> void:
-	controller_account.setup()
-
-
 func _on_disconnect_pressed() -> void:
 	controller_account.disconnect_controller()
 
-
 func _on_torii_client_client_connected(success: bool) -> void:
 	client_status.set_status(success)
+	connect_btn.disabled = false
+	get_controllers.disabled = false
+	get_entities.disabled = false
+	get_world_metadata.disabled = false
 
 func _on_torii_client_client_disconnected() -> void:
 	client_status.set_status(false)
-
+	connect_btn.disabled = true
+	get_controllers.disabled = true
+	get_entities.disabled = true
+	get_world_metadata.disabled = true
+	
 func _on_controller_account_provider_status_updated(success: bool) -> void:
 	provider_status.set_status(success)
 
 func _on_controller_account_controller_connected(success: bool) -> void:
 	controller_account_status.set_status(success)
+	disconnect_btn.disabled = false
 
 func _on_controller_account_controller_disconnected() -> void:
 	controller_account_status.set_status(false)
-
+	disconnect_btn.disabled = true
 
 func _on_torii_client_entity_updated(entity_data: Dictionary) -> void:
 	prints("Entity update", entity_data)
@@ -242,3 +229,33 @@ func _on_controller_account_transaction_executed(transaction_hash: String) -> vo
 
 func _on_controller_account_transaction_failed(error_message: String) -> void:
 	pass # Replace with function body.
+
+
+func _on_connect_controller_pressed() -> void:
+	controller_account.setup()
+
+
+func _on_get_controllers_pressed() -> void:
+	var data = client.get_controllers()
+	print(data)
+
+
+func _on_get_entities_pressed() -> void:
+	var query = {
+		"pagination":{
+			"limit": 10,
+			"cursor": "",
+			"order_by": [],
+			"direction": ToriiClient.QueryPaginationDirection.FORWARD
+		},
+		"clause": null,
+		"no_hashed_keys": true,
+		"models":[],
+		"historical": false
+	}
+	var data = client.get_entities(query)
+	print(data)
+
+func _on_get_world_metadata_pressed() -> void:
+	var data = client.get_world_metadata()
+	print(data)
