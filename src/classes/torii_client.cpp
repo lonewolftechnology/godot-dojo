@@ -43,7 +43,7 @@ ToriiClient::ToriiClient()
 
 ToriiClient::~ToriiClient()
 {
-    disconnect_client();
+    disconnect_client(false);
     singleton = nullptr;
     Logger::info("ToriiClient destruido");
 }
@@ -55,7 +55,7 @@ ToriiClient* ToriiClient::get_singleton()
 
 bool ToriiClient::create_client()
 {
-    disconnect_client();
+    disconnect_client(true);
 
     if (world_address.is_empty())
     {
@@ -103,7 +103,7 @@ bool ToriiClient::create_client()
     return true;
 }
 
-void ToriiClient::disconnect_client()
+void ToriiClient::disconnect_client(bool send_signal = true)
 {
     if (client != nullptr)
     {
@@ -111,8 +111,11 @@ void ToriiClient::disconnect_client()
 
         client = nullptr;
         is_connected = false;
-
+        if (send_signal)
+        {
         emit_signal("client_disconnected");
+
+        }
         Logger::info("Cliente Torii desconectado");
     }
 }
@@ -250,7 +253,7 @@ Dictionary ToriiClient::get_controller_info(const String& controller_address)
         }
     }
 
-    return Dictionary();
+    return Logger::error_dict("Controller not found");
 }
 
 
@@ -277,6 +280,7 @@ bool ToriiClient::create_entity_subscription(const Callable& callback, const Dic
     if (result)
     {
         Logger::success("Entity subscription created successfully");
+        emit_signal("subscription_created", "entity");
     }
     else
     {
@@ -309,6 +313,8 @@ bool ToriiClient::create_event_subscription(const Callable& callback, const Dict
     if (result)
     {
         Logger::success("Entity subscription created successfully");
+        emit_signal("subscription_created", "event");
+
     }
     else
     {

@@ -94,8 +94,7 @@ void ControllerAccount::create(const Ref<DojoPolicies>& policies_data)
 
     std::vector<DOJO::Policy> policies = policies_data->build();
     uintptr_t policies_len = policies.size();
-    String torii_chain_id = ToriiClient::get_singleton()->get_chain_id();
-    DOJO::ResultFieldElement resKatana = DOJO::cairo_short_string_to_felt(torii_chain_id.utf8().get_data());
+    DOJO::ResultFieldElement resKatana = DOJO::cairo_short_string_to_felt(chain_id.utf8().get_data());
     if (resKatana.tag == DOJO::ErrFieldElement)
     {
         Logger::error("Error al convertir Chain ID: ", GET_DOJO_ERROR(resKatana));
@@ -173,10 +172,15 @@ String ControllerAccount::get_chain_id() const
 {
     if (!is_controller_connected())
     {
-        return "";
+        return chain_id;
     }
     DOJO::FieldElement felt = DOJO::controller_chain_id(session_account);
-    return FieldElement::get_as_string(&felt);
+    String controller_chain_id = FieldElement::get_as_string(&felt);
+    if (chain_id != controller_chain_id)
+    {
+        Logger::warning("Chain ID mismatch", chain_id, " | ", controller_chain_id);
+    }
+    return controller_chain_id;
 }
 
 DOJO::CArrayFieldElement array_to_felt_array(const Array& data)

@@ -50,7 +50,9 @@ public:
 
     String get_username() const;
     String get_address() const;
+
     String get_chain_id() const;
+    void set_chain_id(const String& p_chain_id) { chain_id = p_chain_id; }
 
     void execute_raw(const Ref<DojoCall>& action);
     void execute_from_outside(const Ref<DojoCall>& action);
@@ -64,9 +66,12 @@ public:
     Ref<DojoPolicies> get_policies() {return policies;};
 
 
+
+
+
 protected:
 
-
+    String chain_id;
     static void _bind_methods()
     {
         // ClassDB::bind_method(D_METHOD("create", "rpc_url"),&ControllerAccount::create);
@@ -77,7 +82,6 @@ protected:
 
         ClassDB::bind_method(D_METHOD("get_username"), &ControllerAccount::get_username);
         ClassDB::bind_method(D_METHOD("get_address"), &ControllerAccount::get_address);
-        ClassDB::bind_method(D_METHOD("get_chain_id"), &ControllerAccount::get_chain_id);
 
         ClassDB::bind_method(D_METHOD("execute_raw", "action"),
                              &ControllerAccount::execute_raw);
@@ -93,6 +97,11 @@ protected:
         ADD_SIGNAL(MethodInfo("transaction_executed", PropertyInfo(Variant::STRING, "transaction_hash")));
         ADD_SIGNAL(MethodInfo("transaction_failed", PropertyInfo(Variant::STRING, "error_message")));
         ADD_SIGNAL(MethodInfo("current_user_info", PropertyInfo(Variant::DICTIONARY, "user_info")));
+
+
+        ClassDB::bind_method(D_METHOD("set_chain_id", "chain_id"), &ControllerAccount::set_chain_id);
+        ClassDB::bind_method(D_METHOD("get_chain_id"), &ControllerAccount::get_chain_id);
+        ADD_PROPERTY(PropertyInfo(Variant::STRING, "chain_id"), "set_chain_id", "get_chain_id");
 
         ClassDB::bind_method(D_METHOD("set_policies", "policies"), &ControllerAccount::set_policies);
         ClassDB::bind_method(D_METHOD("get_policies"), &ControllerAccount::get_policies);

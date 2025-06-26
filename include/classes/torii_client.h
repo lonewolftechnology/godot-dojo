@@ -46,7 +46,7 @@ public:
     static ToriiClient* get_singleton();
 
     bool create_client();
-    void disconnect_client();
+    void disconnect_client(bool send_signal);
     bool is_client_connected() const;
     bool is_calable_valid();
     void callable_call(const char* msg);
@@ -95,14 +95,11 @@ public:
     void set_world_address(const String& p_world_address) { world_address = p_world_address; }
     String get_world_address() const { return world_address; }
 
-    void set_chain_id(const String& p_chain_id) { chain_id = p_chain_id; }
-    String get_chain_id() const { return chain_id; }
 
     protected:
     String torii_url;
     String world_address;
     Callable logger_callback;
-    String chain_id;
 
     DOJO::FieldElement* world;
 
@@ -110,7 +107,7 @@ public:
     {
         ClassDB::bind_method(D_METHOD("create_client"),
                              &ToriiClient::create_client);
-        ClassDB::bind_method(D_METHOD("disconnect_client"), &ToriiClient::disconnect_client);
+        ClassDB::bind_method(D_METHOD("disconnect_client", "send_signal"), &ToriiClient::disconnect_client);
         ClassDB::bind_method(D_METHOD("is_client_connected"), &ToriiClient::is_client_connected);
 
         ClassDB::bind_method(D_METHOD("get_world_metadata"), &ToriiClient::get_world_metadata);
@@ -146,6 +143,7 @@ public:
         ADD_SIGNAL(MethodInfo("entity_updated", PropertyInfo(Variant::DICTIONARY, "entity_data")));
         ADD_SIGNAL(MethodInfo("event_received", PropertyInfo(Variant::DICTIONARY, "event_data")));
         ADD_SIGNAL(MethodInfo("subscription_error", PropertyInfo(Variant::STRING, "error_message")));
+        ADD_SIGNAL(MethodInfo("subscription_created", PropertyInfo(Variant::STRING, "subscription_name")));
         ADD_SIGNAL(MethodInfo("metadata_updated", PropertyInfo(Variant::DICTIONARY, "metadata")));
         ADD_SIGNAL(MethodInfo("message_published", PropertyInfo(Variant::STRING, "message_hash")));
         ADD_SIGNAL(MethodInfo("transaction_confirmed", PropertyInfo(Variant::STRING, "transaction_hash")));
@@ -154,10 +152,6 @@ public:
         BIND_ENUM_CONSTANT(DESC);
         BIND_ENUM_CONSTANT(FORWARD);
         BIND_ENUM_CONSTANT(BACKWARD);
-
-        ClassDB::bind_method(D_METHOD("set_chain_id", "chain_id"), &ToriiClient::set_chain_id);
-        ClassDB::bind_method(D_METHOD("get_chain_id"), &ToriiClient::get_chain_id);
-        ADD_PROPERTY(PropertyInfo(Variant::STRING, "chain_id"), "set_chain_id", "get_chain_id");
 
         ClassDB::bind_method(D_METHOD("get_torii_url"), &ToriiClient::get_torii_url);
         ClassDB::bind_method(D_METHOD("set_torii_url", "torii_url"), &ToriiClient::set_torii_url);
