@@ -25,9 +25,12 @@ public:
     FieldElement(TypedArray<String>& addresses);
     ~FieldElement();
 
-    static Ref<FieldElement> from_enum(int enum_value);
+    static DOJO::FieldElement from_enum(int enum_value);
     static PackedByteArray to_packed_array(const void* data, int size = 32);
     static DOJO::FieldElement from_string(const String& hex_str, size_t max_bytes = 32);
+    static DOJO::FieldElement nulled();
+    static PackedByteArray nulled_as_bytes();
+    static String nulled_as_string();
 
     PackedByteArray as_packed_array() const;
     String to_string() const;
@@ -48,7 +51,7 @@ protected:
     static void _bind_methods() {
         ClassDB::bind_method(D_METHOD("as_packed_array"), &FieldElement::as_packed_array);
         // ClassDB::bind_method(D_METHOD("get"), &FieldElement::as_packed_array);
-        ClassDB::bind_static_method("FieldElement", D_METHOD("from_enum", "p_value"), &FieldElement::from_enum);
+        // ClassDB::bind_static_method("FieldElement", D_METHOD("from_enum", "p_value"), &FieldElement::from_enum);
 
         // ClassDB::bind_method(D_METHOD("setup", "p_felt", "p_size"), &FieldElement::from_string);
         // ClassDB::bind_method(D_METHOD("set_from_bytes", "bytes"), &FieldElement::set_from_bytes);

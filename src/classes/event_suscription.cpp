@@ -8,6 +8,7 @@
 #include "variant/field_element.h"
 #include "variant/ty/primitive.h"
 #include "tools/logger.h"
+#include "variant/ty/dojo_array.h"
 #include "variant/ty/ty.h"
 
 Ref<EventSubscription> EventSubscription::g_active_instance = nullptr;
@@ -139,10 +140,8 @@ void EventSubscription::on_event_update(DOJO::FieldElement* entity_id, DOJO::CAr
 
     FieldElement entity_felt = {entity_id};
     Logger::info("Entity ID: ", entity_felt.to_string());
-    Array arguments = {};
-    FieldElement nulledFelt = {0};
 
-    if (entity_felt.as_packed_array().hex_encode() == nulledFelt.as_packed_array().hex_encode())
+    if (entity_felt.as_packed_array().hex_encode() == FieldElement::nulled_as_string())
     {
         Logger::warning("Entity ID is 0, first call?");
         return;
@@ -154,7 +153,6 @@ void EventSubscription::on_event_update(DOJO::FieldElement* entity_id, DOJO::CAr
         return;
     }
 
-    Logger::info("[color=RED]START EVENT SUBSCRIPTION[/color]");
     Logger::info("model name ", models.data->name);
     auto children = models.data->children;
 
@@ -164,22 +162,16 @@ void EventSubscription::on_event_update(DOJO::FieldElement* entity_id, DOJO::CAr
         return;
     }
 
-    std::vector<DOJO::Member> members(children.data, children.data + children.data_len);
-
-    for (const auto& member : members)
-    {
-        Logger::info("[color=MAGENTA]Procesando member... [/color]");
-        DojoTy ty = DojoTy(member);
-
-    }
+    ArrayDojo members = ArrayDojo(children);
+    Array arguments = members.get_value();
 
     for (int i = 0; i < arguments.size(); i++)
     {
-        Variant arg = arguments[i];
+        const Variant& arg = arguments[i];
         Logger::debug("ARG: ", arg);
     }
 
     Logger::info("Calling callback with arguments");
-    Variant callback_result = callback.call(Variant(arguments));
-    Logger::info("RESULT: ", callback_result);
+    Variant callback_result = callback.call(arguments);
+    Logger::info("Event Callback", callback_result);
 }

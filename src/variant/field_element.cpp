@@ -127,6 +127,22 @@ dojo_bindings::FieldElement FieldElement::from_string(const String& hex_str, siz
     return result;
 }
 
+DOJO::FieldElement FieldElement::nulled()
+{
+    return from_enum(0);
+
+}
+
+PackedByteArray FieldElement::nulled_as_bytes()
+{
+    return to_packed_array(nulled().data);
+}
+
+String FieldElement::nulled_as_string()
+{
+    return nulled_as_bytes().hex_encode();
+}
+
 PackedByteArray FieldElement::as_packed_array() const
 {
     return to_packed_array(felt->data);
@@ -148,23 +164,12 @@ const char* FieldElement::to_string_c_str() const
     return to_string().utf8().get_data();
 }
 
-Ref<FieldElement> FieldElement::from_enum(int enum_value)
+DOJO::FieldElement FieldElement::from_enum(int enum_value)
 {
-    Ref<FieldElement> field_element;
-    field_element.instantiate();
-    if (field_element.is_null())
-    {
-        Logger::error("Failed to instantiate FieldElement");
-        return {};
-    }
+    DOJO::FieldElement field_element = {};
 
-    if (field_element->felt == nullptr)
-    {
-        Logger::error("felt is null after instantiation");
-        field_element->felt = new DOJO::FieldElement();
-    }
-    memset(field_element->felt->data, 0, 32);
-    field_element->felt->data[31] = static_cast<uint8_t>(enum_value);
+    memset(field_element.data, 0, 32);
+    field_element.data[31] = static_cast<uint8_t>(enum_value);
 
 
     return field_element;

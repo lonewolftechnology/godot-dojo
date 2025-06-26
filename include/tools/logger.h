@@ -53,6 +53,7 @@ public:
         String message = logger_internal::concat_all(args...);
         UtilityFunctions::push_error(message);
     }
+    // Doesn't send error, maybe change later and add a warning version
     template <typename... Args>
     static Dictionary error_dict(Args... args)
     {
