@@ -149,52 +149,21 @@ Dictionary ToriiClient::get_world_metadata()
 {
     if (!is_client_connected())
     {
-        Logger::error("Cliente no conectado");
-        return {};
+        Logger::error("Client not connected");
+        return Logger::error_dict("Client not connected");
     }
 
     DOJO::ResultWorldMetadata resMetadata = DOJO::client_metadata(client);
 
     if (resMetadata.tag == DOJO::ErrWorldMetadata)
     {
-        Logger::error("Error al obtener metadatos: ", GET_DOJO_ERROR(resMetadata));
-        return {};
+        return Logger::error_dict("Error al obtener metadatos: ", GET_DOJO_ERROR(resMetadata));
     }
 
     DOJO::WorldMetadata metadata = GET_DOJO_OK(resMetadata);
     Dictionary result = {};
 
-    TypedArray<Dictionary> models_array = {};
-    // TODO: DojoArray
-    std::vector<DOJO::CHashItemFieldElementModelMetadata> models_vec(
-        metadata.models.data, metadata.models.data + metadata.models.data_len
-    );
-
-    for (const auto& model_item : models_vec)
-    {
-        Dictionary model_dict = {};
-        DOJO::ModelMetadata model_metadata = model_item.value;
-
-        Logger::debug_extra("METADATA", model_metadata.namespace_);
-        Logger::debug_extra("METADATA", model_metadata.name);
-
-        model_dict["key"] = FieldElement(model_item.key).bytearray_deserialize();
-        model_dict["namespace"] = model_metadata.namespace_;
-        model_dict["name"] = model_metadata.name;
-        model_dict["schema_type"] = String::num_int64(static_cast<int64_t>(model_metadata.schema.tag));
-
-        DojoTy metadata_ty = {model_metadata.schema};
-        model_dict["schema"] = metadata_ty.get_value();
-
-        model_dict["packed_size"] = Variant(model_metadata.packed_size);
-        model_dict["unpacked_size"] = Variant(model_metadata.unpacked_size);
-        model_dict["class_hash"] = FieldElement::get_as_string(&model_metadata.class_hash);
-        model_dict["contract_address"] = FieldElement::get_as_string(&model_metadata.contract_address);
-        ArrayDojo layout = {model_metadata.layout};
-        model_dict["layout"] = layout.get_value();
-        Logger::empty_line();
-        models_array.append(model_dict);
-    }
+    TypedArray<Dictionary> models_array = ArrayDojo(metadata.models).get_value();
 
     result["models"] = models_array;
     result["world_address"] = world_address;
@@ -230,69 +199,47 @@ TypedArray<Dictionary> ToriiClient::get_entities(const Dictionary& query_params)
     }
 
     DOJO::PageEntity pageEntities = resPageEntities.ok;
-    TypedArray<Dictionary> result = {};
-
-    std::vector<DOJO::Entity> entities(
-        pageEntities.items.data, pageEntities.items.data + pageEntities.items.data_len
-    );
-
-    for (const auto& entity : entities)
-    {
-        Dictionary entity_dict = entity_to_dictionary(entity);
-        result.append(entity_dict);
-    }
+    TypedArray<Dictionary> result = ArrayDojo(pageEntities.items).get_value();
 
     Logger::success("Entidades obtenidas: ", String::num_int64(result.size()));
     return result;
 }
 
 
-TypedArray<Dictionary> ToriiClient::get_controllers(const String& player_address)
+TypedArray<Dictionary> ToriiClient::get_controllers(const TypedArray<String>& addresses = Array())
 {
     if (!is_client_connected())
     {
-        Logger::error("Cliente no conectado");
-        return TypedArray<Dictionary>();
+        Logger::error("Client unavailable");
+        return {Logger::error_dict("Client unavailable")};
     }
 
-    DOJO::FieldElement player_filter = {};
-
-    if (!player_address.is_empty())
+    if (addresses.is_empty())
     {
-        FieldElement player_felt(player_address, 32);
-        player_filter = *player_felt.get_felt();
+        Logger::info("Addresses is empty, fetching all controllers");
     }
-
+    std::vector<dojo_bindings::FieldElement> contract_addresses = FieldElement::create_array(addresses);
+    Logger::debug_extra("TORII CLIENT", "Address size: ", contract_addresses.size());
     DOJO::ResultCArrayController resControllers = DOJO::client_controllers(
-        client, &player_filter, 0
+        client, contract_addresses.data(), contract_addresses.size()
     );
 
     if (resControllers.tag == DOJO::ErrCArrayController)
     {
-        Logger::error("Error al obtener controladores: ", GET_DOJO_ERROR(resControllers));
-        return {};
+        Logger::error("Error obtaining controllers: ", GET_DOJO_ERROR(resControllers));
+        return {Logger::error_dict("Error obtaining controllers: ", GET_DOJO_ERROR(resControllers))};
     }
 
     DOJO::CArrayController controllers = resControllers.ok;
-    TypedArray<Dictionary> result = {};
+    TypedArray<Dictionary> result = ArrayDojo(controllers).get_value();
 
-    std::vector<DOJO::Controller> controller_list(
-        controllers.data, controllers.data + controllers.data_len
-    );
-
-    for (const auto& controller : controller_list)
-    {
-        Dictionary controller_dict = controller_to_dictionary(controller);
-        result.append(controller_dict);
-    }
-
-    Logger::success("Controladores obtenidos: ", String::num_int64(result.size()));
+    Logger::success("Controllers obtained: ", String::num_int64(result.size()));
     return result;
 }
 
 Dictionary ToriiClient::get_controller_info(const String& controller_address)
 {
-    TypedArray<Dictionary> controllers = get_controllers();
+    TypedArray<Dictionary> controllers = get_controllers(Array());
 
     for (int i = 0; i < controllers.size(); i++)
     {
@@ -554,52 +501,6 @@ DOJO::Pagination ToriiClient::create_pagination_from_dict(const Dictionary& pagi
 
     return pagination;
 }
-
-Dictionary ToriiClient::entity_to_dictionary(const DOJO::Entity& entity)
-{
-    Dictionary entity_dict = {};
-    FieldElement hashed_keys = {entity.hashed_keys};
-    entity_dict["hashed_key"] = hashed_keys.to_string();
-
-    TypedArray<Dictionary> models_array = {};
-
-    std::vector<DOJO::Struct> c_structs(
-        entity.models.data, entity.models.data + entity.models.data_len
-    );
-
-    for (const auto& c_struct : c_structs)
-    {
-        Dictionary model_dict = {};
-        Logger::custom("MODEL", c_struct.name);
-
-        DojoStruct data = {c_struct};
-
-        model_dict["name"] = c_struct.name;
-
-        Array members_dict = {};
-        members_dict.append(data.get_value());
-
-        model_dict["data"] = members_dict;
-        models_array.append(model_dict);
-        Logger::custom("SPACE", "\n");
-    }
-
-    entity_dict["models"] = models_array;
-    return entity_dict;
-}
-
-Dictionary ToriiClient::controller_to_dictionary(const DOJO::Controller& controller)
-{
-    Dictionary controller_dict = {};
-    DOJO::FieldElement _felt = controller.address;
-    FieldElement controller_addr{&_felt};
-    controller_dict["address"] = controller_addr.to_string();
-    controller_dict["username"] = controller.username;
-    controller_dict["deployed_at_timestamp"] = controller.deployed_at_timestamp;
-
-    return controller_dict;
-}
-
 // Dictionary ToriiClient::token_to_dictionary(const DOJO::Token& token) const {
 //     Dictionary token_dict = {};
 //

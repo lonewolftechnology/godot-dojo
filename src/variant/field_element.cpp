@@ -62,6 +62,22 @@ FieldElement::FieldElement(DOJO::FieldElement existing_felt)
     felt = &existing_felt;
 }
 
+FieldElement::FieldElement(TypedArray<String>& addresses)
+{
+    for (int i = 0; i < addresses.size(); i++)
+    {
+        String address = addresses[i];
+        if (address.length() == 42)
+        {
+            felt->data[i] = static_cast<uint8_t>(address.hex_to_int());
+        }
+        else
+        {
+            Logger::error("Invalid address: ", address);
+        }
+    }
+}
+
 FieldElement::~FieldElement()
 {
 }
@@ -201,5 +217,27 @@ String FieldElement::parse_cairo()
     }
     String result = GET_DOJO_OK(resCairo);
     Logger::success("Cairo String: ", result);
+    return result;
+}
+
+std::vector<DOJO::FieldElement> FieldElement::create_array(TypedArray<String> array)
+{
+    std::vector<DOJO::FieldElement> result;
+    result.resize(array.size());
+    
+    for (int i = 0; i < array.size(); i++)
+    {
+        String address = array[i];
+        if (address.length() == 42)
+        {
+            DOJO::FieldElement field_elem = FieldElement::from_string(address);
+            result[i] = field_elem;
+        }
+        else
+        {
+            Logger::error("Invalid address: ", address);
+            result[i] = {};
+        }
+    }
     return result;
 }

@@ -27,7 +27,78 @@ private:
     DOJO::ToriiClient* client;
     bool is_connected;
 
-protected:
+public:
+    ToriiClient();
+    ~ToriiClient();
+
+    enum QueryOrderDirection
+    {
+        ASC,
+        DESC,
+    };
+
+    enum QueryPaginationDirection
+    {
+        FORWARD,
+        BACKWARD,
+    };
+
+    static ToriiClient* get_singleton();
+
+    bool create_client();
+    void disconnect_client();
+    bool is_client_connected() const;
+    bool is_calable_valid();
+    void callable_call(const char* msg);
+    FieldElement get_world() const;
+    void set_world(const FieldElement& n_world);
+
+    Dictionary get_world_metadata();
+    bool refresh_metadata();
+
+    TypedArray<Dictionary> get_entities(const Dictionary& query_params = Dictionary());
+
+    TypedArray<Dictionary> get_controllers(const TypedArray<String>& contract_addresses);
+    Dictionary get_controller_info(const String& controller_address);
+
+    // TypedArray<Dictionary> get_tokens(const Dictionary& query_params = Dictionary());
+    // TypedArray<Dictionary> get_token_balances(const String& account_address);
+    // TypedArray<Dictionary> get_token_collections();
+    // Dictionary get_token_info(const String& token_address);
+
+    bool create_entity_subscription(const Callable& callback, const Dictionary& filter_params = Dictionary());
+    bool create_event_subscription(const Callable& callback, const Dictionary& filter_params = Dictionary());
+    bool create_token_subscription(const Callable& callback, const String& account_address);
+    void cancel_all_subscriptions();
+
+    bool publish_message(const String& message_data, const Array& signature_felts);
+    bool publish_typed_message(const Dictionary& typed_data, const Array& signature_felts);
+
+
+    Dictionary get_client_info() const;
+
+    Dictionary get_connection_status() const;
+
+    static DOJO::Query create_query_from_dict(const Dictionary& query_params) ;
+    static DOJO::Pagination create_pagination_from_dict(const Dictionary& pagination_params) ;
+    // void on_entity_update_internal(DOJO::FieldElement entity_id, DOJO::CArrayStruct models);
+    // void on_event_update_internal(DOJO::Event event);
+
+    DOJO::ToriiClient* get_client() const { return client; }
+
+    Callable get_logger_callback() const { return logger_callback; }
+    void set_logger_callback(const Callable& p_logger_callback);
+
+    String get_torii_url() const { return torii_url; }
+    void set_torii_url(const String& p_torii_url) { torii_url = p_torii_url; }
+
+    void set_world_address(const String& p_world_address) { world_address = p_world_address; }
+    String get_world_address() const { return world_address; }
+
+    void set_chain_id(const String& p_chain_id) { chain_id = p_chain_id; }
+    String get_chain_id() const { return chain_id; }
+
+    protected:
     String torii_url;
     String world_address;
     Callable logger_callback;
@@ -49,7 +120,7 @@ protected:
                              &ToriiClient::get_entities);
 
         ClassDB::bind_method(D_METHOD("get_controllers", "player_address"),
-                             &ToriiClient::get_controllers, DEFVAL(""));
+                             &ToriiClient::get_controllers, DEFVAL(Array()));
         ClassDB::bind_method(D_METHOD("get_controller_info", "controller_address"),
                              &ToriiClient::get_controller_info);
 
@@ -100,80 +171,6 @@ protected:
         ClassDB::bind_method(D_METHOD("get_logger_callback"), &ToriiClient::get_logger_callback);
         ADD_PROPERTY(PropertyInfo(Variant::CALLABLE, "logger_callback"), "set_logger_callback", "get_logger_callback");
     }
-
-public:
-    ToriiClient();
-    ~ToriiClient();
-
-    enum QueryOrderDirection
-    {
-        ASC,
-        DESC,
-    };
-
-    enum QueryPaginationDirection
-    {
-        FORWARD,
-        BACKWARD,
-    };
-
-    static ToriiClient* get_singleton();
-
-    bool create_client();
-    void disconnect_client();
-    bool is_client_connected() const;
-    bool is_calable_valid();
-    void callable_call(const char* msg);
-    FieldElement get_world() const;
-    void set_world(const FieldElement& n_world);
-
-    Dictionary get_world_metadata();
-    bool refresh_metadata();
-
-    TypedArray<Dictionary> get_entities(const Dictionary& query_params = Dictionary());
-
-    TypedArray<Dictionary> get_controllers(const String& player_address = "");
-    Dictionary get_controller_info(const String& controller_address);
-
-    // TypedArray<Dictionary> get_tokens(const Dictionary& query_params = Dictionary());
-    // TypedArray<Dictionary> get_token_balances(const String& account_address);
-    // TypedArray<Dictionary> get_token_collections();
-    // Dictionary get_token_info(const String& token_address);
-
-    bool create_entity_subscription(const Callable& callback, const Dictionary& filter_params = Dictionary());
-    bool create_event_subscription(const Callable& callback, const Dictionary& filter_params = Dictionary());
-    bool create_token_subscription(const Callable& callback, const String& account_address);
-    void cancel_all_subscriptions();
-
-    bool publish_message(const String& message_data, const Array& signature_felts);
-    bool publish_typed_message(const Dictionary& typed_data, const Array& signature_felts);
-
-
-    Dictionary get_client_info() const;
-
-    Dictionary get_connection_status() const;
-
-    static DOJO::Query create_query_from_dict(const Dictionary& query_params) ;
-    static DOJO::Pagination create_pagination_from_dict(const Dictionary& pagination_params) ;
-    static Dictionary entity_to_dictionary(const DOJO::Entity& entity) ;
-    static Dictionary controller_to_dictionary(const DOJO::Controller& controller) ;
-    // void on_entity_update_internal(DOJO::FieldElement entity_id, DOJO::CArrayStruct models);
-    // void on_event_update_internal(DOJO::Event event);
-
-    DOJO::ToriiClient* get_client() const { return client; }
-
-    Callable get_logger_callback() const { return logger_callback; }
-    void set_logger_callback(const Callable& p_logger_callback);
-
-    String get_torii_url() const { return torii_url; }
-    void set_torii_url(const String& p_torii_url) { torii_url = p_torii_url; }
-
-    void set_world_address(const String& p_world_address) { world_address = p_world_address; }
-    String get_world_address() const { return world_address; }
-
-    void set_chain_id(const String& p_chain_id) { chain_id = p_chain_id; }
-    String get_chain_id() const { return chain_id; }
-
 };
 
 VARIANT_ENUM_CAST(ToriiClient::QueryOrderDirection);

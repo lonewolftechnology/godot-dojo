@@ -17,9 +17,15 @@ class ArrayDojo : public RefCounted
     Variant value = Variant::NIL;
 
 public:
-    ArrayDojo(){};
-    ~ArrayDojo(){};
+    ArrayDojo()
+    {
+    };
 
+    ~ArrayDojo()
+    {
+    };
+    // For now almost every type of CArray is implemented
+    // There are some that aren't needed and/or need to be converted (Variant -> CArray)
     ArrayDojo(DOJO::CArrayTy array);
     ArrayDojo(DOJO::CArrayToken array);
     ArrayDojo(DOJO::CArrayEntity array);
@@ -51,7 +57,8 @@ public:
     static Variant CArrayFieldElementToVariant(DOJO::CArrayFieldElement array);
     static Variant CArrayTokenCollectionToVariant(DOJO::CArrayTokenCollection array);
     static Variant CArrayCOptionFieldElementToVariant(DOJO::CArrayCOptionFieldElement array);
-    static Variant CArrayCHashItemFieldElementModelMetadataToVariant(DOJO::CArrayCHashItemFieldElementModelMetadata array);
+    static Variant CArrayCHashItemFieldElementModelMetadataToVariant(
+        DOJO::CArrayCHashItemFieldElementModelMetadata array);
 
     Variant get_value() const { return value; }
     void set_value(const Variant& p_value) { value = p_value; }

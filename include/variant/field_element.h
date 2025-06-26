@@ -22,6 +22,7 @@ public:
     FieldElement(int enum_value);
     FieldElement(DOJO::FieldElement* existing_felt);
     FieldElement(DOJO::FieldElement existing_felt);
+    FieldElement(TypedArray<String>& addresses);
     ~FieldElement();
 
     static Ref<FieldElement> from_enum(int enum_value);
@@ -32,6 +33,7 @@ public:
     String to_string() const;
     const char* to_string_c_str() const;
     String parse_cairo();
+    static std::vector<DOJO::FieldElement> create_array(TypedArray<String> array);
     String bytearray_deserialize();
 
     static String get_as_string(DOJO::FieldElement* _felt);

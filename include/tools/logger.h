@@ -53,6 +53,14 @@ public:
         String message = logger_internal::concat_all(args...);
         UtilityFunctions::push_error(message);
     }
+    template <typename... Args>
+    static Dictionary error_dict(Args... args)
+    {
+        String message = logger_internal::concat_all(args...);
+        Dictionary result = {};
+        result["error"] = message;
+        return result;
+    }
 
     template <typename... Args>
     static void warning(Args... args)
