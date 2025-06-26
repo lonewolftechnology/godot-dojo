@@ -58,9 +58,9 @@ jobs:
         path: demo/bin/
         retention-days: 1
 
-  # Job 2: Build Windows  
+  # Job 2: Build Windows (using MSVC)
   build-windows:
-    runs-on: ubuntu-latest
+    runs-on: windows-latest
     steps:
     - name: Checkout code
       uses: actions/checkout@v4
@@ -75,18 +75,21 @@ jobs:
         profile: minimal
         override: true
 
-    - name: Install Windows dependencies
+    - name: Install Python and SCons
       run: |
-        sudo apt-get update
-        sudo apt-get install -y build-essential pkg-config libdbus-1-dev
-        sudo apt-get install -y gcc-mingw-w64-x86-64
+        python -m pip install --upgrade pip
         pip install scons
 
     - name: Install Rust targets for Windows
       run: |
-        rustup target add x86_64-pc-windows-gnu
+        rustup target add x86_64-pc-windows-msvc
 
-    - name: Build Windows (debug + release, x64)
+    - name: Set up MSVC
+      uses: ilammy/msvc-dev-cmd@v1
+      with:
+        arch: x64
+
+    - name: Build Windows (debug + release, x64 with MSVC)
       run: make windows-all
 
     - name: Upload Windows artifacts
@@ -202,7 +205,7 @@ jobs:
         ## 🎯 Platforms included:
         
         - 🐧 **Linux**: x86_64 only
-        - 🪟 **Windows**: x86_64 (includes dojo_c.dll)
+        - 🪟 **Windows**: x86_64 (compiled with MSVC, includes dojo_c.dll)
         - 🍎 **macOS**: Intel (x86_64), Apple Silicon (ARM64)
         
         ## 🚀 Quick installation:
@@ -219,6 +222,7 @@ jobs:
         - **Tag**: \`${{ steps.get_version.outputs.tag }}\`
         - **Date**: \`$(date -u +"%Y-%m-%d %H:%M:%S UTC")\`
         - **Trigger**: \`${{ github.event_name }}\`
+        - **Windows Compiler**: MSVC (Visual Studio Build Tools)
         EOF
 
     - name: Upload ZIP as artifact (always)
