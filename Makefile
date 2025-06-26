@@ -4,7 +4,7 @@
 
 .PHONY: help clean build debug release all check-deps install-deps
 .PHONY: linux windows macos web
-.PHONY: linux-x64 linux-arm64 windows-x64 macos-x64 macos-arm64 web-wasm32
+.PHONY: linux-x64 windows-x64 macos-x64 macos-arm64 web-wasm32
 
 # Configuration
 NPROC := $(shell nproc 2>/dev/null || sysctl -n hw.ncpu 2>/dev/null || echo 4)
@@ -83,7 +83,6 @@ endif
 
 # Cross-compilation tools detection
 CC_PREFIX_linux_x64 := x86_64-linux-gnu-
-CC_PREFIX_linux_arm64 := aarch64-linux-gnu-
 CC_PREFIX_windows_x64 := x86_64-w64-mingw32-
 CC_PREFIX_macos_x64 := x86_64-apple-darwin-
 CC_PREFIX_macos_arm64 := aarch64-apple-darwin-
@@ -168,17 +167,17 @@ _check-linux-deps:
 		echo "$(G)    ✅ GCC: $(shell gcc --version 2>/dev/null | head -1)$(X)"; \
 	fi
 	@if ! command -v protoc >/dev/null 2>&1; then \
-    echo "$(R)    ❌ protoc (Protocol Buffers compiler) not found$(X)"; \
-    echo "$(Y)    💡 Install: sudo apt-get install protobuf-compiler libprotobuf-dev$(X)"; \
-else \
-    echo "$(G)    ✅ protoc: $(shell protoc --version 2>/dev/null)$(X)"; \
-fi
+		echo "$(R)    ❌ protoc (Protocol Buffers compiler) not found$(X)"; \
+		echo "$(Y)    💡 Install: sudo apt-get install protobuf-compiler libprotobuf-dev$(X)"; \
+	else \
+		echo "$(G)    ✅ protoc: $(shell protoc --version 2>/dev/null)$(X)"; \
+	fi
 	@if ! pkg-config --exists protobuf 2>/dev/null; then \
-    echo "$(R)    ❌ libprotobuf-dev not found$(X)"; \
-    echo "$(Y)    💡 Install: sudo apt-get install libprotobuf-dev$(X)"; \
-else \
-    echo "$(G)    ✅ libprotobuf-dev$(X)"; \
-fi
+		echo "$(R)    ❌ libprotobuf-dev not found$(X)"; \
+		echo "$(Y)    💡 Install: sudo apt-get install libprotobuf-dev$(X)"; \
+	else \
+		echo "$(G)    ✅ libprotobuf-dev$(X)"; \
+	fi
 
 _check-macos-deps:
 	@echo "$(Y)    macOS dependencies:$(X)"
@@ -219,7 +218,6 @@ install-deps:
 _install-rust-targets:
 	@echo "$(Y)🦀 Installing Rust targets...$(X)"
 	@rustup target add x86_64-unknown-linux-gnu 2>/dev/null || true
-	@rustup target add aarch64-unknown-linux-gnu 2>/dev/null || true
 	@rustup target add x86_64-pc-windows-gnu 2>/dev/null || true
 	@rustup target add x86_64-pc-windows-msvc 2>/dev/null || true
 	@rustup target add x86_64-apple-darwin 2>/dev/null || true
@@ -234,13 +232,13 @@ ifeq ($(HOST_PLATFORM),linux)
 	@if command -v apt-get >/dev/null 2>&1; then \
 		echo "$(Y)  Installing cross-compilation toolchains (Ubuntu/Debian)...$(X)"; \
 		sudo apt-get update >/dev/null 2>&1 || true; \
-		sudo apt-get install -y gcc-mingw-w64-x86-64 gcc-aarch64-linux-gnu >/dev/null 2>&1 || true; \
+		sudo apt-get install -y gcc-mingw-w64-x86-64 >/dev/null 2>&1 || true; \
 	elif command -v yum >/dev/null 2>&1; then \
 		echo "$(Y)  Installing cross-compilation toolchains (RHEL/CentOS)...$(X)"; \
-		sudo yum install -y mingw64-gcc gcc-aarch64-linux-gnu >/dev/null 2>&1 || true; \
+		sudo yum install -y mingw64-gcc >/dev/null 2>&1 || true; \
 	elif command -v pacman >/dev/null 2>&1; then \
 		echo "$(Y)  Installing cross-compilation toolchains (Arch)...$(X)"; \
-		sudo pacman -S --noconfirm mingw-w64-gcc aarch64-linux-gnu-gcc >/dev/null 2>&1 || true; \
+		sudo pacman -S --noconfirm mingw-w64-gcc >/dev/null 2>&1 || true; \
 	fi
 else ifeq ($(HOST_PLATFORM),macos)
 	@if command -v brew >/dev/null 2>&1; then \
@@ -254,11 +252,11 @@ _install-os-deps:
 	@echo "$(Y)📦 Installing OS-specific dependencies...$(X)"
 ifeq ($(HOST_PLATFORM),linux)
 	@if command -v apt-get >/dev/null 2>&1; then \
-		sudo apt-get install -y build-essential pkg-config libdbus-1-dev >/dev/null 2>&1 || true; \
+		sudo apt-get install -y build-essential pkg-config libdbus-1-dev protobuf-compiler libprotobuf-dev >/dev/null 2>&1 || true; \
 	elif command -v yum >/dev/null 2>&1; then \
-		sudo yum install -y gcc-c++ pkgconfig dbus-devel >/dev/null 2>&1 || true; \
+		sudo yum install -y gcc-c++ pkgconfig dbus-devel protobuf-compiler protobuf-devel >/dev/null 2>&1 || true; \
 	elif command -v pacman >/dev/null 2>&1; then \
-		sudo pacman -S --noconfirm base-devel pkgconf dbus >/dev/null 2>&1 || true; \
+		sudo pacman -S --noconfirm base-devel pkgconf dbus protobuf >/dev/null 2>&1 || true; \
 	fi
 else ifeq ($(HOST_PLATFORM),macos)
 	@if command -v brew >/dev/null 2>&1; then \
@@ -288,7 +286,7 @@ help:
 	@echo "  make install-deps - Install missing dependencies"
 	@echo ""
 	@echo "$(G)Complete platform builds:$(X)"
-	@echo "  make linux-all    - Linux (x64 + arm64) debug + release"
+	@echo "  make linux-all    - Linux x64 debug + release"
 	@echo "  make windows-all  - Windows x64 debug + release"
 	@echo "  make macos-all    - macOS (x64 + arm64) debug + release"
 	@echo "  make web-all      - WebAssembly debug + release $(R)[EXPERIMENTAL - NON-FUNCTIONAL]$(X)"
@@ -301,7 +299,6 @@ help:
 	@echo ""
 	@echo "$(G)Architecture-specific builds:$(X)"
 	@echo "  make linux-x64-debug     make linux-x64-release"
-	@echo "  make linux-arm64-debug   make linux-arm64-release"
 	@echo "  make windows-x64-debug   make windows-x64-release"
 	@echo "  make macos-x64-debug     make macos-x64-release"
 	@echo "  make macos-arm64-debug   make macos-arm64-release"
@@ -336,8 +333,8 @@ clean:
 # ============================================================================
 
 linux-all: check-deps linux-debug linux-release
-linux-debug: check-deps linux-x64-debug linux-arm64-debug  
-linux-release: check-deps linux-x64-release linux-arm64-release
+linux-debug: check-deps linux-x64-debug
+linux-release: check-deps linux-x64-release
 
 windows-all: check-deps windows-debug windows-release
 windows-debug: check-deps windows-x64-debug
@@ -368,14 +365,6 @@ linux-x64-debug: check-deps
 linux-x64-release: check-deps
 	@echo "$(B)🐧 Building Linux x64 Release$(X)"
 	@$(SCONS) platform=linux arch=x86_64 target=template_release
-
-linux-arm64-debug: check-deps
-	@echo "$(B)🐧 Building Linux ARM64 Debug$(X)"
-	@$(SCONS) platform=linux arch=arm64 target=template_debug
-
-linux-arm64-release: check-deps
-	@echo "$(B)🐧 Building Linux ARM64 Release$(X)"
-	@$(SCONS) platform=linux arch=arm64 target=template_release
 
 # Windows builds
 windows-x64-debug: check-deps
@@ -423,9 +412,6 @@ web-wasm32-release: check-deps
 linux-x64: check-deps linux-x64-debug linux-x64-release
 	@echo "$(G)✅ Linux x64 complete$(X)"
 
-linux-arm64: check-deps linux-arm64-debug linux-arm64-release
-	@echo "$(G)✅ Linux ARM64 complete$(X)"
-
 windows-x64: check-deps windows-x64-debug windows-x64-release
 	@echo "$(G)✅ Windows x64 complete$(X)"
 
@@ -454,7 +440,7 @@ ci-all-experimental: check-deps linux-all windows-all macos-all web-all
 list-targets:
 	@echo "$(B)Available build targets:$(X)"
 	@echo "$(G)Host-specific:$(X) debug, release, build"
-	@echo "$(G)Linux:$(X) linux-x64-debug, linux-x64-release, linux-arm64-debug, linux-arm64-release"
+	@echo "$(G)Linux:$(X) linux-x64-debug, linux-x64-release"
 	@echo "$(G)Windows:$(X) windows-x64-debug, windows-x64-release"
 	@echo "$(G)macOS:$(X) macos-x64-debug, macos-x64-release, macos-arm64-debug, macos-arm64-release"
 	@echo "$(R)Web (experimental):$(X) web-wasm32-debug, web-wasm32-release"

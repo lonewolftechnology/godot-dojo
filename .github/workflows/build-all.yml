@@ -4,6 +4,17 @@ on:
   push:
     tags:
       - 'v*'
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version tag (e.g., v1.0.0) - leave empty to use current commit'
+        required: false
+        default: ''
+      create_release:
+        description: 'Create GitHub release'
+        required: false
+        default: true
+        type: boolean
 
 env:
   CARGO_TERM_COLOR: always
@@ -30,16 +41,14 @@ jobs:
       run: |
         sudo apt-get update
         sudo apt-get install -y build-essential pkg-config libdbus-1-dev
-        sudo apt-get install -y gcc-aarch64-linux-gnu
         sudo apt-get install -y protobuf-compiler libprotobuf-dev
         pip install scons
 
     - name: Install Rust targets for Linux
       run: |
         rustup target add x86_64-unknown-linux-gnu
-        rustup target add aarch64-unknown-linux-gnu
 
-    - name: Build Linux (debug + release, x64 + arm64)
+    - name: Build Linux (debug + release, x64 only)
       run: make linux-all
 
     - name: Upload Linux artifacts
@@ -123,7 +132,7 @@ jobs:
         path: demo/bin/
         retention-days: 1
 
-  # Job 4: Create single release ZIP
+  # Job 4: Create release ZIP
   create-release:
     needs: [build-linux, build-windows, build-macos]
     runs-on: ubuntu-latest
@@ -131,11 +140,24 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v4
 
-    - name: Get tag information
-      id: get_tag
+    - name: Determine version
+      id: get_version
       run: |
-        echo "tag=${GITHUB_REF#refs/tags/}" >> $GITHUB_OUTPUT
-        echo "version=${GITHUB_REF#refs/tags/v}" >> $GITHUB_OUTPUT
+        if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+          if [ -n "${{ github.event.inputs.version }}" ]; then
+            echo "tag=${{ github.event.inputs.version }}" >> $GITHUB_OUTPUT
+            echo "version=${GITHUB_REF#refs/tags/v}" >> $GITHUB_OUTPUT
+            echo "is_manual=true" >> $GITHUB_OUTPUT
+          else
+            echo "tag=manual-$(date +%Y%m%d-%H%M%S)" >> $GITHUB_OUTPUT
+            echo "version=manual-$(date +%Y%m%d-%H%M%S)" >> $GITHUB_OUTPUT
+            echo "is_manual=true" >> $GITHUB_OUTPUT
+          fi
+        else
+          echo "tag=${GITHUB_REF#refs/tags/}" >> $GITHUB_OUTPUT
+          echo "version=${GITHUB_REF#refs/tags/v}" >> $GITHUB_OUTPUT
+          echo "is_manual=false" >> $GITHUB_OUTPUT
+        fi
 
     - name: Download all artifacts
       uses: actions/download-artifact@v3
@@ -161,16 +183,16 @@ jobs:
     - name: Create release ZIP
       run: |
         cd release
-        zip -r ../godot-dojo-${{ steps.get_tag.outputs.version }}.zip .
+        zip -r ../godot-dojo-${{ steps.get_version.outputs.version }}.zip .
 
     - name: Generate release notes
       run: |
         cat > release_notes.md << EOF
-        # 🚀 Godot Dojo ${{ steps.get_tag.outputs.version }}
+        # 🚀 Godot Dojo ${{ steps.get_version.outputs.version }}
         
         ## 📦 Download:
         
-        **godot-dojo-${{ steps.get_tag.outputs.version }}.zip**
+        **godot-dojo-${{ steps.get_version.outputs.version }}.zip**
         - Contains binaries for all platforms
         - Includes debug and release versions
         - Includes godot-dojo.gdextension configuration file
@@ -179,7 +201,7 @@ jobs:
         
         ## 🎯 Platforms included:
         
-        - 🐧 **Linux**: x86_64, ARM64
+        - 🐧 **Linux**: x86_64 only
         - 🪟 **Windows**: x86_64 (includes dojo_c.dll)
         - 🍎 **macOS**: Intel (x86_64), Apple Silicon (ARM64)
         
@@ -194,30 +216,44 @@ jobs:
         
         ## ℹ️ Build information:
         - **Commit**: \`${{ github.sha }}\`
-        - **Tag**: \`${{ steps.get_tag.outputs.tag }}\`
+        - **Tag**: \`${{ steps.get_version.outputs.tag }}\`
         - **Date**: \`$(date -u +"%Y-%m-%d %H:%M:%S UTC")\`
+        - **Trigger**: \`${{ github.event_name }}\`
         EOF
 
+    - name: Upload ZIP as artifact (always)
+      uses: actions/upload-artifact@v3
+      with:
+        name: godot-dojo-release
+        path: godot-dojo-${{ steps.get_version.outputs.version }}.zip
+        retention-days: 30
+
     - name: Create GitHub Release
+      if: github.event_name == 'push' || (github.event_name == 'workflow_dispatch' && github.event.inputs.create_release == 'true')
       uses: softprops/action-gh-release@v1
       with:
-        tag_name: ${{ steps.get_tag.outputs.tag }}
-        name: 🚀 Godot Dojo ${{ steps.get_tag.outputs.version }}
+        tag_name: ${{ steps.get_version.outputs.tag }}
+        name: 🚀 Godot Dojo ${{ steps.get_version.outputs.version }}
         body_path: release_notes.md
         draft: false
-        prerelease: ${{ contains(steps.get_tag.outputs.tag, 'alpha') || contains(steps.get_tag.outputs.tag, 'beta') || contains(steps.get_tag.outputs.tag, 'rc') }}
+        prerelease: ${{ contains(steps.get_version.outputs.tag, 'alpha') || contains(steps.get_version.outputs.tag, 'beta') || contains(steps.get_version.outputs.tag, 'rc') || steps.get_version.outputs.is_manual == 'true' }}
         files: |
-          godot-dojo-${{ steps.get_tag.outputs.version }}.zip
+          godot-dojo-${{ steps.get_version.outputs.version }}.zip
         token: ${{ secrets.GITHUB_TOKEN }}
 
     - name: Show final result
       run: |
-        echo "## ✅ Release created successfully!" >> $GITHUB_STEP_SUMMARY
+        echo "## ✅ Build completed successfully!" >> $GITHUB_STEP_SUMMARY
         echo "" >> $GITHUB_STEP_SUMMARY
-        echo "**File:** godot-dojo-${{ steps.get_tag.outputs.version }}.zip" >> $GITHUB_STEP_SUMMARY
-        echo "**Size:** $(ls -lh godot-dojo-${{ steps.get_tag.outputs.version }}.zip | awk '{print $5}')" >> $GITHUB_STEP_SUMMARY
+        echo "**File:** godot-dojo-${{ steps.get_version.outputs.version }}.zip" >> $GITHUB_STEP_SUMMARY
+        echo "**Size:** $(ls -lh godot-dojo-${{ steps.get_version.outputs.version }}.zip | awk '{print $5}')" >> $GITHUB_STEP_SUMMARY
+        echo "**Trigger:** ${{ github.event_name }}" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        if [ "${{ github.event_name }}" = "workflow_dispatch" ] && [ "${{ github.event.inputs.create_release }}" = "false" ]; then
+          echo "**Note:** Release creation was disabled. ZIP file uploaded as artifact only." >> $GITHUB_STEP_SUMMARY
+        fi
         echo "" >> $GITHUB_STEP_SUMMARY
         echo "### 📁 Files included:" >> $GITHUB_STEP_SUMMARY
         echo '```' >> $GITHUB_STEP_SUMMARY
-        unzip -l godot-dojo-${{ steps.get_tag.outputs.version }}.zip >> $GITHUB_STEP_SUMMARY
+        unzip -l godot-dojo-${{ steps.get_version.outputs.version }}.zip >> $GITHUB_STEP_SUMMARY
         echo '```' >> $GITHUB_STEP_SUMMARY
