@@ -1,322 +1,462 @@
 # ============================================================================
-# Godot Dojo Makefile - Versión Actualizada con Builds Separados
+# Godot Dojo Cross-Platform Makefile
 # ============================================================================
 
-.PHONY: help build clean test format lint docker dev
-.PHONY: debug release all-debug all-release
-.PHONY: linux-debug linux-release windows-debug windows-release
-.PHONY: macos-debug macos-release web-debug web-release
-.PHONY: linux-x64-debug linux-x64-release linux-arm64-debug linux-arm64-release
-.PHONY: windows-x64-debug windows-x64-release
-.PHONY: macos-x64-debug macos-x64-release macos-arm64-debug macos-arm64-release
-.PHONY: web-wasm32-debug web-wasm32-release
+.PHONY: help clean build debug release all check-deps install-deps
+.PHONY: linux windows macos web
+.PHONY: linux-x64 linux-arm64 windows-x64 macos-x64 macos-arm64 web-wasm32
 
-# Configuración básica
-PROJECT_NAME := godot-dojo
-NPROC := $(shell nproc 2>/dev/null || echo 4)
-DEMO_BIN_DIR := demo/bin
+# Configuration
+NPROC := $(shell nproc 2>/dev/null || sysctl -n hw.ncpu 2>/dev/null || echo 4)
+SCONS := scons -j$(NPROC) -Q
 
-# Configuración de targets
-PLATFORMS := linux windows macos web
-LINUX_ARCHS := x86_64 arm64
-WINDOWS_ARCHS := x86_64
-MACOS_ARCHS := x86_64 arm64
-WEB_ARCHS := wasm32
-TARGETS := template_debug template_release
+# Host detection
+UNAME_S := $(shell uname -s 2>/dev/null || echo Windows)
+UNAME_M := $(shell uname -m 2>/dev/null || echo x86_64)
 
-# Colores
-ifneq (,$(shell command -v tput))
-	GREEN := $(shell tput setaf 2)
-	YELLOW := $(shell tput setaf 3)
-	RED := $(shell tput setaf 1)
-	BLUE := $(shell tput setaf 4)
-	CYAN := $(shell tput setaf 6)
-	RESET := $(shell tput sgr0)
-	BOLD := $(shell tput bold)
+# Detect if running on Windows (various environments)
+ifneq ($(OS),Windows_NT)
+    # Unix-like systems
+    HOST_OS := $(shell echo $(UNAME_S) | tr '[:upper:]' '[:lower:]')
+    HOST_ARCH := $(UNAME_M)
 else
-	GREEN := 
-	YELLOW := 
-	RED := 
-	BLUE := 
-	CYAN := 
-	RESET := 
-	BOLD := 
+    # Windows
+    HOST_OS := windows
+    HOST_ARCH := $(PROCESSOR_ARCHITECTURE)
+    ifeq ($(HOST_ARCH),AMD64)
+        HOST_ARCH := x86_64
+    endif
 endif
 
-# ============================================================================
-# AYUDA
-# ============================================================================
+# Additional Windows detection methods
+ifeq ($(findstring mingw,$(HOST_OS)),mingw)
+    HOST_OS := windows
+endif
+ifeq ($(findstring msys,$(HOST_OS)),msys)
+    HOST_OS := windows
+endif
+ifeq ($(findstring cygwin,$(HOST_OS)),cygwin)
+    HOST_OS := windows
+endif
 
-help:
-	@echo "$(BLUE)$(BOLD)🚀 $(PROJECT_NAME) - Build System Avanzado$(RESET)"
-	@echo ""
-	@echo "$(GREEN)$(BOLD)📋 Comandos principales:$(RESET)"
-	@echo "  make build         - Construir todo (debug + release, todas las plataformas)"
-	@echo "  make debug         - Construir solo modo debug (todas las plataformas)"
-	@echo "  make release       - Construir solo modo release (todas las plataformas)"
-	@echo "  make clean         - Limpiar archivos compilados"
-	@echo "  make test          - Ejecutar tests"
-	@echo "  make format        - Formatear código"
-	@echo "  make lint          - Linter de código"
-	@echo ""
-	@echo "$(GREEN)$(BOLD)🎯 Builds por plataforma:$(RESET)"
-	@echo "  make linux-debug   - Linux debug (todas las arquitecturas)"
-	@echo "  make linux-release - Linux release (todas las arquitecturas)"
-	@echo "  make windows-debug - Windows debug"
-	@echo "  make windows-release - Windows release"
-	@echo "  make macos-debug   - macOS debug (x64 + ARM64)"
-	@echo "  make macos-release - macOS release (x64 + ARM64)"
-	@echo "  make web-debug     - Web debug"
-	@echo "  make web-release   - Web release"
-	@echo ""
-	@echo "$(GREEN)$(BOLD)🏗️ Builds específicos por arquitectura:$(RESET)"
-	@echo "  make linux-x64-debug      - Linux x86_64 debug"
-	@echo "  make linux-x64-release    - Linux x86_64 release"
-	@echo "  make linux-arm64-debug    - Linux ARM64 debug"
-	@echo "  make linux-arm64-release  - Linux ARM64 release"
-	@echo "  make windows-x64-debug    - Windows x86_64 debug"
-	@echo "  make windows-x64-release  - Windows x86_64 release"
-	@echo "  make macos-x64-debug      - macOS x86_64 debug"
-	@echo "  make macos-x64-release    - macOS x86_64 release"
-	@echo "  make macos-arm64-debug    - macOS ARM64 debug"
-	@echo "  make macos-arm64-release  - macOS ARM64 release"
-	@echo "  make web-wasm32-debug     - Web WASM32 debug"
-	@echo "  make web-wasm32-release   - Web WASM32 release"
-	@echo ""
-	@echo "$(GREEN)$(BOLD)🔧 Utilidades:$(RESET)"
-	@echo "  make dev           - Configurar entorno desarrollo"
-	@echo "  make docker        - Construir imagen Docker"
-	@echo "  make status        - Mostrar estado del proyecto"
+# Map host architecture
+ifeq ($(HOST_ARCH),x86_64)
+    HOST_ARCH_MAPPED := x64
+else ifeq ($(HOST_ARCH),aarch64)
+    HOST_ARCH_MAPPED := arm64
+else ifeq ($(HOST_ARCH),arm64)
+    HOST_ARCH_MAPPED := arm64
+else ifeq ($(HOST_ARCH),amd64)
+    HOST_ARCH_MAPPED := x64
+else
+    HOST_ARCH_MAPPED := x64
+endif
 
-# ============================================================================
-# BUILDS PRINCIPALES
-# ============================================================================
+# Map host OS
+ifeq ($(HOST_OS),linux)
+    HOST_PLATFORM := linux
+else ifeq ($(HOST_OS),darwin)
+    HOST_PLATFORM := macos
+else ifeq ($(HOST_OS),windows)
+    HOST_PLATFORM := windows
+else
+    HOST_PLATFORM := linux
+endif
 
-build: debug release
-	@echo "$(GREEN)$(BOLD)✅ Build completo terminado$(RESET)"
+# Combined host target
+HOST_TARGET := $(HOST_PLATFORM)-$(HOST_ARCH_MAPPED)
 
-debug: all-debug
-	@echo "$(GREEN)$(BOLD)✅ Todos los builds debug completados$(RESET)"
+# Colors (with Windows compatibility)
+ifeq ($(HOST_PLATFORM),windows)
+    B := 
+    G := 
+    Y := 
+    R := 
+    X := 
+else
+    B := $(shell printf '\033[94m')
+    G := $(shell printf '\033[92m')
+    Y := $(shell printf '\033[93m')
+    R := $(shell printf '\033[91m')
+    X := $(shell printf '\033[0m')
+endif
 
-release: all-release
-	@echo "$(GREEN)$(BOLD)✅ Todos los builds release completados$(RESET)"
-
-all-debug: linux-debug windows-debug macos-debug web-debug
-
-all-release: linux-release windows-release macos-release web-release
+# Cross-compilation tools detection
+CC_PREFIX_linux_x64 := x86_64-linux-gnu-
+CC_PREFIX_linux_arm64 := aarch64-linux-gnu-
+CC_PREFIX_windows_x64 := x86_64-w64-mingw32-
+CC_PREFIX_macos_x64 := x86_64-apple-darwin-
+CC_PREFIX_macos_arm64 := aarch64-apple-darwin-
 
 # ============================================================================
-# BUILDS POR PLATAFORMA
+# DEPENDENCY CHECKING
 # ============================================================================
 
-linux-debug: linux-x64-debug linux-arm64-debug
-	@echo "$(GREEN)✅ Linux debug builds completados$(RESET)"
+check-deps:
+	@echo "$(B)🔍 Checking dependencies...$(X)"
+	@$(MAKE) --no-print-directory _check-system
+	@$(MAKE) --no-print-directory _check-rust
+	@$(MAKE) --no-print-directory _check-scons
+	@$(MAKE) --no-print-directory _check-dirs
+	@$(MAKE) --no-print-directory _check-os-deps
+	@echo "$(G)✅ All dependencies ready$(X)"
 
-linux-release: linux-x64-release linux-arm64-release
-	@echo "$(GREEN)✅ Linux release builds completados$(RESET)"
+_check-system:
+	@echo "$(Y)  Detected system: $(UNAME_S) $(UNAME_M) -> $(HOST_TARGET)$(X)"
+	@echo "$(Y)  Build environment: $(shell $(MAKE) --version 2>/dev/null | head -1)$(X)"
 
-windows-debug: windows-x64-debug
-	@echo "$(GREEN)✅ Windows debug builds completados$(RESET)"
-
-windows-release: windows-x64-release
-	@echo "$(GREEN)✅ Windows release builds completados$(RESET)"
-
-macos-debug: macos-x64-debug macos-arm64-debug
-	@echo "$(GREEN)✅ macOS debug builds completados$(RESET)"
-
-macos-release: macos-x64-release macos-arm64-release
-	@echo "$(GREEN)✅ macOS release builds completados$(RESET)"
-
-web-debug: web-wasm32-debug
-	@echo "$(GREEN)✅ Web debug builds completados$(RESET)"
-
-web-release: web-wasm32-release
-	@echo "$(GREEN)✅ Web release builds completados$(RESET)"
-
-# ============================================================================
-# BUILDS ESPECÍFICOS POR ARQUITECTURA
-# ============================================================================
-
-# Linux builds
-linux-x64-debug:
-	@echo "$(BLUE)🐧 Building Linux x86_64 Debug...$(RESET)"
-	@mkdir -p $(DEMO_BIN_DIR)
-	@scons platform=linux arch=x86_64 target=template_debug -j$(NPROC) -Q
-
-linux-x64-release:
-	@echo "$(BLUE)🐧 Building Linux x86_64 Release...$(RESET)"
-	@mkdir -p $(DEMO_BIN_DIR)
-	@scons platform=linux arch=x86_64 target=template_release -j$(NPROC) -Q
-
-linux-arm64-debug:
-	@echo "$(BLUE)🐧 Building Linux ARM64 Debug...$(RESET)"
-	@mkdir -p $(DEMO_BIN_DIR)
-	@scons platform=linux arch=arm64 target=template_debug -j$(NPROC) -Q
-
-linux-arm64-release:
-	@echo "$(BLUE)🐧 Building Linux ARM64 Release...$(RESET)"
-	@mkdir -p $(DEMO_BIN_DIR)
-	@scons platform=linux arch=arm64 target=template_release -j$(NPROC) -Q
-
-# Windows builds
-windows-x64-debug:
-	@echo "$(BLUE)🪟 Building Windows x86_64 Debug...$(RESET)"
-	@mkdir -p $(DEMO_BIN_DIR)
-	@scons platform=windows arch=x86_64 target=template_debug use_mingw=yes -j$(NPROC) -Q
-
-windows-x64-release:
-	@echo "$(BLUE)🪟 Building Windows x86_64 Release...$(RESET)"
-	@mkdir -p $(DEMO_BIN_DIR)
-	@scons platform=windows arch=x86_64 target=template_release use_mingw=yes -j$(NPROC) -Q
-
-# macOS builds
-macos-x64-debug:
-	@echo "$(BLUE)🍎 Building macOS x86_64 Debug...$(RESET)"
-	@mkdir -p $(DEMO_BIN_DIR)
-	@scons platform=macos arch=x86_64 target=template_debug -j$(NPROC) -Q
-
-macos-x64-release:
-	@echo "$(BLUE)🍎 Building macOS x86_64 Release...$(RESET)"
-	@mkdir -p $(DEMO_BIN_DIR)
-	@scons platform=macos arch=x86_64 target=template_release -j$(NPROC) -Q
-
-macos-arm64-debug:
-	@echo "$(BLUE)🍎 Building macOS ARM64 Debug...$(RESET)"
-	@mkdir -p $(DEMO_BIN_DIR)
-	@scons platform=macos arch=arm64 target=template_debug -j$(NPROC) -Q
-
-macos-arm64-release:
-	@echo "$(BLUE)🍎 Building macOS ARM64 Release...$(RESET)"
-	@mkdir -p $(DEMO_BIN_DIR)
-	@scons platform=macos arch=arm64 target=template_release -j$(NPROC) -Q
-
-# Web builds
-web-wasm32-debug:
-	@echo "$(BLUE)🌐 Building Web WASM32 Debug...$(RESET)"
-	@mkdir -p $(DEMO_BIN_DIR)
-	@rustup target add wasm32-unknown-unknown 2>/dev/null || true
-	@scons platform=web arch=wasm32 target=template_debug -j$(NPROC) -Q
-
-web-wasm32-release:
-	@echo "$(BLUE)🌐 Building Web WASM32 Release...$(RESET)"
-	@mkdir -p $(DEMO_BIN_DIR)
-	@rustup target add wasm32-unknown-unknown 2>/dev/null || true
-	@scons platform=web arch=wasm32 target=template_release -j$(NPROC) -Q
-
-# ============================================================================
-# UTILIDADES
-# ============================================================================
-
-clean:
-	@echo "$(YELLOW)🧹 Limpiando archivos compilados...$(RESET)"
-	@rm -rf $(DEMO_BIN_DIR)/* 2>/dev/null || true
-	@scons --clean 2>/dev/null || true
-	@if [ -d "external/dojo.c" ]; then \
-		echo "$(YELLOW)🧹 Limpiando Rust...$(RESET)"; \
-		cd external/dojo.c && cargo clean; \
+_check-rust:
+	@if ! command -v cargo >/dev/null 2>&1; then \
+		echo "$(R)❌ Cargo not found$(X)"; \
+		echo "$(Y)💡 Install Rust: curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh$(X)"; \
+		exit 1; \
 	fi
-	@if [ -d "external/godot-cpp" ]; then \
-		echo "$(YELLOW)🧹 Limpiando Godot C++...$(RESET)"; \
-		scons -C external/godot-cpp --clean 2>/dev/null || true; \
+	@echo "$(G)  ✅ Cargo: $(shell cargo --version 2>/dev/null)$(X)"
+	@if ! command -v rustup >/dev/null 2>&1; then \
+		echo "$(R)❌ Rustup not found$(X)"; \
+		exit 1; \
 	fi
-	@echo "$(GREEN)✅ Limpieza completada$(RESET)"
+	@echo "$(G)  ✅ Rustup: $(shell rustup --version 2>/dev/null | head -1)$(X)"
 
-test:
-	@echo "$(BLUE)🧪 Ejecutando tests...$(RESET)"
-	@if [ -d "external/dojo.c" ]; then \
-		cd external/dojo.c && cargo test --all-targets; \
+_check-scons:
+	@if ! command -v scons >/dev/null 2>&1; then \
+		echo "$(R)❌ SCons not found$(X)"; \
+		echo "$(Y)💡 Install SCons: pip install scons$(X)"; \
+		exit 1; \
+	fi
+	@echo "$(G)  ✅ SCons: $(shell scons --version 2>/dev/null | grep "SCons:" | cut -d' ' -f2 | sed 's/,//')$(X)"
+
+_check-dirs:
+	@if [ ! -d "external/dojo.c" ]; then \
+		echo "$(R)❌ Directory external/dojo.c not found$(X)"; \
+		exit 1; \
+	fi
+	@echo "$(G)  ✅ dojo.c directory found$(X)"
+	@if [ ! -d "external/godot-cpp" ]; then \
+		echo "$(R)❌ Directory external/godot-cpp not found$(X)"; \
+		exit 1; \
+	fi
+	@echo "$(G)  ✅ godot-cpp directory found$(X)"
+	@if [ ! -f "external/dojo.c/Cargo.toml" ]; then \
+		echo "$(R)❌ Cargo.toml not found in dojo.c$(X)"; \
+		exit 1; \
+	fi
+	@echo "$(G)  ✅ Cargo.toml found$(X)"
+
+_check-os-deps:
+	@echo "$(Y)  Checking OS-specific dependencies...$(X)"
+ifeq ($(HOST_PLATFORM),linux)
+	@$(MAKE) --no-print-directory _check-linux-deps
+else ifeq ($(HOST_PLATFORM),macos)
+	@$(MAKE) --no-print-directory _check-macos-deps
+else ifeq ($(HOST_PLATFORM),windows)
+	@$(MAKE) --no-print-directory _check-windows-deps
+endif
+
+_check-linux-deps:
+	@echo "$(Y)    Linux dependencies:$(X)"
+	@if ! pkg-config --exists dbus-1 2>/dev/null; then \
+		echo "$(R)    ❌ libdbus-1-dev not found$(X)"; \
+		echo "$(Y)    💡 Install: sudo apt-get install libdbus-1-dev$(X)"; \
 	else \
-		echo "$(YELLOW)⚠️ Directorio dojo.c no encontrado$(RESET)"; \
+		echo "$(G)    ✅ libdbus-1-dev$(X)"; \
 	fi
-
-format:
-	@echo "$(BLUE)🎨 Formateando código...$(RESET)"
-	@if [ -d "external/dojo.c" ]; then \
-		echo "$(CYAN)  📝 Formateando Rust...$(RESET)"; \
-		cd external/dojo.c && cargo fmt; \
-	fi
-	@if command -v clang-format >/dev/null 2>&1; then \
-		echo "$(CYAN)  📝 Formateando C++...$(RESET)"; \
-		find src/ include/ -name "*.cpp" -o -name "*.hpp" -o -name "*.h" 2>/dev/null | xargs clang-format -i; \
+	@if ! command -v gcc >/dev/null 2>&1; then \
+		echo "$(R)    ❌ GCC not found$(X)"; \
+		echo "$(Y)    💡 Install: sudo apt-get install build-essential$(X)"; \
 	else \
-		echo "$(YELLOW)⚠️ clang-format no está instalado$(RESET)"; \
+		echo "$(G)    ✅ GCC: $(shell gcc --version 2>/dev/null | head -1)$(X)"; \
 	fi
-	@echo "$(GREEN)✅ Formateo completado$(RESET)"
+	@if ! command -v protoc >/dev/null 2>&1; then \
+    echo "$(R)    ❌ protoc (Protocol Buffers compiler) not found$(X)"; \
+    echo "$(Y)    💡 Install: sudo apt-get install protobuf-compiler libprotobuf-dev$(X)"; \
+else \
+    echo "$(G)    ✅ protoc: $(shell protoc --version 2>/dev/null)$(X)"; \
+fi
+	@if ! pkg-config --exists protobuf 2>/dev/null; then \
+    echo "$(R)    ❌ libprotobuf-dev not found$(X)"; \
+    echo "$(Y)    💡 Install: sudo apt-get install libprotobuf-dev$(X)"; \
+else \
+    echo "$(G)    ✅ libprotobuf-dev$(X)"; \
+fi
 
-lint:
-	@echo "$(BLUE)🔍 Ejecutando linter...$(RESET)"
-	@if [ -d "external/dojo.c" ]; then \
-		echo "$(CYAN)  🔍 Linting Rust...$(RESET)"; \
-		cd external/dojo.c && cargo clippy --all-targets -- -D warnings; \
+_check-macos-deps:
+	@echo "$(Y)    macOS dependencies:$(X)"
+	@if ! command -v clang >/dev/null 2>&1; then \
+		echo "$(R)    ❌ Clang not found$(X)"; \
+		echo "$(Y)    💡 Install Xcode Command Line Tools: xcode-select --install$(X)"; \
+	else \
+		echo "$(G)    ✅ Clang: $(shell clang --version 2>/dev/null | head -1)$(X)"; \
 	fi
-	@if command -v cppcheck >/dev/null 2>&1; then \
-		echo "$(CYAN)  🔍 Linting C++...$(RESET)"; \
-		cppcheck --enable=all --std=c++17 src/ include/ 2>/dev/null || true; \
+	@if ! command -v pkg-config >/dev/null 2>&1; then \
+		echo "$(R)    ❌ pkg-config not found$(X)"; \
+		echo "$(Y)    💡 Install: brew install pkg-config$(X)"; \
+	else \
+		echo "$(G)    ✅ pkg-config$(X)"; \
 	fi
 
-dev:
-	@echo "$(BLUE)🛠️ Configurando entorno desarrollo...$(RESET)"
-	@mkdir -p $(DEMO_BIN_DIR)
-	@echo "$(CYAN)  🦀 Configurando targets Rust...$(RESET)"
+_check-windows-deps:
+	@echo "$(Y)    Windows dependencies:$(X)"
+	@if ! command -v cl >/dev/null 2>&1 && ! command -v gcc >/dev/null 2>&1; then \
+		echo "$(R)    ❌ No compiler found (MSVC or MinGW)$(X)"; \
+		echo "$(Y)    💡 Install Visual Studio Build Tools or MinGW-w64$(X)"; \
+	else \
+		if command -v cl >/dev/null 2>&1; then \
+			echo "$(G)    ✅ MSVC compiler found$(X)"; \
+		fi; \
+		if command -v gcc >/dev/null 2>&1; then \
+			echo "$(G)    ✅ MinGW GCC: $(shell gcc --version 2>/dev/null | head -1)$(X)"; \
+		fi; \
+	fi
+
+install-deps:
+	@echo "$(B)📦 Installing dependencies...$(X)"
+	@$(MAKE) --no-print-directory _install-rust-targets
+	@$(MAKE) --no-print-directory _install-cross-tools
+	@$(MAKE) --no-print-directory _install-os-deps
+	@echo "$(G)✅ Dependencies installed$(X)"
+
+_install-rust-targets:
+	@echo "$(Y)🦀 Installing Rust targets...$(X)"
 	@rustup target add x86_64-unknown-linux-gnu 2>/dev/null || true
 	@rustup target add aarch64-unknown-linux-gnu 2>/dev/null || true
 	@rustup target add x86_64-pc-windows-gnu 2>/dev/null || true
+	@rustup target add x86_64-pc-windows-msvc 2>/dev/null || true
 	@rustup target add x86_64-apple-darwin 2>/dev/null || true
 	@rustup target add aarch64-apple-darwin 2>/dev/null || true
 	@rustup target add wasm32-unknown-unknown 2>/dev/null || true
 	@rustup component add rustfmt clippy 2>/dev/null || true
-	@echo "$(GREEN)✅ Entorno configurado$(RESET)"
+	@echo "$(G)  ✅ Rust targets and components installed$(X)"
 
-docker:
-	@echo "$(BLUE)🐳 Construyendo imagen Docker...$(RESET)"
-	@if command -v docker >/dev/null 2>&1; then \
-		docker build -t $(PROJECT_NAME) .; \
-		echo "$(GREEN)✅ Imagen Docker creada: $(PROJECT_NAME)$(RESET)"; \
-	else \
-		echo "$(RED)❌ Docker no está instalado$(RESET)"; \
+_install-cross-tools:
+	@echo "$(Y)🔧 Installing cross-compilation tools...$(X)"
+ifeq ($(HOST_PLATFORM),linux)
+	@if command -v apt-get >/dev/null 2>&1; then \
+		echo "$(Y)  Installing cross-compilation toolchains (Ubuntu/Debian)...$(X)"; \
+		sudo apt-get update >/dev/null 2>&1 || true; \
+		sudo apt-get install -y gcc-mingw-w64-x86-64 gcc-aarch64-linux-gnu >/dev/null 2>&1 || true; \
+	elif command -v yum >/dev/null 2>&1; then \
+		echo "$(Y)  Installing cross-compilation toolchains (RHEL/CentOS)...$(X)"; \
+		sudo yum install -y mingw64-gcc gcc-aarch64-linux-gnu >/dev/null 2>&1 || true; \
+	elif command -v pacman >/dev/null 2>&1; then \
+		echo "$(Y)  Installing cross-compilation toolchains (Arch)...$(X)"; \
+		sudo pacman -S --noconfirm mingw-w64-gcc aarch64-linux-gnu-gcc >/dev/null 2>&1 || true; \
 	fi
+else ifeq ($(HOST_PLATFORM),macos)
+	@if command -v brew >/dev/null 2>&1; then \
+		echo "$(Y)  Installing cross-compilation toolchains (macOS)...$(X)"; \
+		brew install mingw-w64 >/dev/null 2>&1 || true; \
+	fi
+endif
+	@echo "$(G)  ✅ Cross-compilation tools installed$(X)"
 
-status:
-	@echo "$(BLUE)$(BOLD)📊 Estado del Proyecto $(PROJECT_NAME)$(RESET)"
-	@echo ""
-	@echo "$(CYAN)📁 Estructura de directorios:$(RESET)"
-	@ls -la $(DEMO_BIN_DIR)/ 2>/dev/null || echo "  $(YELLOW)⚠️ Directorio bin vacío o no existe$(RESET)"
-	@echo ""
-	@echo "$(CYAN)🦀 Información Rust:$(RESET)"
-	@if [ -d "external/dojo.c" ]; then \
-		cd external/dojo.c && cargo --version 2>/dev/null || echo "  $(RED)❌ Cargo no disponible$(RESET)"; \
-		cd external/dojo.c && rustup show active-toolchain 2>/dev/null || echo "  $(RED)❌ Rustup no disponible$(RESET)"; \
-	else \
-		echo "  $(YELLOW)⚠️ Directorio dojo.c no encontrado$(RESET)"; \
+_install-os-deps:
+	@echo "$(Y)📦 Installing OS-specific dependencies...$(X)"
+ifeq ($(HOST_PLATFORM),linux)
+	@if command -v apt-get >/dev/null 2>&1; then \
+		sudo apt-get install -y build-essential pkg-config libdbus-1-dev >/dev/null 2>&1 || true; \
+	elif command -v yum >/dev/null 2>&1; then \
+		sudo yum install -y gcc-c++ pkgconfig dbus-devel >/dev/null 2>&1 || true; \
+	elif command -v pacman >/dev/null 2>&1; then \
+		sudo pacman -S --noconfirm base-devel pkgconf dbus >/dev/null 2>&1 || true; \
 	fi
-	@echo ""
-	@echo "$(CYAN)🔧 Herramientas disponibles:$(RESET)"
-	@command -v scons >/dev/null 2>&1 && echo "  ✅ SCons" || echo "  ❌ SCons"
-	@command -v cargo >/dev/null 2>&1 && echo "  ✅ Cargo" || echo "  ❌ Cargo"
-	@command -v clang-format >/dev/null 2>&1 && echo "  ✅ clang-format" || echo "  ❌ clang-format"
-	@command -v cppcheck >/dev/null 2>&1 && echo "  ✅ cppcheck" || echo "  ❌ cppcheck"
-	@command -v docker >/dev/null 2>&1 && echo "  ✅ Docker" || echo "  ❌ Docker"
+else ifeq ($(HOST_PLATFORM),macos)
+	@if command -v brew >/dev/null 2>&1; then \
+		brew install pkg-config >/dev/null 2>&1 || true; \
+	fi
+else ifeq ($(HOST_PLATFORM),windows)
+	@echo "$(Y)  Windows: Please ensure you have Visual Studio Build Tools or MinGW-w64 installed$(X)"
+endif
+	@echo "$(G)  ✅ OS dependencies installed$(X)"
 
 # ============================================================================
-# CONFIGURACIÓN AVANZADA
+# MAIN COMMANDS
 # ============================================================================
 
-# Usar bash y configuración estricta
-SHELL := /bin/bash
-MAKEFLAGS += --no-builtin-rules --no-builtin-variables
+help:
+	@echo "$(B)🚀 Godot Dojo Cross-Platform Build System$(X)"
+	@echo "$(Y)  Host detected: $(HOST_TARGET)$(X)"
+	@echo ""
+	@echo "$(G)Main commands:$(X)"
+	@echo "  make build        - Build everything (debug + release) for host"
+	@echo "  make debug        - Build debug for host ($(HOST_TARGET))"
+	@echo "  make release      - Build release for host ($(HOST_TARGET))"
+	@echo "  make clean        - Clean all build files"
+	@echo ""
+	@echo "$(G)Dependencies:$(X)"
+	@echo "  make check-deps   - Check all dependencies"
+	@echo "  make install-deps - Install missing dependencies"
+	@echo ""
+	@echo "$(G)Complete platform builds:$(X)"
+	@echo "  make linux-all    - Linux (x64 + arm64) debug + release"
+	@echo "  make windows-all  - Windows x64 debug + release"
+	@echo "  make macos-all    - macOS (x64 + arm64) debug + release"
+	@echo "  make web-all      - WebAssembly debug + release $(R)[EXPERIMENTAL - NON-FUNCTIONAL]$(X)"
+	@echo ""
+	@echo "$(G)Platform debug/release only:$(X)"
+	@echo "  make linux-debug    make linux-release"
+	@echo "  make windows-debug  make windows-release"  
+	@echo "  make macos-debug    make macos-release"
+	@echo "  make web-debug      make web-release $(R)[EXPERIMENTAL]$(X)"
+	@echo ""
+	@echo "$(G)Architecture-specific builds:$(X)"
+	@echo "  make linux-x64-debug     make linux-x64-release"
+	@echo "  make linux-arm64-debug   make linux-arm64-release"
+	@echo "  make windows-x64-debug   make windows-x64-release"
+	@echo "  make macos-x64-debug     make macos-x64-release"
+	@echo "  make macos-arm64-debug   make macos-arm64-release"
+	@echo "  make web-wasm32-debug    make web-wasm32-release $(R)[EXPERIMENTAL]$(X)"
+	@echo ""
+	@echo "$(G)Shortcuts:$(X)"
+	@echo "  make linux-x64    - Linux x64 (debug + release)"
+	@echo "  make macos-arm64  - macOS ARM64 (debug + release)"
+	@echo "  make windows-x64  - Windows x64 (debug + release)"
+	@echo ""
+	@echo "$(R)⚠️  Web builds are experimental and currently non-functional$(X)"
 
-# Configuración de paralelismo por defecto
+build: check-deps debug release
+
+# Debug/release commands build only for the host
+debug: check-deps $(HOST_TARGET)-debug
+	@echo "$(G)✅ Debug build completed for $(HOST_TARGET)$(X)"
+
+release: check-deps $(HOST_TARGET)-release
+	@echo "$(G)✅ Release build completed for $(HOST_TARGET)$(X)"
+
+clean:
+	@echo "$(Y)🧹 Cleaning...$(X)"
+	@$(SCONS) --clean 2>/dev/null || true
+	@rm -rf demo/bin/* 2>/dev/null || true
+	@cd external/dojo.c && cargo clean 2>/dev/null || true
+	@cd external/godot-cpp && $(SCONS) --clean 2>/dev/null || true
+	@echo "$(G)✅ Clean complete$(X)"
+
+# ============================================================================
+# COMPLETE PLATFORM BUILDS (all architectures)
+# ============================================================================
+
+linux-all: check-deps linux-debug linux-release
+linux-debug: check-deps linux-x64-debug linux-arm64-debug  
+linux-release: check-deps linux-x64-release linux-arm64-release
+
+windows-all: check-deps windows-debug windows-release
+windows-debug: check-deps windows-x64-debug
+windows-release: check-deps windows-x64-release
+
+macos-all: check-deps macos-debug macos-release
+macos-debug: check-deps macos-x64-debug macos-arm64-debug
+macos-release: check-deps macos-x64-release macos-arm64-release
+
+web-all: check-deps web-debug web-release
+	@echo "$(R)⚠️  Web builds completed but are experimental and may not function correctly$(X)"
+
+web-debug: check-deps web-wasm32-debug
+	@echo "$(R)⚠️  Web debug build is experimental$(X)"
+
+web-release: check-deps web-wasm32-release
+	@echo "$(R)⚠️  Web release build is experimental$(X)"
+
+# ============================================================================
+# SPECIFIC ARCHITECTURE BUILDS
+# ============================================================================
+
+# Linux builds
+linux-x64-debug: check-deps
+	@echo "$(B)🐧 Building Linux x64 Debug$(X)"
+	@$(SCONS) platform=linux arch=x86_64 target=template_debug
+
+linux-x64-release: check-deps
+	@echo "$(B)🐧 Building Linux x64 Release$(X)"
+	@$(SCONS) platform=linux arch=x86_64 target=template_release
+
+linux-arm64-debug: check-deps
+	@echo "$(B)🐧 Building Linux ARM64 Debug$(X)"
+	@$(SCONS) platform=linux arch=arm64 target=template_debug
+
+linux-arm64-release: check-deps
+	@echo "$(B)🐧 Building Linux ARM64 Release$(X)"
+	@$(SCONS) platform=linux arch=arm64 target=template_release
+
+# Windows builds
+windows-x64-debug: check-deps
+	@echo "$(B)🪟 Building Windows x64 Debug$(X)"
+	@$(SCONS) platform=windows arch=x86_64 target=template_debug
+
+windows-x64-release: check-deps
+	@echo "$(B)🪟 Building Windows x64 Release$(X)"
+	@$(SCONS) platform=windows arch=x86_64 target=template_release
+
+# macOS builds
+macos-x64-debug: check-deps
+	@echo "$(B)🍎 Building macOS x64 Debug$(X)"
+	@$(SCONS) platform=macos arch=x86_64 target=template_debug
+
+macos-x64-release: check-deps
+	@echo "$(B)🍎 Building macOS x64 Release$(X)"
+	@$(SCONS) platform=macos arch=x86_64 target=template_release
+
+macos-arm64-debug: check-deps
+	@echo "$(B)🍎 Building macOS ARM64 Debug$(X)"
+	@$(SCONS) platform=macos arch=arm64 target=template_debug
+
+macos-arm64-release: check-deps
+	@echo "$(B)🍎 Building macOS ARM64 Release$(X)"
+	@$(SCONS) platform=macos arch=arm64 target=template_release
+
+# Web builds (experimental)
+web-wasm32-debug: check-deps
+	@echo "$(B)🌐 Building Web WASM32 Debug $(R)[EXPERIMENTAL - MAY NOT WORK]$(X)"
+	@echo "$(Y)⚠️  Web compilation is experimental and currently non-functional$(X)"
+	@rustup target add wasm32-unknown-unknown 2>/dev/null || true
+	@$(SCONS) platform=web arch=wasm32 target=template_debug || echo "$(R)❌ Web build failed (expected - experimental feature)$(X)"
+
+web-wasm32-release: check-deps
+	@echo "$(B)🌐 Building Web WASM32 Release $(R)[EXPERIMENTAL - MAY NOT WORK]$(X)"
+	@echo "$(Y)⚠️  Web compilation is experimental and currently non-functional$(X)"
+	@rustup target add wasm32-unknown-unknown 2>/dev/null || true
+	@$(SCONS) platform=web arch=wasm32 target=template_release || echo "$(R)❌ Web build failed (expected - experimental feature)$(X)"
+
+# ============================================================================
+# ARCHITECTURE SHORTCUTS (debug + release)
+# ============================================================================
+
+linux-x64: check-deps linux-x64-debug linux-x64-release
+	@echo "$(G)✅ Linux x64 complete$(X)"
+
+linux-arm64: check-deps linux-arm64-debug linux-arm64-release
+	@echo "$(G)✅ Linux ARM64 complete$(X)"
+
+windows-x64: check-deps windows-x64-debug windows-x64-release
+	@echo "$(G)✅ Windows x64 complete$(X)"
+
+macos-x64: check-deps macos-x64-debug macos-x64-release
+	@echo "$(G)✅ macOS x64 complete$(X)"
+
+macos-arm64: check-deps macos-arm64-debug macos-arm64-release
+	@echo "$(G)✅ macOS ARM64 complete$(X)"
+
+web-wasm32: check-deps web-wasm32-debug web-wasm32-release
+	@echo "$(R)⚠️  Web WASM32 complete (experimental - may not function)$(X)"
+
+# ============================================================================
+# SPECIAL TARGETS
+# ============================================================================
+
+all: build
+
+ci-all: check-deps linux-all windows-all macos-all
+	@echo "$(G)🎉 All stable platforms built successfully!$(X)"
+	@echo "$(Y)📝 Note: Web builds excluded from CI (experimental)$(X)"
+
+ci-all-experimental: check-deps linux-all windows-all macos-all web-all
+	@echo "$(G)🎉 All platforms built (including experimental web)!$(X)"
+
+list-targets:
+	@echo "$(B)Available build targets:$(X)"
+	@echo "$(G)Host-specific:$(X) debug, release, build"
+	@echo "$(G)Linux:$(X) linux-x64-debug, linux-x64-release, linux-arm64-debug, linux-arm64-release"
+	@echo "$(G)Windows:$(X) windows-x64-debug, windows-x64-release"
+	@echo "$(G)macOS:$(X) macos-x64-debug, macos-x64-release, macos-arm64-debug, macos-arm64-release"
+	@echo "$(R)Web (experimental):$(X) web-wasm32-debug, web-wasm32-release"
+
 .DEFAULT_GOAL := help
-
-# Prevenir eliminación de archivos intermedios
-.SECONDARY:
-
-# Variables de debugging
-ifdef VERBOSE
-	SCONS_FLAGS += verbose=yes
-endif
-
-ifdef DEBUG_MAKE
-	OLD_SHELL := $(SHELL)
-	SHELL = $(warning Building $@$(if $<, (from $<))$(if $?, ($? newer)))$(OLD_SHELL)
-endif

@@ -13,210 +13,211 @@ jobs:
   build-linux:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-        with:
-          submodules: recursive
-          fetch-depth: 0
+    - name: Checkout code
+      uses: actions/checkout@v4
+      with:
+        submodules: recursive
+        fetch-depth: 0
 
-      - name: Set up Rust
-        uses: actions-rs/toolchain@v1
-        with:
-          toolchain: stable
-          profile: minimal
-          override: true
+    - name: Set up Rust
+      uses: actions-rs/toolchain@v1
+      with:
+        toolchain: stable
+        profile: minimal
+        override: true
 
-      - name: Install Linux dependencies
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y build-essential pkg-config libdbus-1-dev
-          sudo apt-get install -y gcc-aarch64-linux-gnu
-          pip install scons
+    - name: Install Linux dependencies
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y build-essential pkg-config libdbus-1-dev
+        sudo apt-get install -y gcc-aarch64-linux-gnu
+        sudo apt-get install -y protobuf-compiler libprotobuf-dev
+        pip install scons
 
-      - name: Install Rust targets for Linux
-        run: |
-          rustup target add x86_64-unknown-linux-gnu
-          rustup target add aarch64-unknown-linux-gnu
+    - name: Install Rust targets for Linux
+      run: |
+        rustup target add x86_64-unknown-linux-gnu
+        rustup target add aarch64-unknown-linux-gnu
 
-      - name: Build Linux (debug + release, x64 + arm64)
-        run: make linux-all
+    - name: Build Linux (debug + release, x64 + arm64)
+      run: make linux-all
 
-      - name: Upload Linux artifacts
-        uses: actions/upload-artifact@v3
-        with:
-          name: linux-builds
-          path: demo/bin/
-          retention-days: 1
+    - name: Upload Linux artifacts
+      uses: actions/upload-artifact@v3
+      with:
+        name: linux-builds
+        path: demo/bin/
+        retention-days: 1
 
-  # Job 2: Build Windows
+  # Job 2: Build Windows  
   build-windows:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-        with:
-          submodules: recursive
-          fetch-depth: 0
+    - name: Checkout code
+      uses: actions/checkout@v4
+      with:
+        submodules: recursive
+        fetch-depth: 0
 
-      - name: Set up Rust
-        uses: actions-rs/toolchain@v1
-        with:
-          toolchain: stable
-          profile: minimal
-          override: true
+    - name: Set up Rust
+      uses: actions-rs/toolchain@v1
+      with:
+        toolchain: stable
+        profile: minimal
+        override: true
 
-      - name: Install Windows dependencies
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y build-essential pkg-config libdbus-1-dev
-          sudo apt-get install -y gcc-mingw-w64-x86-64
-          pip install scons
+    - name: Install Windows dependencies
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y build-essential pkg-config libdbus-1-dev
+        sudo apt-get install -y gcc-mingw-w64-x86-64
+        pip install scons
 
-      - name: Install Rust targets for Windows
-        run: |
-          rustup target add x86_64-pc-windows-gnu
+    - name: Install Rust targets for Windows
+      run: |
+        rustup target add x86_64-pc-windows-gnu
 
-      - name: Build Windows (debug + release, x64)
-        run: make windows-all
+    - name: Build Windows (debug + release, x64)
+      run: make windows-all
 
-      - name: Upload Windows artifacts
-        uses: actions/upload-artifact@v3
-        with:
-          name: windows-builds
-          path: demo/bin/
-          retention-days: 1
+    - name: Upload Windows artifacts
+      uses: actions/upload-artifact@v3
+      with:
+        name: windows-builds
+        path: demo/bin/
+        retention-days: 1
 
   # Job 3: Build macOS
   build-macos:
     runs-on: macos-latest
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-        with:
-          submodules: recursive
-          fetch-depth: 0
+    - name: Checkout code
+      uses: actions/checkout@v4
+      with:
+        submodules: recursive
+        fetch-depth: 0
 
-      - name: Set up Rust
-        uses: actions-rs/toolchain@v1
-        with:
-          toolchain: stable
-          profile: minimal
-          override: true
+    - name: Set up Rust
+      uses: actions-rs/toolchain@v1
+      with:
+        toolchain: stable
+        profile: minimal
+        override: true
 
-      - name: Install macOS dependencies
-        run: |
-          brew install pkg-config scons
+    - name: Install macOS dependencies
+      run: |
+        brew install pkg-config scons
 
-      - name: Install Rust targets for macOS
-        run: |
-          rustup target add x86_64-apple-darwin
-          rustup target add aarch64-apple-darwin
+    - name: Install Rust targets for macOS
+      run: |
+        rustup target add x86_64-apple-darwin
+        rustup target add aarch64-apple-darwin
 
-      - name: Build macOS (debug + release, x64 + arm64)
-        run: make macos-all
+    - name: Build macOS (debug + release, x64 + arm64)
+      run: make macos-all
 
-      - name: Upload macOS artifacts
-        uses: actions/upload-artifact@v3
-        with:
-          name: macos-builds
-          path: demo/bin/
-          retention-days: 1
+    - name: Upload macOS artifacts
+      uses: actions/upload-artifact@v3
+      with:
+        name: macos-builds
+        path: demo/bin/
+        retention-days: 1
 
   # Job 4: Create single release ZIP
   create-release:
     needs: [build-linux, build-windows, build-macos]
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
+    - name: Checkout code
+      uses: actions/checkout@v4
 
-      - name: Get tag information
-        id: get_tag
-        run: |
-          echo "tag=${GITHUB_REF#refs/tags/}" >> $GITHUB_OUTPUT
-          echo "version=${GITHUB_REF#refs/tags/v}" >> $GITHUB_OUTPUT
+    - name: Get tag information
+      id: get_tag
+      run: |
+        echo "tag=${GITHUB_REF#refs/tags/}" >> $GITHUB_OUTPUT
+        echo "version=${GITHUB_REF#refs/tags/v}" >> $GITHUB_OUTPUT
 
-      - name: Download all artifacts
-        uses: actions/download-artifact@v3
-        with:
-          path: artifacts/
+    - name: Download all artifacts
+      uses: actions/download-artifact@v3
+      with:
+        path: artifacts/
 
-      - name: Collect all binaries and extension file
-        run: |
-          mkdir -p release
-          
-          # Copy all binary files (.so, .dll, .dylib)
-          find artifacts/ -type f -name "*.so" -exec cp {} release/ \;
-          find artifacts/ -type f -name "*.dll" -exec cp {} release/ \;
-          find artifacts/ -type f -name "*.dylib" -exec cp {} release/ \;
-          
-          # Copy the .gdextension file
-          cp godot-dojo.gdextension release/
-          
-          # Show what files we have
-          echo "## 📁 Files found:" >> $GITHUB_STEP_SUMMARY
-          ls -la release/ >> $GITHUB_STEP_SUMMARY
+    - name: Collect all binaries and extension file
+      run: |
+        mkdir -p release
+        
+        # Copy all binary files (.so, .dll, .dylib)
+        find artifacts/ -type f -name "*.so" -exec cp {} release/ \;
+        find artifacts/ -type f -name "*.dll" -exec cp {} release/ \;
+        find artifacts/ -type f -name "*.dylib" -exec cp {} release/ \;
+        
+        # Copy the .gdextension file
+        cp godot-dojo.gdextension release/
+        
+        # Show what files we have
+        echo "## 📁 Files found:" >> $GITHUB_STEP_SUMMARY
+        ls -la release/ >> $GITHUB_STEP_SUMMARY
 
-      - name: Create release ZIP
-        run: |
-          cd release
-          zip -r ../godot-dojo-${{ steps.get_tag.outputs.version }}.zip .
+    - name: Create release ZIP
+      run: |
+        cd release
+        zip -r ../godot-dojo-${{ steps.get_tag.outputs.version }}.zip .
 
-      - name: Generate release notes
-        run: |
-          cat > release_notes.md << EOF
-          # 🚀 Godot Dojo ${{ steps.get_tag.outputs.version }}
-          
-          ## 📦 Download:
-          
-          **godot-dojo-${{ steps.get_tag.outputs.version }}.zip**
-          - Contains binaries for all platforms
-          - Includes debug and release versions
-          - Includes godot-dojo.gdextension configuration file
-          - Includes dojo_c.dll for Windows
-          - Ready to use in any Godot project
-          
-          ## 🎯 Platforms included:
-          
-          - 🐧 **Linux**: x86_64, ARM64
-          - 🪟 **Windows**: x86_64 (includes dojo_c.dll)
-          - 🍎 **macOS**: Intel (x86_64), Apple Silicon (ARM64)
-          
-          ## 🚀 Quick installation:
-          
-          1. Download the ZIP file
-          2. Extract all files
-          3. Copy files to \`addons/godot-dojo/\` in your project
-          4. Enable the plugin in Godot project settings
-          
-          Godot will automatically choose the correct binary for your system!
-          
-          ## ℹ️ Build information:
-          - **Commit**: \`${{ github.sha }}\`
-          - **Tag**: \`${{ steps.get_tag.outputs.tag }}\`
-          - **Date**: \`$(date -u +"%Y-%m-%d %H:%M:%S UTC")\`
-          EOF
+    - name: Generate release notes
+      run: |
+        cat > release_notes.md << EOF
+        # 🚀 Godot Dojo ${{ steps.get_tag.outputs.version }}
+        
+        ## 📦 Download:
+        
+        **godot-dojo-${{ steps.get_tag.outputs.version }}.zip**
+        - Contains binaries for all platforms
+        - Includes debug and release versions
+        - Includes godot-dojo.gdextension configuration file
+        - Includes dojo_c.dll for Windows
+        - Ready to use in any Godot project
+        
+        ## 🎯 Platforms included:
+        
+        - 🐧 **Linux**: x86_64, ARM64
+        - 🪟 **Windows**: x86_64 (includes dojo_c.dll)
+        - 🍎 **macOS**: Intel (x86_64), Apple Silicon (ARM64)
+        
+        ## 🚀 Quick installation:
+        
+        1. Download the ZIP file
+        2. Extract all files
+        3. Copy files to \`addons/godot-dojo/\` in your project
+        4. Enable the plugin in Godot project settings
+        
+        Godot will automatically choose the correct binary for your system!
+        
+        ## ℹ️ Build information:
+        - **Commit**: \`${{ github.sha }}\`
+        - **Tag**: \`${{ steps.get_tag.outputs.tag }}\`
+        - **Date**: \`$(date -u +"%Y-%m-%d %H:%M:%S UTC")\`
+        EOF
 
-      - name: Create GitHub Release
-        uses: softprops/action-gh-release@v1
-        with:
-          tag_name: ${{ steps.get_tag.outputs.tag }}
-          name: 🚀 Godot Dojo ${{ steps.get_tag.outputs.version }}
-          body_path: release_notes.md
-          draft: false
-          prerelease: ${{ contains(steps.get_tag.outputs.tag, 'alpha') || contains(steps.get_tag.outputs.tag, 'beta') || contains(steps.get_tag.outputs.tag, 'rc') }}
-          files: |
-            godot-dojo-${{ steps.get_tag.outputs.version }}.zip
-          token: ${{ secrets.GITHUB_TOKEN }}
+    - name: Create GitHub Release
+      uses: softprops/action-gh-release@v1
+      with:
+        tag_name: ${{ steps.get_tag.outputs.tag }}
+        name: 🚀 Godot Dojo ${{ steps.get_tag.outputs.version }}
+        body_path: release_notes.md
+        draft: false
+        prerelease: ${{ contains(steps.get_tag.outputs.tag, 'alpha') || contains(steps.get_tag.outputs.tag, 'beta') || contains(steps.get_tag.outputs.tag, 'rc') }}
+        files: |
+          godot-dojo-${{ steps.get_tag.outputs.version }}.zip
+        token: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Show final result
-        run: |
-          echo "## ✅ Release created successfully!" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-          echo "**File:** godot-dojo-${{ steps.get_tag.outputs.version }}.zip" >> $GITHUB_STEP_SUMMARY
-          echo "**Size:** $(ls -lh godot-dojo-${{ steps.get_tag.outputs.version }}.zip | awk '{print $5}')" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-          echo "### 📁 Files included:" >> $GITHUB_STEP_SUMMARY
-          echo '```' >> $GITHUB_STEP_SUMMARY
-          unzip -l godot-dojo-${{ steps.get_tag.outputs.version }}.zip >> $GITHUB_STEP_SUMMARY
-          echo '```' >> $GITHUB_STEP_SUMMARY
+    - name: Show final result
+      run: |
+        echo "## ✅ Release created successfully!" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "**File:** godot-dojo-${{ steps.get_tag.outputs.version }}.zip" >> $GITHUB_STEP_SUMMARY
+        echo "**Size:** $(ls -lh godot-dojo-${{ steps.get_tag.outputs.version }}.zip | awk '{print $5}')" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "### 📁 Files included:" >> $GITHUB_STEP_SUMMARY
+        echo '```' >> $GITHUB_STEP_SUMMARY
+        unzip -l godot-dojo-${{ steps.get_tag.outputs.version }}.zip >> $GITHUB_STEP_SUMMARY
+        echo '```' >> $GITHUB_STEP_SUMMARY
