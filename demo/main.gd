@@ -9,7 +9,6 @@ enum Directions{
 	UP = 2,
 	DOWN = 3,
 }
-
 @onready var chat_box: TextEdit = %ChatBox
 @onready var tabs: TabContainer = %Tabs
 @onready var reset_spawn: CheckBox = %ResetSpawn
@@ -105,10 +104,6 @@ func _on_subcribe_pressed() -> void:
 
 	#controller.create(dev_actions_addr, "https://api.cartridge.gg/x/godot-demo-rookie/katana")
 
-	client.create_entity_subscription(call_test, {})
-	
-	client.create_event_subscription(callable_test, {})
-	
 	
 	#await get_tree().process_frame
 
@@ -207,9 +202,12 @@ func _on_controller_account_controller_disconnected() -> void:
 	disconnect_btn.disabled = true
 
 func _on_torii_client_entity_updated(entity_data: Dictionary) -> void:
+	prints("\n\n\n\n\n")
 	prints("Entity update", entity_data)
 
 func _on_torii_client_event_received(event_data: Dictionary) -> void:
+	prints("\n\n\n\n\n")
+	
 	prints("event", event_data)
 
 func _on_torii_client_subscription_error(error_message: String) -> void:
@@ -259,3 +257,16 @@ func _on_get_entities_pressed() -> void:
 func _on_get_world_metadata_pressed() -> void:
 	var data = client.get_world_metadata()
 	print(data)
+
+
+func _on_create_subscriptions_pressed() -> void:
+	client.create_entity_subscription(call_test, {})
+	
+	client.create_event_subscription(callable_test, {})
+
+
+func _on_torii_client_subscription_created(subscription_name: String) -> void:
+	if subscription_name == "entity":
+		entities_status.set_status(true)
+	if subscription_name == "event":
+		suscription_status.set_status(true)
