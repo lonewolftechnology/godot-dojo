@@ -89,8 +89,7 @@ if platform == "linux":
         CXXFLAGS=["-std=c++17"]
     )
 elif platform == "windows":
-    if env.get("tools", "") == "msvc":
-        env.Append(LINKFLAGS=['/NODEFAULTLIB:MSVCRT'])
+    env.Append(LINKFLAGS=['/NODEFAULTLIB:MSVCRT'])
 elif platform == "web":
     env.Append(LINKFLAGS=['-sALLOW_MEMORY_GROWTH'])
 
