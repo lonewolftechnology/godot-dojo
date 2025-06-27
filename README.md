@@ -22,12 +22,12 @@ It enables advanced networking, subscriptions to blockchain events, and a set of
 - [Rust](https://www.rust-lang.org/tools/install)
 - [SCons](https://scons.org/pages/download.html)
 - A C++17 compatible compiler (e.g., GCC, Clang, MSVC)
-- Python (for SCons)
+- Python (required for SCons)
 - `pkg-config` and `libdbus-1-dev` (on Linux)
 
 **Dependencies:**
 - Submodules:
-    - [`external/dojo.c`](https://github.com/dojoengine/dojo.c) (Rust)
+    - [`external/dojo.c`](https://github.com/dojoengine/dojo.c)
     - [`external/godot-cpp`](https://github.com/godotengine/godot-cpp)
 
 **Step-by-step:**
@@ -38,36 +38,60 @@ It enables advanced networking, subscriptions to blockchain events, and a set of
     cd godot-dojo
     ```
 
-2. **Check and install dependencies:**
-    ```bash
-    make check-deps
-    ```
+2. **Verify and install dependencies:**  
+   Make sure all prerequisites mentioned above are installed on your system.
 
-    - If anything is missing, follow the on-screen instructions.
+3. **Build for your platform:**  
+   You can build either in **release** (`template_release`, optimized) or **debug** (`template_debug`, with debug symbols) mode.  
+   By default, `template_release` is used if not specified.
 
-3. **Build for your platform:**
     - **Linux:**
-      ```bash
-      make linux
-      ```
+      - Debug:
+        ```bash
+        scons platform=linux target=template_debug
+        ```
+      - Release:
+        ```bash
+        scons platform=linux target=template_release
+        ```
     - **Windows:**
-      ```bash
-      make windows
-      ```
+      - Debug:
+        ```bash
+        scons platform=windows target=template_debug
+        ```
+      - Release:
+        ```bash
+        scons platform=windows target=template_release
+        ```
     - **MacOS (Intel):**
-      ```bash
-      make macos-x64
-      ```
+      - Debug:
+        ```bash
+        scons platform=macos arch=x86_64 target=template_debug
+        ```
+      - Release:
+        ```bash
+        scons platform=macos arch=x86_64 target=template_release
+        ```
     - **MacOS (Apple Silicon):**
-      ```bash
-      make macos-arm64
-      ```
+      - Debug:
+        ```bash
+        scons platform=macos arch=arm64 target=template_debug
+        ```
+      - Release:
+        ```bash
+        scons platform=macos arch=arm64 target=template_release
+        ```
     - **WebAssembly:**
-      ```bash
-      make web
-      ```
+      - Debug:
+        ```bash
+        scons platform=web target=template_debug
+        ```
+      - Release:
+        ```bash
+        scons platform=web target=template_release
+        ```
 
-   The compiled libraries will be output in the `bin/` directory.
+   The compiled libraries will be output to the `bin/` directory.
 
 ---
 
@@ -78,7 +102,7 @@ It enables advanced networking, subscriptions to blockchain events, and a set of
     - Launch Godot Engine.
     - Open the `godot-dojo` folder as a project.
 3. **Run the demo scene:**
-    - Open the `Demo` scene under `game` folder.
+    - Open the `Demo` scene under the `game` folder.
     - Press the **Play** button.
 
 You should see basic interaction with Dojo backends or a simulated demo, depending on your build and configuration.
@@ -87,7 +111,7 @@ You should see basic interaction with Dojo backends or a simulated demo, dependi
 
 ## Troubleshooting
 
-- If you see errors about missing dependencies, run `make check-deps` and follow the provided suggestions.
+- If you see errors about missing dependencies, ensure all prerequisites are correctly installed.
 - For Rust-related errors:  
   Ensure your Rust toolchain is installed and up to date (`rustup update`).
 
