@@ -28,7 +28,6 @@ func connect_controller() -> void:
 func _on_torii_client_client_connected(success: bool) -> void:
 	_client_status.set_status(success)
 	if success:
-		#await get_tree().create_timer(2.0).timeout
 		connect_controller()
 
 func _on_torii_client_client_disconnected() -> void:
@@ -55,5 +54,6 @@ func _on_torii_client_subscription_created(subscription_name: String) -> void:
 func create_subscriptions(events:Callable,entities:Callable) -> void:
 	# For now, COptionClause is not fullly implemented
 	# So an empty dictionary is used for now 
-	client.create_entity_subscription(entities, {})
 	client.create_event_subscription(events, {})
+	
+	client.create_entity_subscription(entities, {})
