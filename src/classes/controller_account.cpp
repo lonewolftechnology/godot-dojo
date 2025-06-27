@@ -175,10 +175,11 @@ String ControllerAccount::get_chain_id() const
         return chain_id;
     }
     DOJO::FieldElement felt = DOJO::controller_chain_id(session_account);
-    String controller_chain_id = FieldElement::get_as_string(&felt);
+    FieldElement chain_felt = {felt};
+    String controller_chain_id = chain_felt.parse_cairo();
     if (chain_id != controller_chain_id)
     {
-        Logger::warning("Chain ID mismatch", chain_id, " | ", controller_chain_id);
+        Logger::warning("Chain ID mismatch ", chain_id, " | ", controller_chain_id);
     }
     return controller_chain_id;
 }

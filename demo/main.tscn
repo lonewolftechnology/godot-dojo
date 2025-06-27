@@ -1,4 +1,4 @@
-[gd_scene load_steps=21 format=3 uid="uid://buvlply3axqqi"]
+[gd_scene load_steps=22 format=3 uid="uid://buvlply3axqqi"]
 
 [ext_resource type="Script" uid="uid://ck323bl4c38kw" path="res://main.gd" id="1_ig7tw"]
 [ext_resource type="PackedScene" uid="uid://b5vmo8llucetx" path="res://ui/status_indicator.tscn" id="2_0xm2m"]
@@ -17,6 +17,11 @@
 [ext_resource type="PackedScene" uid="uid://dj5mxqnlsh6q7" path="res://entities/generic/generic.tscn" id="13_w48qg"]
 [ext_resource type="PackedScene" uid="uid://vjy23l7u4hch" path="res://entities/player/player.tscn" id="14_vivmo"]
 [ext_resource type="Script" uid="uid://c63vfoblqmxxg" path="res://tools/controllers.gd" id="14_w48qg"]
+
+[sub_resource type="DojoCall" id="DojoCall_yaehf"]
+to = "0x03ee3ddd82fd914aaa2c03bf6d0b1a90a4d7e24a6c9934c037b2ee9f5f7acb5b"
+selector = "move"
+calldata = [0]
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_lquwl"]
 atlas = ExtResource("2_1bvp3")
@@ -37,6 +42,7 @@ script = ExtResource("1_ig7tw")
 dojo_abi = "/home/hazel/Proyectos/Godot/GDE/starting/dojo-starter/manifest_dev.json"
 spawn_call = ExtResource("2_yaehf")
 spawn_reset_call = ExtResource("3_074og")
+move_call = SubResource("DojoCall_yaehf")
 
 [node name="ToriiClient" type="ToriiClient" parent="."]
 torii_url = "https://api.cartridge.gg/x/godot-demo-rookie/torii"
@@ -200,17 +206,16 @@ text = "SPAWN Raw"
 [node name="Move" type="Button" parent="UI/VBoxContainer/HSplitContainer/Menu/Tabs/TestMenu/Test"]
 unique_name_in_owner = true
 layout_mode = 2
-disabled = true
 text = "MOVE"
 
 [node name="TESTING" type="Button" parent="UI/VBoxContainer/HSplitContainer/Menu/Tabs/TestMenu/Test"]
 unique_name_in_owner = true
-visible = false
 layout_mode = 2
 text = "TESTING"
 
 [node name="SetupPolicies" type="Button" parent="UI/VBoxContainer/HSplitContainer/Menu/Tabs/TestMenu/Test"]
 unique_name_in_owner = true
+visible = false
 layout_mode = 2
 text = "SetupPolicies
 "

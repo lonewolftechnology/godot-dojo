@@ -47,6 +47,7 @@ var packed: String
 
 @export var spawn_call:DojoCall
 @export var spawn_reset_call:DojoCall
+@export var move_call:DojoCall
 
 func _ready() -> void:
 	OS.set_environment("RUST_BACKTRACE", "full")
@@ -121,9 +122,7 @@ func update_status(_value:bool, _status_node):
 		_status_node.set_status(_value)
 
 func _on_move_pressed() -> void:
-	#var random_direction = FieldElement.from_enum(randi_range(0,3))
-	pass
-	#dojo.move(random_direction,false, false)
+	controller_account.execute_from_outside(move_call)
 	
 func _unhandled_input(event: InputEvent) -> void:
 	var direction:FieldElement
@@ -283,3 +282,7 @@ func _on_torii_client_subscription_created(subscription_name: String) -> void:
 		entities_status.set_status(true)
 	if subscription_name == "event":
 		suscription_status.set_status(true)
+
+
+func _on_testing_pressed() -> void:
+	controller_account.execute_raw(move_call)

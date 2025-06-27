@@ -86,15 +86,23 @@ public:
 
             for (int i = 0; i < calldata.size(); i++)
             {
-                Ref<FieldElement> felt;
-                felt.instantiate();
-                felt = calldata[i];
-
-                Logger::debug_extra("Call Build", felt->to_string());
-                if (felt.is_valid())
+                // Ref<FieldElement> felt;
+                // felt.instantiate();
+                DOJO::FieldElement data_felt = {};
+                String data_type = Variant::get_type_name(calldata[i].get_type());
+                Logger::info("data type: ", data_type);
+                if ("int" == data_type)
                 {
-                    stored_calldata.push_back(felt->get_felt_no_ptr());
+                    data_felt = FieldElement::from_enum(calldata[i]);
                 }
+                else
+                {
+                    data_felt = FieldElement::from_string(calldata[i]);
+                }
+
+                Logger::debug_extra("Call Build", FieldElement::get_as_string(&data_felt));
+
+                stored_calldata.push_back(data_felt);
             }
 
             c_array_calldata.data = stored_calldata.data();
