@@ -84,12 +84,12 @@ env.Append(CPPPATH=["src/", "include/", "external/dojo.c"])
 
 if platform == "linux":
     env.Append(LINKFLAGS=['-ldbus-1'])
+    # Va forzado porque por alguna razón me usa un standard mas viejo
+    env.Append(
+        CXXFLAGS=["-std=c++17"]
+    )
 elif platform == "web":
     env.Append(LINKFLAGS=['-sALLOW_MEMORY_GROWTH'])
-# Va forzado porque por alguna razón me usa un standard mas viejo
-env.Append(
-    CXXFLAGS=["-std=c++17"]
-)
 
 # Linkear librerías de Rust
 build_mode = "release" if target == "template_release" else "debug"
