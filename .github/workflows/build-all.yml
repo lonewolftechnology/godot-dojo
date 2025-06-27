@@ -1,297 +1,142 @@
-name: Build All Platforms
+name: Build & Package All Platforms
 
 on:
   push:
     tags:
       - 'v*'
   workflow_dispatch:
-    inputs:
-      version:
-        description: 'Version tag (e.g., v1.0.0) - leave empty to use current commit'
-        required: false
-        default: ''
-      create_release:
-        description: 'Create GitHub release'
-        required: false
-        default: true
-        type: boolean
 
 env:
   CARGO_TERM_COLOR: always
 
 jobs:
-  build-all:
+  build:
+    name: Build ${{ matrix.target_os }}-${{ matrix.arch }}
+    runs-on: ${{ contains(matrix.platform, 'linux') && 'ubuntu-latest' || matrix.platform }}
     strategy:
+      fail-fast: false
       matrix:
         include:
-          - os: ubuntu-latest
-            platform: linux
-            target: linux-all
-            cache-key: linux
-            deps: |
-              sudo apt-get update
-              sudo apt-get install -y build-essential pkg-config libdbus-1-dev protobuf-compiler libprotobuf-dev
-            cache-paths: |
-              ~/.cargo/registry
-              ~/.cargo/git
-              external/dojo.c/target
-              .scons_cache
-              external/godot-cpp/.scons_cache
-            extra-cache: |
-              - name: Cache APT packages
-                uses: awalsh128/cache-apt-pkgs-action@latest
-                with:
-                  packages: build-essential pkg-config libdbus-1-dev protobuf-compiler libprotobuf-dev
-                  version: 1.0
-          
-          - os: windows-latest
-            platform: windows
-            target: windows-all
-            cache-key: windows
-            deps: ""
-            cache-paths: |
-              ~/.cargo/registry
-              ~/.cargo/git
-              external/dojo.c/target
-              .scons_cache
-              external/godot-cpp/.scons_cache
-            extra-cache: ""
-          
-          - os: macos-latest
-            platform: macos
-            target: macos-all
-            cache-key: macos
-            deps: |
-              brew install pkg-config scons
-            cache-paths: |
-              ~/.cargo/registry
-              ~/.cargo/git
-              external/dojo.c/target
-              .scons_cache
-              external/godot-cpp/.scons_cache
-              ~/Library/Caches/Homebrew
-              /usr/local/Homebrew
-            extra-cache: ""
+          - target_os: linux
+            arch: x86_64
+            runner: ubuntu-latest
+          - target_os: macos
+            arch: x86_64
+            runner: macos-latest
+          - target_os: macos
+            arch: arm64
+            runner: macos-latest
+          - target_os: windows
+            arch: x86_64
+            runner: windows-latest
 
-    runs-on: ${{ matrix.os }}
-    
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
-      with:
-        submodules: true
-        fetch-depth: 0
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          submodules: true
+          fetch-depth: 0
 
-    - name: Initialize and update submodules
-      run: |
-        git submodule update --init --recursive --force
-        git submodule foreach --recursive 'git fetch --all --tags'
-        git submodule foreach --recursive 'git checkout $(git describe --tags --exact-match 2>/dev/null || git rev-parse HEAD)'
+      - name: Install build dependencies (Linux)
+        if: matrix.target_os == 'linux'
+        run: sudo apt-get update && sudo apt-get install -y build-essential pkg-config libdbus-1-dev protobuf-compiler libprotobuf-dev
 
-    - name: Set up Rust
-      uses: actions-rs/toolchain@v1
-      with:
-        toolchain: stable
-        profile: minimal
-        override: true
+      - name: Set up Rust stable
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: stable
+          override: true
 
-    - name: Cache Cargo registry
-      uses: actions/cache@v3
-      with:
-        path: |
-          ~/.cargo/registry
-          ~/.cargo/git
-        key: ${{ matrix.cache-key }}-cargo-registry-${{ hashFiles('**/Cargo.lock') }}
-        restore-keys: |
-          ${{ matrix.cache-key }}-cargo-registry-
+      - name: Install scons (Linux/macOS)
+        if: matrix.target_os != 'windows'
+        run: pip install scons
 
-    - name: Cache Cargo build
-      uses: actions/cache@v3
-      with:
-        path: |
-          external/dojo.c/target
-        key: ${{ matrix.cache-key }}-cargo-build-${{ hashFiles('external/dojo.c/Cargo.lock') }}
-        restore-keys: |
-          ${{ matrix.cache-key }}-cargo-build-
-
-    - name: Cache SCons build
-      uses: actions/cache@v3
-      with:
-        path: |
-          .scons_cache
-          external/godot-cpp/.scons_cache
-        key: ${{ matrix.cache-key }}-scons-${{ hashFiles('SConstruct', 'external/godot-cpp/SConstruct') }}
-        restore-keys: |
-          ${{ matrix.cache-key }}-scons-
-
-    - name: Cache APT packages (Linux only)
-      if: matrix.platform == 'linux'
-      uses: awalsh128/cache-apt-pkgs-action@latest
-      with:
-        packages: build-essential pkg-config libdbus-1-dev protobuf-compiler libprotobuf-dev
-        version: 1.0
-
-    - name: Cache Homebrew packages (macOS only)
-      if: matrix.platform == 'macos'
-      uses: actions/cache@v3
-      with:
-        path: |
-          ~/Library/Caches/Homebrew
-          /usr/local/Homebrew
-        key: ${{ runner.os }}-homebrew-${{ hashFiles('.github/Brewfile') }}
-        restore-keys: |
-          ${{ runner.os }}-homebrew-
-
-    - name: Set up Python
-      uses: actions/setup-python@v4
-      with:
-        python-version: '3.x'
-    
-    - name: Install SCons
-      run: pip install scons
-
-    - name: Install platform dependencies
-      if: matrix.deps != ''
-      run: ${{ matrix.deps }}
-
-    - name: Set up MSVC (Windows only)
-      if: matrix.platform == 'windows'
-      uses: ilammy/msvc-dev-cmd@v1
-      with:
-        arch: x64
-
-    - name: Install Rust targets
-      run: make _install-rust-targets
-
-    - name: Build ${{ matrix.platform }}
-      run: make ${{ matrix.target }}
-
-    - name: Upload ${{ matrix.platform }} artifacts
-      uses: actions/upload-artifact@v3
-      with:
-        name: ${{ matrix.platform }}-builds
-        path: demo/bin/
-        retention-days: 1
-
-  create-release:
-    needs: [build-all]
-    runs-on: ubuntu-latest
-    steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
-
-    - name: Determine version
-      id: get_version
-      run: |
-        if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
-          if [ -n "${{ github.event.inputs.version }}" ]; then
-            echo "tag=${{ github.event.inputs.version }}" >> $GITHUB_OUTPUT
-            echo "version=${GITHUB_REF#refs/tags/v}" >> $GITHUB_OUTPUT
-            echo "is_manual=true" >> $GITHUB_OUTPUT
-          else
-            echo "tag=manual-$(date +%Y%m%d-%H%M%S)" >> $GITHUB_OUTPUT
-            echo "version=manual-$(date +%Y%m%d-%H%M%S)" >> $GITHUB_OUTPUT
-            echo "is_manual=true" >> $GITHUB_OUTPUT
+      - name: Build both (release & debug)
+        run: |
+          set -e
+          PLATFORM_ARG=""
+          ARCH_ARG=""
+          if [ "${{ matrix.target_os }}" = "macos" ]; then
+            PLATFORM_ARG="platform=macos"
+            if [ "${{ matrix.arch }}" = "arm64" ]; then
+              ARCH_ARG="arch=arm64"
+              export CARGO_BUILD_TARGET=aarch64-apple-darwin
+            else
+              ARCH_ARG="arch=x86_64"
+              export CARGO_BUILD_TARGET=x86_64-apple-darwin
+            fi
+          elif [ "${{ matrix.target_os }}" = "linux" ]; then
+            PLATFORM_ARG="platform=linux"
+            ARCH_ARG="arch=x86_64"
+            export CARGO_BUILD_TARGET=x86_64-unknown-linux-gnu
+          elif [ "${{ matrix.target_os }}" = "windows" ]; then
+            PLATFORM_ARG="platform=windows"
+            ARCH_ARG="arch=x86_64"
+            export CARGO_BUILD_TARGET=x86_64-pc-windows-msvc
           fi
-        else
-          echo "tag=${GITHUB_REF#refs/tags/}" >> $GITHUB_OUTPUT
-          echo "version=${GITHUB_REF#refs/tags/v}" >> $GITHUB_OUTPUT
-          echo "is_manual=false" >> $GITHUB_OUTPUT
-        fi
 
-    - name: Download all artifacts
-      uses: actions/download-artifact@v3
-      with:
-        path: artifacts/
+          mkdir -p demo/bin
 
-    - name: Collect all binaries and extension file
-      run: |
-        mkdir -p release
-        
-        find artifacts/ -type f -name "*.so" -exec cp {} release/ \;
-        find artifacts/ -type f -name "*.dll" -exec cp {} release/ \;
-        find artifacts/ -type f -name "*.dylib" -exec cp {} release/ \;
-        
-        cp godot-dojo.gdextension release/
-        
-        echo "## 📁 Files found:" >> $GITHUB_STEP_SUMMARY
-        ls -la release/ >> $GITHUB_STEP_SUMMARY
+          # Debug
+          scons $PLATFORM_ARG $ARCH_ARG target=debug -j2
+          cp godot-dojo.gdextension demo/bin/godot-dojo.${{ matrix.target_os }}.${{ matrix.arch }}.debug.gdextension
+          if [ "${{ matrix.target_os }}" = "windows" ]; then
+            cp bin/dojo_c.dll demo/bin/dojo_c.${{ matrix.target_os }}.${{ matrix.arch }}.debug.dll || true
+            cp bin/godot-dojo.dll demo/bin/godot-dojo.${{ matrix.target_os }}.${{ matrix.arch }}.debug.dll || true
+            cp bin/godot-dojo.pdb demo/bin/godot-dojo.${{ matrix.target_os }}.${{ matrix.arch }}.debug.pdb || true
+          elif [ "${{ matrix.target_os }}" = "linux" ]; then
+            cp bin/libgodot-dojo.so demo/bin/libgodot-dojo.${{ matrix.target_os }}.${{ matrix.arch }}.debug.so || true
+          elif [ "${{ matrix.target_os }}" = "macos" ]; then
+            cp bin/libgodot-dojo.dylib demo/bin/libgodot-dojo.${{ matrix.target_os }}.${{ matrix.arch }}.debug.dylib || true
+          fi
 
-    - name: Create release ZIP
-      run: |
-        cd release
-        zip -r ../godot-dojo-${{ steps.get_version.outputs.version }}.zip .
+          # Release
+          scons $PLATFORM_ARG $ARCH_ARG target=release -j2
+          cp godot-dojo.gdextension demo/bin/godot-dojo.${{ matrix.target_os }}.${{ matrix.arch }}.release.gdextension
+          if [ "${{ matrix.target_os }}" = "windows" ]; then
+            cp bin/dojo_c.dll demo/bin/dojo_c.${{ matrix.target_os }}.${{ matrix.arch }}.release.dll || true
+            cp bin/godot-dojo.dll demo/bin/godot-dojo.${{ matrix.target_os }}.${{ matrix.arch }}.release.dll || true
+            cp bin/godot-dojo.pdb demo/bin/godot-dojo.${{ matrix.target_os }}.${{ matrix.arch }}.release.pdb || true
+          elif [ "${{ matrix.target_os }}" = "linux" ]; then
+            cp bin/libgodot-dojo.so demo/bin/libgodot-dojo.${{ matrix.target_os }}.${{ matrix.arch }}.release.so || true
+          elif [ "${{ matrix.target_os }}" = "macos" ]; then
+            cp bin/libgodot-dojo.dylib demo/bin/libgodot-dojo.${{ matrix.target_os }}.${{ matrix.arch }}.release.dylib || true
+          fi
 
-    - name: Generate release notes
-      run: |
-        cat > release_notes.md << EOF
-        # 🚀 Godot Dojo ${{ steps.get_version.outputs.version }}
-        
-        ## 📦 Download:
-        
-        **godot-dojo-${{ steps.get_version.outputs.version }}.zip**
-        - Contains binaries for all platforms
-        - Includes debug and release versions
-        - Includes godot-dojo.gdextension configuration file
-        - Includes dojo_c.dll for Windows
-        - Ready to use in any Godot project
-        
-        ## 🎯 Platforms included:
-        
-        - 🐧 **Linux**: x86_64 only
-        - 🪟 **Windows**: x86_64 (compiled with MSVC, includes dojo_c.dll)
-        - 🍎 **macOS**: Intel (x86_64), Apple Silicon (ARM64)
-        
-        ## 🚀 Quick installation:
-        
-        1. Download the ZIP file
-        2. Extract all files
-        3. Copy files to \`addons/godot-dojo/\` in your project
-        4. Enable the plugin in Godot project settings
-        
-        Godot will automatically choose the correct binary for your system!
-        
-        ## ℹ️ Build information:
-        - **Commit**: \`${{ github.sha }}\`
-        - **Tag**: \`${{ steps.get_version.outputs.tag }}\`
-        - **Date**: \`$(date -u +"%Y-%m-%d %H:%M:%S UTC")\`
-        - **Trigger**: \`${{ github.event_name }}\`
-        - **Windows Compiler**: MSVC (Visual Studio Build Tools)
-        EOF
+      - name: Upload binarios de este target
+        uses: actions/upload-artifact@v4
+        with:
+          name: bin-${{ matrix.target_os }}-${{ matrix.arch }}
+          path: demo/bin/*
+          if-no-files-found: error
 
-    - name: Upload ZIP as artifact (always)
-      uses: actions/upload-artifact@v3
-      with:
-        name: godot-dojo-release
-        path: godot-dojo-${{ steps.get_version.outputs.version }}.zip
-        retention-days: 30
+  package:
+    name: Unir todos los binarios y crear zip único
+    runs-on: ubuntu-latest
+    needs: build
+    if: startsWith(github.ref, 'refs/tags/')
 
-    - name: Create GitHub Release
-      if: github.event_name == 'push' || (github.event_name == 'workflow_dispatch' && github.event.inputs.create_release == 'true')
-      uses: softprops/action-gh-release@v1
-      with:
-        tag_name: ${{ steps.get_version.outputs.tag }}
-        name: 🚀 Godot Dojo ${{ steps.get_version.outputs.version }}
-        body_path: release_notes.md
-        draft: false
-        prerelease: ${{ contains(steps.get_version.outputs.tag, 'alpha') || contains(steps.get_version.outputs.tag, 'beta') || contains(steps.get_version.outputs.tag, 'rc') || steps.get_version.outputs.is_manual == 'true' }}
-        files: |
-          godot-dojo-${{ steps.get_version.outputs.version }}.zip
-        token: ${{ secrets.GITHUB_TOKEN }}
+    steps:
+      - name: Descargar todos los binarios de los jobs
+        uses: actions/download-artifact@v4
+        with:
+          path: all_bins
 
-    - name: Show final result
-      run: |
-        echo "## ✅ Build completed successfully!" >> $GITHUB_STEP_SUMMARY
-        echo "" >> $GITHUB_STEP_SUMMARY
-        echo "**File:** godot-dojo-${{ steps.get_version.outputs.version }}.zip" >> $GITHUB_STEP_SUMMARY
-        echo "**Size:** $(ls -lh godot-dojo-${{ steps.get_version.outputs.version }}.zip | awk '{print $5}')" >> $GITHUB_STEP_SUMMARY
-        echo "**Trigger:** ${{ github.event_name }}" >> $GITHUB_STEP_SUMMARY
-        echo "" >> $GITHUB_STEP_SUMMARY
-        if [ "${{ github.event_name }}" = "workflow_dispatch" ] && [ "${{ github.event.inputs.create_release }}" = "false" ]; then
-          echo "**Note:** Release creation was disabled. ZIP file uploaded as artifact only." >> $GITHUB_STEP_SUMMARY
-        fi
-        echo "" >> $GITHUB_STEP_SUMMARY
-        echo "### 📁 Files included:" >> $GITHUB_STEP_SUMMARY
-        echo '```' >> $GITHUB_STEP_SUMMARY
-        unzip -l godot-dojo-${{ steps.get_version.outputs.version }}.zip >> $GITHUB_STEP_SUMMARY
-        echo '```' >> $GITHUB_STEP_SUMMARY
+      - name: Preparar carpeta addons/godot-dojo
+        run: |
+          mkdir -p addons/godot-dojo
+          find all_bins -type f -exec cp {} addons/godot-dojo/ \;
+
+      - name: Empaquetar en zip único
+        run: |
+          TAGNAME=${GITHUB_REF##*/}
+          ZIP_FILE=godot-dojo-${TAGNAME}.zip
+          zip -r "$ZIP_FILE" addons
+
+      - name: Crear release y subir asset
+        uses: softprops/action-gh-release@v2
+        with:
+          name: "Release ${{ github.ref_name }}"
+          files: godot-dojo-${{ github.ref_name }}.zip
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
