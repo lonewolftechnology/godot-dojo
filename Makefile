@@ -5,10 +5,15 @@
 .PHONY: help clean build debug release all check-deps install-deps
 .PHONY: linux windows macos web
 .PHONY: linux-x64 windows-x64 macos-x64 macos-arm64 web-wasm32
+.PHONY: quick dev-linux dev-windows dev-macos clean-build clean-cache
 
 # Configuration
 NPROC := $(shell nproc 2>/dev/null || sysctl -n hw.ncpu 2>/dev/null || echo 4)
 SCONS := scons -j$(NPROC) -Q
+
+# Cache configuration - usar variables de entorno en lugar de parámetros
+export SCONS_CACHE_DIR := .scons_cache
+CARGO_CACHE_DIR := .cargo_cache
 
 # Host detection
 UNAME_S := $(shell uname -s 2>/dev/null || echo Windows)
@@ -88,16 +93,41 @@ CC_PREFIX_macos_x64 := x86_64-apple-darwin-
 CC_PREFIX_macos_arm64 := aarch64-apple-darwin-
 
 # ============================================================================
+# CACHE MANAGEMENT
+# ============================================================================
+
+_setup-cache:
+	@mkdir -p $(SCONS_CACHE_DIR)
+	@mkdir -p $(CARGO_CACHE_DIR)
+	@if [ ! -f "$(SCONS_CACHE_DIR)/.gitignore" ]; then \
+		echo "*" > $(SCONS_CACHE_DIR)/.gitignore; \
+		echo "!.gitignore" >> $(SCONS_CACHE_DIR)/.gitignore; \
+	fi
+
+_cache-stats:
+	@if [ -d "$(SCONS_CACHE_DIR)" ]; then \
+		CACHE_SIZE=$$(du -sh $(SCONS_CACHE_DIR) 2>/dev/null | cut -f1 || echo "0B"); \
+		CACHE_FILES=$$(find $(SCONS_CACHE_DIR) -type f | wc -l 2>/dev/null || echo "0"); \
+		echo "$(Y)📊 SCons cache: $$CACHE_SIZE ($$CACHE_FILES files)$(X)"; \
+	fi
+	@if [ -d "external/dojo.c/target" ]; then \
+		RUST_SIZE=$$(du -sh external/dojo.c/target 2>/dev/null | cut -f1 || echo "0B"); \
+		echo "$(Y)📊 Rust target: $$RUST_SIZE$(X)"; \
+	fi
+
+# ============================================================================
 # DEPENDENCY CHECKING
 # ============================================================================
 
 check-deps:
 	@echo "$(B)🔍 Checking dependencies...$(X)"
+	@$(MAKE) --no-print-directory _setup-cache
 	@$(MAKE) --no-print-directory _check-system
 	@$(MAKE) --no-print-directory _check-rust
 	@$(MAKE) --no-print-directory _check-scons
 	@$(MAKE) --no-print-directory _check-dirs
 	@$(MAKE) --no-print-directory _check-os-deps
+	@$(MAKE) --no-print-directory _cache-stats
 	@echo "$(G)✅ All dependencies ready$(X)"
 
 _check-system:
@@ -279,11 +309,18 @@ help:
 	@echo "  make build        - Build everything (debug + release) for host"
 	@echo "  make debug        - Build debug for host ($(HOST_TARGET))"
 	@echo "  make release      - Build release for host ($(HOST_TARGET))"
+	@echo "  make quick        - Fast incremental debug build for host"
 	@echo "  make clean        - Clean all build files"
+	@echo "  make clean-cache  - Clean cache files (force full rebuild)"
 	@echo ""
 	@echo "$(G)Dependencies:$(X)"
 	@echo "  make check-deps   - Check all dependencies"
 	@echo "  make install-deps - Install missing dependencies"
+	@echo ""
+	@echo "$(G)Fast incremental builds:$(X)"
+	@echo "  make dev-linux    - Fast Linux debug build (incremental)"
+	@echo "  make dev-windows  - Fast Windows debug build (incremental)"
+	@echo "  make dev-macos    - Fast macOS debug build (incremental)"
 	@echo ""
 	@echo "$(G)Complete platform builds:$(X)"
 	@echo "  make linux-all    - Linux x64 debug + release"
@@ -320,13 +357,43 @@ debug: check-deps $(HOST_TARGET)-debug
 release: check-deps $(HOST_TARGET)-release
 	@echo "$(G)✅ Release build completed for $(HOST_TARGET)$(X)"
 
+# Fast incremental build for development
+quick: check-deps dev-$(HOST_PLATFORM)
+	@echo "$(G)⚡ Quick incremental build completed for $(HOST_TARGET)$(X)"
+
 clean:
-	@echo "$(Y)🧹 Cleaning...$(X)"
+	@echo "$(Y)🧹 Cleaning build files...$(X)"
 	@$(SCONS) --clean 2>/dev/null || true
 	@rm -rf demo/bin/* 2>/dev/null || true
 	@cd external/dojo.c && cargo clean 2>/dev/null || true
 	@cd external/godot-cpp && $(SCONS) --clean 2>/dev/null || true
-	@echo "$(G)✅ Clean complete$(X)"
+	@echo "$(G)✅ Build files cleaned (cache preserved)$(X)"
+
+clean-cache:
+	@echo "$(Y)🧹 Cleaning ALL files including cache...$(X)"
+	@$(MAKE) --no-print-directory clean
+	@rm -rf $(SCONS_CACHE_DIR) 2>/dev/null || true
+	@rm -rf $(CARGO_CACHE_DIR) 2>/dev/null || true
+	@rm -rf external/godot-cpp/.scons_cache 2>/dev/null || true
+	@rm -rf external/dojo.c/target 2>/dev/null || true
+	@echo "$(G)✅ All files and cache cleaned$(X)"
+
+# ============================================================================
+# INCREMENTAL BUILD SUPPORT
+# ============================================================================
+
+# Fast incremental builds for development
+dev-linux: _setup-cache
+	@echo "$(B)⚡ Fast Linux build (incremental)$(X)"
+	@$(SCONS) platform=linux arch=x86_64 target=template_debug
+
+dev-windows: _setup-cache
+	@echo "$(B)⚡ Fast Windows build (incremental)$(X)"
+	@$(SCONS) platform=windows arch=x86_64 target=template_debug
+
+dev-macos: _setup-cache
+	@echo "$(B)⚡ Fast macOS build (incremental)$(X)"
+	@$(SCONS) platform=macos arch=x86_64 target=template_debug
 
 # ============================================================================
 # COMPLETE PLATFORM BUILDS (all architectures)
@@ -354,52 +421,52 @@ web-release: check-deps web-wasm32-release
 	@echo "$(R)⚠️  Web release build is experimental$(X)"
 
 # ============================================================================
-# SPECIFIC ARCHITECTURE BUILDS
+# SPECIFIC ARCHITECTURE BUILDS (with cache support)
 # ============================================================================
 
 # Linux builds
-linux-x64-debug: check-deps
+linux-x64-debug: _setup-cache
 	@echo "$(B)🐧 Building Linux x64 Debug$(X)"
 	@$(SCONS) platform=linux arch=x86_64 target=template_debug
 
-linux-x64-release: check-deps
+linux-x64-release: _setup-cache
 	@echo "$(B)🐧 Building Linux x64 Release$(X)"
 	@$(SCONS) platform=linux arch=x86_64 target=template_release
 
 # Windows builds
-windows-x64-debug: check-deps
+windows-x64-debug: _setup-cache
 	@echo "$(B)🪟 Building Windows x64 Debug$(X)"
 	@$(SCONS) platform=windows arch=x86_64 target=template_debug
 
-windows-x64-release: check-deps
+windows-x64-release: _setup-cache
 	@echo "$(B)🪟 Building Windows x64 Release$(X)"
 	@$(SCONS) platform=windows arch=x86_64 target=template_release
 
 # macOS builds
-macos-x64-debug: check-deps
+macos-x64-debug: _setup-cache
 	@echo "$(B)🍎 Building macOS x64 Debug$(X)"
 	@$(SCONS) platform=macos arch=x86_64 target=template_debug
 
-macos-x64-release: check-deps
+macos-x64-release: _setup-cache
 	@echo "$(B)🍎 Building macOS x64 Release$(X)"
 	@$(SCONS) platform=macos arch=x86_64 target=template_release
 
-macos-arm64-debug: check-deps
+macos-arm64-debug: _setup-cache
 	@echo "$(B)🍎 Building macOS ARM64 Debug$(X)"
 	@$(SCONS) platform=macos arch=arm64 target=template_debug
 
-macos-arm64-release: check-deps
+macos-arm64-release: _setup-cache
 	@echo "$(B)🍎 Building macOS ARM64 Release$(X)"
 	@$(SCONS) platform=macos arch=arm64 target=template_release
 
 # Web builds (experimental)
-web-wasm32-debug: check-deps
+web-wasm32-debug: _setup-cache
 	@echo "$(B)🌐 Building Web WASM32 Debug $(R)[EXPERIMENTAL - MAY NOT WORK]$(X)"
 	@echo "$(Y)⚠️  Web compilation is experimental and currently non-functional$(X)"
 	@rustup target add wasm32-unknown-unknown 2>/dev/null || true
 	@$(SCONS) platform=web arch=wasm32 target=template_debug || echo "$(R)❌ Web build failed (expected - experimental feature)$(X)"
 
-web-wasm32-release: check-deps
+web-wasm32-release: _setup-cache
 	@echo "$(B)🌐 Building Web WASM32 Release $(R)[EXPERIMENTAL - MAY NOT WORK]$(X)"
 	@echo "$(Y)⚠️  Web compilation is experimental and currently non-functional$(X)"
 	@rustup target add wasm32-unknown-unknown 2>/dev/null || true
@@ -439,10 +506,17 @@ ci-all-experimental: check-deps linux-all windows-all macos-all web-all
 
 list-targets:
 	@echo "$(B)Available build targets:$(X)"
-	@echo "$(G)Host-specific:$(X) debug, release, build"
+	@echo "$(G)Host-specific:$(X) debug, release, build, quick"
+	@echo "$(G)Fast development:$(X) dev-linux, dev-windows, dev-macos"
 	@echo "$(G)Linux:$(X) linux-x64-debug, linux-x64-release"
 	@echo "$(G)Windows:$(X) windows-x64-debug, windows-x64-release"
 	@echo "$(G)macOS:$(X) macos-x64-debug, macos-x64-release, macos-arm64-debug, macos-arm64-release"
 	@echo "$(R)Web (experimental):$(X) web-wasm32-debug, web-wasm32-release"
+	@echo "$(Y)Cache management:$(X) clean, clean-cache"
+
+cache-info:
+	@echo "$(B)📊 Cache Information$(X)"
+	@$(MAKE) --no-print-directory _cache-stats
+	@echo "$(Y)💡 Use 'make clean-cache' to force full rebuild$(X)"
 
 .DEFAULT_GOAL := help

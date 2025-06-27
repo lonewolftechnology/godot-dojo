@@ -79,6 +79,11 @@ fabric.properties
 demo/bin/*
 !demo/bin/dojoc_gdextension.gdextension
 notes.md
+
+# ============================================================================
+# BUILD SYSTEM & CACHE
+# ============================================================================
+
 # SCONS
 # for projects that use SCons for building: http://http://www.scons.org/
 .sconsign.dblite
@@ -91,3 +96,119 @@ config.log
 .venv
 
 cmake-*
+
+# ============================================================================
+# CACHE DIRECTORIES (incremental builds)
+# ============================================================================
+
+# SCons cache directory
+.scons_cache/
+
+# Cargo cache (local)
+.cargo_cache/
+
+# General cache directory
+.cache/
+
+# Rust target directory (external/dojo.c is handled separately)
+target/
+
+# ============================================================================
+# GITHUB ACTIONS & CI
+# ============================================================================
+
+# Act (GitHub Actions runner) results
+results/
+
+# GitHub Actions artifacts (local)
+artifacts/
+
+# Release files
+*.zip
+*.tar.gz
+*.tar.xz
+
+# ============================================================================
+# DEVELOPMENT & TESTING
+# ============================================================================
+
+# Temporary files
+*.tmp
+*.temp
+*.bak
+*.backup
+
+# Log files
+*.log
+
+# Debug files
+*.pdb
+*.ilk
+
+# ============================================================================
+# OS SPECIFIC
+# ============================================================================
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# Windows
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+
+# Linux
+*~
+.directory
+
+# ============================================================================
+# RUST SPECIFIC (for external/dojo.c)
+# ============================================================================
+
+# Rust compilation artifacts in external projects are handled by their own .gitignore
+# But we ignore any that might leak to root
+Cargo.lock
+!external/*/Cargo.lock
+
+# ============================================================================
+# GODOT SPECIFIC
+# ============================================================================
+
+# Godot auto-generated files
+.import/
+export.cfg
+export_presets.cfg
+
+# Godot user settings
+.godot/
+
+# ============================================================================
+# EDITORS & IDEs
+# ============================================================================
+
+# Visual Studio Code
+.vscode/
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+
+# Vim
+*.swp
+*.swo
+*~
+
+# Emacs
+*~
+\#*\#
+/.emacs.desktop
+/.emacs.desktop.lock
+*.elc
+auto-save-list
+tramp
+.\#*
+
+# Sublime Text
+*.sublime-workspace
