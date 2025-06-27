@@ -14,7 +14,8 @@ This file details the current state of the project, what features are working, a
 - **Advanced features or complex entity schemas may require manual code or extensions.**
 - **WASM builds should be considered experimental.**
 - **Breaking backend/schema changes may require a rebuild.**
-
+- Executing raw events may crash the game.
+- 
 ---
 
 ## Missing/Not Implemented
