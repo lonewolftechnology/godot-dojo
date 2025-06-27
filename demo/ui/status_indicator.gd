@@ -1,12 +1,12 @@
 @tool
 class_name DojoStatusIndicator
-extends HBoxContainer
+extends PanelContainer
 
 const COLOR_TRUE := Color.GREEN
 const COLOR_FALSE := Color.RED
 
-@onready var type: Label = $Type
-@onready var status: ColorRect = $Status
+@onready var type: Label = $StatusIndicator/Type
+@onready var status: ColorRect = $StatusIndicator/Status
 
 @export var type_name : String :
 	set(val):
