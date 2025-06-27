@@ -154,7 +154,7 @@ void EventSubscription::on_event_update(DOJO::FieldElement* entity_id, DOJO::CAr
     }
 
     Logger::info("model name ", models.data->name);
-    auto children = models.data->children;
+    const DOJO::CArrayMember children = models.data->children;
 
     if (children.data == nullptr)
     {
@@ -162,7 +162,7 @@ void EventSubscription::on_event_update(DOJO::FieldElement* entity_id, DOJO::CAr
         return;
     }
 
-    ArrayDojo members = ArrayDojo(children);
+    const ArrayDojo members = {children};
     Array arguments = members.get_value();
 
     for (int i = 0; i < arguments.size(); i++)
@@ -172,6 +172,6 @@ void EventSubscription::on_event_update(DOJO::FieldElement* entity_id, DOJO::CAr
     }
 
     Logger::info("Calling callback with arguments");
-    Variant callback_result = callback.call(arguments);
+    const Variant callback_result = callback.call(arguments);
     Logger::info("Event Callback", callback_result);
 }

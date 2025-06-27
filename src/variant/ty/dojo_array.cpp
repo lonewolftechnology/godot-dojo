@@ -177,7 +177,12 @@ Variant ArrayDojo::CArrayMemberToVariant(DOJO::CArrayMember array)
     {
         Dictionary data = {};
         DojoTy dojo_ty = {member.ty};
-        data[dojo_ty.get_name()] = dojo_ty.get_value();
+        String data_name = dojo_ty.get_name();
+        if (data_name.is_empty())
+        {
+            data_name = member.name;
+        }
+        data[data_name] = dojo_ty.get_value();
         result.append(data);
     }
     return result;
