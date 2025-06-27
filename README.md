@@ -11,6 +11,7 @@ It enables advanced networking, subscriptions to blockchain events, and a set of
 - **Blockchain subscriptions:** Create and manage event/entity subscriptions from Godot.
 - **Rust & C++ core:** High-performance native integration.
 - **Pluggable demo:** Includes a simple demo scene showcasing basic usage.
+- 📄 **See also:** [Project State & Support Matrix](project-state.md)
 
 ---
 
