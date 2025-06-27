@@ -78,7 +78,7 @@ jobs:
           mkdir -p demo/bin
 
           # Debug
-          scons $PLATFORM_ARG $ARCH_ARG target=debug -j2
+          scons $PLATFORM_ARG $ARCH_ARG target=template_debug -j2
           cp godot-dojo.gdextension demo/bin/godot-dojo.${{ matrix.target_os }}.${{ matrix.arch }}.debug.gdextension
           if [ "${{ matrix.target_os }}" = "windows" ]; then
             cp bin/dojo_c.dll demo/bin/dojo_c.${{ matrix.target_os }}.${{ matrix.arch }}.debug.dll || true
@@ -91,7 +91,7 @@ jobs:
           fi
 
           # Release
-          scons $PLATFORM_ARG $ARCH_ARG target=release -j2
+          scons $PLATFORM_ARG $ARCH_ARG target=template_release -j2
           cp godot-dojo.gdextension demo/bin/godot-dojo.${{ matrix.target_os }}.${{ matrix.arch }}.release.gdextension
           if [ "${{ matrix.target_os }}" = "windows" ]; then
             cp bin/dojo_c.dll demo/bin/dojo_c.${{ matrix.target_os }}.${{ matrix.arch }}.release.dll || true
