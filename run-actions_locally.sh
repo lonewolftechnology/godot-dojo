@@ -12,28 +12,32 @@ mkdir -p ${RESULTS_DIR}
 export SCONS_CACHE_DIR=$(pwd)/.scons_cache
 export CARGO_HOME=$(pwd)/${CACHE_DIR}/cargo
 
-echo "🚀 Running GitHub Actions locally with act..."
-echo "📊 Cache setup:"
-echo "  - SCons: $SCONS_CACHE_DIR"
-echo "  - Cargo: $CARGO_HOME"
-echo "  - Results: $RESULTS_DIR"
-echo ""
+# Detectar arquitectura y configurar imágenes
+HOST_ARCH=$(uname -m)
+echo "🔍 Host Architecture: $HOST_ARCH"
 
-# Verificar si act soporta bind
-ACT_VERSION=$(act --version 2>/dev/null || echo "unknown")
-echo "🔍 Act version: $ACT_VERSION"
-
-# Ejecutar act con configuración básica
-if act --help 2>/dev/null | grep -q "bind"; then
-    echo "✅ Using bind support"
-    act -j build-linux \
-        --bind \
+if [[ "$HOST_ARCH" == "aarch64" || "$HOST_ARCH" == "arm64" ]]; then
+    echo "🚀 Configuring for ARM64 host"
+    
+    # Habilitar emulación multi-arch si es necesario
+    if ! docker run --rm --privileged multiarch/qemu-user-static --reset -p yes 2>/dev/null; then
+        echo "⚠️  Could not setup multi-arch emulation (might not be needed)"
+    fi
+    
+    # Ejecutar con configuración ARM64
+    act -j build-all \
+        --container-architecture linux/arm64 \
+        -P ubuntu-latest=catthehacker/ubuntu:act-latest \
         --artifact-server-path ${RESULTS_DIR} \
+        --env SCONS_CACHE_DIR="$SCONS_CACHE_DIR" \
+        --env CARGO_HOME="$CARGO_HOME" \
         "$@"
 else
-    echo "⚠️  Basic mode (no bind support)"
-    act -j build-linux \
+    echo "🚀 Configuring for x86_64 host"
+    act -j build-all \
         --artifact-server-path ${RESULTS_DIR} \
+        --env SCONS_CACHE_DIR="$SCONS_CACHE_DIR" \
+        --env CARGO_HOME="$CARGO_HOME" \
         "$@"
 fi
 
