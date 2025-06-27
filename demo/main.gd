@@ -70,35 +70,32 @@ func _ready() -> void:
 					#print(items)
 
 func callable_events(args:Dictionary):
-	push_warning("Updates entities EVENT", args)
-	#var _packed = args.filter(func(c): return c is String)
-	#var _vector = args.filter(func(c): return c is Vector2 )
-	#
-	#if _vector.is_empty(): return
-	#
-	#var vec:Vector2 = _vector[0]
-	#if player:
-		#if _packed[0] != player.id: 
-			#push_warning("No es el player")
-			#var _id = _packed[0]
-			#await get_tree().process_frame
-			#controllers.move_controller(_id, vec)
-		#else:
-			#await get_tree().process_frame
-			#player.move(vec)
+	#push_warning("Updates entities EVENT", args)
+	var data = args["data"]
+	# This is contract speficfic
+
+	var result_data:Dictionary
+	for entry:Dictionary in data:
+		result_data.merge(entry)
+	push_warning("EVENTS",result_data)
+	if result_data.has("Vector2"):
+		#await get_tree().process_frame
+		await get_tree().process_frame
+		controllers_manager.move_controller(result_data['player'], result_data['Vector2'])
 
 func callable_entities(args:Dictionary):
-	push_warning("Updates entities", args)
-	#var _packed = args.filter(func(c): return c is String)
-	#var _vector = args.filter(func(c): return c is Vector2)
-	#if _vector.is_empty(): return
-	#var vec:Vector2 = _vector[0]
-	#
-	#if player and _packed[0] != player.id: 
-		#push_warning("SON LO MISMo")
-		#var _id = _packed[0]
+	#push_warning("Updates entities", args)
+	var data = args["data"]
+	# This is contract speficfic and data structure may change
+
+	var result_data:Dictionary
+	for entry:Dictionary in data:
+		result_data.merge(entry)
+	push_warning("ENTITIES",result_data)
+	if result_data.has("Vector2"):
 		#await get_tree().process_frame
-		#controllers.move_controller(_id, vec)
+		await get_tree().process_frame
+		controllers_manager.move_controller(result_data['player'], result_data['Vector2'])
 
 func _on_subcribe_pressed() -> void:
 	client.create_client()
@@ -127,20 +124,6 @@ func _on_move_pressed() -> void:
 	controller_account.execute_from_outside(move_call)
 	
 func _unhandled_input(event: InputEvent) -> void:
-	var direction:FieldElement
-	if event.is_action_pressed("ui_up"):
-		#direction = FieldElement.from_enum(Directions.UP)
-		get_viewport().set_input_as_handled()
-	elif event.is_action_pressed("ui_down"):
-		#direction = FieldElement.from_enum(Directions.DOWN)
-		get_viewport().set_input_as_handled()
-	elif event.is_action_pressed("ui_left"):
-		#direction = FieldElement.from_enum(Directions.LEFT)
-		get_viewport().set_input_as_handled()
-	elif event.is_action_pressed("ui_right"):
-		#direction = FieldElement.from_enum(Directions.RIGHT)
-		get_viewport().set_input_as_handled()
-		
 	if event.is_action("ui_accept"):
 		get_viewport().set_input_as_handled()
 		#if chat_box.is_visible_in_tree() and not chat_box.text.is_empty():
@@ -151,6 +134,8 @@ func _on_button_toggle_toggled(toggled_on: bool) -> void:
 	tabs.visible = toggled_on
 
 func _move(dir:Directions) -> void:
+	move_call.calldata[0] = dir
+	controller_account.execute_from_outside(move_call)
 	count += 1
 	
 func _on_arrow_left_pressed() -> void:

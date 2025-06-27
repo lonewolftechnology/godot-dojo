@@ -17,7 +17,10 @@ var id:String
 func setup(entity_data:Dictionary) -> void:
 	username = entity_data['username']
 	id = entity_data['address']
-	name += "-%s" % username
+	set_meta("type", name)
+	set_meta("name", username)
+	# Overwrite
+	name = username
 	_setup(entity_data)
 
 func _process(delta: float) -> void:
@@ -25,6 +28,7 @@ func _process(delta: float) -> void:
 	position_label.text = "%dx%d"%[roundi(pos.x),roundi(pos.y)]
 
 func move(pos) -> void:
+	push_warning("moving %s to %s" % [id, pos])
 	await get_tree().process_frame
 	position = pos * STEP_SIZE
 	await get_tree().process_frame

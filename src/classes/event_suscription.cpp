@@ -165,7 +165,8 @@ void EventSubscription::on_event_update(DOJO::FieldElement* entity_id, DOJO::CAr
         Logger::debug("ARG: ", arg);
     }
     Dictionary result = {};
-    result[entity_id_string] = arguments;
+    result["entity_id"] = entity_id_string;
+    result["data"] = arguments;
     Logger::info("Calling callback with arguments");
     const Variant callback_result = callback.call(result);
     Logger::info("Event Callback", callback_result);
