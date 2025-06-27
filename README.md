@@ -34,7 +34,7 @@ It enables advanced networking, subscriptions to blockchain events, and a set of
 
 1. **Clone the repository:**
     ```bash
-    git clone --recurse-submodules <URL-OF-THIS-REPO>
+    git clone --recurse-submodules https://github.com/lonewolftechnology/godot-dojo
     cd godot-dojo
     ```
 
