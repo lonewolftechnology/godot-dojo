@@ -88,8 +88,6 @@ if platform == "linux":
     env.Append(
         CXXFLAGS=["-std=c++17"]
     )
-elif platform == "windows":
-    env.Append(LINKFLAGS=['/NODEFAULTLIB:MSVCRT'])
 elif platform == "web":
     env.Append(LINKFLAGS=['-sALLOW_MEMORY_GROWTH'])
 
@@ -107,11 +105,12 @@ if platform == "windows":
 
     elif is_host_windows:
         rust_lib = f"{rust_lib_dir}/dojo_c.lib"
+        env.Append(LINKFLAGS=['/NODEFAULTLIB:MSVCRT'])
 
-    if os.path.exists(rust_lib):
-        shutil.copy2(rust_lib, target_dll_path)
-        print(f"{G}📋 Copied {rust_lib} -> {target_dll_path}{X}")
-        rust_lib = target_dll_path
+    # if os.path.exists(rust_lib):
+    #     shutil.copy2(rust_lib, target_dll_path)
+    #     print(f"{G}📋 Copied {rust_lib} -> {target_dll_path}{X}")
+    #     rust_lib = target_dll_path
 
 else:
     rust_lib = f"{rust_lib_dir}/libdojo_c.a"
