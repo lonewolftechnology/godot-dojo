@@ -71,16 +71,7 @@ jobs:
               external/godot-cpp/.scons_cache
               ~/Library/Caches/Homebrew
               /usr/local/Homebrew
-            extra-cache: |
-              - name: Cache Homebrew packages
-                uses: actions/cache@v3
-                with:
-                  path: |
-                    ~/Library/Caches/Homebrew
-                    /usr/local/Homebrew
-                  key: ${{ runner.os }}-homebrew-${{ hashFiles('.github/Brewfile') }}
-                  restore-keys: |
-                    ${{ runner.os }}-homebrew-
+            extra-cache: ""
 
     runs-on: ${{ matrix.os }}
     
