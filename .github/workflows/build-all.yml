@@ -20,15 +20,20 @@ env:
   CARGO_TERM_COLOR: always
 
 jobs:
-  # Job 1: Build Linux
   build-linux:
     runs-on: ubuntu-latest
     steps:
     - name: Checkout code
       uses: actions/checkout@v4
       with:
-        submodules: recursive
+        submodules: true
         fetch-depth: 0
+
+    - name: Initialize and update submodules
+      run: |
+        git submodule update --init --recursive --force
+        git submodule foreach --recursive 'git fetch --all --tags'
+        git submodule foreach --recursive 'git checkout $(git describe --tags --exact-match 2>/dev/null || git rev-parse HEAD)'
 
     - name: Set up Rust
       uses: actions-rs/toolchain@v1
@@ -37,7 +42,6 @@ jobs:
         profile: minimal
         override: true
 
-    # Cache Rust dependencies
     - name: Cache Cargo registry
       uses: actions/cache@v3
       with:
@@ -57,7 +61,6 @@ jobs:
         restore-keys: |
           ${{ runner.os }}-cargo-build-
 
-    # Cache SCons build
     - name: Cache SCons build
       uses: actions/cache@v3
       with:
@@ -68,7 +71,6 @@ jobs:
         restore-keys: |
           ${{ runner.os }}-scons-
 
-    # Cache system packages
     - name: Cache APT packages
       uses: awalsh128/cache-apt-pkgs-action@latest
       with:
@@ -97,15 +99,20 @@ jobs:
         path: demo/bin/
         retention-days: 1
 
-  # Job 2: Build Windows (using MSVC)
   build-windows:
     runs-on: windows-latest
     steps:
     - name: Checkout code
       uses: actions/checkout@v4
       with:
-        submodules: recursive
+        submodules: true
         fetch-depth: 0
+
+    - name: Initialize and update submodules
+      run: |
+        git submodule update --init --recursive --force
+        git submodule foreach --recursive 'git fetch --all --tags'
+        git submodule foreach --recursive 'git checkout $(git describe --tags --exact-match 2>/dev/null || git rev-parse HEAD)'
 
     - name: Set up Rust
       uses: actions-rs/toolchain@v1
@@ -114,7 +121,6 @@ jobs:
         profile: minimal
         override: true
 
-    # Cache Rust dependencies (Windows)
     - name: Cache Cargo registry
       uses: actions/cache@v3
       with:
@@ -134,7 +140,6 @@ jobs:
         restore-keys: |
           ${{ runner.os }}-cargo-build-
 
-    # Cache SCons build (Windows)
     - name: Cache SCons build
       uses: actions/cache@v3
       with:
@@ -172,15 +177,20 @@ jobs:
         path: demo/bin/
         retention-days: 1
 
-  # Job 3: Build macOS
   build-macos:
     runs-on: macos-latest
     steps:
     - name: Checkout code
       uses: actions/checkout@v4
       with:
-        submodules: recursive
+        submodules: true
         fetch-depth: 0
+
+    - name: Initialize and update submodules
+      run: |
+        git submodule update --init --recursive --force
+        git submodule foreach --recursive 'git fetch --all --tags'
+        git submodule foreach --recursive 'git checkout $(git describe --tags --exact-match 2>/dev/null || git rev-parse HEAD)'
 
     - name: Set up Rust
       uses: actions-rs/toolchain@v1
@@ -189,7 +199,6 @@ jobs:
         profile: minimal
         override: true
 
-    # Cache Rust dependencies (macOS)
     - name: Cache Cargo registry
       uses: actions/cache@v3
       with:
@@ -209,7 +218,6 @@ jobs:
         restore-keys: |
           ${{ runner.os }}-cargo-build-
 
-    # Cache SCons build (macOS)
     - name: Cache SCons build
       uses: actions/cache@v3
       with:
@@ -220,7 +228,6 @@ jobs:
         restore-keys: |
           ${{ runner.os }}-scons-
 
-    # Cache Homebrew packages
     - name: Cache Homebrew packages
       uses: actions/cache@v3
       with:
@@ -250,7 +257,6 @@ jobs:
         path: demo/bin/
         retention-days: 1
 
-  # Job 4: Create release ZIP
   create-release:
     needs: [build-linux, build-windows, build-macos]
     runs-on: ubuntu-latest
@@ -286,15 +292,12 @@ jobs:
       run: |
         mkdir -p release
         
-        # Copy all binary files (.so, .dll, .dylib)
         find artifacts/ -type f -name "*.so" -exec cp {} release/ \;
         find artifacts/ -type f -name "*.dll" -exec cp {} release/ \;
         find artifacts/ -type f -name "*.dylib" -exec cp {} release/ \;
         
-        # Copy the .gdextension file
         cp godot-dojo.gdextension release/
         
-        # Show what files we have
         echo "## 📁 Files found:" >> $GITHUB_STEP_SUMMARY
         ls -la release/ >> $GITHUB_STEP_SUMMARY
 
