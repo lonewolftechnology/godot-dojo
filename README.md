@@ -1,62 +1,105 @@
-# godot-dojo GDextension
+# Godot Dojo
 
-Dojo no es soportado nativamente en Windows, por lo que en su caso hay que usar WSL
+Godot Dojo is a cross-platform extension for [Godot Engine](https://godotengine.org/), providing seamless integration with Dojo-based backends and blockchain entities, powered by Rust and C++.  
+It enables advanced networking, subscriptions to blockchain events, and a set of utilities for interacting with decentralized data models directly from Godot.
 
-## Requerimentos:
-- rustup
-- cargo
-- protobuf
-- Instalar [Dojo](https://book.dojoengine.org/getting-started)
-- scons / cmake (depende del que se quiera usar)
-- Otros (avisen cualquier cosa)
+---
 
-## Para buildear con scons:
-- Clonar repos de godot-cpp y dojo.c
-```bash
-git clone https://github.com/godotengine/godot-cpp -b godot-4.2.2-stable
-git clone https://github.com/dojoengine/dojo.c -b v1.5.7
+## Features
 
-scons
-```
-Asumo que se puede buildear para otras plataformas:
-Ejemplo: ``scons --platform=windows``
+- **Multi-platform:** Build for Linux, Windows, MacOS, and Web (WASM).
+- **Blockchain subscriptions:** Create and manage event/entity subscriptions from Godot.
+- **Rust & C++ core:** High-performance native integration.
+- **Pluggable demo:** Includes a simple demo scene showcasing basic usage.
 
-# Guida DOJO (KATANA, TORII):
-Extracto de [starter](https://book.dojoengine.org/tutorial/dojo-starter)
+---
 
-Buildear el starter
-```bash
-sozo init dojo-starter
-cd dojo-starter
-sozo build
-``` 
-Levantar instancia KATANA
-```bash
-katana --dev --dev.no-fee --http.cors_origins "*"
-```
-En otra terminal ingresar ``sozo inspect``
-Este comando muestra la info del server (contratos, etc, etc)
-De aca lo mas importante es el address de dojo_starter-actions
+## Build Instructions
 
-Ahora hay que deployear a KATANA, asi obtenemos el adress del world
-```bash
-sozo migrate
-```
+**Prerequisites:**
+- [Godot Engine 4.x](https://godotengine.org/)
+- [Rust](https://www.rust-lang.org/tools/install)
+- [SCons](https://scons.org/pages/download.html)
+- A C++17 compatible compiler (e.g., GCC, Clang, MSVC)
+- Python (for SCons)
+- `pkg-config` and `libdbus-1-dev` (on Linux)
 
-Luego levantamos Torii, si el hex es diferente actualizenlo
-```bash
-torii --world 0x07cb912d0029e3799c4b8f2253b21481b2ec814c5daf72de75164ca82e7c42a5 --http.cors_origins "*"
-```
+**Dependencies:**
+- Submodules:
+    - [`external/dojo.c`](https://github.com/dojoengine/dojo.c) (Rust)
+    - [`external/godot-cpp`](https://github.com/godotengine/godot-cpp)
 
-Ambas terminales deben permanecer abiertas.
+**Step-by-step:**
 
-## Projecto Godot
+1. **Clone the repository:**
+    ```bash
+    git clone --recurse-submodules <URL-OF-THIS-REPO>
+    cd godot-dojo
+    ```
 
-El projecto de [ejemplo](demo) deberia poderse abrir con cualquier version de godot >= 4.2.
-Ignoren si les dice que se creo con 4.4 si usan una version diferente.
+2. **Check and install dependencies:**
+    ```bash
+    make check-deps
+    ```
 
-Consta de dos textfield que se pusieron por el solo proposito de testear mas facil.
-El primero es para testear la conexion con el servidor. Recibe el address de world
-El segundo es el que hace el login, te abre una pagina en el navegador. Recibe el address de actions
+    - If anything is missing, follow the on-screen instructions.
 
-Si bien ambos ya tienen address constantes, no estoy seguro si estos cambian bajo el contexto dev.
+3. **Build for your platform:**
+    - **Linux:**
+      ```bash
+      make linux
+      ```
+    - **Windows:**
+      ```bash
+      make windows
+      ```
+    - **MacOS (Intel):**
+      ```bash
+      make macos-x64
+      ```
+    - **MacOS (Apple Silicon):**
+      ```bash
+      make macos-arm64
+      ```
+    - **WebAssembly:**
+      ```bash
+      make web
+      ```
+
+   The compiled libraries will be output in the `bin/` directory.
+
+---
+
+## Running the Demo
+
+1. **Export or build the addon/library using the steps above.**
+2. **Open the project in Godot:**
+    - Launch Godot Engine.
+    - Open the `godot-dojo` folder as a project.
+3. **Run the demo scene:**
+    - Open the `Demo` scene under `game` folder.
+    - Press the **Play** button.
+
+You should see basic interaction with Dojo backends or a simulated demo, depending on your build and configuration.
+
+---
+
+## Troubleshooting
+
+- If you see errors about missing dependencies, run `make check-deps` and follow the provided suggestions.
+- For Rust-related errors:  
+  Ensure your Rust toolchain is installed and up to date (`rustup update`).
+
+---
+
+## License
+
+This project is licensed under MIT. See [LICENSE](LICENSE) for details.
+
+---
+
+## Credits
+
+- [Dojo Engine](https://github.com/dojoengine)
+- [Godot Engine](https://godotengine.org/)
+- All contributors.
