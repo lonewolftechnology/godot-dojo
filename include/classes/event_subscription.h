@@ -17,11 +17,20 @@ class EventSubscription : public RefCounted
 
     Callable callback;
     DOJO::Subscription* subscription = nullptr;
+    String name;
 
     static Ref<EventSubscription> g_active_instance;
 
 protected:
-    static void _bind_methods();
+    static void _bind_methods()
+    {
+        ClassDB::bind_method(D_METHOD("get_callback"), &EventSubscription::get_callback);
+        ClassDB::bind_method(D_METHOD("set_callback", "callback"), &EventSubscription::set_callback);
+
+        ClassDB::bind_method(D_METHOD("get_name"), &EventSubscription::get_name);
+        ClassDB::bind_method(D_METHOD("set_name", "name"), &EventSubscription::set_name);
+        ADD_PROPERTY(PropertyInfo(Variant::STRING, "name"), "set_name", "get_name");
+    }
 
 public:
     EventSubscription();
@@ -29,6 +38,12 @@ public:
 
     Callable get_callback() const;
     void set_callback(const Callable& p_callback);
+
+    String get_name() const {return name;};
+    void set_name(const String& p_name) {name = p_name;};
+
+    DOJO::Subscription* get_subscription() const {return subscription;};
+
     bool setup(ToriiClient* torii, const dojo_bindings::COptionClause& event_clause, const Callable& p_callback);
 
     void on_event_update(DOJO::FieldElement* entity_id, DOJO::CArrayStruct models) const;

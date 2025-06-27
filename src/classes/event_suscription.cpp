@@ -12,13 +12,6 @@
 #include "variant/ty/ty.h"
 
 Ref<EventSubscription> EventSubscription::g_active_instance = nullptr;
-
-void EventSubscription::_bind_methods()
-{
-    ClassDB::bind_method(D_METHOD("get_callback"), &EventSubscription::get_callback);
-    ClassDB::bind_method(D_METHOD("set_callback", "callback"), &EventSubscription::set_callback);
-}
-
 EventSubscription::EventSubscription()
 {
     Logger::info("EventSubscription constructor called");
@@ -125,7 +118,7 @@ bool EventSubscription::setup(ToriiClient* torii, const DOJO::COptionClause& eve
 
 void EventSubscription::on_event_update(DOJO::FieldElement* entity_id, DOJO::CArrayStruct models) const
 {
-    Logger::info("Update Event Received");
+    Logger::custom_color("red",get_name(), "Update Event Received");
 
     if (callback.is_null())
     {
@@ -139,13 +132,14 @@ void EventSubscription::on_event_update(DOJO::FieldElement* entity_id, DOJO::CAr
     }
 
     FieldElement entity_felt = {entity_id};
-    Logger::info("Entity ID: ", entity_felt.to_string());
+    const String entity_id_string = entity_felt.to_string();
 
-    if (entity_felt.as_packed_array().hex_encode() == FieldElement::nulled_as_string())
+    if (entity_id_string == FieldElement::nulled_as_string())
     {
         Logger::warning("Entity ID is 0, first call?");
         return;
     }
+    Logger::info("Entity ID: ", entity_id_string);
 
     if (models.data == nullptr)
     {
@@ -170,8 +164,9 @@ void EventSubscription::on_event_update(DOJO::FieldElement* entity_id, DOJO::CAr
         const Variant& arg = arguments[i];
         Logger::debug("ARG: ", arg);
     }
-
+    Dictionary result = {};
+    result[entity_id_string] = arguments;
     Logger::info("Calling callback with arguments");
-    const Variant callback_result = callback.call(arguments);
+    const Variant callback_result = callback.call(result);
     Logger::info("Event Callback", callback_result);
 }

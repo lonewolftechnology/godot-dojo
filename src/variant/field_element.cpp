@@ -127,10 +127,21 @@ dojo_bindings::FieldElement FieldElement::from_string(const String& hex_str, siz
     return result;
 }
 
+dojo_bindings::FieldElement FieldElement::short_string_to_felt(const String& cairo_str)
+{
+    DOJO::ResultFieldElement resCairo = DOJO::cairo_short_string_to_felt(cairo_str.utf8().get_data());
+    if (resCairo.tag == DOJO::ErrFieldElement)
+    {
+        Logger::debug_extra("FieldElement", "Failed to convert string to felt");
+        return {};
+    }
+    DOJO::FieldElement felt = {GET_DOJO_OK(resCairo)};
+    return felt;
+}
+
 DOJO::FieldElement FieldElement::nulled()
 {
     return from_enum(0);
-
 }
 
 PackedByteArray FieldElement::nulled_as_bytes()
@@ -140,7 +151,7 @@ PackedByteArray FieldElement::nulled_as_bytes()
 
 String FieldElement::nulled_as_string()
 {
-    return nulled_as_bytes().hex_encode();
+    return get_as_string_no_ptr(nulled());
 }
 
 PackedByteArray FieldElement::as_packed_array() const
@@ -180,13 +191,10 @@ String FieldElement::bytearray_deserialize()
     DOJO::Resultc_char testing = DOJO::bytearray_deserialize(get_felt(), 32);
     if (testing.tag == DOJO::Errc_char)
     {
-        Logger::debug_extra("FieldElement","Can't deserialize... Trying Cairo String");
+        Logger::debug_extra("FieldElement", "Can't deserialize... Trying Cairo String");
         return parse_cairo();
     }
-    else
-    {
-        Logger::success_extra("FieldElement", GET_DOJO_OK(testing));
-    }
+    Logger::success_extra("FieldElement", GET_DOJO_OK(testing));
     return {GET_DOJO_OK(testing)};
 }
 
@@ -217,7 +225,7 @@ String FieldElement::parse_cairo()
     DOJO::Resultc_char resCairo = DOJO::parse_cairo_short_string(get_felt_no_ptr());
     if (resCairo.tag == DOJO::Errc_char)
     {
-        Logger::debug("No cairo string found, returning as string hex");
+        Logger::debug_extra("FieldElement", "No cairo string found, returning as string hex");
         return {to_string()};
     }
     String result = GET_DOJO_OK(resCairo);
@@ -229,7 +237,7 @@ std::vector<DOJO::FieldElement> FieldElement::create_array(TypedArray<String> ar
 {
     std::vector<DOJO::FieldElement> result;
     result.resize(array.size());
-    
+
     for (int i = 0; i < array.size(); i++)
     {
         String address = array[i];

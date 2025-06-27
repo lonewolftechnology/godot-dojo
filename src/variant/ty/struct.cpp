@@ -26,7 +26,7 @@ Variant DojoStruct::StructToVariant(DOJO::Struct struct_)
     Logger::custom("DojoStruct", name);
     std::vector<DOJO::Member> struct_child(struct_.children.data,
                                            struct_.children.data + struct_.children.data_len);
-    if (name.to_lower().contains("vec2"))
+    if (name.to_lower().contains("vec"))
     {
         name = "Vector2";
         Vector2 vec = {0, 0};

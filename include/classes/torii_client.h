@@ -22,10 +22,10 @@ class ToriiClient : public Node
 {
     GDCLASS(ToriiClient, Node)
 
-private:
     static ToriiClient* singleton;
     DOJO::ToriiClient* client;
     bool is_connected;
+    Array event_subscriptions;
 
 public:
     ToriiClient();
@@ -95,6 +95,8 @@ public:
     void set_world_address(const String& p_world_address) { world_address = p_world_address; }
     String get_world_address() const { return world_address; }
 
+    Array get_events(){return event_subscriptions;}
+    void set_events(const Array& p_events){event_subscriptions = p_events;}
 
     protected:
     String torii_url;
@@ -164,6 +166,11 @@ public:
         ClassDB::bind_method(D_METHOD("set_logger_callback", "logger_callback"), &ToriiClient::set_logger_callback);
         ClassDB::bind_method(D_METHOD("get_logger_callback"), &ToriiClient::get_logger_callback);
         ADD_PROPERTY(PropertyInfo(Variant::CALLABLE, "logger_callback"), "set_logger_callback", "get_logger_callback");
+
+        ClassDB::bind_method(D_METHOD("get_events"), &ToriiClient::get_events);
+        ClassDB::bind_method(D_METHOD("set_events", "events"), &ToriiClient::set_events);
+        ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "events"), "set_events", "get_events");
+
     }
 };
 

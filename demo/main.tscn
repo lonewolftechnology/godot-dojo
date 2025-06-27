@@ -70,6 +70,7 @@ offset = Vector2(32, 32)
 metadata/_edit_lock_ = true
 
 [node name="UI" type="CanvasLayer" parent="."]
+layer = 128
 
 [node name="VBoxContainer" type="VBoxContainer" parent="UI"]
 anchors_preset = 15
@@ -148,10 +149,15 @@ text = "Tests"
 horizontal_alignment = 1
 vertical_alignment = 1
 
-[node name="CreateSubscriptions" type="Button" parent="UI/VBoxContainer/HSplitContainer/Menu/Tabs/TestMenu/Test"]
+[node name="EventSub" type="Button" parent="UI/VBoxContainer/HSplitContainer/Menu/Tabs/TestMenu/Test"]
 unique_name_in_owner = true
 layout_mode = 2
-text = "Create Subscriptions"
+text = "Event updates"
+
+[node name="EntitySub" type="Button" parent="UI/VBoxContainer/HSplitContainer/Menu/Tabs/TestMenu/Test"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "Entity updates"
 
 [node name="GetControllers" type="Button" parent="UI/VBoxContainer/HSplitContainer/Menu/Tabs/TestMenu/Test"]
 unique_name_in_owner = true
@@ -303,33 +309,28 @@ vertical_alignment = 1
 [node name="ClientStatus" parent="UI/VBoxContainer/Panel/Status" instance=ExtResource("2_0xm2m")]
 unique_name_in_owner = true
 layout_mode = 2
-size_flags_horizontal = 1
 type_name = "Client"
 
 [node name="ProviderStatus" parent="UI/VBoxContainer/Panel/Status" instance=ExtResource("2_0xm2m")]
 unique_name_in_owner = true
 layout_mode = 2
-size_flags_horizontal = 1
 type_name = "Provider"
 
 [node name="ControllerAccountStatus" parent="UI/VBoxContainer/Panel/Status" instance=ExtResource("2_0xm2m")]
 unique_name_in_owner = true
 layout_mode = 2
-size_flags_horizontal = 1
 type_name = "Controller"
 
 [node name="AccountStatus" parent="UI/VBoxContainer/Panel/Status" instance=ExtResource("2_0xm2m")]
 unique_name_in_owner = true
 visible = false
 layout_mode = 2
-size_flags_horizontal = 1
 type_name = "Account"
 
-[node name="SuscriptionStatus" parent="UI/VBoxContainer/Panel/Status" instance=ExtResource("2_0xm2m")]
+[node name="EventsStatus" parent="UI/VBoxContainer/Panel/Status" instance=ExtResource("2_0xm2m")]
 unique_name_in_owner = true
 layout_mode = 2
-size_flags_horizontal = 1
-type_name = "Suscription"
+type_name = "EventsUpdates"
 
 [node name="EntitiesStatus" parent="UI/VBoxContainer/Panel/Status" instance=ExtResource("2_0xm2m")]
 unique_name_in_owner = true
@@ -360,7 +361,8 @@ position_smoothing_speed = 4.0
 [connection signal="pressed" from="UI/VBoxContainer/HSplitContainer/Menu/Tabs/Main/StartToriiClient" to="." method="_on_subcribe_pressed"]
 [connection signal="pressed" from="UI/VBoxContainer/HSplitContainer/Menu/Tabs/Main/ConnectController" to="." method="_on_connect_controller_pressed"]
 [connection signal="pressed" from="UI/VBoxContainer/HSplitContainer/Menu/Tabs/Main/Disconnect" to="." method="_on_disconnect_pressed"]
-[connection signal="pressed" from="UI/VBoxContainer/HSplitContainer/Menu/Tabs/TestMenu/Test/CreateSubscriptions" to="." method="_on_create_subscriptions_pressed"]
+[connection signal="pressed" from="UI/VBoxContainer/HSplitContainer/Menu/Tabs/TestMenu/Test/EventSub" to="." method="_on_event_sub_pressed"]
+[connection signal="pressed" from="UI/VBoxContainer/HSplitContainer/Menu/Tabs/TestMenu/Test/EntitySub" to="." method="_on_entity_sub_pressed"]
 [connection signal="pressed" from="UI/VBoxContainer/HSplitContainer/Menu/Tabs/TestMenu/Test/GetControllers" to="." method="_on_get_controllers_pressed"]
 [connection signal="pressed" from="UI/VBoxContainer/HSplitContainer/Menu/Tabs/TestMenu/Test/GetEntities" to="." method="_on_get_entities_pressed"]
 [connection signal="pressed" from="UI/VBoxContainer/HSplitContainer/Menu/Tabs/TestMenu/Test/GetWorldMetadata" to="." method="_on_get_world_metadata_pressed"]

@@ -94,12 +94,8 @@ void ControllerAccount::create(const Ref<DojoPolicies>& policies_data)
 
     std::vector<DOJO::Policy> policies = policies_data->build();
     uintptr_t policies_len = policies.size();
-    DOJO::ResultFieldElement resKatana = DOJO::cairo_short_string_to_felt(chain_id.utf8().get_data());
-    if (resKatana.tag == DOJO::ErrFieldElement)
-    {
-        Logger::error("Error al convertir Chain ID: ", GET_DOJO_ERROR(resKatana));
-    }
-    DOJO::FieldElement katana = resKatana.ok;
+
+    DOJO::FieldElement katana = FieldElement::short_string_to_felt(chain_id.utf8().get_data());
 
     DOJO::ResultControllerAccount resControllerAccount =
         DOJO::controller_account(policies.data(), policies_len, katana);
@@ -175,13 +171,16 @@ String ControllerAccount::get_chain_id() const
         return chain_id;
     }
     DOJO::FieldElement felt = DOJO::controller_chain_id(session_account);
-    FieldElement chain_felt = {felt};
-    String controller_chain_id = chain_felt.parse_cairo();
-    if (chain_id != controller_chain_id)
-    {
-        Logger::warning("Chain ID mismatch ", chain_id, " | ", controller_chain_id);
-    }
-    return controller_chain_id;
+    Logger::custom_color("red", "ChainID", FieldElement::get_as_string(&felt));
+    // String controller_chain_id = chain_felt.to_string();
+    // FieldElement chain_id_felt = {FieldElement::short_string_to_felt(chain_id)};
+    // String converted_chain_id = chain_id_felt.to_string();
+    // if (!converted_chain_id.contains(controller_chain_id))
+    // {
+    //     Logger::warning("Chain ID mismatch ", converted_chain_id, " | ", controller_chain_id);
+    // }
+    // return controller_chain_id;
+    return chain_id;
 }
 
 DOJO::CArrayFieldElement array_to_felt_array(const Array& data)

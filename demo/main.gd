@@ -27,12 +27,14 @@ enum Directions{
 @onready var provider_status: DojoStatusIndicator = %ProviderStatus
 @onready var controller_account_status: DojoStatusIndicator = %ControllerAccountStatus
 @onready var account_status: DojoStatusIndicator = %AccountStatus
-@onready var suscription_status: DojoStatusIndicator = %SuscriptionStatus
 @onready var entities_status: DojoStatusIndicator = %EntitiesStatus
+@onready var events_status: DojoStatusIndicator = %EventsStatus
 
 # Buttons with states
 @onready var disconnect_btn: Button = %Disconnect
 @onready var connect_btn: Button = %ConnectController
+@onready var entity_sub: Button = %EntitySub
+@onready var event_sub: Button = %EventSub
 
 # Tests Buttons
 @onready var get_controllers: Button = %GetControllers
@@ -67,14 +69,14 @@ func _ready() -> void:
 					#var items = abi_item['items']
 					#print(items)
 
-func callable_events(args:Array):
+func callable_events(args:Dictionary):
 	push_warning("Updates entities EVENT", args)
-	var _packed = args.filter(func(c): return c is String)
-	var _vector = args.filter(func(c): return c is Vector2 )
-	
-	if _vector.is_empty(): return
-	
-	var vec:Vector2 = _vector[0]
+	#var _packed = args.filter(func(c): return c is String)
+	#var _vector = args.filter(func(c): return c is Vector2 )
+	#
+	#if _vector.is_empty(): return
+	#
+	#var vec:Vector2 = _vector[0]
 	#if player:
 		#if _packed[0] != player.id: 
 			#push_warning("No es el player")
@@ -85,12 +87,12 @@ func callable_events(args:Array):
 			#await get_tree().process_frame
 			#player.move(vec)
 
-func callable_entities(args:Array):
+func callable_entities(args:Dictionary):
 	push_warning("Updates entities", args)
-	var _packed = args.filter(func(c): return c is String)
-	var _vector = args.filter(func(c): return c is Vector2)
-	if _vector.is_empty(): return
-	var vec:Vector2 = _vector[0]
+	#var _packed = args.filter(func(c): return c is String)
+	#var _vector = args.filter(func(c): return c is Vector2)
+	#if _vector.is_empty(): return
+	#var vec:Vector2 = _vector[0]
 	#
 	#if player and _packed[0] != player.id: 
 		#push_warning("SON LO MISMo")
@@ -240,8 +242,8 @@ func _on_get_entities_pressed() -> void:
 		"historical": false
 	}
 	var data = client.get_entities(query)
+	print(data)
 	for entity in data:
-
 		for model:Dictionary in entity.models:
 			var id
 			var position
@@ -269,20 +271,27 @@ func _on_get_world_metadata_pressed() -> void:
 	print(data)
 
 
-func _on_create_subscriptions_pressed() -> void:
-	# For now, COptionClause is not fullly implemented
-	# So an empty dictionary is used for now 
-	client.create_entity_subscription(callable_entities, {})
-	
-	client.create_event_subscription(callable_events, {})
-
-
 func _on_torii_client_subscription_created(subscription_name: String) -> void:
 	if subscription_name == "entity":
 		entities_status.set_status(true)
+		entity_sub.disabled = true
 	if subscription_name == "event":
-		suscription_status.set_status(true)
+		events_status.set_status(true)
+		event_sub.disabled = true
+		
 
 
 func _on_testing_pressed() -> void:
 	controller_account.execute_raw(move_call)
+
+
+func _on_event_sub_pressed() -> void:
+	# For now, COptionClause is not fullly implemented
+	# So an empty dictionary is used for now 
+	await client.create_event_subscription(callable_events, {})
+
+
+func _on_entity_sub_pressed() -> void:
+	# For now, COptionClause is not fullly implemented
+	# So an empty dictionary is used for now 
+	await client.create_entity_subscription(callable_entities, {})

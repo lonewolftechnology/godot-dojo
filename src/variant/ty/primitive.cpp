@@ -38,26 +38,25 @@ Variant DojoPrimitive::VariantFromPrimitive(dojo_bindings::Primitive primitive)
     }
 }
 
-FieldElement DojoPrimitive::FieldElementFromPrimitive(DOJO::Primitive primitive)
+String DojoPrimitive::FieldElementFromPrimitive(DOJO::Primitive primitive)
 {
+    DOJO::FieldElement felt;
     switch (primitive.tag)
     {
     case DOJO::Primitive_Tag::Felt252:
         Logger::info("Felt252");
-        return {primitive.felt252};
+        felt = primitive.felt252;
     case DOJO::Primitive_Tag::ClassHash:
         Logger::info("ClassHash");
-        return {primitive.class_hash};
+        felt = primitive.class_hash;
     case DOJO::Primitive_Tag::ContractAddress:
         Logger::info("ContractAddress");
-        return {primitive.contract_address};
+        felt = primitive.contract_address;
     case DOJO::Primitive_Tag::EthAddress:
         Logger::info("EthAddress");
-        return {primitive.eth_address};
-    default:
-        Logger::info("No Felt found");
-        return {};
+        felt = primitive.eth_address;
     }
+    return FieldElement::get_as_string(&felt);
 }
 
 DojoPrimitive::DojoPrimitive()
@@ -87,8 +86,8 @@ DojoPrimitive::DojoPrimitive(const DOJO::Primitive& primitive)
     case DOJO::Primitive_Tag::ClassHash:
     case DOJO::Primitive_Tag::ContractAddress:
     case DOJO::Primitive_Tag::EthAddress:
-        FieldElement data = FieldElementFromPrimitive(primitive);
-        value = data.to_string();
+        value = FieldElementFromPrimitive(primitive);
+        Logger::custom("PrimitiveFelt", value);
         is_felt = true;
         break;
     }

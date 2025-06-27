@@ -265,12 +265,12 @@ bool ToriiClient::create_entity_subscription(const Callable& callback, const Dic
         return false;
     }
 
-    Logger::info("Creating entity subscription...");
+    Logger::custom("Entity Sub","Creating entity subscription...");
 
-    Ref<EventSubscription> entity_subscription;
+    Ref entity_subscription = memnew(EventSubscription());
     entity_subscription.instantiate();
-
-    Logger::info("EventSubscription instance created successfully at: ", entity_subscription);
+    entity_subscription->set_name("entity");
+    Logger::info("EventSubscription instance created successfully at: ", entity_subscription, entity_subscription->get_name());
 
     DOJO::COptionClause event_clause = {};
     event_clause.tag = DOJO::COptionClause_Tag::NoneClause;
@@ -280,7 +280,8 @@ bool ToriiClient::create_entity_subscription(const Callable& callback, const Dic
     if (result)
     {
         Logger::success("Entity subscription created successfully");
-        emit_signal("subscription_created", "entity");
+        emit_signal("subscription_created", entity_subscription->get_name());
+        event_subscriptions.append(entity_subscription);
     }
     else
     {
@@ -298,12 +299,13 @@ bool ToriiClient::create_event_subscription(const Callable& callback, const Dict
         return false;
     }
 
-    Logger::info("Creating entity subscription...");
+    Logger::custom("Event Sub","Creating Event subscription...");
 
-    Ref<EventSubscription> event_subscription;
+    Ref event_subscription = memnew(EventSubscription());;
     event_subscription.instantiate();
+    event_subscription->set_name("event");
 
-    Logger::info("EventSubscription instance created successfully at: ", event_subscription);
+    Logger::info("EventSubscription instance created successfully at: ", event_subscription, event_subscription->get_name());
 
     DOJO::COptionClause event_clause = {};
     event_clause.tag = DOJO::COptionClause_Tag::NoneClause;
@@ -313,7 +315,8 @@ bool ToriiClient::create_event_subscription(const Callable& callback, const Dict
     if (result)
     {
         Logger::success("Entity subscription created successfully");
-        emit_signal("subscription_created", "event");
+        emit_signal("subscription_created", event_subscription->get_name());
+        event_subscriptions.append(event_subscription);
 
     }
     else

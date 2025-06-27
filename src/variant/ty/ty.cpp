@@ -33,7 +33,7 @@ DojoTy::DojoTy(const DOJO::Ty* ty)
 DojoTy::DojoTy(const DOJO::Member &member)
 {
     name = member.name;
-    Logger::debug_extra("Member", name);
+    Logger::custom("Member", name);
     init_form_ty(*member.ty);
 }
 
@@ -58,8 +58,8 @@ void DojoTy::init_form_ty(const DOJO::Ty& ty)
         type = Type::Struct_;
         DojoStruct data = {ty.struct_};
         value = data.get_value();
-        Logger::debug(name, data.get_name());
         name = data.get_name();
+        Logger::custom_color("red",name, data.get_name());
     }
     else if (ty.tag == Tag::Enum_)
     {

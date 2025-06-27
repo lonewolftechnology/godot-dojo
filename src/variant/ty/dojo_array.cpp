@@ -110,8 +110,7 @@ Variant ArrayDojo::CArrayTokenToVariant(DOJO::CArrayToken array)
 Variant ArrayDojo::CArrayEntityToVariant(DOJO::CArrayEntity array)
 {
     Array result = {};
-    Logger::debug_extra("ArrayEntity", array.data);
-    Logger::debug_extra("ArrayEntity", array.data_len);
+    Logger::debug_extra("ArrayEntity", "entity amount: ", array.data_len);
     std::vector array_entity_vector(array.data, array.data + array.data_len);
     for (const auto& entity : array_entity_vector)
     {
@@ -158,13 +157,15 @@ Variant ArrayDojo::CArrayClauseToVariant(DOJO::CArrayClause array)
 Variant ArrayDojo::CArrayStructToVariant(DOJO::CArrayStruct array)
 {
     Array result = {};
+    Logger::debug_extra("ArrayStruct", "struct amount: ", array.data_len);
     std::vector array_struct_vector(array.data, array.data + array.data_len);
     for (const auto& struct_ : array_struct_vector)
     {
+        Logger::debug_extra("ArrayStruct", "struct: ", struct_.name);
         Dictionary data = {};
         DojoStruct dojo_struct = {struct_};
-        data[dojo_struct.get_name()] = dojo_struct.get_value();
         Logger::debug_extra("ArrayStruct", dojo_struct.get_name(), dojo_struct.get_value());
+        data[dojo_struct.get_name()] = dojo_struct.get_value();
         result.append(data);
     }
     return result;
@@ -174,6 +175,8 @@ Variant ArrayDojo::CArrayMemberToVariant(DOJO::CArrayMember array)
 {
     Array result;
     std::vector array_member_vector(array.data, array.data + array.data_len);
+    Logger::custom("CArrayMember", "init");
+
     for (const auto& member : array_member_vector)
     {
         Dictionary data = {};
@@ -183,6 +186,7 @@ Variant ArrayDojo::CArrayMemberToVariant(DOJO::CArrayMember array)
         {
             data_name = member.name;
         }
+        Logger::custom("CArrayMember", data_name);
         data[data_name] = dojo_ty.get_value();
         result.append(data);
     }

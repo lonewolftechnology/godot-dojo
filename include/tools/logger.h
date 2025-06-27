@@ -39,7 +39,7 @@ namespace logger_internal
     inline String concat_all(Args... args)
     {
         String result;
-        ((result += make_safe_variant(args).stringify()), ...);
+        ((result += make_safe_variant(args).stringify() + " "), ...);
         return result;
     }
 }
@@ -112,6 +112,12 @@ public:
     static void custom(const String& type, Args... args)
     {
         typed_log_color("magenta", type, args...);
+    }
+
+    template <typename... Args>
+    static void custom_color(const String& color, const String& type, Args... args)
+    {
+        typed_log_color(color, type, args...);
     }
 
     template <typename... Args>

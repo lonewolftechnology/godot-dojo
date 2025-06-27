@@ -24,7 +24,7 @@ public:
     bool is_felt = false;
 
     static Variant VariantFromPrimitive(DOJO::Primitive primitive);
-    static FieldElement FieldElementFromPrimitive(DOJO::Primitive primitive);
+    static String FieldElementFromPrimitive(DOJO::Primitive primitive);
     DojoPrimitive();
     DojoPrimitive(const DOJO::Primitive& primitive);
 
