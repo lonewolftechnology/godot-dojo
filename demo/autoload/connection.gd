@@ -17,7 +17,6 @@ signal connected
 func _ready() -> void:
 	OS.set_environment("RUST_BACKTRACE", "full")
 	OS.set_environment("RUST_LOG", "debug")
-	#client.client_connected.connect(_on_torii_client_client_connected)
 
 func connect_client() -> void:
 	client.create_client()
@@ -29,7 +28,7 @@ func connect_controller() -> void:
 func _on_torii_client_client_connected(success: bool) -> void:
 	_client_status.set_status(success)
 	if success:
-		await get_tree().create_timer(2.0).timeout
+		#await get_tree().create_timer(2.0).timeout
 		connect_controller()
 
 func _on_torii_client_client_disconnected() -> void:
