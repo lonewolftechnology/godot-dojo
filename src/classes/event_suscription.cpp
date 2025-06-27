@@ -125,7 +125,7 @@ bool EventSubscription::setup(ToriiClient* torii, const DOJO::COptionClause& eve
 
 void EventSubscription::on_event_update(DOJO::FieldElement* entity_id, DOJO::CArrayStruct models) const
 {
-    Logger::info("Entity Update Event Received");
+    Logger::info("Update Event Received");
 
     if (callback.is_null())
     {
@@ -149,7 +149,7 @@ void EventSubscription::on_event_update(DOJO::FieldElement* entity_id, DOJO::CAr
 
     if (models.data == nullptr)
     {
-        Logger::error("models.data is null");
+        Logger::error("models.data in event is null");
         return;
     }
 
