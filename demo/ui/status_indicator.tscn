@@ -13,6 +13,8 @@ layout_mode = 2
 text = "Type"
 
 [node name="Status" type="ColorRect" parent="."]
-custom_minimum_size = Vector2(30, 30)
+custom_minimum_size = Vector2(16, 16)
 layout_mode = 2
+size_flags_horizontal = 4
+size_flags_vertical = 4
 color = Color(1, 0, 0, 1)

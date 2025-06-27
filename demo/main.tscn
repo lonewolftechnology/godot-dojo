@@ -99,10 +99,11 @@ custom_minimum_size = Vector2(200, 0)
 layout_mode = 2
 size_flags_horizontal = 3
 tab_alignment = 1
-current_tab = 0
+current_tab = 1
 use_hidden_tabs_for_min_size = true
 
 [node name="Main" type="VBoxContainer" parent="UI/VBoxContainer/HSplitContainer/Menu/Tabs"]
+visible = false
 layout_mode = 2
 size_flags_horizontal = 3
 alignment = 1
@@ -131,7 +132,6 @@ disabled = true
 text = "Disconnect"
 
 [node name="TestMenu" type="ScrollContainer" parent="UI/VBoxContainer/HSplitContainer/Menu/Tabs"]
-visible = false
 layout_mode = 2
 follow_focus = true
 metadata/_tab_index = 1
