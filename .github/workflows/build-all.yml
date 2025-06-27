@@ -20,8 +20,70 @@ env:
   CARGO_TERM_COLOR: always
 
 jobs:
-  build-linux:
-    runs-on: ubuntu-latest
+  build-all:
+    strategy:
+      matrix:
+        include:
+          - os: ubuntu-latest
+            platform: linux
+            target: linux-all
+            cache-key: linux
+            deps: |
+              sudo apt-get update
+              sudo apt-get install -y build-essential pkg-config libdbus-1-dev protobuf-compiler libprotobuf-dev
+            cache-paths: |
+              ~/.cargo/registry
+              ~/.cargo/git
+              external/dojo.c/target
+              .scons_cache
+              external/godot-cpp/.scons_cache
+            extra-cache: |
+              - name: Cache APT packages
+                uses: awalsh128/cache-apt-pkgs-action@latest
+                with:
+                  packages: build-essential pkg-config libdbus-1-dev protobuf-compiler libprotobuf-dev
+                  version: 1.0
+          
+          - os: windows-latest
+            platform: windows
+            target: windows-all
+            cache-key: windows
+            deps: ""
+            cache-paths: |
+              ~/.cargo/registry
+              ~/.cargo/git
+              external/dojo.c/target
+              .scons_cache
+              external/godot-cpp/.scons_cache
+            extra-cache: ""
+          
+          - os: macos-latest
+            platform: macos
+            target: macos-all
+            cache-key: macos
+            deps: |
+              brew install pkg-config scons
+            cache-paths: |
+              ~/.cargo/registry
+              ~/.cargo/git
+              external/dojo.c/target
+              .scons_cache
+              external/godot-cpp/.scons_cache
+              ~/Library/Caches/Homebrew
+              /usr/local/Homebrew
+            extra-cache: |
+              - name: Cache Homebrew packages
+                uses: actions/cache@v3
+                with:
+                  path: |
+                    ~/Library/Caches/Homebrew
+                    /usr/local/Homebrew
+                  key: ${{ runner.os }}-homebrew-${{ hashFiles('.github/Brewfile') }}
+                  restore-keys: |
+                    ${{ runner.os }}-homebrew-
+
+    runs-on: ${{ matrix.os }}
+    
     steps:
     - name: Checkout code
       uses: actions/checkout@v4
@@ -48,18 +110,18 @@ jobs:
         path: |
           ~/.cargo/registry
           ~/.cargo/git
-        key: ${{ runner.os }}-cargo-registry-${{ hashFiles('**/Cargo.lock') }}
+        key: ${{ matrix.cache-key }}-cargo-registry-${{ hashFiles('**/Cargo.lock') }}
         restore-keys: |
-          ${{ runner.os }}-cargo-registry-
+          ${{ matrix.cache-key }}-cargo-registry-
 
     - name: Cache Cargo build
       uses: actions/cache@v3
       with:
         path: |
           external/dojo.c/target
-        key: ${{ runner.os }}-cargo-build-${{ hashFiles('external/dojo.c/Cargo.lock') }}
+        key: ${{ matrix.cache-key }}-cargo-build-${{ hashFiles('external/dojo.c/Cargo.lock') }}
         restore-keys: |
-          ${{ runner.os }}-cargo-build-
+          ${{ matrix.cache-key }}-cargo-build-
 
     - name: Cache SCons build
       uses: actions/cache@v3
@@ -67,168 +129,19 @@ jobs:
         path: |
           .scons_cache
           external/godot-cpp/.scons_cache
-        key: ${{ runner.os }}-scons-${{ hashFiles('SConstruct', 'external/godot-cpp/SConstruct') }}
+        key: ${{ matrix.cache-key }}-scons-${{ hashFiles('SConstruct', 'external/godot-cpp/SConstruct') }}
         restore-keys: |
-          ${{ runner.os }}-scons-
+          ${{ matrix.cache-key }}-scons-
 
-    - name: Cache APT packages
+    - name: Cache APT packages (Linux only)
+      if: matrix.platform == 'linux'
       uses: awalsh128/cache-apt-pkgs-action@latest
       with:
         packages: build-essential pkg-config libdbus-1-dev protobuf-compiler libprotobuf-dev
         version: 1.0
 
-    - name: Set up Python
-      uses: actions/setup-python@v4
-      with:
-        python-version: '3.x'
-    
-    - name: Install SCons
-      run: pip install scons
-
-    - name: Install Rust targets for Linux
-      run: |
-        rustup target add x86_64-unknown-linux-gnu
-
-    - name: Build Linux (debug + release, x64 only)
-      run: make linux-all
-
-    - name: Upload Linux artifacts
-      uses: actions/upload-artifact@v3
-      with:
-        name: linux-builds
-        path: demo/bin/
-        retention-days: 1
-
-  build-windows:
-    runs-on: windows-latest
-    steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
-      with:
-        submodules: true
-        fetch-depth: 0
-
-    - name: Initialize and update submodules
-      run: |
-        git submodule update --init --recursive --force
-        git submodule foreach --recursive 'git fetch --all --tags'
-        git submodule foreach --recursive 'git checkout $(git describe --tags --exact-match 2>/dev/null || git rev-parse HEAD)'
-
-    - name: Set up Rust
-      uses: actions-rs/toolchain@v1
-      with:
-        toolchain: stable
-        profile: minimal
-        override: true
-
-    - name: Cache Cargo registry
-      uses: actions/cache@v3
-      with:
-        path: |
-          ~/.cargo/registry
-          ~/.cargo/git
-        key: ${{ runner.os }}-cargo-registry-${{ hashFiles('**/Cargo.lock') }}
-        restore-keys: |
-          ${{ runner.os }}-cargo-registry-
-
-    - name: Cache Cargo build
-      uses: actions/cache@v3
-      with:
-        path: |
-          external/dojo.c/target
-        key: ${{ runner.os }}-cargo-build-${{ hashFiles('external/dojo.c/Cargo.lock') }}
-        restore-keys: |
-          ${{ runner.os }}-cargo-build-
-
-    - name: Cache SCons build
-      uses: actions/cache@v3
-      with:
-        path: |
-          .scons_cache
-          external/godot-cpp/.scons_cache
-        key: ${{ runner.os }}-scons-${{ hashFiles('SConstruct', 'external/godot-cpp/SConstruct') }}
-        restore-keys: |
-          ${{ runner.os }}-scons-
-
-    - name: Set up Python
-      uses: actions/setup-python@v4
-      with:
-        python-version: '3.x'
-    
-    - name: Install SCons
-      run: pip install scons
-
-    - name: Install Rust targets for Windows
-      run: |
-        rustup target add x86_64-pc-windows-msvc
-
-    - name: Set up MSVC
-      uses: ilammy/msvc-dev-cmd@v1
-      with:
-        arch: x64
-
-    - name: Build Windows (debug + release, x64 with MSVC)
-      run: make windows-all
-
-    - name: Upload Windows artifacts
-      uses: actions/upload-artifact@v3
-      with:
-        name: windows-builds
-        path: demo/bin/
-        retention-days: 1
-
-  build-macos:
-    runs-on: macos-latest
-    steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
-      with:
-        submodules: true
-        fetch-depth: 0
-
-    - name: Initialize and update submodules
-      run: |
-        git submodule update --init --recursive --force
-        git submodule foreach --recursive 'git fetch --all --tags'
-        git submodule foreach --recursive 'git checkout $(git describe --tags --exact-match 2>/dev/null || git rev-parse HEAD)'
-
-    - name: Set up Rust
-      uses: actions-rs/toolchain@v1
-      with:
-        toolchain: stable
-        profile: minimal
-        override: true
-
-    - name: Cache Cargo registry
-      uses: actions/cache@v3
-      with:
-        path: |
-          ~/.cargo/registry
-          ~/.cargo/git
-        key: ${{ runner.os }}-cargo-registry-${{ hashFiles('**/Cargo.lock') }}
-        restore-keys: |
-          ${{ runner.os }}-cargo-registry-
-
-    - name: Cache Cargo build
-      uses: actions/cache@v3
-      with:
-        path: |
-          external/dojo.c/target
-        key: ${{ runner.os }}-cargo-build-${{ hashFiles('external/dojo.c/Cargo.lock') }}
-        restore-keys: |
-          ${{ runner.os }}-cargo-build-
-
-    - name: Cache SCons build
-      uses: actions/cache@v3
-      with:
-        path: |
-          .scons_cache
-          external/godot-cpp/.scons_cache
-        key: ${{ runner.os }}-scons-${{ hashFiles('SConstruct', 'external/godot-cpp/SConstruct') }}
-        restore-keys: |
-          ${{ runner.os }}-scons-
-
-    - name: Cache Homebrew packages
+    - name: Cache Homebrew packages (macOS only)
+      if: matrix.platform == 'macos'
       uses: actions/cache@v3
       with:
         path: |
@@ -238,27 +151,39 @@ jobs:
         restore-keys: |
           ${{ runner.os }}-homebrew-
 
-    - name: Install macOS dependencies
-      run: |
-        brew install pkg-config scons
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.x'
+    
+    - name: Install SCons
+      run: pip install scons
 
-    - name: Install Rust targets for macOS
-      run: |
-        rustup target add x86_64-apple-darwin
-        rustup target add aarch64-apple-darwin
+    - name: Install platform dependencies
+      if: matrix.deps != ''
+      run: ${{ matrix.deps }}
 
-    - name: Build macOS (debug + release, x64 + arm64)
-      run: make macos-all
+    - name: Set up MSVC (Windows only)
+      if: matrix.platform == 'windows'
+      uses: ilammy/msvc-dev-cmd@v1
+      with:
+        arch: x64
 
-    - name: Upload macOS artifacts
+    - name: Install Rust targets
+      run: make _install-rust-targets
+
+    - name: Build ${{ matrix.platform }}
+      run: make ${{ matrix.target }}
+
+    - name: Upload ${{ matrix.platform }} artifacts
       uses: actions/upload-artifact@v3
       with:
-        name: macos-builds
+        name: ${{ matrix.platform }}-builds
         path: demo/bin/
         retention-days: 1
 
   create-release:
-    needs: [build-linux, build-windows, build-macos]
+    needs: [build-all]
     runs-on: ubuntu-latest
     steps:
     - name: Checkout code
