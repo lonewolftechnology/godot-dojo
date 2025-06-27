@@ -30,6 +30,14 @@ It enables advanced networking, subscriptions to blockchain events, and a set of
     - [`external/dojo.c`](https://github.com/dojoengine/dojo.c)
     - [`external/godot-cpp`](https://github.com/godotengine/godot-cpp)
 
+---
+
+**Important note for Windows users:**  
+The provided Makefile **is not compatible with Windows**.  
+To build on any platform (Linux, Windows, MacOS, WebAssembly) **always use SCons** (`scons ...`) as described in the build instructions below. SCons is cross-platform and the recommended way to build this project.
+
+---
+
 **Step-by-step:**
 
 1. **Clone the repository:**
