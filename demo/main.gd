@@ -13,7 +13,7 @@ enum Directions{
 @onready var tabs: TabContainer = %Tabs
 @onready var reset_spawn: CheckBox = %ResetSpawn
 
-@onready var controllers_manager: Node2D = $ControllersManager
+@onready var controllers_manager: ControllersManager = $ControllersManager
 
 @onready var button_toggle: Button = %ButtonToggle
 
@@ -66,9 +66,7 @@ func _ready() -> void:
 					#var items = abi_item['items']
 					#print(items)
 
-func callable_test(args:Array):
-	prints("Callable size:", args.size() ,"Result:",args)
-	#prints("\n\n", packed)
+func callable_events(args:Array):
 	push_warning("Updates entities EVENT", args)
 	var _packed = args.filter(func(c): return c is String)
 	var _vector = args.filter(func(c): return c is Vector2 )
@@ -86,7 +84,7 @@ func callable_test(args:Array):
 			#await get_tree().process_frame
 			#player.move(vec)
 
-func call_test(args:Array):
+func callable_entities(args:Array):
 	push_warning("Updates entities", args)
 	var _packed = args.filter(func(c): return c is String)
 	var _vector = args.filter(func(c): return c is Vector2)
@@ -101,12 +99,6 @@ func call_test(args:Array):
 
 func _on_subcribe_pressed() -> void:
 	client.create_client()
-
-	#controller.create(dev_actions_addr, "https://api.cartridge.gg/x/godot-demo-rookie/katana")
-
-	
-	#await get_tree().process_frame
-
 
 func _on_spawn_pressed() -> void:
 	if reset_spawn.button_pressed:
@@ -202,13 +194,10 @@ func _on_controller_account_controller_disconnected() -> void:
 	disconnect_btn.disabled = true
 
 func _on_torii_client_entity_updated(entity_data: Dictionary) -> void:
-	prints("\n\n\n\n\n")
-	prints("Entity update", entity_data)
+	prints("Torii Entity update", entity_data)
 
 func _on_torii_client_event_received(event_data: Dictionary) -> void:
-	prints("\n\n\n\n\n")
-	
-	prints("event", event_data)
+	prints("Torii Event", event_data)
 
 func _on_torii_client_subscription_error(error_message: String) -> void:
 	push_error(error_message)
@@ -218,7 +207,6 @@ func _on_controller_account_current_user_info(user_info: Dictionary) -> void:
 	username_status.text = user_info['username']
 	controllers_manager.spawn_entity(user_info,true)
 	var data = client.get_controller_info(address)
-	print(data)
 
 
 func _on_controller_account_transaction_executed(transaction_hash: String) -> void:
@@ -235,7 +223,8 @@ func _on_connect_controller_pressed() -> void:
 
 func _on_get_controllers_pressed() -> void:
 	var data = client.get_controllers()
-	print(data)
+	for controller in data:
+		controllers_manager.spawn_entity(controller)
 
 
 func _on_get_entities_pressed() -> void:
@@ -252,7 +241,29 @@ func _on_get_entities_pressed() -> void:
 		"historical": false
 	}
 	var data = client.get_entities(query)
-	print(data)
+	for entity in data:
+
+		for model:Dictionary in entity.models:
+			var id
+			var position
+			var can_move
+			var remaining
+			if model.has("vec"):
+				for entry:Dictionary in model["vec"]:
+					if entry.has("player"):
+						print(entry)
+						id = entry["player"]
+					if entry.has("Vector2"):
+						position = entry["Vector2"]
+						
+				controllers_manager.move_controller(id, position)
+					
+			if model.has("can_move"):
+				for entry:Dictionary in model["can_move"]:
+					if entry.has("can_move"):
+						can_move = entry["can_move"]
+					if entry.has("remaining"):
+						remaining = entry["remaining"]
 
 func _on_get_world_metadata_pressed() -> void:
 	var data = client.get_world_metadata()
@@ -260,9 +271,11 @@ func _on_get_world_metadata_pressed() -> void:
 
 
 func _on_create_subscriptions_pressed() -> void:
-	client.create_entity_subscription(call_test, {})
+	# For now, COptionClause is not fullly implemented
+	# So an empty dictionary is used for now 
+	client.create_entity_subscription(callable_entities, {})
 	
-	client.create_event_subscription(callable_test, {})
+	client.create_event_subscription(callable_events, {})
 
 
 func _on_torii_client_subscription_created(subscription_name: String) -> void:

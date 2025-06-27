@@ -31,6 +31,8 @@ func move_controller(id:String, vec:Vector2)->void:
 		entity.move(vec)
 
 func spawn_entity(_data:Dictionary, is_player:bool = false):
+	var address = _data["address"]
+	if find_user(address): return
 	var new_entity:GenericEntity
 	if is_player:
 		new_entity = player_entity_scene.instantiate()

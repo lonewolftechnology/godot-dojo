@@ -43,14 +43,19 @@ FieldElement DojoPrimitive::FieldElementFromPrimitive(DOJO::Primitive primitive)
     switch (primitive.tag)
     {
     case DOJO::Primitive_Tag::Felt252:
+        Logger::info("Felt252");
         return {primitive.felt252};
     case DOJO::Primitive_Tag::ClassHash:
+        Logger::info("ClassHash");
         return {primitive.class_hash};
     case DOJO::Primitive_Tag::ContractAddress:
+        Logger::info("ContractAddress");
         return {primitive.contract_address};
     case DOJO::Primitive_Tag::EthAddress:
+        Logger::info("EthAddress");
         return {primitive.eth_address};
     default:
+        Logger::info("No Felt found");
         return {};
     }
 }

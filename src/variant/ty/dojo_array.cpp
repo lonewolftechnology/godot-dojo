@@ -164,6 +164,7 @@ Variant ArrayDojo::CArrayStructToVariant(DOJO::CArrayStruct array)
         Dictionary data = {};
         DojoStruct dojo_struct = {struct_};
         data[dojo_struct.get_name()] = dojo_struct.get_value();
+        Logger::debug_extra("ArrayStruct", dojo_struct.get_name(), dojo_struct.get_value());
         result.append(data);
     }
     return result;
