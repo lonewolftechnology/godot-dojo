@@ -6,7 +6,7 @@
 [ext_resource type="Script" uid="uid://c63vfoblqmxxg" path="res://tools/controllers.gd" id="3_k3cyb"]
 [ext_resource type="DojoCall" uid="uid://cgu5bg3mm37rw" path="res://resources/reset_spawn_call.tres" id="3_p8iq3"]
 [ext_resource type="Texture2D" uid="uid://bls0ryaavsbvd" path="res://assets/arrow_left.png" id="4_p8iq3"]
-[ext_resource type="DojoCall" uid="uid://dv3gp8eh77oho" path="res://resources/move_call.tres" id="4_w8h56"]
+[ext_resource type="DojoCall" path="res://resources/move_call.tres" id="4_w8h56"]
 [ext_resource type="Texture2D" uid="uid://bqdfqrx7ajogy" path="res://assets/arrow_left_p.png" id="5_2tan0"]
 [ext_resource type="PackedScene" uid="uid://dj5mxqnlsh6q7" path="res://entities/generic/generic.tscn" id="6_2tan0"]
 [ext_resource type="Texture2D" uid="uid://do4cgyej57yhs" path="res://assets/arrow_up.png" id="6_w8h56"]

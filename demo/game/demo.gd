@@ -59,8 +59,8 @@ func _on_entities(args:Dictionary):
 	
 	print("$$$ ENTITIES: %s"%str(result_data))
 	if result_data.has("Vector2"):
-		controllers_manager.move_controller(result_data['player'], result_data['Vector2'])
 		await get_tree().process_frame
+		controllers_manager.move_controller(result_data['player'], result_data['Vector2'])
 
 func spawn(reset:bool) -> void:
 	if reset:
@@ -73,7 +73,7 @@ func _on_start_screen_entered() -> void:
 	await get_tree().create_timer(0.5).timeout
 	Connection.create_subscriptions(_on_events,_on_entities)
 	await get_tree().create_timer(0.5).timeout
-	spawn(true)
+	spawn(false)
 	await get_tree().create_timer(0.5).timeout
 	get_controllers()
 	await get_tree().create_timer(0.5).timeout
