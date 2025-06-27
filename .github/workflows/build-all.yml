@@ -75,11 +75,10 @@ jobs:
         packages: build-essential pkg-config libdbus-1-dev protobuf-compiler libprotobuf-dev
         version: 1.0
 
-    - name: Install Python dependencies with cache
+    - name: Set up Python
       uses: actions/setup-python@v4
       with:
         python-version: '3.x'
-        cache: 'pip'
     
     - name: Install SCons
       run: pip install scons
@@ -146,11 +145,10 @@ jobs:
         restore-keys: |
           ${{ runner.os }}-scons-
 
-    - name: Install Python and SCons with cache
+    - name: Set up Python
       uses: actions/setup-python@v4
       with:
         python-version: '3.x'
-        cache: 'pip'
     
     - name: Install SCons
       run: pip install scons
