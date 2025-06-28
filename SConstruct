@@ -97,20 +97,21 @@ rust_lib_dir = f"external/dojo.c/target/{rust_target}/{build_mode}"
 
 if platform == "windows":
     rust_lib = ""
-    target_dll_name = f"dojo_c.{build_mode}.dll"
+    target_dll_name = f"dojo_c.dll"
     target_dll_path = f"demo/bin/{target_dll_name}"
 
     if use_mingw:
         rust_lib = f"{rust_lib_dir}/dojo_c.dll"
 
     elif is_host_windows:
-        rust_lib = f"{rust_lib_dir}/dojo_c.lib"
+        rust_lib = f"{rust_lib_dir}/dojo_c.dll.lib"
         env.Append(LINKFLAGS=['/NODEFAULTLIB:MSVCRT'])
 
-    # if os.path.exists(rust_lib):
-    #     shutil.copy2(rust_lib, target_dll_path)
-    #     print(f"{G}📋 Copied {rust_lib} -> {target_dll_path}{X}")
-    #     rust_lib = target_dll_path
+    if os.path.exists(rust_lib):
+        dll_dest = f"{rust_lib_dir}/{target_dll_name}"
+        shutil.copy2(dll_dest, target_dll_path)
+        print(f"{G}📋 Copied {dll_dest} -> {target_dll_path}{X}")
+        # rust_lib = target_dll_path
 
 else:
     rust_lib = f"{rust_lib_dir}/libdojo_c.a"
