@@ -12,49 +12,27 @@ DojoStruct::DojoStruct(DOJO::Struct struct_)
 
 DojoStruct::DojoStruct(DOJO::Member member)
 {
-    Logger::custom("Struct", member.name);
     DojoTy t_struct = DojoTy(member);
     name = t_struct.get_name();
-    Logger::custom("DOJOTY", name, " ->>><<<-");
     value = t_struct.get_value();
 }
 
 Variant DojoStruct::StructToVariant(DOJO::Struct struct_)
 {
-    Array result_array = {};
+    Dictionary result_array = {};
     name = struct_.name;
     Logger::custom("DojoStruct", name);
     std::vector<DOJO::Member> struct_child(struct_.children.data,
                                            struct_.children.data + struct_.children.data_len);
-    if (name.to_lower().contains("vec"))
-    {
-        name = "Vector2";
-        Vector2 vec = {0, 0};
-        for (const auto& struct_child_member : struct_child)
-        {
-            String member_name = struct_child_member.name;
-            DojoTy v_struct = DojoTy(struct_child_member);
-
-            if (member_name.to_lower().contains("x"))
-            {
-                vec.x = v_struct.get_value();
-            }
-            else
-            {
-                vec.y = v_struct.get_value();
-            }
-        }
-        return vec;
-    }
     Logger::custom("Struct", name);
     for (const auto& struct_child_member : struct_child)
     {
-        name = struct_child_member.name;
-        Logger::custom("Nested", name);
+        String child_name = struct_child_member.name;
+        Logger::custom("Nested", child_name);
         DojoTy t_struct = DojoTy(struct_child_member);
         Dictionary data = {};
         data[t_struct.get_name()] = t_struct.get_value();
-        result_array.append(data);
+        result_array.merge(data);
     }
     Logger::debug_extra("FINAL STRUCT", result_array);
     return result_array;

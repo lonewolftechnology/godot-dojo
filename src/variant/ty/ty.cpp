@@ -7,9 +7,6 @@
 #include "variant/ty/dojo_array.h"
 #include "variant/ty/enum.h"
 #include "variant/ty/struct.h"
-// Esto solo para debug, no va a formar parte del logger.
-#define COLORED_TYPE(class_type, type) \
-Logger::debug_extra(class_type, "[color=red][b]" type "[/b][/color] ")
 
 DojoTy::DojoTy()
 {
@@ -46,7 +43,6 @@ void DojoTy::init_form_ty(const DOJO::Ty& ty)
 {
     if (ty.tag == Tag::Primitive_)
     {
-        COLORED_TYPE("DojoTy", "primitive");
         type = Type::Primitive_;
         DojoPrimitive data = {ty.primitive};
         value = data.get_value();
@@ -54,25 +50,20 @@ void DojoTy::init_form_ty(const DOJO::Ty& ty)
     }
     else if (ty.tag == Tag::Struct_)
     {
-        COLORED_TYPE("DojoTy", "struct");
         type = Type::Struct_;
         DojoStruct data = {ty.struct_};
         value = data.get_value();
         name = data.get_name();
-        Logger::custom_color("red",name, data.get_name());
     }
     else if (ty.tag == Tag::Enum_)
     {
-        COLORED_TYPE("DojoTy", "enum");
         type = Type::Enum_;
         DojoEnum data = {ty.enum_};
         value = data.get_value();
         name = data.get_name();
-        Logger::debug_extra("TY ENUM", name);
     }
     else if (ty.tag == Tag::Array_)
     {
-        COLORED_TYPE("DojoTy", "array");
         type = Type::Array_;
         ArrayDojo data = {ty.array};
         name = data.get_name();
@@ -80,7 +71,6 @@ void DojoTy::init_form_ty(const DOJO::Ty& ty)
     }
     else if (ty.tag == Tag::Tuple_)
     {
-        COLORED_TYPE("DojoTy", "tuple");
         type = Type::Tuple_;
         ArrayDojo data = {ty.tuple};
         name = data.get_name();
@@ -88,11 +78,9 @@ void DojoTy::init_form_ty(const DOJO::Ty& ty)
     }
     else if (ty.tag == Tag::ByteArray)
     {
-        COLORED_TYPE("DojoTy", "bytearray");
         type = Type::ByteArray;
         String data = ty.byte_array;
         value = data;
-        Logger::debug_extra("TY BYTEARRAY", data);
     }
 }
 

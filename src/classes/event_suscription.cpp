@@ -14,12 +14,10 @@
 Ref<EventSubscription> EventSubscription::g_active_instance = nullptr;
 EventSubscription::EventSubscription()
 {
-    Logger::info("EventSubscription constructor called");
 }
 
 EventSubscription::~EventSubscription()
 {
-    Logger::info("EventSubscription destructor called");
     if (g_active_instance.is_valid() && g_active_instance.ptr() == this)
     {
         g_active_instance.unref();
@@ -35,7 +33,7 @@ Callable EventSubscription::get_callback() const
 void EventSubscription::set_callback(const Callable& p_callback)
 {
     callback = p_callback;
-    Logger::info("Callback set successfully");
+    Logger::info("Callback ", name," set successfully");
 }
 
 EventSubscription* EventSubscription::get_active_instance()
@@ -63,12 +61,10 @@ void EventSubscription::set_active_instance(EventSubscription* instance)
 
 void subscription_wrapper(DOJO::FieldElement entity_id, DOJO::CArrayStruct models)
 {
-    Logger::info("Event received in subscription_wrapper");
-
     EventSubscription* instance = EventSubscription::get_active_instance();
     if (instance != nullptr)
     {
-        Logger::info("Processing event - instance found");
+        Logger::info("Processing event - instance ", instance->get_name(), " found");
         instance->on_event_update(&entity_id, models);
     }
     else
@@ -79,11 +75,9 @@ void subscription_wrapper(DOJO::FieldElement entity_id, DOJO::CArrayStruct model
 
 bool EventSubscription::setup(ToriiClient* torii, const DOJO::COptionClause& event_clause, const Callable& p_callback)
 {
-    Logger::info("Setting up EventSubscription");
-
     if (torii == nullptr)
     {
-        Logger::error("ToriiClient is null");
+        Logger::error("ToriiClient not found");
         return false;
     }
 
@@ -93,26 +87,23 @@ bool EventSubscription::setup(ToriiClient* torii, const DOJO::COptionClause& eve
         Logger::error("ToriiClient->get_client() returned null");
         return false;
     }
-    Logger::info("Setting up EventSubscription - client found");
+
     callback = p_callback;
-    Logger::info("Setting up EventSubscription - callback set");
     set_active_instance(this);
-    Logger::info("Setting up EventSubscription - active instance set");
-    Logger::info("Calling client_on_entity_state_update");
     DOJO::ResultSubscription resSubscription = DOJO::client_on_entity_state_update(
         client, event_clause, subscription_wrapper
     );
 
     if (resSubscription.tag == DOJO::ErrSubscription)
     {
-        Logger::error("Error al crear suscripción de entidades: ", GET_DOJO_ERROR(resSubscription));
+        Logger::error("Subscription: ", GET_DOJO_ERROR(resSubscription));
         torii->emit_signal("subscription_error", GET_DOJO_ERROR(resSubscription));
         set_active_instance(nullptr);
         return false;
     }
 
     subscription = resSubscription.ok;
-    Logger::success("Suscripción de entidades creada exitosamente");
+    Logger::success("Subscription created successfully");
     return true;
 }
 
@@ -167,7 +158,6 @@ void EventSubscription::on_event_update(DOJO::FieldElement* entity_id, DOJO::CAr
     Dictionary result = {};
     result["entity_id"] = entity_id_string;
     result["data"] = arguments;
-    Logger::info("Calling callback with arguments");
     const Variant callback_result = callback.call(result);
     Logger::info("Event Callback", callback_result);
 }

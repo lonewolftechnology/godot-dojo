@@ -298,15 +298,24 @@ grow_horizontal = 2
 size_flags_horizontal = 4
 theme_override_styles/panel = SubResource("StyleBoxFlat_k3cyb")
 
-[node name="LabelUsername" type="Label" parent="UI/Panel"]
+[node name="HBoxContainer" type="HBoxContainer" parent="UI/Panel"]
+layout_mode = 2
+
+[node name="LabelUsername" type="Label" parent="UI/Panel/HBoxContainer"]
 unique_name_in_owner = true
 layout_mode = 2
 text = "Username:"
 
-[node name="LabelAddress" type="Label" parent="UI/Panel"]
+[node name="LabelAddress" type="Label" parent="UI/Panel/HBoxContainer"]
 unique_name_in_owner = true
+visible = false
 layout_mode = 2
 text = "Username:"
+
+[node name="LabelMoves" type="Label" parent="UI/Panel/HBoxContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "Moves:"
 
 [connection signal="pressed" from="UI/Arrows/HBoxContainer/ArrowLeft" to="." method="_on_arrow_left_pressed"]
 [connection signal="pressed" from="UI/Arrows/HBoxContainer/VBoxContainer/ArrowUp" to="." method="_on_arrow_up_pressed"]

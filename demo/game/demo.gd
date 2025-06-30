@@ -21,6 +21,7 @@ enum Directions {
 
 @onready var label_username: Label = %LabelUsername
 @onready var label_address: Label = %LabelAddress
+@onready var label_moves: Label = %LabelMoves
 
 @onready var controllers_manager: ControllersManager = %ControllersManager
 
@@ -46,9 +47,13 @@ func _on_events(args:Dictionary):
 		result_data.merge(entry)
 		
 	print("$$$ EVENTS: %s"%str(result_data))
-	if result_data.has("Vector2"):
-		controllers_manager.move_controller(result_data['player'], result_data['Vector2'])
+	if result_data.has("Vec2"):
 		await get_tree().process_frame
+		var new_pos = Vector2(result_data['Vec2']['x'], result_data['Vec2']['y'] )
+		controllers_manager.move_controller(result_data['player'], new_pos)
+	if result_data.has("remaining"):
+		await get_tree().process_frame
+		label_moves.text = "Moves: %s" % result_data['remaining']
 
 func _on_entities(args:Dictionary):
 	var data = args["data"]
@@ -58,9 +63,13 @@ func _on_entities(args:Dictionary):
 		result_data.merge(entry)
 	
 	print("$$$ ENTITIES: %s"%str(result_data))
-	if result_data.has("Vector2"):
+	if result_data.has("Vec2"):
 		await get_tree().process_frame
-		controllers_manager.move_controller(result_data['player'], result_data['Vector2'])
+		var new_pos = Vector2(result_data['Vec2']['x'], result_data['Vec2']['y'] )
+		controllers_manager.move_controller(result_data['player'], new_pos)
+	if result_data.has("remaining"):
+		await get_tree().process_frame
+		label_moves.text = "Moves: %s" % result_data['remaining']
 
 func spawn(reset:bool) -> void:
 	if reset:
@@ -122,6 +131,8 @@ func get_entities() -> void:
 						can_move = entry["can_move"]
 					if entry.has("remaining"):
 						remaining = entry["remaining"]
+
+			
 
 
 

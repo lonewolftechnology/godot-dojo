@@ -21,8 +21,6 @@ DojoEnum::~DojoEnum()
 
 Variant DojoEnum::VariantFromEnum(const DOJO::Enum &enum_)
 {
-    Logger::debug_extra("DojoEnum", enum_.name);
-    Logger::debug_extra("DojoEnum", enum_.option);
     name = enum_.name;
     value = enum_.option;
     DOJO::CArrayEnumOption options = enum_.options;

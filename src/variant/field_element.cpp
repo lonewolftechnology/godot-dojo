@@ -87,7 +87,7 @@ PackedByteArray FieldElement::to_packed_array(const void* data, const int size)
     PackedByteArray _bytes;
     _bytes.resize(size);
     memcpy(_bytes.ptrw(), data, size);
-    Logger::info("[FieldElement] -> [PackedByteArray] ", _bytes.hex_encode());
+    Logger::debug("[FieldElement] -> [PackedByteArray] ", _bytes.hex_encode());
     return _bytes;
 }
 
@@ -132,7 +132,7 @@ dojo_bindings::FieldElement FieldElement::short_string_to_felt(const String& cai
     DOJO::ResultFieldElement resCairo = DOJO::cairo_short_string_to_felt(cairo_str.utf8().get_data());
     if (resCairo.tag == DOJO::ErrFieldElement)
     {
-        Logger::debug_extra("FieldElement", "Failed to convert string to felt");
+        Logger::error("Failed to convert string to FieldElement");
         return {};
     }
     DOJO::FieldElement felt = {GET_DOJO_OK(resCairo)};
@@ -229,7 +229,6 @@ String FieldElement::parse_cairo()
         return {to_string()};
     }
     String result = GET_DOJO_OK(resCairo);
-    Logger::success("Cairo String: ", result);
     return result;
 }
 

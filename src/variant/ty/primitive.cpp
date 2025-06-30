@@ -44,21 +44,18 @@ String DojoPrimitive::FieldElementFromPrimitive(DOJO::Primitive primitive)
     switch (primitive.tag)
     {
     case DOJO::Primitive_Tag::Felt252:
-        Logger::info("Felt252");
         felt = primitive.felt252;
         break;
     case DOJO::Primitive_Tag::ClassHash:
-        Logger::info("ClassHash");
         felt = primitive.class_hash;
         break;
     case DOJO::Primitive_Tag::ContractAddress:
-        Logger::info("ContractAddress");
         felt = primitive.contract_address;
         break;
     case DOJO::Primitive_Tag::EthAddress:
-        Logger::info("EthAddress");
         felt = primitive.eth_address;
         break;
+    default: ;
     }
     return FieldElement::get_as_string(&felt);
 }
@@ -91,7 +88,6 @@ DojoPrimitive::DojoPrimitive(const DOJO::Primitive& primitive)
     case DOJO::Primitive_Tag::ContractAddress:
     case DOJO::Primitive_Tag::EthAddress:
         value = FieldElementFromPrimitive(primitive);
-        Logger::custom("PrimitiveFelt", value);
         is_felt = true;
         break;
     }

@@ -44,7 +44,6 @@ void ControllerAccount::set_session_account(DOJO::ControllerAccount* account)
     session_account = account;
     is_connected = (account != nullptr);
     emit_connection_status(is_connected);
-
 }
 
 DOJO::ControllerAccount* ControllerAccount::get_session_account() const
@@ -128,11 +127,7 @@ void ControllerAccount::disconnect_controller()
             Logger::error("Failed to clear Controller", resClear.err.message);
             return;
         }
-        else
-        {
-            Logger::success("Controller cleared");
-        }
-
+        Logger::success("Controller cleared");
         session_account = nullptr;
         is_connected = false;
         emit_signal("controller_disconnected");
@@ -232,7 +227,7 @@ void ControllerAccount::execute_raw(const Ref<DojoCall>& action)
 
     DOJO::Call call = action->build();
     uintptr_t calldata_len = action->get_size();
-    
+
     if (call.selector == nullptr || strlen(call.selector) == 0)
     {
         Logger::error("Selector inválido");
