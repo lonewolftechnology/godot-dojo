@@ -6,6 +6,7 @@
 .PHONY: linux windows macos web
 .PHONY: linux-x64 windows-x64 macos-x64 macos-arm64 web-wasm32
 .PHONY: quick dev-linux dev-windows dev-macos clean-build clean-cache
+.PHONY: android android-template_debug android-template_release
 
 # Configuration
 NPROC := $(shell nproc 2>/dev/null || sysctl -n hw.ncpu 2>/dev/null || echo 4)
@@ -73,11 +74,11 @@ HOST_TARGET := $(HOST_PLATFORM)-$(HOST_ARCH_MAPPED)
 
 # Colors (with Windows compatibility)
 ifeq ($(HOST_PLATFORM),windows)
-    B := 
-    G := 
-    Y := 
-    R := 
-    X := 
+    B :=
+    G :=
+    Y :=
+    R :=
+    X :=
 else
     B := $(shell printf '\033[94m')
     G := $(shell printf '\033[92m')
@@ -330,7 +331,7 @@ help:
 	@echo ""
 	@echo "$(G)Platform debug/release only:$(X)"
 	@echo "  make linux-debug    make linux-release"
-	@echo "  make windows-debug  make windows-release"  
+	@echo "  make windows-debug  make windows-release"
 	@echo "  make macos-debug    make macos-release"
 	@echo "  make web-debug      make web-release $(R)[EXPERIMENTAL]$(X)"
 	@echo ""
@@ -518,5 +519,24 @@ cache-info:
 	@echo "$(B)📊 Cache Information$(X)"
 	@$(MAKE) --no-print-directory _cache-stats
 	@echo "$(Y)💡 Use 'make clean-cache' to force full rebuild$(X)"
+
+
+
+# ============================================================================
+# ANDROID TARGETS
+# ============================================================================
+
+android: android-template_debug android-template_release
+	@echo "$(G)✅ Builds de Android (debug y release) completadas.$(X)"
+
+android-template_debug:
+	@echo "$(B)📦 Compilando Android: template_debug...$(X)"
+	@$(SCONS) platform=android target=template_debug
+	@echo "$(G)✅ Build de Android (template_debug) completado.$(X)"
+
+android-template_release:
+	@echo "$(B)📦 Compilando Android: template_release...$(X)"
+	@$(SCONS) platform=android target=template_release
+	@echo "$(G)✅ Build de Android (template_release) completado.$(X)"
 
 .DEFAULT_GOAL := help

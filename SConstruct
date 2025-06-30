@@ -42,7 +42,8 @@ targets = {
     ("linux", "arm64"): "aarch64-unknown-linux-gnu",
     ("macos", "x86_64"): "x86_64-apple-darwin",
     ("macos", "arm64"): "aarch64-apple-darwin",
-    ("web", "wasm32"): "wasm32-unknown-unknown"
+    ("web", "wasm32"): "wasm32-unknown-unknown",
+    ("android", "arm64"): "aarch64-linux-android"
 }
 rust_target = targets.get((platform, arch), "x86_64-unknown-linux-gnu")
 
@@ -79,7 +80,10 @@ else:
     subprocess.run(cmd, check=True, cwd="external/dojo.c")
 
 # Configurar biblioteca
-env['SHLIBPREFIX'] = ''
+if platform != "android":
+    # Android build requires lib prefix
+    env['SHLIBPREFIX'] = ''
+prefix = env.subst('$SHLIBPREFIX')
 env.Append(CPPPATH=["src/", "include/", "external/dojo.c"])
 
 if platform == "linux":
@@ -131,7 +135,7 @@ suffix_map = {
     "web": f".web.{target}.wasm32.wasm"
 }
 
-lib_name = f"demo/bin/godot-dojo{suffix_map.get(platform, f'.{platform}.{target}.{arch}.so')}"
+lib_name = f"demo/bin/{prefix}godot-dojo{suffix_map.get(platform, f'.{platform}.{target}.{arch}.so')}"
 library = env.SharedLibrary(target=lib_name, source=sources)
 
 # Generar .gdextension
