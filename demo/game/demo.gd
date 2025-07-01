@@ -26,6 +26,8 @@ enum Directions {
 @onready var controllers_manager: ControllersManager = %ControllersManager
 
 func _ready() -> void:
+	OS.set_environment("RUST_BACKTRACE", "full")
+	OS.set_environment("RUST_LOG", "debug")
 	Connection.controller_account.current_user_info.connect(_on_controller_current_user_info)
 
 func _on_controller_current_user_info(data:Dictionary) -> void:
@@ -117,27 +119,19 @@ func get_entities() -> void:
 			var position
 			var can_move
 			var remaining
-			if model.has("vec"):
-				for entry:Dictionary in model["vec"]:
-					if entry.has("player"):
-						print(entry)
-						id = entry["player"]
-					if entry.has("Vector2"):
-						position = entry["Vector2"]
-				controllers_manager.move_controller(id, position)
-			if model.has("can_move"):
-				for entry:Dictionary in model["can_move"]:
+			for key in model:
+				var entry:Dictionary = model[key]
+				if entry.has("Vec2"):
+					id = entry["player"]
+					var vec = entry["Vec2"]
+					position = Vector2(vec['x'], vec['y'])
+					controllers_manager.move_controller(id, position)
+				if entry.has("can_move"):
 					if entry.has("can_move"):
 						can_move = entry["can_move"]
 					if entry.has("remaining"):
 						remaining = entry["remaining"]
-
-			
-
-
-
-
-
+						
 func _move(dir:Directions) -> void:
 	move_call.calldata[0] = dir
 	Connection.controller_account.execute_from_outside(move_call)

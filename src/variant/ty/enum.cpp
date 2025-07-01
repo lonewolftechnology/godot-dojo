@@ -26,12 +26,12 @@ Variant DojoEnum::VariantFromEnum(const DOJO::Enum &enum_)
     DOJO::CArrayEnumOption options = enum_.options;
     std::vector<DOJO::EnumOption> enum_vector(options.data, options.data + options.data_len);
 
-    string_option = enum_vector[enum_.option].name;
+    // string_option = enum_vector[enum_.option].name;
 
     Dictionary result = {};
     result["name"] = name;
     result["value"] = value;
-    result["string_value"] = string_option;
+    // result["string_value"] = string_option;
     Logger::debug_extra("DojoEnumRRRRR", result);
     return result;
 }

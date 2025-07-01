@@ -17,7 +17,7 @@ DojoTy::~DojoTy()
 {
 }
 
-DojoTy::DojoTy(const DOJO::Ty &ty)
+DojoTy::DojoTy(const DOJO::Ty& ty)
 {
     init_form_ty(ty);
 }
@@ -27,16 +27,22 @@ DojoTy::DojoTy(const DOJO::Ty* ty)
     init_form_ty(*ty);
 }
 
-DojoTy::DojoTy(const DOJO::Member &member)
+DojoTy::DojoTy(const DOJO::Member& member)
 {
     name = member.name;
     Logger::custom("Member", name);
-    init_form_ty(*member.ty);
+    if (member.ty != nullptr)
+    {
+        init_form_ty(*member.ty);
+    }
+    else
+    {
+        Logger::custom("DojoTy", "Member ty is null");
+    }
 }
 
 DojoTy::DojoTy(const dojo_bindings::CArrayTy& array_ty)
 {
-
 }
 
 void DojoTy::init_form_ty(const DOJO::Ty& ty)

@@ -30,7 +30,11 @@ ControllerAccount::ControllerAccount()
 ControllerAccount::~ControllerAccount()
 {
     // disconnect_controller();
-    singleton = nullptr;
+    session_account = nullptr;
+    if (singleton != nullptr && singleton == this)
+    {
+        singleton = nullptr;
+    }
     Logger::debug_extra("ControllerAccount", "DESTRUCTOR CALLED");
 }
 
@@ -262,6 +266,7 @@ void ControllerAccount::execute_from_outside(const Ref<DojoCall>& action)
     }
     DOJO::Call call = action->build();
     uintptr_t calldata_len = action->get_size();
+    Logger::debug_extra("CALLDATA", Variant(calldata_len));
 
     DOJO::ResultFieldElement result = DOJO::controller_execute_from_outside(
         session_account, &call, calldata_len
