@@ -1,4 +1,4 @@
-[gd_scene load_steps=21 format=3 uid="uid://cn1gdwiythfn2"]
+[gd_scene load_steps=22 format=3 uid="uid://cn1gdwiythfn2"]
 
 [ext_resource type="Script" uid="uid://dvbwyukos638c" path="res://game/demo.gd" id="1_5nuje"]
 [ext_resource type="Texture2D" uid="uid://blljslsxyx8em" path="res://assets/tile.png" id="2_43tmy"]
@@ -8,6 +8,7 @@
 [ext_resource type="Texture2D" uid="uid://bls0ryaavsbvd" path="res://assets/arrow_left.png" id="4_p8iq3"]
 [ext_resource type="DojoCall" uid="uid://dv3gp8eh77oho" path="res://resources/move_call.tres" id="4_w8h56"]
 [ext_resource type="Texture2D" uid="uid://bqdfqrx7ajogy" path="res://assets/arrow_left_p.png" id="5_2tan0"]
+[ext_resource type="DojoCall" uid="uid://cxtt744f5nyle" path="res://resources/move_to_call.tres" id="5_r5x6q"]
 [ext_resource type="PackedScene" uid="uid://dj5mxqnlsh6q7" path="res://entities/generic/generic.tscn" id="6_2tan0"]
 [ext_resource type="Texture2D" uid="uid://do4cgyej57yhs" path="res://assets/arrow_up.png" id="6_w8h56"]
 [ext_resource type="Texture2D" uid="uid://d1cuwkkgp8hyv" path="res://assets/arrow_up_p.png" id="7_r5x6q"]
@@ -37,6 +38,7 @@ script = ExtResource("1_5nuje")
 spawn_call = ExtResource("2_k3cyb")
 spawn_reset_call = ExtResource("3_p8iq3")
 move_call = ExtResource("4_w8h56")
+move_to = ExtResource("5_r5x6q")
 
 [node name="Parallax" type="ParallaxBackground" parent="."]
 layer = -1
@@ -250,40 +252,85 @@ theme_override_constants/margin_top = 32
 theme_override_constants/margin_right = 32
 theme_override_constants/margin_bottom = 32
 
-[node name="HBoxContainer" type="HBoxContainer" parent="UI/Arrows"]
+[node name="VBoxContainer" type="VBoxContainer" parent="UI/Arrows"]
+layout_mode = 2
+
+[node name="HBoxContainer" type="HBoxContainer" parent="UI/Arrows/VBoxContainer"]
 texture_filter = 1
 layout_mode = 2
 alignment = 1
 
-[node name="ArrowLeft" type="TextureButton" parent="UI/Arrows/HBoxContainer"]
+[node name="ArrowLeft" type="TextureButton" parent="UI/Arrows/VBoxContainer/HBoxContainer"]
 layout_mode = 2
 size_flags_vertical = 12
 texture_normal = ExtResource("4_p8iq3")
 texture_pressed = ExtResource("5_2tan0")
 texture_hover = ExtResource("4_p8iq3")
 
-[node name="VBoxContainer" type="VBoxContainer" parent="UI/Arrows/HBoxContainer"]
+[node name="VBoxContainer" type="VBoxContainer" parent="UI/Arrows/VBoxContainer/HBoxContainer"]
 layout_mode = 2
 alignment = 2
 
-[node name="ArrowUp" type="TextureButton" parent="UI/Arrows/HBoxContainer/VBoxContainer"]
+[node name="ArrowUp" type="TextureButton" parent="UI/Arrows/VBoxContainer/HBoxContainer/VBoxContainer"]
 layout_mode = 2
 texture_normal = ExtResource("6_w8h56")
 texture_pressed = ExtResource("7_r5x6q")
 texture_hover = ExtResource("6_w8h56")
 
-[node name="ArrowDown" type="TextureButton" parent="UI/Arrows/HBoxContainer/VBoxContainer"]
+[node name="ArrowDown" type="TextureButton" parent="UI/Arrows/VBoxContainer/HBoxContainer/VBoxContainer"]
 layout_mode = 2
 texture_normal = ExtResource("8_3jxqj")
 texture_pressed = ExtResource("9_yxvbm")
 texture_hover = ExtResource("8_3jxqj")
 
-[node name="ArrowRight" type="TextureButton" parent="UI/Arrows/HBoxContainer"]
+[node name="ArrowRight" type="TextureButton" parent="UI/Arrows/VBoxContainer/HBoxContainer"]
 layout_mode = 2
 size_flags_vertical = 12
 texture_normal = ExtResource("10_qlbmn")
 texture_pressed = ExtResource("11_0joe1")
 texture_hover = ExtResource("10_qlbmn")
+
+[node name="PanelContainer" type="PanelContainer" parent="UI/Arrows/VBoxContainer"]
+custom_minimum_size = Vector2(0, 70)
+layout_mode = 2
+
+[node name="VBoxContainer" type="VBoxContainer" parent="UI/Arrows/VBoxContainer/PanelContainer"]
+layout_mode = 2
+
+[node name="HBoxContainer2" type="HBoxContainer" parent="UI/Arrows/VBoxContainer/PanelContainer/VBoxContainer"]
+custom_minimum_size = Vector2(0, 35)
+layout_mode = 2
+
+[node name="Label" type="Label" parent="UI/Arrows/VBoxContainer/PanelContainer/VBoxContainer/HBoxContainer2"]
+layout_mode = 2
+text = "Amount"
+
+[node name="StepsAmount" type="TextEdit" parent="UI/Arrows/VBoxContainer/PanelContainer/VBoxContainer/HBoxContainer2"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+placeholder_text = "Amount"
+
+[node name="HBoxContainer" type="HBoxContainer" parent="UI/Arrows/VBoxContainer/PanelContainer/VBoxContainer"]
+custom_minimum_size = Vector2(0, 35)
+layout_mode = 2
+
+[node name="Vx" type="TextEdit" parent="UI/Arrows/VBoxContainer/PanelContainer/VBoxContainer/HBoxContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+placeholder_text = "x"
+
+[node name="Vy" type="TextEdit" parent="UI/Arrows/VBoxContainer/PanelContainer/VBoxContainer/HBoxContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+placeholder_text = "y"
+
+[node name="MoveTo" type="Button" parent="UI/Arrows/VBoxContainer/PanelContainer/VBoxContainer/HBoxContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Move"
 
 [node name="StartScreen" parent="UI" instance=ExtResource("12_s1sno")]
 
@@ -317,8 +364,9 @@ unique_name_in_owner = true
 layout_mode = 2
 text = "Moves:"
 
-[connection signal="pressed" from="UI/Arrows/HBoxContainer/ArrowLeft" to="." method="_on_arrow_left_pressed"]
-[connection signal="pressed" from="UI/Arrows/HBoxContainer/VBoxContainer/ArrowUp" to="." method="_on_arrow_up_pressed"]
-[connection signal="pressed" from="UI/Arrows/HBoxContainer/VBoxContainer/ArrowDown" to="." method="_on_arrow_down_pressed"]
-[connection signal="pressed" from="UI/Arrows/HBoxContainer/ArrowRight" to="." method="_on_arrow_right_pressed"]
+[connection signal="pressed" from="UI/Arrows/VBoxContainer/HBoxContainer/ArrowLeft" to="." method="_on_arrow_left_pressed"]
+[connection signal="pressed" from="UI/Arrows/VBoxContainer/HBoxContainer/VBoxContainer/ArrowUp" to="." method="_on_arrow_up_pressed"]
+[connection signal="pressed" from="UI/Arrows/VBoxContainer/HBoxContainer/VBoxContainer/ArrowDown" to="." method="_on_arrow_down_pressed"]
+[connection signal="pressed" from="UI/Arrows/VBoxContainer/HBoxContainer/ArrowRight" to="." method="_on_arrow_right_pressed"]
+[connection signal="pressed" from="UI/Arrows/VBoxContainer/PanelContainer/VBoxContainer/HBoxContainer/MoveTo" to="." method="_on_move_to_pressed"]
 [connection signal="entered" from="UI/StartScreen" to="." method="_on_start_screen_entered"]

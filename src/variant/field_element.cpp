@@ -127,7 +127,7 @@ dojo_bindings::FieldElement FieldElement::from_string(const String& hex_str, siz
     return result;
 }
 
-dojo_bindings::FieldElement FieldElement::short_string_to_felt(const String& cairo_str)
+DOJO::FieldElement FieldElement::short_string_to_felt(const String& cairo_str)
 {
     DOJO::ResultFieldElement resCairo = DOJO::cairo_short_string_to_felt(cairo_str.utf8().get_data());
     if (resCairo.tag == DOJO::ErrFieldElement)
@@ -218,6 +218,28 @@ String FieldElement::get_as_string_no_ptr(DOJO::FieldElement _felt)
     };
 
     return ret;
+}
+
+DOJO::CArrayFieldElement FieldElement::bytearray_serialize(const String& msg)
+{
+    DOJO::ResultCArrayFieldElement result = DOJO::bytearray_serialize(msg.utf8().get_data());
+    if (result.tag == DOJO::ErrCArrayFieldElement)
+    {
+        Logger::error("Failed to serialize string");
+        return {};
+    }
+    return GET_DOJO_OK(result);
+}
+
+DOJO::FieldElement FieldElement::cairo_short_string_to_felt(const String& msg)
+{
+    DOJO::ResultFieldElement result = DOJO::cairo_short_string_to_felt(msg.utf8().get_data());
+    if (result.tag == DOJO::ErrFieldElement)
+    {
+        Logger::error("Failed to convert string to FieldElement");
+        return {};
+    }
+    return GET_DOJO_OK(result);
 }
 
 String FieldElement::parse_cairo()

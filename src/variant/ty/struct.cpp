@@ -21,19 +21,16 @@ Variant DojoStruct::StructToVariant(DOJO::Struct struct_)
 {
     Dictionary result_array = {};
     name = struct_.name;
-    Logger::custom("DojoStruct", name);
     std::vector<DOJO::Member> struct_child(struct_.children.data,
                                            struct_.children.data + struct_.children.data_len);
-    Logger::custom("Struct", name);
     for (const auto& struct_child_member : struct_child)
     {
         String child_name = struct_child_member.name;
-        Logger::custom("Nested", child_name);
         DojoTy t_struct = DojoTy(struct_child_member);
         Dictionary data = {};
         data[t_struct.get_name()] = t_struct.get_value();
         result_array.merge(data);
     }
-    Logger::debug_extra("FINAL STRUCT", result_array);
+    Logger::debug_extra("STRUCT", result_array);
     return result_array;
 }

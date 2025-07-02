@@ -225,19 +225,46 @@ void ControllerAccount::execute_from_outside(const Ref<DojoCall>& action)
     std::string selector = action->get_selector_ctr();
 
     uintptr_t calldata_len = action->get_size();
-    PackedStringArray args = action->get_calldata();
+    Array args = action->get_calldata();
     DOJO::FieldElement* felts = nullptr;
     Logger::debug_extra("Controller", "Building Call");
     if (calldata_len > 0)
     {
+        Array final_args = {};
+
+        for (int i = 0; i < calldata_len; i++)
+        {
+            Variant arg = args[i];
+            switch (arg.get_type())
+            {
+            case Variant::Type::ARRAY:
+                {
+                    Logger::custom("Calldata", arg.stringify());
+                    Array v_array = arg;
+                    // final_args.push_back(v_array.size());
+                    final_args.append_array(arg);
+                    break;
+                }
+            default:
+                {
+                    Logger::custom("Calldata", Variant::get_type_name(arg.get_type()));
+                    Logger::custom("Calldata", arg.stringify());
+                    final_args.push_back(arg);
+                    break;
+                }
+            }
+        }
+        Logger::custom("CALLDATA", calldata_len);
+        calldata_len = final_args.size();
+        Logger::debug_extra("CALLDATA", calldata_len, Variant(final_args).stringify());
         felts = static_cast<DOJO::FieldElement *>(malloc(sizeof(*felts) * calldata_len));
         memset(felts, 0, sizeof(*felts) * calldata_len);
         for (int i = 0; i < calldata_len; i++)
         {
-            felts[i] = FieldElement::from_string(args[i]);
+            Variant arg = final_args[i];
+            felts[i] = FieldElement::from_string(arg.stringify());
         }
     }
-
     DOJO::Call call = {
         actions,
         selector.c_str(),

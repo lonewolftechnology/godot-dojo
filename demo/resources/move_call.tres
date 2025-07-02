@@ -3,4 +3,4 @@
 [resource]
 to = "0x03ee3ddd82fd914aaa2c03bf6d0b1a90a4d7e24a6c9934c037b2ee9f5f7acb5b"
 selector = "move"
-calldata = PackedStringArray("0", "15")
+calldata = ["0", 0.0]

@@ -16,7 +16,7 @@ class DojoCall : public Resource
 
     String to;
     String selector;
-    PackedStringArray calldata;
+    Array calldata;
 
 public:
     DojoCall()
@@ -44,7 +44,7 @@ public:
         emit_changed();
     };
 
-    PackedStringArray get_calldata() const { return calldata; };
+    Array get_calldata() const { return calldata; };
 
     void set_calldata(const Array& p_calldata)
     {
@@ -71,7 +71,7 @@ protected:
 
         ClassDB::bind_method(D_METHOD("get_calldata"), &DojoCall::get_calldata);
         ClassDB::bind_method(D_METHOD("set_calldata", "calldata"), &DojoCall::set_calldata);
-        ADD_PROPERTY(PropertyInfo(Variant::PACKED_STRING_ARRAY, "calldata"), "set_calldata", "get_calldata");
+        ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "calldata"), "set_calldata", "get_calldata");
     };
 };
 
