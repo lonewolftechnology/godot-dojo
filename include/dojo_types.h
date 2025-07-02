@@ -59,7 +59,7 @@ struct Signature;
 struct ToriiClient;
 struct Provider;
 struct ControllerAccount;
-struct Account;
+struct Account; //Deprecated
 struct Controller;
 struct Event;
 struct Subscription;
@@ -116,7 +116,7 @@ struct PageTokenCollection;
 
 struct ResultToriiClient;
 struct ResultProvider;
-struct ResultAccount;
+struct ResultAccount; //Deprecated
 struct ResultControllerAccount;
 struct ResultSubscription;
 struct ResultPageEntity;

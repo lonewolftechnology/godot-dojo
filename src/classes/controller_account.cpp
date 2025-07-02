@@ -213,50 +213,6 @@ DOJO::Call create_call_from_data(const String& contract_address, const String& s
     return call;
 }
 
-void ControllerAccount::execute_raw(const Ref<DojoCall>& action)
-{
-    if (!is_controller_connected())
-    {
-        Logger::error("ControllerAccount no está conectado");
-        emit_signal("transaction_failed", "Cuenta no conectada");
-        return;
-    }
-
-    if (action.is_null())
-    {
-        Logger::error("DojoCall es null");
-        emit_signal("transaction_failed", "Acción inválida");
-        return;
-    }
-
-    DOJO::Call call = action->build();
-    uintptr_t calldata_len = action->get_size();
-
-    if (call.selector == nullptr || strlen(call.selector) == 0)
-    {
-        Logger::error("Selector inválido");
-        emit_signal("transaction_failed", "Selector inválido");
-        return;
-    }
-
-    DOJO::ResultFieldElement result = DOJO::controller_execute_raw(
-        session_account, &call, calldata_len
-    );
-
-    if (result.tag == DOJO::ErrFieldElement)
-    {
-        Logger::error("Error al ejecutar transacción: ", GET_DOJO_ERROR(result));
-        emit_signal("transaction_failed", GET_DOJO_ERROR(result));
-    }
-    else
-    {
-        Logger::debug_extra("RAW", "SUCEEDED");
-        DOJO::wait_for_transaction(provider, GET_DOJO_OK(result));
-        Logger::success_extra("EXECUTED", call.selector);
-    }
-}
-
-
 void ControllerAccount::execute_from_outside(const Ref<DojoCall>& action)
 {
     if (!is_controller_connected())
@@ -264,13 +220,38 @@ void ControllerAccount::execute_from_outside(const Ref<DojoCall>& action)
         Logger::error("ControllerAccount no está conectado");
         emit_signal("transaction_failed", "Cuenta no conectada");
     }
-    DOJO::Call call = action->build();
-    uintptr_t calldata_len = action->get_size();
-    Logger::debug_extra("CALLDATA", Variant(calldata_len));
+    // Refactor based on UE implementation
+    DOJO::FieldElement actions = FieldElement::from_string(action->get_to());
+    std::string selector = action->get_selector_ctr();
 
+    uintptr_t calldata_len = action->get_size();
+    PackedStringArray args = action->get_calldata();
+    DOJO::FieldElement* felts = nullptr;
+    Logger::debug_extra("Controller", "Building Call");
+    if (calldata_len > 0)
+    {
+        felts = static_cast<DOJO::FieldElement *>(malloc(sizeof(*felts) * calldata_len));
+        memset(felts, 0, sizeof(*felts) * calldata_len);
+        for (int i = 0; i < calldata_len; i++)
+        {
+            felts[i] = FieldElement::from_string(args[i]);
+        }
+    }
+
+    DOJO::Call call = {
+        actions,
+        selector.c_str(),
+        {
+            felts,
+            calldata_len
+        }
+    };
+
+    Logger::debug_extra("CALL", Variant(call.selector));
     DOJO::ResultFieldElement result = DOJO::controller_execute_from_outside(
-        session_account, &call, calldata_len
+        session_account, &call, 1
     );
+    Logger::debug_extra("CALL", "Executed");
     if (result.tag == DOJO::ErrFieldElement)
     {
         Logger::error(GET_DOJO_ERROR(result));

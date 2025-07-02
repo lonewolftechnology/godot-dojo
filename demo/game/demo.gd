@@ -133,7 +133,7 @@ func get_entities() -> void:
 						remaining = entry["remaining"]
 						
 func _move(dir:Directions) -> void:
-	move_call.calldata[0] = dir
+	move_call.calldata[0] = str(dir)
 	Connection.controller_account.execute_from_outside(move_call)
 
 func _on_arrow_left_pressed() -> void:

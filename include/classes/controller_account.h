@@ -54,7 +54,6 @@ public:
     String get_chain_id() const;
     void set_chain_id(const String& p_chain_id) { chain_id = p_chain_id; }
 
-    void execute_raw(const Ref<DojoCall>& action);
     void execute_from_outside(const Ref<DojoCall>& action);
 
     Dictionary get_account_info() const;
@@ -83,8 +82,6 @@ protected:
         ClassDB::bind_method(D_METHOD("get_username"), &ControllerAccount::get_username);
         ClassDB::bind_method(D_METHOD("get_address"), &ControllerAccount::get_address);
 
-        ClassDB::bind_method(D_METHOD("execute_raw", "action"),
-                             &ControllerAccount::execute_raw);
         ClassDB::bind_method(D_METHOD("execute_from_outside", "action"),
                              &ControllerAccount::execute_from_outside);
 

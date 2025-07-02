@@ -16,12 +16,7 @@ class DojoCall : public Resource
 
     String to;
     String selector;
-    Array calldata;
-
-    DOJO::FieldElement stored_to;
-    std::string stored_selector;
-    std::vector<DOJO::FieldElement> stored_calldata;
-    DOJO::CArrayFieldElement c_array_calldata;
+    PackedStringArray calldata;
 
 public:
     DojoCall()
@@ -41,6 +36,7 @@ public:
     };
 
     String get_selector() const { return selector; };
+    const char* get_selector_ctr() const { return selector.utf8().get_data(); };
 
     void set_selector(const String& p_selector)
     {
@@ -48,7 +44,7 @@ public:
         emit_changed();
     };
 
-    Array get_calldata() const { return calldata; };
+    PackedStringArray get_calldata() const { return calldata; };
 
     void set_calldata(const Array& p_calldata)
     {
@@ -59,63 +55,7 @@ public:
     uintptr_t get_size()
     {
         Logger::debug_extra("Call", "calldata size: ", calldata.size());
-        uintptr_t size = 1;
-        if (calldata.size() > 0)
-        {
-            size = calldata.size();
-        }
-        Logger::debug_extra("Call", "final calldata size: ", size);
-        return size;
-    }
-
-    DOJO::Call build()
-    {
-        DOJO::Call call = {};
-
-        stored_to = FieldElement::from_string(to);
-        stored_selector = selector.utf8().get_data();
-
-        call.to = stored_to;
-        call.selector = stored_selector.c_str();
-
-        if (!calldata.is_empty())
-        {
-            Logger::debug("Building Calldata");
-            stored_calldata.clear();
-            stored_calldata.reserve(calldata.size());
-
-            for (int i = 0; i < calldata.size(); i++)
-            {
-                // Ref<FieldElement> felt;
-                // felt.instantiate();
-                DOJO::FieldElement data_felt = {};
-                String data_type = Variant::get_type_name(calldata[i].get_type());
-                Logger::info("data type: ", data_type);
-                if ("int" == data_type)
-                {
-                    data_felt = FieldElement::from_enum(calldata[i]);
-                }
-                else
-                {
-                    data_felt = FieldElement::from_string(calldata[i]);
-                }
-
-                Logger::debug_extra("Call Build", FieldElement::get_as_string(&data_felt));
-
-                stored_calldata.push_back(data_felt);
-            }
-
-            c_array_calldata.data = stored_calldata.data();
-            c_array_calldata.data_len = stored_calldata.size();
-            call.calldata = c_array_calldata;
-        }
-        else
-        {
-            Logger::debug_extra("Call Build", "no calldata found, ignoring");
-            // call.calldata = {};
-        }
-
-        return call;
+        return calldata.size();
     }
 
 protected:
@@ -131,7 +71,7 @@ protected:
 
         ClassDB::bind_method(D_METHOD("get_calldata"), &DojoCall::get_calldata);
         ClassDB::bind_method(D_METHOD("set_calldata", "calldata"), &DojoCall::set_calldata);
-        ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "calldata"), "set_calldata", "get_calldata");
+        ADD_PROPERTY(PropertyInfo(Variant::PACKED_STRING_ARRAY, "calldata"), "set_calldata", "get_calldata");
     };
 };
 
