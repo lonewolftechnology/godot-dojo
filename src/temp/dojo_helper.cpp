@@ -1,90 +1,134 @@
 #include "temp/dojo_helper.h"
-#include <godot_cpp/classes/engine.hpp>
 
+#include "godot_cpp/classes/engine.hpp"
+#include "godot_cpp/classes/project_settings.hpp"
 #include "tools/logger.h"
 
-void DojoHelpers::_bind_methods() {
-    ClassDB::bind_method(D_METHOD("set_contracts_addresses", "addresses"), &DojoHelpers::set_contracts_addresses);
-    ClassDB::bind_method(D_METHOD("callback_proxy", "key", "models"), &DojoHelpers::callback_proxy);
-}
+DojoHelpers* DojoHelpers::singleton = nullptr;
 
-DojoHelpers::DojoHelpers() {}
-DojoHelpers::~DojoHelpers() {}
-
-void DojoHelpers::set_contracts_addresses(const Dictionary &addresses) {
-    Logger::info("Llamada a set_contracts_addresses: ", addresses);
-}
-void DojoHelpers::execute_from_outside(const Dictionary &account, const String &to, const String &selector, const String &calldata_parameter) {
-    Logger::info("Llamada a execute_from_outside: to=", to, " selector=", selector, " params=", calldata_parameter, " cuenta=", account);
-}
-
-void DojoHelpers::callback_proxy(const Variant &key, const Array &models) {
-    Logger::info("Llamada a callback_proxy, key: ", key, ", models len: ", models.size());
-}
-
-// ------------------- TypeConverter -----------------------
-
-String TypeConverter::to_string(const Variant &member) {
-    if (member.get_type() == Variant::STRING)
-        return member;
-    return String("[No String]");
-}
-
-int TypeConverter::to_int(const Variant &member) {
-    if (member.get_type() == Variant::INT)
-        return member;
-    return 0;
-}
-
-int64_t TypeConverter::to_long(const Variant &member) {
-    if (member.get_type() == Variant::INT)
-        return static_cast<int64_t>(int(member));
-    if (member.get_type() == Variant::FLOAT)
-        return static_cast<int64_t>(double(member));
-    return 0;
-}
-
-bool TypeConverter::to_bool(const Variant &member) {
-    if (member.get_type() == Variant::BOOL)
-        return member;
-    return false;
-}
-
-int TypeConverter::to_direction(const Variant &member) {
-    // Adaptar si tienes un enum de dirección real.
-    if (member.get_type() == Variant::INT)
-        return member;
-    return -1;
-}
-
-Vector2 TypeConverter::to_vec2(const Variant &member) {
-    if (member.get_type() == Variant::VECTOR2)
-        return member;
-    return Vector2();
-}
-
-template<typename T>
-Array TypeConverter::to_array(const Variant &member) {
-    Array arr;
-    if (member.get_type() == Variant::ARRAY) {
-        arr = member;
-    }
-    // DojoArray
-    return arr;
-}
-
-// ------------------- Funciones template ------------------
-
-template<typename T>
-Array convert_to_felt_hexa(const T &value, const String &value_type) {
-    Array arr;
-    // wip tests DojoTy-Primitive-etc
-    return arr;
-}
-
-template <typename T>
-void convert_ty(const Variant& member, const String& expected_name, const String& expected_type, T& output)
+void DojoHelpers::_bind_methods()
 {
-    Logger::info("Llamada a convert_ty con expected_name: ", expected_name, " expected_type: ", expected_type);
-    // tests
+    ClassDB::bind_static_method("DojoHelpers", D_METHOD("convert_to_string_array", "var"), &DojoHelpers::convert_to_string_array);
+    ClassDB::bind_static_method("DojoHelpers", D_METHOD("get_katana_url"), &DojoHelpers::get_katana_url);
+    ClassDB::bind_static_method("DojoHelpers", D_METHOD("get_setting", "setting"), &DojoHelpers::get_setting);
+    ClassDB::bind_static_method("DojoHelpers", D_METHOD("float_to_fixed", "value", "precision"), &DojoHelpers::float_to_fixed);
+    ClassDB::bind_static_method("DojoHelpers", D_METHOD("fixed_to_float", "value", "precision"), &DojoHelpers::fixed_to_float);
+    ClassDB::bind_static_method("DojoHelpers", D_METHOD("float_to_fixed_64", "value"), &DojoHelpers::float_to_fixed_64);
+    ClassDB::bind_static_method("DojoHelpers", D_METHOD("fixed_to_float_64", "value"), &DojoHelpers::fixed_to_float_64);
+    ClassDB::bind_static_method("DojoHelpers", D_METHOD("float_to_fixed_128", "value"), &DojoHelpers::float_to_fixed_128);
+    ClassDB::bind_static_method("DojoHelpers", D_METHOD("fixed_to_float_128", "value"), &DojoHelpers::fixed_to_float_128);
+    ClassDB::bind_static_method("DojoHelpers", D_METHOD("float_to_fixed_256", "value"), &DojoHelpers::float_to_fixed_256);
+    ClassDB::bind_static_method("DojoHelpers", D_METHOD("fixed_to_float_256", "value"), &DojoHelpers::fixed_to_float_256);
+}
+
+DojoHelpers::DojoHelpers()
+{
+    singleton = this;
+}
+
+DojoHelpers::~DojoHelpers()
+{
+    singleton = nullptr;
+}
+
+String DojoHelpers::get_katana_url()
+{
+    return get_setting("dojo/config/katana/rpc_url");
+}
+
+Variant DojoHelpers::get_setting(const String& setting)
+{
+    ProjectSettings* settings = ProjectSettings::get_singleton();
+    if (settings->has_setting(setting))
+    {
+        return settings->get_setting(setting);
+    }
+    Logger::error("Setting not found", setting);
+    return Variant();
+}
+
+int DojoHelpers::float_to_fixed(const float& value, const int& precision)
+{
+    return static_cast<int32_t>(value * (1 << precision));
+}
+
+float DojoHelpers::fixed_to_float(const int& value, const int& precision)
+{
+    return value / static_cast<float>(1 << precision);
+}
+
+int DojoHelpers::float_to_fixed_64(const float& value)
+{
+    return float_to_fixed(value, get_setting("dojo/config/fixed_point/64"));
+}
+
+float DojoHelpers::fixed_to_float_64(const int& value)
+{
+    return fixed_to_float(value, get_setting("dojo/config/fixed_point/64"));
+}
+
+int DojoHelpers::float_to_fixed_128(const float& value)
+{
+    return float_to_fixed(value, get_setting("dojo/config/fixed_point/128"));
+}
+
+float DojoHelpers::fixed_to_float_128(const int& value)
+{
+    return fixed_to_float(value, get_setting("dojo/config/fixed_point/128"));
+}
+
+int DojoHelpers::float_to_fixed_256(const float& value)
+{
+    return float_to_fixed(value, get_setting("dojo/config/fixed_point/256"));
+}
+
+float DojoHelpers::fixed_to_float_256(const int& value)
+{
+    return fixed_to_float(value, get_setting("dojo/config/fixed_point/256"));
+}
+
+TypedArray<String> DojoHelpers::convert_to_string_array(const Variant& var)
+{
+    TypedArray<String> arr;
+    switch (var.get_type())
+    {
+    case Variant::DICTIONARY:
+        {
+            Dictionary dict = var;
+            Array keys = dict.keys();
+            for (int i = 0; i < keys.size(); ++i)
+            {
+                Variant val = dict[keys[i]];
+                // arr.push_back(keys[i]);
+                arr.push_back(val.operator String());
+            }
+            break;
+        }
+    case Variant::ARRAY:
+        {
+            Array v_arr = var;
+            for (int i = 0; i < v_arr.size(); ++i)
+            {
+                arr.push_back(v_arr[i].operator String());
+            }
+            break;
+        }
+    case Variant::VECTOR2:
+        {
+            Vector2 v = var;
+            arr.push_back(String::num(v.x));
+            arr.push_back(String::num(v.y));
+            break;
+        }
+    case Variant::INT:
+    case Variant::FLOAT:
+    case Variant::STRING:
+        {
+            arr.push_back(var.operator String());
+            break;
+        }
+    default:
+        break;
+    }
+    return arr;
 }

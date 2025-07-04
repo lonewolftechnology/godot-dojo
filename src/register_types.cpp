@@ -20,6 +20,7 @@
 #include "resources/dojo_policies.h"
 #include "resources/dojo_policy.h"
 #include "resources/dojo_call.h"
+#include "temp/dojo_helper.h"
 #include "variant/ty/dojo_array.h"
 #include "variant/ty/enum.h"
 #include "variant/ty/struct.h"
@@ -34,6 +35,7 @@ void initialize_dojoc_module(ModuleInitializationLevel p_level)
     {
         return;
     }
+    GDREGISTER_CLASS(DojoHelpers);
     // DojoTypes
     GDREGISTER_CLASS(DojoTy);
     GDREGISTER_CLASS(DojoPrimitive);

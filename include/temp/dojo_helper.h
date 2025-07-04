@@ -6,49 +6,42 @@
 #define DOJO_HELPER_H
 
 #include <godot_cpp/classes/object.hpp>
-#include <godot_cpp/variant/string.hpp>
-#include <godot_cpp/variant/dictionary.hpp>
-#include <godot_cpp/variant/array.hpp>
-#include <godot_cpp/variant/vector2.hpp>
-#include <godot_cpp/core/class_db.hpp>
 
 using namespace godot;
 
-class DojoHelpers : public Object {
+class DojoHelpers : public Object
+{
     GDCLASS(DojoHelpers, Object)
 
 protected:
     static void _bind_methods();
+    static DojoHelpers* singleton;
 
 public:
     DojoHelpers();
     ~DojoHelpers();
 
-    void set_contracts_addresses(const Dictionary &addresses);
-    void execute_from_outside(const Dictionary &account, const String &to, const String &selector, const String &calldata_parameter);
-    void callback_proxy(const Variant &key, const Array &models);
+    static DojoHelpers* get_singleton() { return singleton; };
+    static String get_katana_url();
+    static Variant get_setting(const String& setting);
 
-    template<typename T>
-    static void convert_ty(const Variant &member, const String &expected_name, const String &expected_type, T &output);
+    static int float_to_fixed(const float& value, const int& precision);
+    static float fixed_to_float(const int& value, const int& precision);
+
+    static int float_to_fixed_64(const float& value);
+    static float fixed_to_float_64(const int& value);
+
+    static int float_to_fixed_128(const float& value);
+    static float fixed_to_float_128(const int& value);
+
+    static int float_to_fixed_256(const float& value);
+    static float fixed_to_float_256(const int& value);
+
+    // The idea is to turn types to string array, as that what dojo expects for structs
+    // For example, in dojo_starter there is a struct called Vec2 which has two members x and y.
+    // So to send a Vector2 from Godot/GDScript it should be an array of two members, x and y.
+    static TypedArray<String> convert_to_string_array(const Variant& var);
 };
 
-class TypeConverter {
-public:
-    static String to_string(const Variant &member);
-    static int to_int(const Variant &member);
-    static int64_t to_long(const Variant &member);
-    static bool to_bool(const Variant &member);
 
-    template<typename T>
-    static Array to_array(const Variant &member);
-
-    static int to_direction(const Variant &member);
-    static Vector2 to_vec2(const Variant &member);
-};
-
-template<typename T>
-Array convert_to_felt_hexa(const T &value, const String &value_type);
-
-template<typename T>
-void convert_ty(const Variant &member, const String &expected_name, const String &expected_type, T &output);
 #endif //DOJO_HELPER_H
