@@ -186,9 +186,9 @@ DOJO::FieldElement FieldElement::from_enum(int enum_value)
     return field_element;
 }
 
-String FieldElement::bytearray_deserialize()
+String FieldElement::bytearray_deserialize(const uintptr_t& data_len = 32)
 {
-    DOJO::Resultc_char testing = DOJO::bytearray_deserialize(get_felt(), 32);
+    DOJO::Resultc_char testing = DOJO::bytearray_deserialize(get_felt(), data_len);
     if (testing.tag == DOJO::Errc_char)
     {
         Logger::debug_extra("FieldElement", "Can't deserialize... Trying Cairo String");

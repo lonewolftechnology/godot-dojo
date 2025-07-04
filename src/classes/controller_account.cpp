@@ -75,7 +75,7 @@ void ControllerAccount::setup()
 // TODO: refactor a estatico
 void ControllerAccount::create(const Ref<DojoPolicies>& policies_data)
 {
-    String rpc_url = ProjectSettings::get_singleton()->get("dojo/rpc_url");
+    String rpc_url = ProjectSettings::get_singleton()->get("dojo/config/katana/rpc_url");
     Logger::info("RPC URL: ", rpc_url);
     // Provider
     DOJO::ResultProvider resControllerProvider = DOJO::provider_new(rpc_url.utf8().get_data());

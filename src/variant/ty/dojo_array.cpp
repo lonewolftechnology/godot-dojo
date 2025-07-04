@@ -235,7 +235,7 @@ Variant ArrayDojo::CArrayControllerToVariant(DOJO::CArrayController array)
         DOJO::FieldElement _felt = controller.address;
         FieldElement controller_addr{&_felt};
         data["address"] = controller_addr.to_string();
-        data["felt_data"] = controller_addr.bytearray_deserialize();
+        data["felt_data"] = controller_addr.to_string();
         data["username"] = controller.username;
         data["deployed_at_timestamp"] = controller.deployed_at_timestamp;
         result.append(data);
@@ -272,12 +272,15 @@ Variant ArrayDojo::CArrayMemberValueToVariant(DOJO::CArrayMemberValue array)
 Variant ArrayDojo::CArrayFieldElementToVariant(DOJO::CArrayFieldElement array)
 {
     FieldElement felt = {array.data};
-    String testing = felt.parse_cairo();
+    Logger::debug_extra("FieldElement", felt.to_string());
+    Logger::debug_extra("FieldElement", felt.parse_cairo());
+    Logger::debug_extra("FieldElement", array.data_len);
     Dictionary data = {};
     data["address"] = felt.to_string();
-    data["data"] = felt.bytearray_deserialize();
+    data["data"] = felt.bytearray_deserialize(32);
     // data["data_len"] = array.data_len;
     data["data_len"] = static_cast<int64_t>(array.data_len);
+
     return data;
 };
 
@@ -295,7 +298,7 @@ Variant ArrayDojo::CArrayCOptionFieldElementToVariant(DOJO::CArrayCOptionFieldEl
     {
         if (coption_field_element.tag == DOJO::SomeFieldElement)
         {
-            Variant data = FieldElement(coption_field_element.some).bytearray_deserialize();
+            Variant data = FieldElement(coption_field_element.some).to_string();
             result.append(data);
         }
     }
@@ -317,7 +320,7 @@ Variant ArrayDojo::CArrayCHashItemFieldElementModelMetadataToVariant(
         Logger::debug_extra("METADATA", model_metadata.namespace_);
         Logger::debug_extra("METADATA", model_metadata.name);
 
-        model_dict["key"] = FieldElement(model_item.key).bytearray_deserialize();
+        model_dict["key"] = FieldElement(model_item.key).bytearray_deserialize(model_metadata.packed_size);
         model_dict["namespace"] = model_metadata.namespace_;
         model_dict["name"] = model_metadata.name;
         model_dict["schema_type"] = String::num_int64(static_cast<int64_t>(model_metadata.schema.tag));

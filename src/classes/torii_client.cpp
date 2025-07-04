@@ -72,7 +72,6 @@ bool ToriiClient::create_client()
     }
     FieldElement world(world_address, 32);
     set_world(world);
-    world.bytearray_deserialize();
 
     Logger::info("Creando cliente Torii...");
     Logger::info("URL: ", torii_url);

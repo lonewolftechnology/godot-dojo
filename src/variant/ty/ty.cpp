@@ -29,8 +29,6 @@ DojoTy::DojoTy(const DOJO::Ty* ty)
 
 DojoTy::DojoTy(const DOJO::Member& member)
 {
-    name = member.name;
-    Logger::custom("Member", name);
     if (member.ty != nullptr)
     {
         init_form_ty(*member.ty);
@@ -39,6 +37,9 @@ DojoTy::DojoTy(const DOJO::Member& member)
     {
         Logger::custom("DojoTy", "Member ty is null");
     }
+    Logger::custom("MemberName", name, member.name);
+    name = member.name;
+
 }
 
 DojoTy::DojoTy(const dojo_bindings::CArrayTy& array_ty)
