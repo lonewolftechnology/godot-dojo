@@ -8,17 +8,28 @@ DojoHelpers* DojoHelpers::singleton = nullptr;
 
 void DojoHelpers::_bind_methods()
 {
-    ClassDB::bind_static_method("DojoHelpers", D_METHOD("convert_to_string_array", "var"), &DojoHelpers::convert_to_string_array);
+    ClassDB::bind_static_method("DojoHelpers", D_METHOD("convert_to_string_array", "var"),
+                                &DojoHelpers::convert_to_string_array);
     ClassDB::bind_static_method("DojoHelpers", D_METHOD("get_katana_url"), &DojoHelpers::get_katana_url);
     ClassDB::bind_static_method("DojoHelpers", D_METHOD("get_setting", "setting"), &DojoHelpers::get_setting);
-    ClassDB::bind_static_method("DojoHelpers", D_METHOD("float_to_fixed", "value", "precision"), &DojoHelpers::float_to_fixed);
-    ClassDB::bind_static_method("DojoHelpers", D_METHOD("fixed_to_float", "value", "precision"), &DojoHelpers::fixed_to_float);
+    // Generic. Default to precision 24
+    ClassDB::bind_static_method("DojoHelpers", D_METHOD("float_to_fixed", "value", "precision"),
+                                &DojoHelpers::float_to_fixed, DEFVAL(24));
+    ClassDB::bind_static_method("DojoHelpers", D_METHOD("fixed_to_float", "value", "precision"),
+                                &DojoHelpers::fixed_to_float, DEFVAL(24));
+    // 64
     ClassDB::bind_static_method("DojoHelpers", D_METHOD("float_to_fixed_64", "value"), &DojoHelpers::float_to_fixed_64);
     ClassDB::bind_static_method("DojoHelpers", D_METHOD("fixed_to_float_64", "value"), &DojoHelpers::fixed_to_float_64);
-    ClassDB::bind_static_method("DojoHelpers", D_METHOD("float_to_fixed_128", "value"), &DojoHelpers::float_to_fixed_128);
-    ClassDB::bind_static_method("DojoHelpers", D_METHOD("fixed_to_float_128", "value"), &DojoHelpers::fixed_to_float_128);
-    ClassDB::bind_static_method("DojoHelpers", D_METHOD("float_to_fixed_256", "value"), &DojoHelpers::float_to_fixed_256);
-    ClassDB::bind_static_method("DojoHelpers", D_METHOD("fixed_to_float_256", "value"), &DojoHelpers::fixed_to_float_256);
+    // 128
+    ClassDB::bind_static_method("DojoHelpers", D_METHOD("float_to_fixed_128", "value"),
+                                &DojoHelpers::float_to_fixed_128);
+    ClassDB::bind_static_method("DojoHelpers", D_METHOD("fixed_to_float_128", "value"),
+                                &DojoHelpers::fixed_to_float_128);
+    // 256
+    ClassDB::bind_static_method("DojoHelpers", D_METHOD("float_to_fixed_256", "value"),
+                                &DojoHelpers::float_to_fixed_256);
+    ClassDB::bind_static_method("DojoHelpers", D_METHOD("fixed_to_float_256", "value"),
+                                &DojoHelpers::fixed_to_float_256);
 }
 
 DojoHelpers::DojoHelpers()

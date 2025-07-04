@@ -25,8 +25,8 @@ public:
     static String get_katana_url();
     static Variant get_setting(const String& setting);
 
-    static int64_t float_to_fixed(const double& value, const int& precision);
-    static double fixed_to_float(const int& value, const int& precision);
+    static int64_t float_to_fixed(const double& value, const int& precision = 24);
+    static double fixed_to_float(const int& value, const int& precision = 24);
 
     static int64_t float_to_fixed_64(const float& value);
     static double fixed_to_float_64(const int& value);
