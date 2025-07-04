@@ -47,42 +47,42 @@ Variant DojoHelpers::get_setting(const String& setting)
     return Variant();
 }
 
-int DojoHelpers::float_to_fixed(const float& value, const int& precision)
+int64_t DojoHelpers::float_to_fixed(const double& value, const int& precision)
 {
-    return static_cast<int32_t>(value * (1 << precision));
+    return static_cast<int64_t>(value * (1LL << precision));
 }
 
-float DojoHelpers::fixed_to_float(const int& value, const int& precision)
+double DojoHelpers::fixed_to_float(const int& value, const int& precision)
 {
-    return value / static_cast<float>(1 << precision);
+    return value / static_cast<double>(1LL << precision);
 }
 
-int DojoHelpers::float_to_fixed_64(const float& value)
+int64_t DojoHelpers::float_to_fixed_64(const float& value)
 {
     return float_to_fixed(value, get_setting("dojo/config/fixed_point/64"));
 }
 
-float DojoHelpers::fixed_to_float_64(const int& value)
+double DojoHelpers::fixed_to_float_64(const int& value)
 {
     return fixed_to_float(value, get_setting("dojo/config/fixed_point/64"));
 }
 
-int DojoHelpers::float_to_fixed_128(const float& value)
+int64_t DojoHelpers::float_to_fixed_128(const float& value)
 {
     return float_to_fixed(value, get_setting("dojo/config/fixed_point/128"));
 }
 
-float DojoHelpers::fixed_to_float_128(const int& value)
+double DojoHelpers::fixed_to_float_128(const int& value)
 {
     return fixed_to_float(value, get_setting("dojo/config/fixed_point/128"));
 }
 
-int DojoHelpers::float_to_fixed_256(const float& value)
+int64_t DojoHelpers::float_to_fixed_256(const float& value)
 {
     return float_to_fixed(value, get_setting("dojo/config/fixed_point/256"));
 }
 
-float DojoHelpers::fixed_to_float_256(const int& value)
+double DojoHelpers::fixed_to_float_256(const int& value)
 {
     return fixed_to_float(value, get_setting("dojo/config/fixed_point/256"));
 }

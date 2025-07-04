@@ -25,17 +25,17 @@ public:
     static String get_katana_url();
     static Variant get_setting(const String& setting);
 
-    static int float_to_fixed(const float& value, const int& precision);
-    static float fixed_to_float(const int& value, const int& precision);
+    static int64_t float_to_fixed(const double& value, const int& precision);
+    static double fixed_to_float(const int& value, const int& precision);
 
-    static int float_to_fixed_64(const float& value);
-    static float fixed_to_float_64(const int& value);
+    static int64_t float_to_fixed_64(const float& value);
+    static double fixed_to_float_64(const int& value);
 
-    static int float_to_fixed_128(const float& value);
-    static float fixed_to_float_128(const int& value);
+    static int64_t float_to_fixed_128(const float& value);
+    static double fixed_to_float_128(const int& value);
 
-    static int float_to_fixed_256(const float& value);
-    static float fixed_to_float_256(const int& value);
+    static int64_t float_to_fixed_256(const float& value);
+    static double fixed_to_float_256(const int& value);
 
     // The idea is to turn types to string array, as that what dojo expects for structs
     // For example, in dojo_starter there is a struct called Vec2 which has two members x and y.
