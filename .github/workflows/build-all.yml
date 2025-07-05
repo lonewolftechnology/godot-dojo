@@ -41,6 +41,14 @@ jobs:
         if: matrix.target_os == 'linux'
         run: sudo apt-get update && sudo apt-get install -y build-essential pkg-config libdbus-1-dev protobuf-compiler libprotobuf-dev
 
+      - name: Install build dependencies (macOS)
+        if: matrix.target_os == 'macos'
+        run: brew install protobuf
+
+      - name: Install build dependencies (Windows)
+        if: matrix.target_os == 'windows'
+        run: choco install protoc
+
       - name: Set up Rust stable
         uses: actions-rs/toolchain@v1
         with:

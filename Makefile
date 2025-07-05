@@ -224,6 +224,12 @@ _check-macos-deps:
 	else \
 		echo "$(G)    ✅ pkg-config$(X)"; \
 	fi
+	@if ! command -v protoc >/dev/null 2>&1; then \
+		echo "$(R)    ❌ protoc (Protocol Buffers compiler) not found$(X)"; \
+		echo "$(Y)    💡 Install: brew install protobuf$(X)"; \
+	else \
+		echo "$(G)    ✅ protoc: $(shell protoc --version 2>/dev/null)$(X)"; \
+	fi
 
 _check-windows-deps:
 	@echo "$(Y)    Windows dependencies:$(X)"
@@ -237,6 +243,12 @@ _check-windows-deps:
 		if command -v gcc >/dev/null 2>&1; then \
 			echo "$(G)    ✅ MinGW GCC: $(shell gcc --version 2>/dev/null | head -1)$(X)"; \
 		fi; \
+	fi
+	@if ! command -v protoc >/dev/null 2>&1; then \
+		echo "$(R)    ❌ protoc (Protocol Buffers compiler) not found$(X)"; \
+		echo "$(Y)    💡 Install: choco install protoc$(X)"; \
+	else \
+		echo "$(G)    ✅ protoc: $(shell protoc --version 2>/dev/null)$(X)"; \
 	fi
 
 install-deps:
@@ -291,10 +303,16 @@ ifeq ($(HOST_PLATFORM),linux)
 	fi
 else ifeq ($(HOST_PLATFORM),macos)
 	@if command -v brew >/dev/null 2>&1; then \
-		brew install pkg-config >/dev/null 2>&1 || true; \
+		brew install pkg-config protobuf >/dev/null 2>&1 || true; \
 	fi
 else ifeq ($(HOST_PLATFORM),windows)
-	@echo "$(Y)  Windows: Please ensure you have Visual Studio Build Tools or MinGW-w64 installed$(X)"
+	@echo "$(Y)  Windows: Installing dependencies...$(X)"
+	@if command -v choco >/dev/null 2>&1; then \
+		choco install -y protoc >/dev/null 2>&1 || true; \
+	else \
+		echo "$(Y)  Chocolatey not found. Please install Chocolatey or manually install protoc$(X)"; \
+		echo "$(Y)  Please ensure you have Visual Studio Build Tools or MinGW-w64 installed$(X)"; \
+	fi
 endif
 	@echo "$(G)  ✅ OS dependencies installed$(X)"
 

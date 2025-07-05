@@ -70,6 +70,12 @@ targets = {
 # Use CARGO_BUILD_TARGET from environment if set, otherwise use the target from the platform/arch
 rust_target = os.environ.get("CARGO_BUILD_TARGET", targets.get((platform, arch), "x86_64-unknown-linux-gnu"))
 
+# Override for macOS x86_64 to ensure it uses the correct target
+if platform == "macos" and arch == "x86_64":
+    rust_target = "x86_64-apple-darwin"
+elif platform == "macos" and arch == "arm64":
+    rust_target = "aarch64-apple-darwin"
+
 # Ensure the Rust target is installed
 try:
     print(f"{Y}Checking if Rust target {rust_target} is installed...{X}")
