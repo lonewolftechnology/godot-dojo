@@ -45,7 +45,8 @@ targets = {
     ("web", "wasm32"): "wasm32-unknown-unknown",
     ("android", "arm64"): "aarch64-linux-android"
 }
-rust_target = targets.get((platform, arch), "x86_64-unknown-linux-gnu")
+# Use CARGO_BUILD_TARGET from environment if set, otherwise use the target from the platform/arch
+rust_target = os.environ.get("CARGO_BUILD_TARGET", targets.get((platform, arch), "x86_64-unknown-linux-gnu"))
 
 cmd = ["cargo", "build", "--target", rust_target]
 if target == "template_release":

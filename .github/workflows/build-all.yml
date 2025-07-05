@@ -69,8 +69,7 @@ jobs:
             rustup target add x86_64-apple-darwin
           fi
 
-      - name: Install scons (Linux/macOS)
-        if: matrix.target_os != 'windows'
+      - name: Install scons
         run: pip install scons
 
       - name: Cache SCons and godot-cpp build artifacts
