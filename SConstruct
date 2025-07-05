@@ -54,24 +54,25 @@ if target == "template_release":
 # Variables de entorno para WebAssembly
 if env["platform"] == "web":
     env_vars = os.environ.copy()
-    # rustflags = "-C target-feature=+atomics,+bulk-memory,+mutable-globals"
-    # rustflags += " -C relocation-model=pic"
+    rustflags = "-C target-feature=+atomics,+bulk-memory,+mutable-globals"
+    rustflags += " -C relocation-model=pic"
+    rustflags += " --print=native-static-libs"
     # rustflags += " -C panic=abort"
     # rustflags += " -C opt-level=z"
 
-    # env_vars["RUSTFLAGS"] = rustflags
+    env_vars["RUSTFLAGS"] = rustflags
 
     # env_vars["CC"] = "emcc"
     # env_vars["CXX"] = "em++"
     # env_vars["AR"] = "emar"
     # env.Append(LINKFLAGS=[
-    #     '-sALLOW_MEMORY_GROWTH',
-    #     '-sWASM=1',
-    #     '-sEXPORTED_FUNCTIONS=["_malloc","_free"]',
-    #     '-sEXPORTED_RUNTIME_METHODS=["ccall","cwrap"]',
-    #     '-sMODULARIZE=1',
-    #     '-sEXPORT_NAME="GodotDojo"',
-    #     '--no-entry'
+        # '-sALLOW_MEMORY_GROWTH',
+        # '-sWASM=1',
+        # '-sEXPORTED_FUNCTIONS=["_malloc","_free"]',
+        # '-sEXPORTED_RUNTIME_METHODS=["ccall","cwrap"]',
+        # '-sMODULARIZE=1',
+        # '-sEXPORT_NAME="GodotDojo"',
+        # '--no-entry'
     # ])
 
 
@@ -92,8 +93,6 @@ if platform == "linux":
     env.Append(
         CXXFLAGS=["-std=c++17"]
     )
-elif platform == "web":
-    env.Append(LINKFLAGS=['-sALLOW_MEMORY_GROWTH'])
 
 # Linkear librerías de Rust
 build_mode = "release" if target == "template_release" else "debug"
@@ -117,6 +116,8 @@ if platform == "windows":
         print(f"{G}📋 Copied {dll_dest} -> {target_dll_path}{X}")
         # rust_lib = target_dll_path
 
+elif platform == "web":
+    rust_lib = f"{rust_lib_dir}/libdojo_c.rlib"
 else:
     rust_lib = f"{rust_lib_dir}/libdojo_c.a"
 
