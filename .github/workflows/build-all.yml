@@ -132,27 +132,9 @@ jobs:
 
           # Debug
           scons $PLATFORM_ARG $ARCH_ARG target=template_debug -j2
-          if [ "${{ matrix.target_os }}" = "windows" ]; then
-            cp bin/dojo_c.dll demo/bin/dojo_c.${{ matrix.target_os }}.${{ matrix.arch }}.debug.dll || true
-            cp bin/godot-dojo.dll demo/bin/godot-dojo.${{ matrix.target_os }}.${{ matrix.arch }}.debug.dll || true
-            cp bin/godot-dojo.pdb demo/bin/godot-dojo.${{ matrix.target_os }}.${{ matrix.arch }}.debug.pdb || true
-          elif [ "${{ matrix.target_os }}" = "linux" ]; then
-            cp bin/libgodot-dojo.so demo/bin/libgodot-dojo.${{ matrix.target_os }}.${{ matrix.arch }}.debug.so || true
-          elif [ "${{ matrix.target_os }}" = "macos" ]; then
-            cp bin/libgodot-dojo.dylib demo/bin/libgodot-dojo.${{ matrix.target_os }}.${{ matrix.arch }}.debug.dylib || true
-          fi
 
           # Release
           scons $PLATFORM_ARG $ARCH_ARG target=template_release -j2
-          if [ "${{ matrix.target_os }}" = "windows" ]; then
-            cp bin/dojo_c.dll demo/bin/dojo_c.${{ matrix.target_os }}.${{ matrix.arch }}.release.dll || true
-            cp bin/godot-dojo.dll demo/bin/godot-dojo.${{ matrix.target_os }}.${{ matrix.arch }}.release.dll || true
-            cp bin/godot-dojo.pdb demo/bin/godot-dojo.${{ matrix.target_os }}.${{ matrix.arch }}.release.pdb || true
-          elif [ "${{ matrix.target_os }}" = "linux" ]; then
-            cp bin/libgodot-dojo.so demo/bin/libgodot-dojo.${{ matrix.target_os }}.${{ matrix.arch }}.release.so || true
-          elif [ "${{ matrix.target_os }}" = "macos" ]; then
-            cp bin/libgodot-dojo.dylib demo/bin/libgodot-dojo.${{ matrix.target_os }}.${{ matrix.arch }}.release.dylib || true
-          fi
 
       - name: Upload binarios de este target
         uses: actions/upload-artifact@v4
