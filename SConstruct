@@ -6,7 +6,7 @@ import shutil
 import platform as host_platform
 import sys
 
-# Colores
+# Colors
 G, B, R, Y, X = '\033[92m', '\033[94m', '\033[91m', '\033[1;33m', '\033[0m'
 
 # Check if running on Windows to avoid encoding issues
@@ -32,7 +32,7 @@ else:
 
 print(f"{B}{rocket} Building godot-dojo{X}")
 
-# Limpieza
+# Cleanup
 if GetOption('clean'):
     print(f"{Y}{broom} Cleaning...{X}")
     try:
@@ -51,10 +51,10 @@ platform, arch, target = env["platform"], env["arch"], env.get("target", "templa
 
 print(f"{B}Building: {platform} ({arch}) - {target}{X}")
 
-# Compilar Rust
+# Compile Rust
 print(f"{Y}{package} Compiling dojo.c...{X}")
 
-# Detectar configuración del host y toolchain
+# Detect host configuration and toolchain
 is_host_windows = host_platform.system().lower() == "windows"
 use_mingw = env.get("use_mingw", False)
 
@@ -103,7 +103,7 @@ cmd = ["cargo", "build", "--target", rust_target]
 if target == "template_release":
     cmd.append("--release")
 
-# Variables de entorno para WebAssembly
+# Environment variables for WebAssembly
 if env["platform"] == "web":
     env_vars = os.environ.copy()
     rustflags = "-C target-feature=+atomics,+bulk-memory,+mutable-globals"
@@ -167,7 +167,7 @@ else:
 
     subprocess.run(cmd, check=True, cwd="external/dojo.c", env=env_vars)
 
-# Configurar biblioteca
+# Configure library
 if platform != "android":
     # Android build requires lib prefix
     env['SHLIBPREFIX'] = ''
@@ -176,7 +176,7 @@ env.Append(CPPPATH=["src/", "include/", "external/dojo.c"])
 
 if platform == "linux":
     env.Append(LINKFLAGS=['-ldbus-1'])
-    # Va forzado porque por alguna razón me usa un standard mas viejo
+    # Forced because for some reason it uses an older standard
     env.Append(
         CXXFLAGS=["-std=c++17"]
     )
@@ -187,7 +187,7 @@ elif platform == "macos":
     env.Append(CCFLAGS=['-mmacosx-version-min=14.0'])
     env.Append(LINKFLAGS=['-mmacosx-version-min=14.0'])
 
-# Linkear librerías de Rust
+# Link Rust libraries
 build_mode = "release" if target == "template_release" else "debug"
 rust_lib_dir = f"external/dojo.c/target/{rust_target}/{build_mode}"
 
@@ -221,7 +221,7 @@ else:
 
 sources = sorted(glob.glob("src/**/*.cpp", recursive=True))
 
-# Crear biblioteca
+# Create library
 suffix_map = {
     "linux": f".linux.{target}.{arch}.so",
     "windows": f".windows.{target}.{arch}.dll",
@@ -232,7 +232,7 @@ suffix_map = {
 lib_name = f"demo/bin/{prefix}godot-dojo{suffix_map.get(platform, f'.{platform}.{target}.{arch}.so')}"
 library = env.SharedLibrary(target=lib_name, source=sources)
 
-# Generar .gdextension
+# Generate .gdextension
 with open("plugin_template.gdextension.in", 'r') as f:
     template = f.read()
 

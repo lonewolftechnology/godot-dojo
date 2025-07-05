@@ -89,7 +89,7 @@ To build on any platform (Linux, Windows, MacOS, WebAssembly) **always use SCons
         ```bash
         scons platform=macos arch=arm64 target=template_release
         ```
-    - **WebAssembly:**
+    - **WebAssembly:** (EXPERIMENTAL)
       - Debug:
         ```bash
         scons platform=web target=template_debug

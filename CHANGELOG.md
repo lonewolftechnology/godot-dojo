@@ -1,7 +1,5 @@
 # CHANGELOG
 
-## [Unreleased] - `dev` branch
-
 ### Added
 - `DojoHelpers` can now convert any `float` to fixed point and vice versa, with utility tools for 64, 128, and 256-bit integers (configurable in Project Settings).
 - Added default project configuration.
