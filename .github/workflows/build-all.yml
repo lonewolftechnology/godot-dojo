@@ -47,6 +47,19 @@ jobs:
           toolchain: stable
           override: true
 
+      - name: Cache Rust dependencies
+        uses: actions/cache@v3
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            external/dojo.c/target
+          key: ${{ runner.os }}-cargo-${{ matrix.target_os }}-${{ matrix.arch }}-${{ hashFiles('**/Cargo.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-cargo-${{ matrix.target_os }}-${{ matrix.arch }}-
+            ${{ runner.os }}-cargo-${{ matrix.target_os }}-
+            ${{ runner.os }}-cargo-
+
       - name: Add target for macOS builds
         if: matrix.target_os == 'macos'
         run: |
@@ -59,6 +72,21 @@ jobs:
       - name: Install scons (Linux/macOS)
         if: matrix.target_os != 'windows'
         run: pip install scons
+
+      - name: Cache SCons and godot-cpp build artifacts
+        uses: actions/cache@v3
+        with:
+          path: |
+            .sconsign.dblite
+            bin/
+            external/godot-cpp/bin/
+            external/godot-cpp/.sconsign.dblite
+            external/godot-cpp/gen/
+            external/godot-cpp/__pycache__/
+          key: ${{ runner.os }}-scons-${{ matrix.target_os }}-${{ matrix.arch }}-${{ hashFiles('**/*.cpp', '**/*.h', 'SConstruct', 'external/godot-cpp/**/*.cpp', 'external/godot-cpp/**/*.h') }}
+          restore-keys: |
+            ${{ runner.os }}-scons-${{ matrix.target_os }}-${{ matrix.arch }}-
+            ${{ runner.os }}-scons-${{ matrix.target_os }}-
 
       - name: Build both (release & debug)
         shell: bash
