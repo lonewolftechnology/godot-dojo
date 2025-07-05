@@ -4,22 +4,44 @@ import subprocess
 import glob
 import shutil
 import platform as host_platform
+import sys
 
 # Colores
 G, B, R, Y, X = '\033[92m', '\033[94m', '\033[91m', '\033[1;33m', '\033[0m'
 
-print(f"{B}🚀 Building godot-dojo{X}")
+# Check if running on Windows to avoid encoding issues
+is_windows = host_platform.system().lower() == "windows"
+if is_windows:
+    # Use ASCII alternatives on Windows
+    rocket = ">"
+    broom = "-"
+    check = "+"
+    package = "#"
+    clipboard = "="
+    party = "!"
+    cross = "x"
+else:
+    # Use emojis on other platforms
+    rocket = "🚀"
+    broom = "🧹"
+    check = "✅"
+    package = "📦"
+    clipboard = "📋"
+    party = "🎉"
+    cross = "❌"
+
+print(f"{B}{rocket} Building godot-dojo{X}")
 
 # Limpieza
 if GetOption('clean'):
-    print(f"{Y}🧹 Cleaning...{X}")
+    print(f"{Y}{broom} Cleaning...{X}")
     try:
         subprocess.run(["cargo", "clean"], cwd="external/dojo.c", check=True)
         shutil.rmtree("demo/bin", ignore_errors=True)
         subprocess.run(["scons", "-C", "external/godot-cpp", "--clean"], check=False)
     except:
         pass
-    print(f"{G}✅ Cleanup complete{X}")
+    print(f"{G}{check} Cleanup complete{X}")
     Return()
 
 # Setup
@@ -30,7 +52,7 @@ platform, arch, target = env["platform"], env["arch"], env.get("target", "templa
 print(f"{B}Building: {platform} ({arch}) - {target}{X}")
 
 # Compilar Rust
-print(f"{Y}📦 Compiling dojo.c...{X}")
+print(f"{Y}{package} Compiling dojo.c...{X}")
 
 # Detectar configuración del host y toolchain
 is_host_windows = host_platform.system().lower() == "windows"
@@ -47,6 +69,22 @@ targets = {
 }
 # Use CARGO_BUILD_TARGET from environment if set, otherwise use the target from the platform/arch
 rust_target = os.environ.get("CARGO_BUILD_TARGET", targets.get((platform, arch), "x86_64-unknown-linux-gnu"))
+
+# Ensure the Rust target is installed
+try:
+    print(f"{Y}Checking if Rust target {rust_target} is installed...{X}")
+    result = subprocess.run(["rustup", "target", "list", "--installed"], capture_output=True, text=True, check=True)
+    installed_targets = result.stdout.splitlines()
+
+    if rust_target not in installed_targets:
+        print(f"{Y}Installing Rust target {rust_target}...{X}")
+        subprocess.run(["rustup", "target", "add", rust_target], check=True)
+        print(f"{G}{check} Rust target {rust_target} installed{X}")
+    else:
+        print(f"{G}{check} Rust target {rust_target} is already installed{X}")
+except subprocess.CalledProcessError as e:
+    print(f"{R}{cross} Failed to check or install Rust target: {e}{X}")
+    # Continue anyway, as cargo will show a more specific error if needed
 
 cmd = ["cargo", "build", "--target", rust_target]
 if target == "template_release":
@@ -115,7 +153,7 @@ if platform == "windows":
     if os.path.exists(rust_lib):
         dll_dest = f"{rust_lib_dir}/{target_dll_name}"
         shutil.copy2(dll_dest, target_dll_path)
-        print(f"{G}📋 Copied {dll_dest} -> {target_dll_path}{X}")
+        print(f"{G}{clipboard} Copied {dll_dest} -> {target_dll_path}{X}")
         # rust_lib = target_dll_path
 
 elif platform == "web":
@@ -126,7 +164,7 @@ else:
 if os.path.exists(rust_lib):
     env.Append(LIBS=[File(rust_lib)])
 else:
-    print(f"{R}❌ Rust library not found: {rust_lib}{X}")
+    print(f"{R}{cross} Rust library not found: {rust_lib}{X}")
 
 sources = sorted(glob.glob("src/**/*.cpp", recursive=True))
 
@@ -153,7 +191,7 @@ with open("demo/bin/godot-dojo.gdextension", 'w') as f:
     f.write(gdext)
 
 def build_complete_callback(target, source, env):
-    print(f"{G}🎉 Build complete!{X}")
+    print(f"{G}{party} Build complete!{X}")
     return None
 
 env.AddPostAction(library, build_complete_callback)
