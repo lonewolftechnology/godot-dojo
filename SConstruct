@@ -84,10 +84,17 @@ try:
 
     if rust_target not in installed_targets:
         print(f"{Y}Installing Rust target {rust_target}...{X}")
+        # Run rustup target add in the main directory
         subprocess.run(["rustup", "target", "add", rust_target], check=True)
+        # Also run rustup target add in the external/dojo.c directory
+        print(f"{Y}Installing Rust target {rust_target} in external/dojo.c directory...{X}")
+        subprocess.run(["rustup", "target", "add", rust_target], check=True, cwd="external/dojo.c")
         print(f"{G}{check} Rust target {rust_target} installed{X}")
     else:
         print(f"{G}{check} Rust target {rust_target} is already installed{X}")
+        # Even if the target is already installed globally, ensure it's also installed in the external/dojo.c directory
+        print(f"{Y}Ensuring Rust target {rust_target} is installed in external/dojo.c directory...{X}")
+        subprocess.run(["rustup", "target", "add", rust_target], check=False, cwd="external/dojo.c")
 except subprocess.CalledProcessError as e:
     print(f"{R}{cross} Failed to check or install Rust target: {e}{X}")
     # Continue anyway, as cargo will show a more specific error if needed
@@ -124,6 +131,40 @@ if env["platform"] == "web":
     subprocess.run(cmd, check=True, cwd="external/dojo.c", env=env_vars)
 else:
     env_vars = os.environ.copy()
+    # Explicitly set RUSTUP_TOOLCHAIN to ensure the correct toolchain is used
+    if platform == "macos" and arch == "x86_64":
+        print(f"{Y}Setting RUSTUP_TOOLCHAIN to 1.85.0-x86_64-apple-darwin...{X}")
+        env_vars["RUSTUP_TOOLCHAIN"] = "1.85.0-x86_64-apple-darwin"
+
+        # Set macOS deployment target to 14.0 to ensure compatibility
+        print(f"{Y}Setting macOS deployment target to 14.0...{X}")
+        env_vars["MACOSX_DEPLOYMENT_TARGET"] = "14.0"
+
+        # Add deployment target to RUSTFLAGS
+        rustflags = env_vars.get("RUSTFLAGS", "")
+        if rustflags:
+            rustflags += " "
+        rustflags += "-C link-arg=-mmacosx-version-min=14.0"
+        env_vars["RUSTFLAGS"] = rustflags
+    elif platform == "macos" and arch == "arm64":
+        # Also set for arm64 builds
+        print(f"{Y}Setting macOS deployment target to 14.0...{X}")
+        env_vars["MACOSX_DEPLOYMENT_TARGET"] = "14.0"
+
+        # Add deployment target to RUSTFLAGS
+        rustflags = env_vars.get("RUSTFLAGS", "")
+        if rustflags:
+            rustflags += " "
+        rustflags += "-C link-arg=-mmacosx-version-min=14.0"
+        env_vars["RUSTFLAGS"] = rustflags
+
+    # Print the command and environment for debugging
+    print(f"{Y}Running cargo command: {' '.join(cmd)}{X}")
+    print(f"{Y}With target: {rust_target}{X}")
+    if platform == "macos":
+        print(f"{Y}With MACOSX_DEPLOYMENT_TARGET: {env_vars.get('MACOSX_DEPLOYMENT_TARGET', 'not set')}{X}")
+        print(f"{Y}With RUSTFLAGS: {env_vars.get('RUSTFLAGS', 'not set')}{X}")
+
     subprocess.run(cmd, check=True, cwd="external/dojo.c", env=env_vars)
 
 # Configurar biblioteca
@@ -139,6 +180,12 @@ if platform == "linux":
     env.Append(
         CXXFLAGS=["-std=c++17"]
     )
+elif platform == "macos":
+    # Set macOS deployment target for C++ compilation
+    print(f"{Y}Setting macOS deployment target for C++ compilation to 14.0...{X}")
+    env['ENV']['MACOSX_DEPLOYMENT_TARGET'] = '14.0'
+    env.Append(CCFLAGS=['-mmacosx-version-min=14.0'])
+    env.Append(LINKFLAGS=['-mmacosx-version-min=14.0'])
 
 # Linkear librerías de Rust
 build_mode = "release" if target == "template_release" else "debug"

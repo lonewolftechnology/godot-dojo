@@ -103,6 +103,14 @@ jobs:
           ARCH_ARG=""
           if [ "${{ matrix.target_os }}" = "macos" ]; then
             PLATFORM_ARG="platform=macos"
+            # Set macOS deployment target to 14.0 to ensure compatibility
+            export MACOSX_DEPLOYMENT_TARGET=14.0
+            # Add deployment target to RUSTFLAGS
+            export RUSTFLAGS="${RUSTFLAGS:+$RUSTFLAGS }-C link-arg=-mmacosx-version-min=14.0"
+            echo "Setting macOS deployment target to 14.0"
+            echo "MACOSX_DEPLOYMENT_TARGET=$MACOSX_DEPLOYMENT_TARGET"
+            echo "RUSTFLAGS=$RUSTFLAGS"
+
             if [ "${{ matrix.arch }}" = "arm64" ]; then
               ARCH_ARG="arch=arm64"
               export CARGO_BUILD_TARGET=aarch64-apple-darwin
@@ -124,7 +132,6 @@ jobs:
 
           # Debug
           scons $PLATFORM_ARG $ARCH_ARG target=template_debug -j2
-          cp godot-dojo.gdextension demo/bin/godot-dojo.${{ matrix.target_os }}.${{ matrix.arch }}.debug.gdextension
           if [ "${{ matrix.target_os }}" = "windows" ]; then
             cp bin/dojo_c.dll demo/bin/dojo_c.${{ matrix.target_os }}.${{ matrix.arch }}.debug.dll || true
             cp bin/godot-dojo.dll demo/bin/godot-dojo.${{ matrix.target_os }}.${{ matrix.arch }}.debug.dll || true
@@ -137,7 +144,6 @@ jobs:
 
           # Release
           scons $PLATFORM_ARG $ARCH_ARG target=template_release -j2
-          cp godot-dojo.gdextension demo/bin/godot-dojo.${{ matrix.target_os }}.${{ matrix.arch }}.release.gdextension
           if [ "${{ matrix.target_os }}" = "windows" ]; then
             cp bin/dojo_c.dll demo/bin/dojo_c.${{ matrix.target_os }}.${{ matrix.arch }}.release.dll || true
             cp bin/godot-dojo.dll demo/bin/godot-dojo.${{ matrix.target_os }}.${{ matrix.arch }}.release.dll || true
