@@ -122,16 +122,17 @@ jobs:
         with:
           path: all_bins
 
-      - name: Preparar carpeta addons/godot-dojo
+      - name: Preparar carpeta para los binarios
         run: |
-          mkdir -p addons/godot-dojo
-          find all_bins -type f -exec cp {} addons/godot-dojo/ \;
+          mkdir -p godot-dojo-bin
+          find all_bins -type f -exec cp {} godot-dojo-bin/ \;
 
       - name: Empaquetar en zip único
         run: |
           TAGNAME=${GITHUB_REF##*/}
           ZIP_FILE=godot-dojo-${TAGNAME}.zip
-          zip -r "$ZIP_FILE" addons
+          cd godot-dojo-bin
+          zip -r "../$ZIP_FILE" .
 
       - name: Crear release y subir asset
         uses: softprops/action-gh-release@v2

@@ -108,7 +108,7 @@ To build on any platform (Linux, Windows, MacOS, WebAssembly) **always use SCons
 1. **Export or build the addon/library using the steps above.**
 2. **Open the project in Godot:**
     - Launch Godot Engine.
-    - Open the `godot-dojo` folder as a project.
+    - Open the `demo` folder as a project.
 3. **Run the demo scene:**
     - Open the `Demo` scene under the `game` folder.
     - Press the **Play** button.
