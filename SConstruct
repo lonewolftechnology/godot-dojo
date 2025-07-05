@@ -78,7 +78,8 @@ if env["platform"] == "web":
 
     subprocess.run(cmd, check=True, cwd="external/dojo.c", env=env_vars)
 else:
-    subprocess.run(cmd, check=True, cwd="external/dojo.c")
+    env_vars = os.environ.copy()
+    subprocess.run(cmd, check=True, cwd="external/dojo.c", env=env_vars)
 
 # Configurar biblioteca
 if platform != "android":

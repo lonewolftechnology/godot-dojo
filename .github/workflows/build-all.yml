@@ -47,11 +47,21 @@ jobs:
           toolchain: stable
           override: true
 
+      - name: Add target for macOS builds
+        if: matrix.target_os == 'macos'
+        run: |
+          if [ "${{ matrix.arch }}" = "arm64" ]; then
+            rustup target add aarch64-apple-darwin
+          else
+            rustup target add x86_64-apple-darwin
+          fi
+
       - name: Install scons (Linux/macOS)
         if: matrix.target_os != 'windows'
         run: pip install scons
 
       - name: Build both (release & debug)
+        shell: bash
         run: |
           set -e
           PLATFORM_ARG=""
