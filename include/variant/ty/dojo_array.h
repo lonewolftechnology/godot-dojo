@@ -40,7 +40,7 @@ public:
     ArrayDojo(DOJO::CArrayFieldElement array);
     ArrayDojo(DOJO::CArrayTokenCollection array);
     ArrayDojo(DOJO::CArrayCOptionFieldElement array);
-    ArrayDojo(DOJO::CArrayCHashItemFieldElementModelMetadata array);
+    ArrayDojo(DOJO::CArrayModel array);
 
     // "static" methods.
     static Variant CArrayTyToVariant(DOJO::CArrayTy array);
@@ -57,8 +57,8 @@ public:
     static Variant CArrayFieldElementToVariant(DOJO::CArrayFieldElement array);
     static Variant CArrayTokenCollectionToVariant(DOJO::CArrayTokenCollection array);
     static Variant CArrayCOptionFieldElementToVariant(DOJO::CArrayCOptionFieldElement array);
-    static Variant CArrayCHashItemFieldElementModelMetadataToVariant(
-        DOJO::CArrayCHashItemFieldElementModelMetadata array);
+    static Variant CArrayModelToVariant(
+        DOJO::CArrayModel array);
 
     Variant get_value() const { return value; }
     void set_value(const Variant& p_value) { value = p_value; }

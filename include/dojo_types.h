@@ -25,7 +25,7 @@
 namespace dojo_bindings {
 
 // ============================================================================
-// Enumeraciones
+// Enumeraciones actualizadas v1.5.8
 // ============================================================================
 
 enum Ty_Tag;
@@ -36,6 +36,7 @@ enum ComparisonOperator;
 enum LogicalOperator;
 enum OrderDirection;
 enum PatternMatching;
+
 
 // ============================================================================
 // Tipos de Datos Fundamentales
@@ -52,6 +53,7 @@ struct EnumOption;
 struct MemberValue;
 struct Signature;
 
+
 // ============================================================================
 // Cliente y Conexión
 // ============================================================================
@@ -63,6 +65,7 @@ struct Account; //Deprecated
 struct Controller;
 struct Event;
 struct Subscription;
+
 
 // ============================================================================
 // Metadatos y Modelos
@@ -100,6 +103,7 @@ struct OrderBy;
 struct Call;
 struct BlockId;
 struct Policy;
+
 
 // ============================================================================
 // Páginas y Paginación

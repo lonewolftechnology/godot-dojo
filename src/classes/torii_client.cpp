@@ -155,14 +155,14 @@ Dictionary ToriiClient::get_world_metadata()
         return Logger::error_dict("Client not connected");
     }
 
-    DOJO::ResultWorldMetadata resMetadata = DOJO::client_metadata(client);
+    DOJO::ResultWorld resMetadata = DOJO::client_metadata(client);
 
-    if (resMetadata.tag == DOJO::ErrWorldMetadata)
+    if (resMetadata.tag == DOJO::ErrWorld)
     {
         return Logger::error_dict("Error al obtener metadatos: ", GET_DOJO_ERROR(resMetadata));
     }
 
-    DOJO::WorldMetadata metadata = GET_DOJO_OK(resMetadata);
+    DOJO::World metadata = GET_DOJO_OK(resMetadata);
     Dictionary result = {};
 
     TypedArray<Dictionary> models_array = ArrayDojo(metadata.models).get_value();
@@ -222,7 +222,7 @@ TypedArray<Dictionary> ToriiClient::get_controllers(const TypedArray<String>& ad
     }
     std::vector<dojo_bindings::FieldElement> contract_addresses = FieldElement::create_array(addresses);
     Logger::debug_extra("TORII CLIENT", "Address size: ", contract_addresses.size());
-    DOJO::ResultCArrayController resControllers = DOJO::client_controllers(
+    DOJO::ResultPageController resControllers = DOJO::client_controllers(
         client, contract_addresses.data(), contract_addresses.size()
     );
 
