@@ -1,7 +1,7 @@
 # CHAIN ID WP_GODOT_DEMO_ROOKIE
 # TORII https://api.cartridge.gg/x/godot-demo-rookie/torii
 # WORLD 0x07cb912d0029e3799c4b8f2253b21481b2ec814c5daf72de75164ca82e7c42a5
-# Actions 0x03ee3ddd82fd914aaa2c03bf6d0b1a90a4d7e24a6c9934c037b2ee9f5f7acb5b
+# Actions 0x0393f8a2d0d47e384c3c61eedc08d2873f5d608f8da7ffb013e5d5aa327ac8f2
 
 class_name DemoGame
 extends Node
@@ -93,11 +93,14 @@ func _on_start_screen_entered() -> void:
 
 
 func get_controllers() -> void:
-	var data = Connection.client.get_controllers()
+	var addrs:Array = []
+	#addrs.append(Connection.controller_account.get_address())
+	var data = Connection.client.get_controllers(addrs)
 	for controller in data:
 		controllers_manager.spawn_entity(controller)
 	
 	await get_tree().create_timer(0.2).timeout
+	print(controllers_manager.get_child_count())
 
 func get_entities() -> void:
 	var query = {
@@ -162,3 +165,11 @@ func _on_move_to_pressed() -> void:
 	move_to.calldata[0][0] = x
 	move_to.calldata[0][1] = y
 	Connection.controller_account.execute_from_outside(move_to)
+
+
+func _on_disconnect_pressed() -> void:
+	Connection.controller_account.disconnect_controller()
+	controllers_manager.clear_all_controllers()
+	await get_tree().process_frame
+	
+	get_tree().reload_current_scene()

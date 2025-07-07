@@ -2,7 +2,7 @@ extends Node
 # CHAIN ID WP_GODOT_DEMO_ROOKIE
 # TORII https://api.cartridge.gg/x/godot-demo-rookie/torii
 # WORLD 0x07cb912d0029e3799c4b8f2253b21481b2ec814c5daf72de75164ca82e7c42a5
-# Actions 0x03ee3ddd82fd914aaa2c03bf6d0b1a90a4d7e24a6c9934c037b2ee9f5f7acb5b
+# Actions 0x0393f8a2d0d47e384c3c61eedc08d2873f5d608f8da7ffb013e5d5aa327ac8f2
 enum Directions{
 	LEFT = 0,
 	RIGHT = 1,

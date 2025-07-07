@@ -198,20 +198,6 @@ DOJO::CArrayFieldElement array_to_felt_array(const Array& data)
     return felt_array;
 }
 
-DOJO::Call create_call_from_data(const String& contract_address, const String& selector, const Array& calldata)
-{
-    DOJO::Call call = {};
-    call.to = FieldElement::from_string(contract_address);
-    call.selector = selector.utf8().get_data();
-
-    if (!calldata.is_empty())
-    {
-        Logger::debug_extra("CALLDATA", Variant(calldata.size()));
-        call.calldata = array_to_felt_array(calldata);
-    }
-
-    return call;
-}
 
 void ControllerAccount::execute_from_outside(const Ref<DojoCall>& action)
 {

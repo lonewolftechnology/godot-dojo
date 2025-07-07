@@ -73,7 +73,7 @@ FieldElement::FieldElement(TypedArray<String>& addresses)
         }
         else
         {
-            Logger::error("Invalid address: ", address);
+            Logger::error("[FELT]Invalid address: ", address);
         }
     }
 }
@@ -262,16 +262,9 @@ std::vector<DOJO::FieldElement> FieldElement::create_array(TypedArray<String> ar
     for (int i = 0; i < array.size(); i++)
     {
         String address = array[i];
-        if (address.length() == 42)
-        {
-            DOJO::FieldElement field_elem = FieldElement::from_string(address);
-            result[i] = field_elem;
-        }
-        else
-        {
-            Logger::error("Invalid address: ", address);
-            result[i] = {};
-        }
+
+        DOJO::FieldElement field_elem = from_string(address);
+        result[i] = field_elem;
     }
     return result;
 }

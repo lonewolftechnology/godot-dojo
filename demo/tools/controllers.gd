@@ -42,8 +42,9 @@ func move_controller(id:String, vec:Vector2)->void:
 
 func spawn_entity(_data:Dictionary, is_player:bool = false):
 	var address = _data["address"]
-	var username = _data["username"]
-	prints("Controller", address)
+	var username:String = _data["username"]
+	if username.begins_with("0x"): return
+	#prints("Controller", address)
 	if find_user(address): return
 	var new_entity:GenericEntity
 	if is_player:
@@ -66,4 +67,9 @@ func _unhandled_input(event: InputEvent) -> void:
 
 	if event is InputEventMouseMotion && Input.is_mouse_button_pressed(MOUSE_BUTTON_RIGHT):
 		camera.position -= event.relative * 1/camera.zoom
-		
+
+func clear_all_controllers():
+	get_children().any(
+		func(c:Node2D):
+			c.queue_free()
+	)
