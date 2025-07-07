@@ -155,14 +155,14 @@ Dictionary ToriiClient::get_world_metadata()
         return Logger::error_dict("Client not connected");
     }
 
-    DOJO::ResultWorld resMetadata = DOJO::client_metadata(client);
+    DOJO::ResultWorldMetadata resMetadata = DOJO::client_metadata(client);
 
-    if (resMetadata.tag == DOJO::ErrWorld)
+    if (resMetadata.tag == DOJO::ErrWorldMetadata)
     {
         return Logger::error_dict("Error al obtener metadatos: ", GET_DOJO_ERROR(resMetadata));
     }
 
-    DOJO::World metadata = GET_DOJO_OK(resMetadata);
+    DOJO::WorldMetadata metadata = GET_DOJO_OK(resMetadata);
     Dictionary result = {};
 
     TypedArray<Dictionary> models_array = ArrayDojo(metadata.models).get_value();
@@ -222,7 +222,7 @@ TypedArray<Dictionary> ToriiClient::get_controllers(const TypedArray<String>& ad
     }
     std::vector<dojo_bindings::FieldElement> contract_addresses = FieldElement::create_array(addresses);
     Logger::debug_extra("TORII CLIENT", "Address size: ", contract_addresses.size());
-    DOJO::ResultPageController resControllers = DOJO::client_controllers(
+    DOJO::ResultCArrayController resControllers = DOJO::client_controllers(
         client, contract_addresses.data(), contract_addresses.size()
     );
 
@@ -338,38 +338,37 @@ void ToriiClient::cancel_all_subscriptions()
 
 bool ToriiClient::publish_message(const String& message_data, const Array& signature_felts)
 {
-    if (!is_client_connected())
-    {
-        Logger::error("Cliente no conectado");
-        return false;
-    }
-
-    std::vector<DOJO::FieldElement> felts;
-    for (int i = 0; i < signature_felts.size(); i++)
-    {
-        Ref<FieldElement> felt_ref = signature_felts[i];
-        if (felt_ref.is_valid())
-        {
-            felts.push_back(*felt_ref->get_felt());
-        }
-    }
-
-    DOJO::ResultFieldElement result = DOJO::client_publish_message(
-        client,
-        message_data.utf8().get_data(),
-        felts.data(),
-        felts.size()
-    );
-
-    if (result.tag == DOJO::ErrFieldElement)
-    {
-        Logger::error("Error al publicar mensaje: ", GET_DOJO_ERROR(result));
-        return false;
-    }
-
-    FieldElement msg_hash(GET_DOJO_OK(result));
-    Logger::success("Mensaje publicado: ", msg_hash.to_string());
-    emit_signal("message_published", msg_hash.to_string());
+    Logger::info("publish_message not implemented... yet");
+    // if (!is_client_connected())
+    // {
+    //     Logger::error("Cliente no conectado");
+    //     return false;
+    // }
+    //
+    // std::vector<DOJO::FieldElement> felts;
+    // for (int i = 0; i < signature_felts.size(); i++)
+    // {
+    //     Ref<FieldElement> felt_ref = signature_felts[i];
+    //     if (felt_ref.is_valid())
+    //     {
+    //         felts.push_back(*felt_ref->get_felt());
+    //     }
+    // }
+    //
+    // DOJO::ResultFieldElement result = DOJO::client_publish_message(
+    //     client,
+    //     message_data.utf8().get_data()
+    // );
+    //
+    // if (result.tag == DOJO::ErrFieldElement)
+    // {
+    //     Logger::error("Error al publicar mensaje: ", GET_DOJO_ERROR(result));
+    //     return false;
+    // }
+    //
+    // FieldElement msg_hash(GET_DOJO_OK(result));
+    // Logger::success("Mensaje publicado: ", msg_hash.to_string());
+    // emit_signal("message_published", msg_hash.to_string());
 
     return true;
 }
