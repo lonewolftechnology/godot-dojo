@@ -201,8 +201,7 @@ Variant ArrayDojo::CArrayOrderByToVariant(DOJO::CArrayOrderBy array)
     for (const auto& orderby : array_order_by_vector)
     {
         Dictionary data = {};
-        data["model"] = orderby.model;
-        data["member"] = orderby.member;
+        data["field"] = orderby.field;
         data["direction"] = static_cast<uint8_t>(orderby.direction);
         result.append(data);
     }
