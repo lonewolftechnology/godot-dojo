@@ -60,7 +60,6 @@ public:
         String message = logger_internal::concat_all(args...);
         Dictionary result = {};
         result["error"] = message;
-        error(message);
         return result;
     }
 
