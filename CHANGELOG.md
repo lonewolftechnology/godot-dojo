@@ -1,12 +1,16 @@
 # CHANGELOG
 
+## [Unreleased]
+
 ### Added
+- Double precision support with dedicated build workflow
 - `DojoHelpers` can now convert any `float` to fixed point and vice versa, with utility tools for 64, 128, and 256-bit integers (configurable in Project Settings).
 - Added default project configuration.
 - Experimental build support for Android.
 - Initial WebAssembly support: RUSTFLAGS configuration and Rust library handling in SConstruct.
 
 ### Improved
+- Updated to dojo.c version 1.5.9
 - Cleanup and refactor of type conversions.
 - Refactored calldata generation: now supports any struct as an array.
 - Improved calldata generation and removed deprecated methods.
@@ -20,3 +24,6 @@
 
 ### Notes
 - 128-bit and 256-bit fixed conversions are **not guaranteed to work yet**.
+
+## [v0.0.2-dev]
+Initial development release.
