@@ -33,6 +33,19 @@ jobs:
           echo "$LATEST_CHANGELOG" >> $GITHUB_OUTPUT
           echo "EOF" >> $GITHUB_OUTPUT
 
+      - name: Check if tag is from dev branch
+        id: check_branch
+        run: |
+          # Get the commit that the tag points to
+          TAG_COMMIT=$(git rev-list -n 1 ${{ github.ref }})
+
+          # Check if this commit is part of the dev branch
+          if git branch -r --contains $TAG_COMMIT | grep -q "origin/dev"; then
+            echo "is_dev_branch=true" >> $GITHUB_OUTPUT
+          else
+            echo "is_dev_branch=false" >> $GITHUB_OUTPUT
+          fi
+
       - name: Create release
         id: create_release
         uses: softprops/action-gh-release@v2
@@ -49,7 +62,7 @@ jobs:
 
             [View full changelog](https://github.com/${{ github.repository }}/blob/main/CHANGELOG.md)
           draft: false
-          prerelease: false
+          prerelease: ${{ steps.check_branch.outputs.is_dev_branch == 'true' }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
