@@ -13,7 +13,6 @@
 #include "classes/torii_client.h"
 #include <vector>
 
-#include "resources/dojo_policy.h"
 
 //TODO: refactor a instancia global en vez de singleton
 ControllerAccount* ControllerAccount::singleton = nullptr;
@@ -72,7 +71,7 @@ void ControllerAccount::setup()
     create(policies);
 }
 
-// TODO: refactor a estatico
+// TODO: refactor static?
 void ControllerAccount::create(const Ref<DojoPolicies>& policies_data)
 {
     String rpc_url = ProjectSettings::get_singleton()->get("dojo/config/katana/rpc_url");
@@ -150,7 +149,7 @@ String ControllerAccount::get_username() const
     {
         return "";
     }
-    return String(DOJO::controller_username(session_account));
+    return {DOJO::controller_username(session_account)};
 }
 
 String ControllerAccount::get_address() const
@@ -214,13 +213,19 @@ void ControllerAccount::execute_from_outside(const Ref<DojoCall>& action)
     Array args = action->get_calldata();
     DOJO::FieldElement* felts = nullptr;
     Logger::debug_extra("Controller", "Building Call");
+    DOJO::Call call = {
+        actions,
+        selector.c_str(),
+    };
     if (calldata_len > 0)
     {
+        Logger::debug_extra("Controller", "Building Calldata");
+
         Array final_args = {};
 
         for (int i = 0; i < calldata_len; i++)
         {
-            Variant arg = args[i];
+            const Variant& arg = args[i];
             switch (arg.get_type())
             {
             case Variant::Type::ARRAY:
@@ -243,22 +248,21 @@ void ControllerAccount::execute_from_outside(const Ref<DojoCall>& action)
         Logger::custom("CALLDATA", calldata_len);
         calldata_len = final_args.size();
         Logger::debug_extra("CALLDATA", calldata_len, Variant(final_args).stringify());
-        felts = static_cast<DOJO::FieldElement *>(malloc(sizeof(*felts) * calldata_len));
+        felts = static_cast<DOJO::FieldElement*>(malloc(sizeof(*felts) * calldata_len));
         memset(felts, 0, sizeof(*felts) * calldata_len);
         for (int i = 0; i < calldata_len; i++)
         {
-            Variant arg = final_args[i];
-            felts[i] = FieldElement::from_string(arg.stringify());
+            const Variant& arg = final_args[i];
+            felts[i] = FieldElement::from_string(arg);
         }
-    }
-    DOJO::Call call = {
-        actions,
-        selector.c_str(),
-        {
+
+        call.calldata = {
             felts,
             calldata_len
-        }
-    };
+        };
+        Logger::debug_extra("CALLDATA", "Calldata added, size:", call.calldata.data_len);
+    }
+
 
     Logger::debug_extra("CALL", Variant(call.selector));
     DOJO::ResultFieldElement result = DOJO::controller_execute_from_outside(
@@ -275,8 +279,7 @@ void ControllerAccount::execute_from_outside(const Ref<DojoCall>& action)
         DOJO::wait_for_transaction(provider, GET_DOJO_OK(result));
         Logger::success_extra("EXECUTED", call.selector);
     }
-    free(felts,nullptr);
-    // ::free(felts);
+    free(felts, nullptr);
 }
 
 Dictionary ControllerAccount::get_account_info() const
