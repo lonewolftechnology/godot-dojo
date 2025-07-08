@@ -27,7 +27,7 @@ list(APPEND CMAKE_MODULE_PATH "${godot-cpp_SOURCE_DIR}/cmake")
 FetchContent_Declare(
     dojo_c
     GIT_REPOSITORY https://github.com/dojoengine/dojo.c.git
-    GIT_TAG v1.5.8
+    GIT_TAG v1.5.9
 )
 FetchContent_MakeAvailable(dojo_c)
 

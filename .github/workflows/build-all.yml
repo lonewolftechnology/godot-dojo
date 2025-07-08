@@ -10,26 +10,13 @@ env:
   CARGO_TERM_COLOR: always
 
 jobs:
-  build:
-    name: Build ${{ matrix.target_os }}-${{ matrix.arch }}-${{ matrix.precision }}
-    runs-on: ${{ matrix.runner }}
+  build-linux:
+    name: Build Linux-x86_64-${{ matrix.precision }}
+    runs-on: ubuntu-latest
     strategy:
       fail-fast: false
       matrix:
         precision: [standard, double]
-        include:
-          - target_os: linux
-            arch: x86_64
-            runner: ubuntu-latest
-          - target_os: macos
-            arch: x86_64
-            runner: macos-latest
-          - target_os: macos
-            arch: arm64
-            runner: macos-latest
-          - target_os: windows
-            arch: x86_64
-            runner: windows-latest
 
     steps:
       - name: Checkout code
@@ -38,16 +25,287 @@ jobs:
           submodules: true
           fetch-depth: 0
 
-      - name: Install build dependencies (Linux)
-        if: matrix.target_os == 'linux'
+      - name: Install build dependencies
         run: sudo apt-get update && sudo apt-get install -y build-essential pkg-config libdbus-1-dev protobuf-compiler libprotobuf-dev
 
-      - name: Install build dependencies (macOS)
-        if: matrix.target_os == 'macos'
+      - name: Set up Rust stable
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: stable
+          override: true
+
+      - name: Cache Rust dependencies
+        uses: actions/cache@v3
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            external/dojo.c/target
+          key: ${{ runner.os }}-cargo-${{ matrix.precision }}-linux-x86_64-${{ hashFiles('**/Cargo.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-cargo-${{ matrix.precision }}-linux-x86_64-
+            ${{ runner.os }}-cargo-${{ matrix.precision }}-linux-
+            ${{ runner.os }}-cargo-${{ matrix.precision }}-
+
+      - name: Install scons
+        run: pip install scons
+
+      - name: Cache SCons and godot-cpp build artifacts
+        uses: actions/cache@v3
+        with:
+          path: |
+            .sconsign.dblite
+            bin/
+            external/godot-cpp/bin/
+            external/godot-cpp/.sconsign.dblite
+            external/godot-cpp/gen/
+            external/godot-cpp/__pycache__/
+          key: ${{ runner.os }}-scons-${{ matrix.precision }}-linux-x86_64-${{ hashFiles('**/*.cpp', '**/*.h', 'SConstruct', 'external/godot-cpp/**/*.cpp', 'external/godot-cpp/**/*.h') }}
+          restore-keys: |
+            ${{ runner.os }}-scons-${{ matrix.precision }}-linux-x86_64-
+            ${{ runner.os }}-scons-${{ matrix.precision }}-linux-
+
+      - name: Build both (release & debug)
+        shell: bash
+        run: |
+          set -e
+          PLATFORM_ARG="platform=linux"
+          ARCH_ARG="arch=x86_64"
+          PRECISION_ARG=""
+          export CARGO_BUILD_TARGET=x86_64-unknown-linux-gnu
+
+          # Set precision argument if building double precision
+          if [ "${{ matrix.precision }}" = "double" ]; then
+            PRECISION_ARG="precision=double"
+          fi
+
+          mkdir -p demo/bin
+
+          # Debug
+          scons $PLATFORM_ARG $ARCH_ARG target=template_debug $PRECISION_ARG -j2
+
+          # Release
+          scons $PLATFORM_ARG $ARCH_ARG target=template_release $PRECISION_ARG -j2
+
+      - name: Upload binaries for this target
+        uses: actions/upload-artifact@v4
+        with:
+          name: bin-${{ matrix.precision }}-linux-x86_64
+          path: |
+            demo/bin/*
+            demo/bin/*.gdextension
+          if-no-files-found: error
+
+  build-macos-x86_64:
+    name: Build macOS-x86_64-${{ matrix.precision }}
+    runs-on: macos-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        precision: [standard, double]
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          submodules: true
+          fetch-depth: 0
+
+      - name: Install build dependencies
         run: brew install protobuf
 
-      - name: Install build dependencies (Windows)
-        if: matrix.target_os == 'windows'
+      - name: Set up Rust stable
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: stable
+          override: true
+
+      - name: Add target for macOS builds
+        run: rustup target add x86_64-apple-darwin
+
+      - name: Cache Rust dependencies
+        uses: actions/cache@v3
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            external/dojo.c/target
+          key: ${{ runner.os }}-cargo-${{ matrix.precision }}-macos-x86_64-${{ hashFiles('**/Cargo.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-cargo-${{ matrix.precision }}-macos-x86_64-
+            ${{ runner.os }}-cargo-${{ matrix.precision }}-macos-
+            ${{ runner.os }}-cargo-${{ matrix.precision }}-
+
+      - name: Install scons
+        run: pip install scons
+
+      - name: Cache SCons and godot-cpp build artifacts
+        uses: actions/cache@v3
+        with:
+          path: |
+            .sconsign.dblite
+            bin/
+            external/godot-cpp/bin/
+            external/godot-cpp/.sconsign.dblite
+            external/godot-cpp/gen/
+            external/godot-cpp/__pycache__/
+          key: ${{ runner.os }}-scons-${{ matrix.precision }}-macos-x86_64-${{ hashFiles('**/*.cpp', '**/*.h', 'SConstruct', 'external/godot-cpp/**/*.cpp', 'external/godot-cpp/**/*.h') }}
+          restore-keys: |
+            ${{ runner.os }}-scons-${{ matrix.precision }}-macos-x86_64-
+            ${{ runner.os }}-scons-${{ matrix.precision }}-macos-
+
+      - name: Build both (release & debug)
+        shell: bash
+        run: |
+          set -e
+          PLATFORM_ARG="platform=macos"
+          ARCH_ARG="arch=x86_64"
+          PRECISION_ARG=""
+          export CARGO_BUILD_TARGET=x86_64-apple-darwin
+
+          # Set macOS deployment target to 14.0 to ensure compatibility
+          export MACOSX_DEPLOYMENT_TARGET=14.0
+          # Add deployment target to RUSTFLAGS
+          export RUSTFLAGS="${RUSTFLAGS:+$RUSTFLAGS }-C link-arg=-mmacosx-version-min=14.0"
+          echo "Setting macOS deployment target to 14.0"
+          echo "MACOSX_DEPLOYMENT_TARGET=$MACOSX_DEPLOYMENT_TARGET"
+          echo "RUSTFLAGS=$RUSTFLAGS"
+
+          # Set precision argument if building double precision
+          if [ "${{ matrix.precision }}" = "double" ]; then
+            PRECISION_ARG="precision=double"
+          fi
+
+          mkdir -p demo/bin
+
+          # Debug
+          scons $PLATFORM_ARG $ARCH_ARG target=template_debug $PRECISION_ARG -j2
+
+          # Release
+          scons $PLATFORM_ARG $ARCH_ARG target=template_release $PRECISION_ARG -j2
+
+      - name: Upload binaries for this target
+        uses: actions/upload-artifact@v4
+        with:
+          name: bin-${{ matrix.precision }}-macos-x86_64
+          path: |
+            demo/bin/*
+            demo/bin/*.gdextension
+          if-no-files-found: error
+
+  build-macos-arm64:
+    name: Build macOS-arm64-${{ matrix.precision }}
+    runs-on: macos-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        precision: [standard, double]
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          submodules: true
+          fetch-depth: 0
+
+      - name: Install build dependencies
+        run: brew install protobuf
+
+      - name: Set up Rust stable
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: stable
+          override: true
+
+      - name: Add target for macOS builds
+        run: rustup target add aarch64-apple-darwin
+
+      - name: Cache Rust dependencies
+        uses: actions/cache@v3
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            external/dojo.c/target
+          key: ${{ runner.os }}-cargo-${{ matrix.precision }}-macos-arm64-${{ hashFiles('**/Cargo.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-cargo-${{ matrix.precision }}-macos-arm64-
+            ${{ runner.os }}-cargo-${{ matrix.precision }}-macos-
+            ${{ runner.os }}-cargo-${{ matrix.precision }}-
+
+      - name: Install scons
+        run: pip install scons
+
+      - name: Cache SCons and godot-cpp build artifacts
+        uses: actions/cache@v3
+        with:
+          path: |
+            .sconsign.dblite
+            bin/
+            external/godot-cpp/bin/
+            external/godot-cpp/.sconsign.dblite
+            external/godot-cpp/gen/
+            external/godot-cpp/__pycache__/
+          key: ${{ runner.os }}-scons-${{ matrix.precision }}-macos-arm64-${{ hashFiles('**/*.cpp', '**/*.h', 'SConstruct', 'external/godot-cpp/**/*.cpp', 'external/godot-cpp/**/*.h') }}
+          restore-keys: |
+            ${{ runner.os }}-scons-${{ matrix.precision }}-macos-arm64-
+            ${{ runner.os }}-scons-${{ matrix.precision }}-macos-
+
+      - name: Build both (release & debug)
+        shell: bash
+        run: |
+          set -e
+          PLATFORM_ARG="platform=macos"
+          ARCH_ARG="arch=arm64"
+          PRECISION_ARG=""
+          export CARGO_BUILD_TARGET=aarch64-apple-darwin
+
+          # Set macOS deployment target to 14.0 to ensure compatibility
+          export MACOSX_DEPLOYMENT_TARGET=14.0
+          # Add deployment target to RUSTFLAGS
+          export RUSTFLAGS="${RUSTFLAGS:+$RUSTFLAGS }-C link-arg=-mmacosx-version-min=14.0"
+          echo "Setting macOS deployment target to 14.0"
+          echo "MACOSX_DEPLOYMENT_TARGET=$MACOSX_DEPLOYMENT_TARGET"
+          echo "RUSTFLAGS=$RUSTFLAGS"
+
+          # Set precision argument if building double precision
+          if [ "${{ matrix.precision }}" = "double" ]; then
+            PRECISION_ARG="precision=double"
+          fi
+
+          mkdir -p demo/bin
+
+          # Debug
+          scons $PLATFORM_ARG $ARCH_ARG target=template_debug $PRECISION_ARG -j2
+
+          # Release
+          scons $PLATFORM_ARG $ARCH_ARG target=template_release $PRECISION_ARG -j2
+
+      - name: Upload binaries for this target
+        uses: actions/upload-artifact@v4
+        with:
+          name: bin-${{ matrix.precision }}-macos-arm64
+          path: |
+            demo/bin/*
+            demo/bin/*.gdextension
+          if-no-files-found: error
+
+  build-windows:
+    name: Build Windows-x86_64-${{ matrix.precision }}
+    runs-on: windows-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        precision: [standard, double]
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          submodules: true
+          fetch-depth: 0
+
+      - name: Install build dependencies
         run: choco install protoc
 
       - name: Set up Rust stable
@@ -63,20 +321,11 @@ jobs:
             ~/.cargo/registry
             ~/.cargo/git
             external/dojo.c/target
-          key: ${{ runner.os }}-cargo-${{ matrix.precision }}-${{ matrix.target_os }}-${{ matrix.arch }}-${{ hashFiles('**/Cargo.lock') }}
+          key: ${{ runner.os }}-cargo-${{ matrix.precision }}-windows-x86_64-${{ hashFiles('**/Cargo.lock') }}
           restore-keys: |
-            ${{ runner.os }}-cargo-${{ matrix.precision }}-${{ matrix.target_os }}-${{ matrix.arch }}-
-            ${{ runner.os }}-cargo-${{ matrix.precision }}-${{ matrix.target_os }}-
+            ${{ runner.os }}-cargo-${{ matrix.precision }}-windows-x86_64-
+            ${{ runner.os }}-cargo-${{ matrix.precision }}-windows-
             ${{ runner.os }}-cargo-${{ matrix.precision }}-
-
-      - name: Add target for macOS builds
-        if: matrix.target_os == 'macos'
-        run: |
-          if [ "${{ matrix.arch }}" = "arm64" ]; then
-            rustup target add aarch64-apple-darwin
-          else
-            rustup target add x86_64-apple-darwin
-          fi
 
       - name: Install scons
         run: pip install scons
@@ -91,49 +340,23 @@ jobs:
             external/godot-cpp/.sconsign.dblite
             external/godot-cpp/gen/
             external/godot-cpp/__pycache__/
-          key: ${{ runner.os }}-scons-${{ matrix.precision }}-${{ matrix.target_os }}-${{ matrix.arch }}-${{ hashFiles('**/*.cpp', '**/*.h', 'SConstruct', 'external/godot-cpp/**/*.cpp', 'external/godot-cpp/**/*.h') }}
+          key: ${{ runner.os }}-scons-${{ matrix.precision }}-windows-x86_64-${{ hashFiles('**/*.cpp', '**/*.h', 'SConstruct', 'external/godot-cpp/**/*.cpp', 'external/godot-cpp/**/*.h') }}
           restore-keys: |
-            ${{ runner.os }}-scons-${{ matrix.precision }}-${{ matrix.target_os }}-${{ matrix.arch }}-
-            ${{ runner.os }}-scons-${{ matrix.precision }}-${{ matrix.target_os }}-
+            ${{ runner.os }}-scons-${{ matrix.precision }}-windows-x86_64-
+            ${{ runner.os }}-scons-${{ matrix.precision }}-windows-
 
       - name: Build both (release & debug)
         shell: bash
         run: |
           set -e
-          PLATFORM_ARG=""
-          ARCH_ARG=""
+          PLATFORM_ARG="platform=windows"
+          ARCH_ARG="arch=x86_64"
           PRECISION_ARG=""
+          export CARGO_BUILD_TARGET=x86_64-pc-windows-msvc
 
           # Set precision argument if building double precision
           if [ "${{ matrix.precision }}" = "double" ]; then
             PRECISION_ARG="precision=double"
-          fi
-
-          if [ "${{ matrix.target_os }}" = "macos" ]; then
-            PLATFORM_ARG="platform=macos"
-            # Set macOS deployment target to 14.0 to ensure compatibility
-            export MACOSX_DEPLOYMENT_TARGET=14.0
-            # Add deployment target to RUSTFLAGS
-            export RUSTFLAGS="${RUSTFLAGS:+$RUSTFLAGS }-C link-arg=-mmacosx-version-min=14.0"
-            echo "Setting macOS deployment target to 14.0"
-            echo "MACOSX_DEPLOYMENT_TARGET=$MACOSX_DEPLOYMENT_TARGET"
-            echo "RUSTFLAGS=$RUSTFLAGS"
-
-            if [ "${{ matrix.arch }}" = "arm64" ]; then
-              ARCH_ARG="arch=arm64"
-              export CARGO_BUILD_TARGET=aarch64-apple-darwin
-            else
-              ARCH_ARG="arch=x86_64"
-              export CARGO_BUILD_TARGET=x86_64-apple-darwin
-            fi
-          elif [ "${{ matrix.target_os }}" = "linux" ]; then
-            PLATFORM_ARG="platform=linux"
-            ARCH_ARG="arch=x86_64"
-            export CARGO_BUILD_TARGET=x86_64-unknown-linux-gnu
-          elif [ "${{ matrix.target_os }}" = "windows" ]; then
-            PLATFORM_ARG="platform=windows"
-            ARCH_ARG="arch=x86_64"
-            export CARGO_BUILD_TARGET=x86_64-pc-windows-msvc
           fi
 
           mkdir -p demo/bin
@@ -147,16 +370,16 @@ jobs:
       - name: Upload binaries for this target
         uses: actions/upload-artifact@v4
         with:
-          name: bin-${{ matrix.precision }}-${{ matrix.target_os }}-${{ matrix.arch }}
+          name: bin-${{ matrix.precision }}-windows-x86_64
           path: |
-            ${{ matrix.target_os == 'windows' && 'demo/bin/*.dll' || 'demo/bin/*' }}
+            demo/bin/*.dll
             demo/bin/*.gdextension
           if-no-files-found: error
 
   package:
     name: Combine all binaries and create zip files
     runs-on: ubuntu-latest
-    needs: build
+    needs: [build-linux, build-macos-x86_64, build-macos-arm64, build-windows]
     if: startsWith(github.ref, 'refs/tags/')
 
     steps:
