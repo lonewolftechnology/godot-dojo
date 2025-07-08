@@ -43,7 +43,6 @@ func move_controller(id:String, vec:Vector2)->void:
 func spawn_entity(_data:Dictionary, is_player:bool = false):
 	var address = _data["address"]
 	var username:String = _data["username"]
-	if username.begins_with("0x"): return
 	#prints("Controller", address)
 	if find_user(address): return
 	var new_entity:GenericEntity

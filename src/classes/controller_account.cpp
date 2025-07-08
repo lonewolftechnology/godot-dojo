@@ -275,6 +275,8 @@ void ControllerAccount::execute_from_outside(const Ref<DojoCall>& action)
         DOJO::wait_for_transaction(provider, GET_DOJO_OK(result));
         Logger::success_extra("EXECUTED", call.selector);
     }
+    free(felts,nullptr);
+    // ::free(felts);
 }
 
 Dictionary ControllerAccount::get_account_info() const

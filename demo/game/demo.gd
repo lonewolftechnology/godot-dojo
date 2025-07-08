@@ -86,8 +86,8 @@ func _on_start_screen_entered() -> void:
 	Connection.create_subscriptions(_on_events,_on_entities)
 	await get_tree().create_timer(0.5).timeout
 	spawn(false)
-	await get_tree().create_timer(0.5).timeout
-	get_controllers()
+	#await get_tree().create_timer(0.5).timeout
+	#get_controllers()
 	await get_tree().create_timer(0.5).timeout
 	get_entities()
 
