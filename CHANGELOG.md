@@ -10,7 +10,8 @@
 - Initial WebAssembly support: RUSTFLAGS configuration and Rust library handling in SConstruct.
 
 ### Improved
-- Updated to dojo.c version 1.5.9
+- Updated to dojo.c version 1.6.0.alpha.0
+- Improved GitHub workflow: tags created from dev branch are now automatically marked as pre-releases
 - Cleanup and refactor of type conversions.
 - Refactored calldata generation: now supports any struct as an array.
 - Improved calldata generation and removed deprecated methods.
