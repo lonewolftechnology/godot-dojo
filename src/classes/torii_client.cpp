@@ -155,14 +155,14 @@ Dictionary ToriiClient::get_world_metadata()
         return Logger::error_dict("Client not connected");
     }
 
-    DOJO::ResultWorldMetadata resMetadata = DOJO::client_metadata(client);
+    DOJO::ResultWorld resMetadata = DOJO::client_metadata(client);
 
-    if (resMetadata.tag == DOJO::ErrWorldMetadata)
+    if (resMetadata.tag == DOJO::ErrWorld)
     {
         return Logger::error_dict("Error al obtener metadatos: ", GET_DOJO_ERROR(resMetadata));
     }
 
-    DOJO::WorldMetadata metadata = GET_DOJO_OK(resMetadata);
+    DOJO::World metadata = GET_DOJO_OK(resMetadata);
     Dictionary result = {};
 
     TypedArray<Dictionary> models_array = ArrayDojo(metadata.models).get_value();
@@ -222,17 +222,26 @@ TypedArray<Dictionary> ToriiClient::get_controllers(const TypedArray<String>& ad
     }
     std::vector<dojo_bindings::FieldElement> contract_addresses = FieldElement::create_array(addresses);
     Logger::debug_extra("TORII CLIENT", "Address size: ", contract_addresses.size());
-    DOJO::ResultCArrayController resControllers = DOJO::client_controllers(
-        client, contract_addresses.data(), contract_addresses.size()
+
+    DOJO::COptionu32 coption = {};
+    coption.tag = DOJO::COptionu32_Tag::Noneu32;
+
+    DOJO::COptionc_char coption_addresses = {};
+    coption_addresses.tag = DOJO::COptionc_char_Tag::Nonec_char;
+
+    DOJO::FieldElement nulled = FieldElement::nulled();
+
+    DOJO::ResultPageController resControllers = DOJO::client_controllers(
+        client, &nulled, 0, String().utf8().get_data(), 0, coption, coption_addresses
     );
 
-    if (resControllers.tag == DOJO::ErrCArrayController)
+    if (resControllers.tag == DOJO::ErrPageController)
     {
         Logger::error("Error obtaining controllers: ", GET_DOJO_ERROR(resControllers));
         return {Logger::error_dict("Error obtaining controllers: ", GET_DOJO_ERROR(resControllers))};
     }
 
-    DOJO::CArrayController controllers = resControllers.ok;
+    DOJO::PageController controllers = GET_DOJO_OK(resControllers);
     TypedArray<Dictionary> result = ArrayDojo(controllers).get_value();
 
     Logger::success("Controllers obtained: ", String::num_int64(result.size()));
@@ -425,7 +434,7 @@ DOJO::Query ToriiClient::create_query_from_dict(const Dictionary& query_params)
     DOJO::Pagination pagination = {};
     Logger::info("Pagination Creation");
     Dictionary pagination_dict = query_params.get("pagination", {});
-    pagination.limit = query_params.get("limit", 10);
+    pagination.limit.some = query_params.get("limit", 10);
     String cursor = pagination_dict.get("cursor", "");
     if (cursor.is_empty())
     {
@@ -495,7 +504,7 @@ DOJO::Pagination ToriiClient::create_pagination_from_dict(const Dictionary& pagi
 {
     DOJO::Pagination pagination = {};
 
-    pagination.limit = pagination_params.get("limit", 10);
+    pagination.limit.some = pagination_params.get("limit", 10);
     pagination.cursor.tag = DOJO::COptionc_char_Tag::Nonec_char;
 
     String direction = pagination_params.get("direction", "forward");
