@@ -471,7 +471,7 @@ DOJO::Query ToriiClient::create_query_from_dict(const Dictionary& query_params)
             uint32_t direction = data.get("order_direction", 0);
             DOJO::OrderDirection order_direction = static_cast<DOJO::OrderDirection>(direction);
             orderBy.data[i] = {
-                model_name.utf8().get_data(), member_name.utf8().get_data(), order_direction
+                model_name.utf8().get_data(), order_direction
             };
         }
     }
