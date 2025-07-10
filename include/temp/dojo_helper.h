@@ -6,7 +6,7 @@
 #define DOJO_HELPER_H
 
 #include <godot_cpp/classes/object.hpp>
-
+#include "dojo_types.h"
 using namespace godot;
 
 class DojoHelpers : public Object
@@ -41,6 +41,8 @@ public:
     // For example, in dojo_starter there is a struct called Vec2 which has two members x and y.
     // So to send a Vector2 from Godot/GDScript it should be an array of two members, x and y.
     static TypedArray<String> convert_to_string_array(const Variant& var);
+
+    static DOJO::COptionc_char create_option_from_string(const String& option = String());
 };
 
 

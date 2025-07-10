@@ -25,7 +25,6 @@ ControllerAccount::ControllerAccount()
     is_connected = false;
     provider = nullptr;
     rpc_url = ProjectSettings::get_singleton()->get("dojo/config/katana/rpc_url");
-
 }
 
 ControllerAccount::~ControllerAccount()
@@ -210,6 +209,7 @@ void ControllerAccount::execute_from_outside(const Ref<DojoCall>& action)
         actions,
         selector.c_str(),
     };
+
     if (calldata_len > 0)
     {
         Logger::debug_extra("Controller", "Building Calldata");
@@ -233,7 +233,7 @@ void ControllerAccount::execute_from_outside(const Ref<DojoCall>& action)
                 {
                     Logger::custom("Calldata", Variant::get_type_name(arg.get_type()));
                     Logger::custom("Calldata", arg.stringify());
-                    final_args.push_back(arg);
+                    final_args.push_back(arg.stringify());
                     break;
                 }
             }
@@ -255,7 +255,7 @@ void ControllerAccount::execute_from_outside(const Ref<DojoCall>& action)
         };
         Logger::debug_extra("CALLDATA", "Calldata added, size:", call.calldata.data_len);
     }
-    
+
     Logger::debug_extra("CALL", Variant(call.selector));
     DOJO::ResultFieldElement result = DOJO::controller_execute_from_outside(
         session_account, &call, 1
@@ -268,9 +268,10 @@ void ControllerAccount::execute_from_outside(const Ref<DojoCall>& action)
         Logger::error("Selector:", action->get_selector());
         Logger::error("Error:", GET_DOJO_ERROR(result));
         // Imprimir el calldata para debug
-        for (int i = 0; i < calldata_len; i++) {
-            Logger::debug_extra("Calldata[" + String::num_int64(i) + "]", 
-                FieldElement::get_as_string(&felts[i]));
+        for (int i = 0; i < calldata_len; i++)
+        {
+            Logger::debug_extra("Calldata[" + String::num_int64(i) + "]",
+                                FieldElement::get_as_string(&felts[i]));
         }
         emit_signal("transaction_failed", GET_DOJO_ERROR(result));
     }
@@ -279,7 +280,10 @@ void ControllerAccount::execute_from_outside(const Ref<DojoCall>& action)
         DOJO::wait_for_transaction(provider, GET_DOJO_OK(result));
         Logger::success_extra("EXECUTED", call.selector);
     }
-    free(felts, nullptr);
+    if (felts)
+    {
+        free(felts, nullptr);
+    }
 }
 
 Dictionary ControllerAccount::get_account_info() const

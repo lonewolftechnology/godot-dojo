@@ -34,14 +34,14 @@ FieldElement::FieldElement(const String& hex_str, size_t max_bytes)
     // Handle first nibble separately if we have odd number of characters
     if (is_odd)
     {
-        String nibble = hex_str.substr(start_idx, 1);
+        String nibble = hex_str.substr(static_cast<int64_t>(start_idx), 1);
         felt->data[out_idx++] = static_cast<uint8_t>(nibble.hex_to_int());
     }
 
     // Process two hex digits at a time
     for (size_t i = is_odd ? 1 : 0; i < hex_length; i += 2)
     {
-        String byte_str = hex_str.substr(start_idx + i, 2);
+        String byte_str = hex_str.substr(static_cast<int64_t>(start_idx + i), 2);
         felt->data[out_idx++] = static_cast<uint8_t>(byte_str.hex_to_int());
     }
 }
@@ -95,7 +95,6 @@ DOJO::FieldElement FieldElement::from_string(const String& hex_str, size_t max_b
 {
     DOJO::FieldElement result = {};
 
-
     size_t start_idx = (hex_str.substr(0, 2) == "0x") ? 2 : 0;
     size_t hex_length = hex_str.length() - start_idx;
     bool is_odd = hex_length % 2 != 0;
@@ -110,13 +109,13 @@ DOJO::FieldElement FieldElement::from_string(const String& hex_str, size_t max_b
     size_t out_idx = 0;
     if (is_odd)
     {
-        String nibble = hex_str.substr(start_idx, 1);
+        String nibble = hex_str.substr(static_cast<int64_t>(start_idx), 1);
         result.data[out_idx++] = static_cast<uint8_t>(nibble.hex_to_int());
     }
 
     for (size_t i = is_odd ? 1 : 0; i < hex_length; i += 2)
     {
-        String byte_str = hex_str.substr(start_idx + i, 2);
+        String byte_str = hex_str.substr(static_cast<int64_t>(start_idx + i), 2);
         result.data[out_idx++] = static_cast<uint8_t>(byte_str.hex_to_int());
     }
     return result;
@@ -139,6 +138,12 @@ DOJO::FieldElement FieldElement::nulled()
     return from_enum(0);
 }
 
+DOJO::FieldElement* FieldElement::nulled_ptr()
+{
+    static DOJO::FieldElement null_felt = nulled();
+    return &null_felt;
+}
+
 PackedByteArray FieldElement::nulled_as_bytes()
 {
     return to_packed_array(nulled().data);
@@ -157,9 +162,9 @@ PackedByteArray FieldElement::as_packed_array() const
 String FieldElement::to_string() const
 {
     String ret = "0x";
-    for (size_t i = 0; i < 32; i++)
+    for (unsigned char i : felt->data)
     {
-        ret += String::num_int64(felt->data[i], 16, false);
+        ret += String::num_int64(i, 16, false);
     };
 
     return ret;
@@ -196,9 +201,9 @@ String FieldElement::bytearray_deserialize(const uintptr_t& data_len = 32)
 String FieldElement::get_as_string(DOJO::FieldElement* _felt)
 {
     String ret = "0x";
-    for (size_t i = 0; i < 32; i++)
+    for (unsigned char i : _felt->data)
     {
-        ret += String::num_int64(_felt->data[i], 16, false);
+        ret += String::num_int64(i, 16, false);
     };
 
     return ret;
@@ -207,9 +212,9 @@ String FieldElement::get_as_string(DOJO::FieldElement* _felt)
 String FieldElement::get_as_string_no_ptr(DOJO::FieldElement _felt)
 {
     String ret = "0x";
-    for (size_t i = 0; i < 32; i++)
+    for (unsigned char i : _felt.data)
     {
-        ret += String::num_int64(_felt.data[i], 16, false);
+        ret += String::num_int64(i, 16, false);
     };
 
     return ret;

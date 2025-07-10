@@ -30,6 +30,7 @@ public:
     static DOJO::FieldElement from_string(const String& hex_str, size_t max_bytes = 32);
     static dojo_bindings::FieldElement short_string_to_felt(const String& cairo_str);
     static DOJO::FieldElement nulled();
+    static DOJO::FieldElement* nulled_ptr();
     static PackedByteArray nulled_as_bytes();
     static String nulled_as_string();
 
