@@ -1,6 +1,22 @@
 # CHANGELOG
 
-## [Unreleased]
+## [v0.0.4-alpha] - 2025-07-10
+
+### Added
+- Tokens boilerplate
+- Optimized FieldElement generation
+
+### Improved
+- Optimized FieldElement::from_string
+- Removed custom dojo.c logger
+- Fixed calldata generation
+- Code cleanup and minor refactors
+- Demo reorganization
+
+### Fixed
+- Fixed CMake configuration
+
+## [v0.0.3-alpha] - 2025-07-08
 
 ### Added
 - Double precision support with dedicated build workflow
