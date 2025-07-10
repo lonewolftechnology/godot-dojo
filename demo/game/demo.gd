@@ -139,7 +139,7 @@ func get_entities() -> void:
 func _move(dir:Directions) -> void:
 	move_call.calldata[0] = dir
 	var steps:String = %StepsAmount.text
-	move_call.calldata[1] = steps
+	move_call.calldata[1] = int(steps)
 	Connection.controller_account.execute_from_outside(move_call)
 
 func _on_arrow_left_pressed() -> void:
@@ -162,8 +162,8 @@ func _on_move_to_pressed() -> void:
 		x = "0"
 	if y.is_empty() or float(y) < 0:
 		y = "0"
-	move_to.calldata[0][0] = x
-	move_to.calldata[0][1] = y
+	move_to.calldata[0][1] = int(y)
+	move_to.calldata[0][0] = int(x)
 	Connection.controller_account.execute_from_outside(move_to)
 
 

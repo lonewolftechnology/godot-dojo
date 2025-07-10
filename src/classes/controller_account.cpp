@@ -181,7 +181,7 @@ String ControllerAccount::get_chain_id() const
     DOJO::FieldElement chain_id_felt = FieldElement::cairo_short_string_to_felt(chain_id);
     String katana_chain_id = FieldElement::get_as_string(&chain_id_felt);
 
-    if ( controller_chain_id != katana_chain_id)
+    if (controller_chain_id != katana_chain_id)
     {
         Logger::warning("Chain ID mismatch ", controller_chain_id, " | ", katana_chain_id);
     }
@@ -220,7 +220,7 @@ void ControllerAccount::execute_from_outside(const Ref<DojoCall>& action)
         for (int i = 0; i < calldata_len; i++)
         {
             const Variant& arg = args[i];
-            Logger::custom("Calldata", Variant::get_type_name(arg.get_type()), arg.stringify() );
+            Logger::custom("Calldata", Variant::get_type_name(arg.get_type()), arg.stringify());
 
             switch (arg.get_type())
             {
@@ -251,7 +251,14 @@ void ControllerAccount::execute_from_outside(const Ref<DojoCall>& action)
         for (int i = 0; i < calldata_len; i++)
         {
             const Variant& arg = final_args[i];
-            felts[i] = FieldElement::from_string(arg);
+            if (arg.get_type() == Variant::Type::INT)
+            {
+                felts[i] = FieldElement::from_enum(arg);
+            }
+            else
+            {
+                felts[i] = FieldElement::from_string(arg);
+            }
         }
 
         call.calldata = {
