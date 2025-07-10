@@ -18,8 +18,12 @@ func _ready() -> void:
 	OS.set_environment("RUST_BACKTRACE", "full")
 	OS.set_environment("RUST_LOG", "debug")
 
+func _torii_logger(_msg:String):
+	prints("[TORII LOGGER]", _msg)
+
 func connect_client() -> void:
 	client.create_client()
+	controller_account.init_provider()
 
 func connect_controller() -> void:
 	controller_account.setup()
@@ -27,6 +31,7 @@ func connect_controller() -> void:
 
 func _on_torii_client_client_connected(success: bool) -> void:
 	_client_status.set_status(success)
+	client.set_logger_callback(_torii_logger)
 	if success:
 		connect_controller()
 

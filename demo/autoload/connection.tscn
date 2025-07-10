@@ -16,7 +16,7 @@ script = ExtResource("1_c7jwa")
 
 [node name="ToriiClient" type="ToriiClient" parent="."]
 torii_url = "https://api.cartridge.gg/x/godot-demo-rookie/torii"
-world_address = "0x07cb912d0029e3799c4b8f2253b21481b2ec814c5daf72de75164ca82e7c42a5"
+world_address = "0x0393f8a2d0d47e384c3c61eedc08d2873f5d608f8da7ffb013e5d5aa327ac8f2"
 
 [node name="ControllerAccount" type="ControllerAccount" parent="."]
 chain_id = "WP_GODOT_DEMO_ROOKIE"

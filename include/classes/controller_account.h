@@ -32,6 +32,7 @@ class ControllerAccount : public Node
     bool is_connected;
     static ControllerAccount* singleton;
     Ref<DojoPolicies> policies;
+    String rpc_url;
 
 public:
     ControllerAccount();
@@ -39,11 +40,11 @@ public:
 
     static ControllerAccount* get_singleton();
 
-
     void set_session_account(DOJO::ControllerAccount* account);
     DOJO::ControllerAccount* get_session_account() const;
 
     void setup();
+    void init_provider();
     void create(const Ref<DojoPolicies>& policies_data);
     void disconnect_controller();
     bool is_controller_connected() const;
@@ -74,6 +75,7 @@ protected:
     static void _bind_methods()
     {
         // ClassDB::bind_method(D_METHOD("create", "rpc_url"),&ControllerAccount::create);
+        ClassDB::bind_method(D_METHOD("init_provider"), &ControllerAccount::init_provider);
         ClassDB::bind_method(D_METHOD("create", "policies_data"), &ControllerAccount::create);
         ClassDB::bind_method(D_METHOD("setup"), &ControllerAccount::setup);
         ClassDB::bind_method(D_METHOD("disconnect_controller"), &ControllerAccount::disconnect_controller);

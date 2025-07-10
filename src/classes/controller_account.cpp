@@ -24,6 +24,8 @@ ControllerAccount::ControllerAccount()
     session_account = nullptr;
     is_connected = false;
     provider = nullptr;
+    rpc_url = ProjectSettings::get_singleton()->get("dojo/config/katana/rpc_url");
+
 }
 
 ControllerAccount::~ControllerAccount()
@@ -68,14 +70,12 @@ void on_account(DOJO::ControllerAccount* account)
 
 void ControllerAccount::setup()
 {
+    init_provider();
     create(policies);
 }
 
-// TODO: refactor static?
-void ControllerAccount::create(const Ref<DojoPolicies>& policies_data)
+void ControllerAccount::init_provider()
 {
-    String rpc_url = ProjectSettings::get_singleton()->get("dojo/config/katana/rpc_url");
-    Logger::info("RPC URL: ", rpc_url);
     // Provider
     DOJO::ResultProvider resControllerProvider = DOJO::provider_new(rpc_url.utf8().get_data());
     if (resControllerProvider.tag == DOJO::ErrProvider)
@@ -87,6 +87,12 @@ void ControllerAccount::create(const Ref<DojoPolicies>& policies_data)
     Logger::success("Controller Provider created");
     provider = GET_DOJO_OK(resControllerProvider);
     emit_signal("provider_status_updated", true);
+}
+
+void ControllerAccount::create(const Ref<DojoPolicies>& policies_data)
+{
+    Logger::info("RPC URL: ", rpc_url);
+
 
     if (policies_data->is_empty())
     {
@@ -262,16 +268,14 @@ void ControllerAccount::execute_from_outside(const Ref<DojoCall>& action)
         };
         Logger::debug_extra("CALLDATA", "Calldata added, size:", call.calldata.data_len);
     }
-
-
+    
     Logger::debug_extra("CALL", Variant(call.selector));
     DOJO::ResultFieldElement result = DOJO::controller_execute_from_outside(
         session_account, &call, 1
     );
-    Logger::debug_extra("CALL", "Executed");
     if (result.tag == DOJO::ErrFieldElement)
     {
-        Logger::error(GET_DOJO_ERROR(result));
+        Logger::error(action->get_to(), action->get_selector(), GET_DOJO_ERROR(result));
         emit_signal("transaction_failed", GET_DOJO_ERROR(result));
     }
     else

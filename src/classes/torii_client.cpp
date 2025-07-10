@@ -390,7 +390,7 @@ bool ToriiClient::publish_typed_message(const Dictionary& typed_data, const Arra
 
 void logger_callback_wrapper(const char* msg)
 {
-    Logger::debug_extra("Torii", msg);
+    Logger::debug_extra("Torii LOG", msg);
     ToriiClient* _singleton = ToriiClient::get_singleton();
     if (_singleton->is_calable_valid())
     {
