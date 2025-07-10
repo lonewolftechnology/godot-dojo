@@ -1,0 +1,5 @@
+[gd_resource type="DojoPolicy" format=3 uid="uid://bv5g6pmeq3pt1"]
+
+[resource]
+method = "move"
+description = "Moves in the world"

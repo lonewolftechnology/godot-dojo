@@ -1,0 +1,5 @@
+[gd_resource type="DojoPolicy" format=3 uid="uid://btj7knthulhjp"]
+
+[resource]
+method = "spawn"
+description = "Spawns in the world"
