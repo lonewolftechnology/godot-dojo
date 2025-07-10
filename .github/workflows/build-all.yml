@@ -33,6 +33,28 @@ jobs:
           echo "$LATEST_CHANGELOG" >> $GITHUB_OUTPUT
           echo "EOF" >> $GITHUB_OUTPUT
 
+      - name: Get commits since last tag
+        id: get_commits
+        run: |
+          # Get the current tag
+          CURRENT_TAG=${GITHUB_REF#refs/tags/}
+
+          # Find the previous tag
+          PREVIOUS_TAG=$(git describe --tags --abbrev=0 $CURRENT_TAG^ 2>/dev/null || echo "")
+
+          if [ -z "$PREVIOUS_TAG" ]; then
+            # If there's no previous tag, get all commits
+            COMMITS=$(git log --pretty=format:"- %h %s (%an)" $CURRENT_TAG)
+          else
+            # Get commits between the previous tag and the current tag
+            COMMITS=$(git log --pretty=format:"- %h %s (%an)" $PREVIOUS_TAG..$CURRENT_TAG)
+          fi
+
+          # Set output using multiline string
+          echo "commits<<EOF" >> $GITHUB_OUTPUT
+          echo "$COMMITS" >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
+
       - name: Check if tag is from dev branch
         id: check_branch
         run: |
@@ -55,6 +77,9 @@ jobs:
             ## Latest Changes
 
             ${{ steps.changelog.outputs.content }}
+
+            ### Commits Since Last Tag
+            ${{ steps.get_commits.outputs.commits }}
 
             ### Downloads
             - [Standard Precision](https://github.com/${{ github.repository }}/releases/download/${{ github.ref_name }}/godot-dojo-${{ github.ref_name }}.zip)
