@@ -30,14 +30,6 @@ DojoC::DojoC()
     init_config();
 }
 
-
-// Define a logger function
-void my_logger(const char* message)
-{
-    Logger::debug_extra("DojoC", message, "\n");
-}
-
-
 DojoC::~DojoC()
 {
     singleton = nullptr;
@@ -53,13 +45,6 @@ void DojoC::init_config(bool reset)
         set_setting("dojo/config/fixed_point/128", 60, reset);
         set_setting("dojo/config/fixed_point/256", 123, reset);
     }
-    // Set the logger
-    Logger::debug_extra("DojoC", "Setting logger");
-    DOJO::set_debug_logger(my_logger);
-
-    // Enable debug logging
-    Logger::debug_extra("DojoC", "Enabling debug logging");
-    DOJO::enable_debug_logging();
 }
 
 bool DojoC::set_setting(const String& setting, const Variant& value, const bool& force)
