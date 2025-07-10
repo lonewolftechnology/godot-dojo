@@ -91,39 +91,34 @@ PackedByteArray FieldElement::to_packed_array(const void* data, const int size)
     return _bytes;
 }
 
-dojo_bindings::FieldElement FieldElement::from_string(const String& hex_str, size_t max_bytes)
+DOJO::FieldElement FieldElement::from_string(const String& hex_str, size_t max_bytes)
 {
     DOJO::FieldElement result = {};
 
-    memset(result.data, 0, max_bytes);
 
     size_t start_idx = (hex_str.substr(0, 2) == "0x") ? 2 : 0;
     size_t hex_length = hex_str.length() - start_idx;
+    bool is_odd = hex_length % 2 != 0;
+    size_t num_bytes = (hex_length + is_odd) / 2;
 
-    if (hex_length > 64)
+    if (num_bytes > max_bytes)
     {
         Logger::error("Hex string too long for FieldElement");
         return result;
     }
 
-    String padded_hex = hex_str.substr(start_idx);
-    while (padded_hex.length() < 64)
+    size_t out_idx = 0;
+    if (is_odd)
     {
-        padded_hex = "0" + padded_hex;
+        String nibble = hex_str.substr(start_idx, 1);
+        result.data[out_idx++] = static_cast<uint8_t>(nibble.hex_to_int());
     }
 
-    for (size_t i = 0; i < 64; i += 2)
+    for (size_t i = is_odd ? 1 : 0; i < hex_length; i += 2)
     {
-        String byte_str = padded_hex.substr(i, 2);
-        int byte_value = byte_str.hex_to_int();
-        if (byte_value < 0)
-        {
-            Logger::error("Invalid hex character in string");
-            return result;
-        }
-        result.data[i / 2] = static_cast<uint8_t>(byte_value);
+        String byte_str = hex_str.substr(start_idx + i, 2);
+        result.data[out_idx++] = static_cast<uint8_t>(byte_str.hex_to_int());
     }
-
     return result;
 }
 

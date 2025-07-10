@@ -77,6 +77,7 @@ void ControllerAccount::setup()
 void ControllerAccount::init_provider()
 {
     // Provider
+    Logger::debug_extra("Provider", rpc_url);
     DOJO::ResultProvider resControllerProvider = DOJO::provider_new(rpc_url.utf8().get_data());
     if (resControllerProvider.tag == DOJO::ErrProvider)
     {
@@ -187,22 +188,6 @@ String ControllerAccount::get_chain_id() const
     return chain_id;
 }
 
-DOJO::CArrayFieldElement array_to_felt_array(const Array& data)
-{
-    DOJO::CArrayFieldElement felt_array = {};
-
-    if (data.size() == 0)
-    {
-        felt_array.data = nullptr;
-        felt_array.data_len = 0;
-        return felt_array;
-    }
-
-    felt_array.data_len = data.size();
-
-    return felt_array;
-}
-
 
 void ControllerAccount::execute_from_outside(const Ref<DojoCall>& action)
 {
@@ -217,8 +202,10 @@ void ControllerAccount::execute_from_outside(const Ref<DojoCall>& action)
 
     uintptr_t calldata_len = action->get_size();
     Array args = action->get_calldata();
+
     DOJO::FieldElement* felts = nullptr;
     Logger::debug_extra("Controller", "Building Call");
+
     DOJO::Call call = {
         actions,
         selector.c_str(),
@@ -273,9 +260,18 @@ void ControllerAccount::execute_from_outside(const Ref<DojoCall>& action)
     DOJO::ResultFieldElement result = DOJO::controller_execute_from_outside(
         session_account, &call, 1
     );
+    // Agregar más logging para debug
     if (result.tag == DOJO::ErrFieldElement)
     {
-        Logger::error(action->get_to(), action->get_selector(), GET_DOJO_ERROR(result));
+        Logger::error("Transaction failed");
+        Logger::error("To:", action->get_to());
+        Logger::error("Selector:", action->get_selector());
+        Logger::error("Error:", GET_DOJO_ERROR(result));
+        // Imprimir el calldata para debug
+        for (int i = 0; i < calldata_len; i++) {
+            Logger::debug_extra("Calldata[" + String::num_int64(i) + "]", 
+                FieldElement::get_as_string(&felts[i]));
+        }
         emit_signal("transaction_failed", GET_DOJO_ERROR(result));
     }
     else
