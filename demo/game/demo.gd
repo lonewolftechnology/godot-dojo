@@ -74,7 +74,7 @@ func _on_entities(args:Dictionary):
 		await get_tree().process_frame
 		label_moves.text = "Moves: %s" % result_data['remaining']
 
-func spawn(reset:bool) -> void:
+func spawn(reset:bool = false) -> void:
 	if reset:
 		Connection.controller_account.execute_from_outside(spawn_reset_call)
 	else:
@@ -85,11 +85,11 @@ func _on_start_screen_entered() -> void:
 	await get_tree().create_timer(0.5).timeout
 	Connection.create_subscriptions(_on_events,_on_entities)
 	await get_tree().create_timer(0.5).timeout
-	spawn(false)
-	await get_tree().create_timer(0.5).timeout
-	get_controllers()
-	await get_tree().create_timer(0.5).timeout
-	get_entities()
+	spawn()
+	#await get_tree().create_timer(0.5).timeout
+	#get_controllers()
+	#await get_tree().create_timer(0.5).timeout
+	#get_entities()
 
 
 func get_controllers() -> void:

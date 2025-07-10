@@ -1,5 +1,0 @@
-[gd_resource type="DojoCall" format=3 uid="uid://dv2i1mr6kuwoh"]
-
-[resource]
-to = "0x0393f8a2d0d47e384c3c61eedc08d2873f5d608f8da7ffb013e5d5aa327ac8f2"
-selector = "spawn"
