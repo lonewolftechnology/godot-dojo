@@ -61,10 +61,10 @@ public:
     TypedArray<Dictionary> get_controllers(const TypedArray<String>& contract_addresses);
     Dictionary get_controller_info(const String& controller_address);
 
-    // TypedArray<Dictionary> get_tokens(const Dictionary& query_params = Dictionary());
-    // TypedArray<Dictionary> get_token_balances(const String& account_address);
-    // TypedArray<Dictionary> get_token_collections();
-    // Dictionary get_token_info(const String& token_address);
+    TypedArray<Dictionary> get_tokens(const Dictionary& query_params = Dictionary());
+    TypedArray<Dictionary> get_token_balances(const String& account_address);
+    TypedArray<Dictionary> get_token_collections();
+    Dictionary get_token_info(const String& token_address);
 
     bool create_entity_subscription(const Callable& callback, const Dictionary& filter_params = Dictionary());
     bool create_event_subscription(const Callable& callback, const Dictionary& filter_params = Dictionary());
@@ -123,6 +123,15 @@ public:
         ClassDB::bind_method(D_METHOD("get_controller_info", "controller_address"),
                              &ToriiClient::get_controller_info);
 
+        ClassDB::bind_method(D_METHOD("get_tokens", "query_params"),
+                             &ToriiClient::get_tokens, DEFVAL(Dictionary()));
+        ClassDB::bind_method(D_METHOD("get_token_balances", "account_address"),
+                             &ToriiClient::get_token_balances);
+        ClassDB::bind_method(D_METHOD("get_token_collections"),
+                             &ToriiClient::get_token_collections);
+        ClassDB::bind_method(D_METHOD("get_token_info", "token_address"),
+                             &ToriiClient::get_token_info);
+
         ClassDB::bind_method(D_METHOD("create_entity_subscription", "callback", "filter_params"),
                              &ToriiClient::create_entity_subscription, DEFVAL(Dictionary()));
         ClassDB::bind_method(D_METHOD("create_event_subscription", "callback", "filter_params"),
@@ -149,6 +158,7 @@ public:
         ADD_SIGNAL(MethodInfo("metadata_updated", PropertyInfo(Variant::DICTIONARY, "metadata")));
         ADD_SIGNAL(MethodInfo("message_published", PropertyInfo(Variant::STRING, "message_hash")));
         ADD_SIGNAL(MethodInfo("transaction_confirmed", PropertyInfo(Variant::STRING, "transaction_hash")));
+        ADD_SIGNAL(MethodInfo("token_balance_updated", PropertyInfo(Variant::DICTIONARY, "balance_data")));
 
         BIND_ENUM_CONSTANT(ASC);
         BIND_ENUM_CONSTANT(DESC);

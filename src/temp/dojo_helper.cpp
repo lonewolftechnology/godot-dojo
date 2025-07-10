@@ -143,3 +143,20 @@ TypedArray<String> DojoHelpers::convert_to_string_array(const Variant& var)
     }
     return arr;
 }
+
+dojo_bindings::COptionc_char DojoHelpers::create_option_from_string(const String& option)
+{
+    DOJO::COptionc_char coption = {};
+    if (option.is_empty())
+    {
+        Logger::debug_extra("Option", "Empty option, setting to Nonec_char");
+        coption.tag = DOJO::COptionc_char_Tag::Nonec_char;
+    }
+    else
+    {
+        Logger::debug_extra("Option", "Setting option to Somec_char with", option);
+        coption.tag = DOJO::COptionc_char_Tag::Somec_char;
+        coption.some = option.utf8().get_data();
+    }
+    return coption;
+}

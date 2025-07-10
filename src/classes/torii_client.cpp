@@ -6,13 +6,13 @@
 #include "godot_cpp/classes/json.hpp"
 
 #include "classes/torii_client.h"
+
+#include <temp/dojo_helper.h>
+
 #include "tools/logger.h"
 #include "classes/event_subscription.h"
 #include "variant/ty/dojo_array.h"
 #include "variant/ty/primitive.h"
-#include "variant/ty/struct.h"
-
-#include "variant/ty/ty.h"
 
 ToriiClient* ToriiClient::singleton = nullptr;
 
@@ -27,6 +27,8 @@ ToriiClient::ToriiClient()
     singleton = this;
     client = nullptr;
     is_connected = false;
+    world_address = "";
+    world = {};
     DOJO::ResultFieldElement test_felt = DOJO::cairo_short_string_to_felt("WP_GODOT_DEMO_ROOKIE");
     if (test_felt.tag == DOJO::ErrFieldElement)
     {
@@ -112,8 +114,7 @@ void ToriiClient::disconnect_client(bool send_signal = true)
         is_connected = false;
         if (send_signal)
         {
-        emit_signal("client_disconnected");
-
+            emit_signal("client_disconnected");
         }
         Logger::info("Cliente Torii desconectado");
     }
@@ -188,7 +189,7 @@ TypedArray<Dictionary> ToriiClient::get_entities(const Dictionary& query_params)
     if (!is_client_connected())
     {
         Logger::error("Cliente no conectado");
-        return TypedArray<Dictionary>();
+        return {};
     }
     Logger::debug("Converting Query");
     DOJO::Query query = create_query_from_dict(query_params);
@@ -264,6 +265,284 @@ Dictionary ToriiClient::get_controller_info(const String& controller_address)
     return Logger::error_dict("Controller not found");
 }
 
+TypedArray<Dictionary> ToriiClient::get_tokens(const Dictionary& query_params)
+{
+    Logger::info("Getting tokens...");
+    if (!is_client_connected())
+    {
+        Logger::error("Client not connected");
+        return {};
+    }
+
+    // Extract parameters from query_params
+    uint32_t limit = query_params.get("limit", 10);
+    String cursor = query_params.get("cursor", "");
+
+    // Extract contract addresses if provided
+    Array contract_addresses_array = query_params.get("contract_addresses", Array());
+    std::vector<DOJO::FieldElement> contract_addresses_vec;
+    DOJO::FieldElement* contract_addresses_ptr = nullptr;
+    size_t contract_addresses_len = 0;
+
+    if (!contract_addresses_array.is_empty())
+    {
+        for (int i = 0; i < contract_addresses_array.size(); i++)
+        {
+            String address = contract_addresses_array[i];
+            FieldElement felt(address, 32);
+            contract_addresses_vec.push_back(felt.get_felt_no_ptr());
+        }
+        contract_addresses_ptr = contract_addresses_vec.data();
+        contract_addresses_len = contract_addresses_vec.size();
+    }
+
+    // Extract token IDs if provided
+    Array token_ids_array = query_params.get("token_ids", Array());
+    std::vector<DOJO::U256> token_ids_vec;
+    DOJO::U256* token_ids_ptr = nullptr;
+    size_t token_ids_len = 0;
+
+    if (!token_ids_array.is_empty())
+    {
+        for (int i = 0; i < token_ids_array.size(); i++)
+        {
+            // Assuming token IDs are provided as strings
+            String token_id = token_ids_array[i];
+            DOJO::U256 u256_token_id = {};
+            u256_token_id.data[0] = token_id.to_int();
+            token_ids_vec.push_back(u256_token_id);
+        }
+        token_ids_ptr = token_ids_vec.data();
+        token_ids_len = token_ids_vec.size();
+    }
+
+    DOJO::ResultPageToken result = DOJO::client_tokens(
+        client,
+        contract_addresses_ptr, contract_addresses_len,
+        token_ids_ptr, token_ids_len,
+        limit,
+        DojoHelpers::create_option_from_string(cursor)
+    );
+
+    if (result.tag == DOJO::ErrPageToken)
+    {
+        Logger::error("Error getting tokens: ", GET_DOJO_ERROR(result));
+        return {};
+    }
+
+    // Convert the result to a TypedArray<Dictionary>
+    DOJO::PageToken tokens = result.ok;
+    TypedArray<Dictionary> result_array;
+
+    for (size_t i = 0; i < tokens.items.data_len; i++)
+    {
+        DOJO::Token token = tokens.items.data[i];
+        Dictionary token_dict;
+
+        token_dict["contract_address"] = FieldElement::get_as_string(&token.contract_address);
+        token_dict["token_id"] = String::num_uint64(token.token_id.data[0]);
+        token_dict["name"] = String(token.name);
+        token_dict["symbol"] = String(token.symbol);
+        token_dict["decimals"] = token.decimals;
+
+        if (token.metadata != nullptr)
+        {
+            token_dict["metadata"] = String(token.metadata);
+        }
+        else
+        {
+            token_dict["metadata"] = "";
+        }
+
+        result_array.push_back(token_dict);
+    }
+
+    Logger::success("Tokens obtained: ", String::num_int64(result_array.size()));
+    return result_array;
+}
+
+TypedArray<Dictionary> ToriiClient::get_token_balances(const String& account_address)
+{
+    Logger::info("Getting token balances for account: ", account_address);
+    if (!is_client_connected())
+    {
+        Logger::error("Client not connected");
+        return {};
+    }
+
+    // Convert account address to FieldElement
+    FieldElement account_felt(account_address, 32);
+    DOJO::FieldElement* account_addresses = account_felt.get_felt();
+    size_t account_addresses_len = 1;
+
+    // Empty arrays for contract addresses and token IDs
+    DOJO::FieldElement* contract_addresses = nullptr;
+    size_t contract_addresses_len = 0;
+    DOJO::U256* token_ids = nullptr;
+    size_t token_ids_len = 0;
+
+    DOJO::ResultPageTokenBalance result = DOJO::client_token_balances(
+        client,
+        contract_addresses, contract_addresses_len,
+        account_addresses, account_addresses_len,
+        token_ids, token_ids_len,
+        10, // Default limit
+        DojoHelpers::create_option_from_string() // No cursor
+    );
+
+    if (result.tag == DOJO::ErrPageTokenBalance)
+    {
+        Logger::error("Error getting token balances: ", GET_DOJO_ERROR(result));
+        return {};
+    }
+
+    // Convert the result to a TypedArray<Dictionary>
+    DOJO::PageTokenBalance balances = result.ok;
+    TypedArray<Dictionary> result_array;
+
+    for (size_t i = 0; i < balances.items.data_len; i++)
+    {
+        DOJO::TokenBalance balance = balances.items.data[i];
+        Dictionary balance_dict;
+
+        balance_dict["balance"] = String::num_uint64(balance.balance.data[0]);
+        balance_dict["account_address"] = FieldElement::get_as_string(&balance.account_address);
+        balance_dict["contract_address"] = FieldElement::get_as_string(&balance.contract_address);
+        balance_dict["token_id"] = String::num_uint64(balance.token_id.data[0]);
+
+        result_array.push_back(balance_dict);
+    }
+
+    Logger::success("Token balances obtained: ", String::num_int64(result_array.size()));
+    return result_array;
+}
+
+TypedArray<Dictionary> ToriiClient::get_token_collections()
+{
+    Logger::info("Getting token collections...");
+    if (!is_client_connected())
+    {
+        Logger::error("Client not connected");
+        return {};
+    }
+
+    // Empty arrays for all parameters
+    DOJO::FieldElement* contract_addresses = nullptr;
+    size_t contract_addresses_len = 0;
+    DOJO::FieldElement* account_addresses = nullptr;
+    size_t account_addresses_len = 0;
+    DOJO::U256* token_ids = nullptr;
+    size_t token_ids_len = 0;
+
+    // Call the dojo.c function
+    DOJO::ResultPageTokenCollection result = DOJO::client_token_collections(
+        client,
+        contract_addresses, contract_addresses_len,
+        account_addresses, account_addresses_len,
+        token_ids, token_ids_len,
+        10, // Default limit
+        DojoHelpers::create_option_from_string() // No cursor
+    );
+
+    if (result.tag == DOJO::ErrPageTokenCollection)
+    {
+        Logger::error("Error getting token collections: ", GET_DOJO_ERROR(result));
+        return {};
+    }
+
+    // Convert the result to a TypedArray<Dictionary>
+    DOJO::PageTokenCollection collections = result.ok;
+    TypedArray<Dictionary> result_array;
+
+    for (size_t i = 0; i < collections.items.data_len; i++)
+    {
+        DOJO::TokenCollection collection = collections.items.data[i];
+        Dictionary collection_dict;
+
+        collection_dict["contract_address"] = FieldElement::get_as_string(&collection.contract_address);
+        collection_dict["name"] = String(collection.name);
+        collection_dict["symbol"] = String(collection.symbol);
+        collection_dict["decimals"] = collection.decimals;
+        collection_dict["count"] = collection.count;
+
+        if (collection.metadata != nullptr)
+        {
+            collection_dict["metadata"] = String(collection.metadata);
+        }
+        else
+        {
+            collection_dict["metadata"] = "";
+        }
+
+        result_array.push_back(collection_dict);
+    }
+
+    Logger::success("Token collections obtained: ", String::num_int64(result_array.size()));
+    return result_array;
+}
+
+Dictionary ToriiClient::get_token_info(const String& token_address)
+{
+    Logger::info("Getting token info for: ", token_address);
+    if (!is_client_connected())
+    {
+        Logger::error("Client not connected");
+        return Logger::error_dict("Client not connected");
+    }
+
+    // Convert token address to FieldElement
+    FieldElement token_felt(token_address, 32);
+    DOJO::FieldElement* contract_addresses = token_felt.get_felt();
+    size_t contract_addresses_len = 1;
+
+    // Empty arrays for token IDs
+    DOJO::U256* token_ids = nullptr;
+    size_t token_ids_len = 0;
+
+    DOJO::ResultPageToken result = DOJO::client_tokens(
+        client,
+        contract_addresses, contract_addresses_len,
+        token_ids, token_ids_len,
+        1, // Limit to 1 token
+        DojoHelpers::create_option_from_string() // No cursor
+    );
+
+    if (result.tag == DOJO::ErrPageToken)
+    {
+        Logger::error("Error getting token info: ", GET_DOJO_ERROR(result));
+        return Logger::error_dict("Error getting token info");
+    }
+
+    // Convert the result to a Dictionary
+    DOJO::PageToken tokens = result.ok;
+
+    if (tokens.items.data_len == 0)
+    {
+        return Logger::error_dict("Token not found");
+    }
+
+    DOJO::Token token = tokens.items.data[0];
+    Dictionary token_dict;
+
+    token_dict["contract_address"] = FieldElement::get_as_string(&token.contract_address);
+    token_dict["token_id"] = String::num_uint64(token.token_id.data[0]);
+    token_dict["name"] = String(token.name);
+    token_dict["symbol"] = String(token.symbol);
+    token_dict["decimals"] = token.decimals;
+
+    if (token.metadata != nullptr)
+    {
+        token_dict["metadata"] = String(token.metadata);
+    }
+    else
+    {
+        token_dict["metadata"] = "";
+    }
+
+    Logger::success("Token info obtained");
+    return token_dict;
+}
+
 
 bool ToriiClient::create_entity_subscription(const Callable& callback, const Dictionary& filter_params)
 {
@@ -273,12 +552,13 @@ bool ToriiClient::create_entity_subscription(const Callable& callback, const Dic
         return false;
     }
 
-    Logger::custom("Entity Sub","Creating entity subscription...");
+    Logger::custom("Entity Sub", "Creating entity subscription...");
 
     Ref entity_subscription = memnew(EventSubscription());
     entity_subscription.instantiate();
     entity_subscription->set_name("entity");
-    Logger::info("EventSubscription instance created successfully at: ", entity_subscription, entity_subscription->get_name());
+    Logger::info("EventSubscription instance created successfully at: ", entity_subscription,
+                 entity_subscription->get_name());
 
     DOJO::COptionClause event_clause = {};
     event_clause.tag = DOJO::COptionClause_Tag::NoneClause;
@@ -307,13 +587,14 @@ bool ToriiClient::create_event_subscription(const Callable& callback, const Dict
         return false;
     }
 
-    Logger::custom("Event Sub","Creating Event subscription...");
+    Logger::custom("Event Sub", "Creating Event subscription...");
 
     Ref event_subscription = memnew(EventSubscription());;
     event_subscription.instantiate();
     event_subscription->set_name("event");
 
-    Logger::info("EventSubscription instance created successfully at: ", event_subscription, event_subscription->get_name());
+    Logger::info("EventSubscription instance created successfully at: ", event_subscription,
+                 event_subscription->get_name());
 
     DOJO::COptionClause event_clause = {};
     event_clause.tag = DOJO::COptionClause_Tag::NoneClause;
@@ -325,7 +606,6 @@ bool ToriiClient::create_event_subscription(const Callable& callback, const Dict
         Logger::success("Entity subscription created successfully");
         emit_signal("subscription_created", event_subscription->get_name());
         event_subscriptions.append(event_subscription);
-
     }
     else
     {
@@ -336,13 +616,93 @@ bool ToriiClient::create_event_subscription(const Callable& callback, const Dict
 
 bool ToriiClient::create_token_subscription(const Callable& callback, const String& account_address)
 {
-    Logger::info("[TODO] Creating token subscription for: ", account_address);
+    if (!is_client_connected())
+    {
+        Logger::error("Client not connected");
+        return false;
+    }
+
+    Logger::custom("Token Sub", "Creating token subscription for: ", account_address);
+
+    Ref event_subscription = memnew(EventSubscription());
+    event_subscription.instantiate();
+    event_subscription->set_name("token");
+
+    Logger::info("TokenSubscription instance created successfully at: ", event_subscription,
+                 event_subscription->get_name());
+
+    // Convert account address to FieldElement
+    FieldElement account_felt(account_address, 32);
+
+    // Create empty arrays for contract addresses and token IDs
+    DOJO::FieldElement* contract_addresses = nullptr;
+    size_t contract_addresses_len = 0;
+    DOJO::FieldElement* account_addresses = nullptr;
+    size_t account_addresses_len = 0;
+    DOJO::U256* token_ids = nullptr;
+    size_t token_ids_len = 0;
+
+    // If account address is provided, add it to the filter
+    if (!account_address.is_empty())
+    {
+        account_addresses = account_felt.get_felt();
+        account_addresses_len = 1;
+    }
+
+    // Create token balance subscription
+    DOJO::ResultSubscription result_sub = DOJO::client_on_token_balance_update(
+        client,
+        contract_addresses, contract_addresses_len,
+        account_addresses, account_addresses_len,
+        token_ids, token_ids_len,
+        [](DOJO::TokenBalance token_balance)
+        {
+            // Convert token balance to Dictionary
+            Dictionary balance_dict;
+            balance_dict["balance"] = String::num_uint64(token_balance.balance.data[0]);
+            balance_dict["account_address"] = FieldElement::get_as_string(&token_balance.account_address);
+            balance_dict["contract_address"] = FieldElement::get_as_string(&token_balance.contract_address);
+            balance_dict["token_id"] = String::num_uint64(token_balance.token_id.data[0]);
+
+            singleton->emit_signal("token_balance_updated", balance_dict);
+        }
+    );
+
+    if (result_sub.tag == DOJO::ErrSubscription)
+    {
+        Logger::error("Failed to create token subscription: ", GET_DOJO_ERROR(result_sub));
+        return false;
+    }
+
+    // Store subscription
+    event_subscription->set_subscription(result_sub.ok);
+    event_subscriptions.append(event_subscription);
+
+    Logger::success("Token subscription created successfully");
+    emit_signal("subscription_created", event_subscription->get_name());
+
     return true;
 }
 
 void ToriiClient::cancel_all_subscriptions()
 {
-    Logger::debug_extra("ToriiClient", "[TODO] Cancelling all subscription");
+    Logger::info("Cancelling all subscriptions");
+
+    // Iterate through all subscriptions and cancel them
+    for (int i = 0; i < event_subscriptions.size(); i++)
+    {
+        Ref<EventSubscription> subscription = event_subscriptions[i];
+        if (subscription.is_valid())
+        {
+            Logger::debug("[TODO] Cancelling subscription: ", subscription->get_name());
+            // subscription->cancel(); // TODO
+        }
+    }
+
+    // Clear the subscriptions array
+    event_subscriptions.clear();
+
+    Logger::success("All subscriptions cancelled");
 }
 
 bool ToriiClient::publish_message(const String& message_data, const Array& signature_felts)
@@ -517,6 +877,7 @@ DOJO::Pagination ToriiClient::create_pagination_from_dict(const Dictionary& pagi
 
     return pagination;
 }
+
 // Dictionary ToriiClient::token_to_dictionary(const DOJO::Token& token) const {
 //     Dictionary token_dict = {};
 //
