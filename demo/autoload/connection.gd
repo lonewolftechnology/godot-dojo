@@ -15,6 +15,7 @@ signal connected
 @onready var _entities_status: DojoStatusIndicator = %EntityUpdatesStatus
 
 func _ready() -> void:
+	var dojoc = DojoC.new()
 	OS.set_environment("RUST_BACKTRACE", "full")
 	OS.set_environment("RUST_LOG", "debug")
 
@@ -23,11 +24,9 @@ func _torii_logger(_msg:String):
 
 func connect_client() -> void:
 	client.create_client()
-	controller_account.init_provider()
 
 func connect_controller() -> void:
 	controller_account.setup()
-
 
 func _on_torii_client_client_connected(success: bool) -> void:
 	_client_status.set_status(success)

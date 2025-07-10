@@ -8,6 +8,7 @@
 #include "godot_cpp/classes/engine.hpp"
 #include "godot_cpp/core/class_db.hpp"
 #include "tools/logger.h"
+#include "dojo_types.h"
 
 DojoC* DojoC::singleton = nullptr;
 
@@ -20,7 +21,6 @@ void DojoC::_bind_methods()
     ClassDB::bind_static_method("DojoC", D_METHOD("init_setting", "setting", "value", "force"), &DojoC::set_setting);
     // ClassDB::bind_method(D_METHOD("controller_connect"), &DojoC::controller_connect);
     ADD_PROPERTY(PropertyInfo(Variant::BOOL, "is_enabled"), "set_enabled", "get_enabled");
-
 }
 
 DojoC::DojoC()
@@ -30,10 +30,17 @@ DojoC::DojoC()
     init_config();
 }
 
+
+// Define a logger function
+void my_logger(const char* message)
+{
+    Logger::debug_extra("DojoC", message, "\n");
+}
+
+
 DojoC::~DojoC()
 {
     singleton = nullptr;
-
 }
 
 void DojoC::init_config(bool reset)
@@ -46,6 +53,13 @@ void DojoC::init_config(bool reset)
         set_setting("dojo/config/fixed_point/128", 60, reset);
         set_setting("dojo/config/fixed_point/256", 123, reset);
     }
+    // Set the logger
+    Logger::debug_extra("DojoC", "Setting logger");
+    DOJO::set_debug_logger(my_logger);
+
+    // Enable debug logging
+    Logger::debug_extra("DojoC", "Enabling debug logging");
+    DOJO::enable_debug_logging();
 }
 
 bool DojoC::set_setting(const String& setting, const Variant& value, const bool& force)

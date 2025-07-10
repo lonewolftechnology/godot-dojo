@@ -1,5 +1,5 @@
 [gd_resource type="DojoCall" format=3 uid="uid://cgu5bg3mm37rw"]
 
 [resource]
-to = "0x393f8a2d0d47e384c3c61eedc08d2873f5d608f8da7ffb013e5d5aa327ac8f2"
+to = "0x00d91dee447ef681dbf6ea307c48bf000b1262ce59fc3d1652b44273d74bf18e"
 selector = "reset_spawn"

@@ -103,7 +103,8 @@ void ControllerAccount::create(const Ref<DojoPolicies>& policies_data)
     std::vector<DOJO::Policy> policies = policies_data->build();
     uintptr_t policies_len = policies.size();
 
-    DOJO::FieldElement katana = FieldElement::short_string_to_felt(chain_id.utf8().get_data());
+    DOJO::FieldElement katana = FieldElement::cairo_short_string_to_felt(chain_id.utf8().get_data());
+    Logger::custom_color("azure", "katana", FieldElement::get_as_string(&katana));
 
     DOJO::ResultControllerAccount resControllerAccount =
         DOJO::controller_account(policies.data(), policies_len, katana);
@@ -175,15 +176,15 @@ String ControllerAccount::get_chain_id() const
         return chain_id;
     }
     DOJO::FieldElement felt = DOJO::controller_chain_id(session_account);
-    Logger::custom_color("red", "ChainID", FieldElement::get_as_string(&felt));
-    // String controller_chain_id = chain_felt.to_string();
-    // FieldElement chain_id_felt = {FieldElement::short_string_to_felt(chain_id)};
-    // String converted_chain_id = chain_id_felt.to_string();
-    // if (!converted_chain_id.contains(controller_chain_id))
-    // {
-    //     Logger::warning("Chain ID mismatch ", converted_chain_id, " | ", controller_chain_id);
-    // }
-    // return controller_chain_id;
+    String controller_chain_id = FieldElement::get_as_string(&felt);
+
+    DOJO::FieldElement chain_id_felt = FieldElement::cairo_short_string_to_felt(chain_id);
+    String katana_chain_id = FieldElement::get_as_string(&chain_id_felt);
+
+    if ( controller_chain_id != katana_chain_id)
+    {
+        Logger::warning("Chain ID mismatch ", controller_chain_id, " | ", katana_chain_id);
+    }
     return chain_id;
 }
 
@@ -219,20 +220,24 @@ void ControllerAccount::execute_from_outside(const Ref<DojoCall>& action)
         for (int i = 0; i < calldata_len; i++)
         {
             const Variant& arg = args[i];
+            Logger::custom("Calldata", Variant::get_type_name(arg.get_type()), arg.stringify() );
+
             switch (arg.get_type())
             {
             case Variant::Type::ARRAY:
                 {
-                    Logger::custom("Calldata", arg.stringify());
                     Array v_array = arg;
                     // final_args.push_back(v_array.size());
                     final_args.append_array(arg);
                     break;
                 }
+            case Variant::Type::INT:
+                {
+                    final_args.push_back(arg);
+                    break;
+                }
             default:
                 {
-                    Logger::custom("Calldata", Variant::get_type_name(arg.get_type()));
-                    Logger::custom("Calldata", arg.stringify());
                     final_args.push_back(arg.stringify());
                     break;
                 }

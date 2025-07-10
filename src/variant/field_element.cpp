@@ -121,18 +121,6 @@ DOJO::FieldElement FieldElement::from_string(const String& hex_str, size_t max_b
     return result;
 }
 
-DOJO::FieldElement FieldElement::short_string_to_felt(const String& cairo_str)
-{
-    DOJO::ResultFieldElement resCairo = DOJO::cairo_short_string_to_felt(cairo_str.utf8().get_data());
-    if (resCairo.tag == DOJO::ErrFieldElement)
-    {
-        Logger::error("Failed to convert string to FieldElement");
-        return {};
-    }
-    DOJO::FieldElement felt = {GET_DOJO_OK(resCairo)};
-    return felt;
-}
-
 DOJO::FieldElement FieldElement::nulled()
 {
     return from_enum(0);

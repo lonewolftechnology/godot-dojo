@@ -28,7 +28,6 @@ public:
     static DOJO::FieldElement from_enum(int enum_value);
     static PackedByteArray to_packed_array(const void* data, int size = 32);
     static DOJO::FieldElement from_string(const String& hex_str, size_t max_bytes = 32);
-    static dojo_bindings::FieldElement short_string_to_felt(const String& cairo_str);
     static DOJO::FieldElement nulled();
     static DOJO::FieldElement* nulled_ptr();
     static PackedByteArray nulled_as_bytes();
@@ -44,7 +43,7 @@ public:
     static String get_as_string(DOJO::FieldElement* _felt);
     static String get_as_string_no_ptr(dojo_bindings::FieldElement _felt);
 
-    static dojo_bindings::CArrayFieldElement bytearray_serialize(const String& msg);
+    static DOJO::CArrayFieldElement bytearray_serialize(const String& msg);
     static DOJO::FieldElement cairo_short_string_to_felt(const String& msg);
 
     DOJO::FieldElement* get_felt() const { return felt; }
