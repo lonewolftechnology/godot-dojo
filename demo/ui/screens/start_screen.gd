@@ -5,6 +5,7 @@ signal entered
 @onready var button_enter: Button = $CenterContainer/VBoxContainer/ButtonEnter
 
 func _ready() -> void:
+	if not Engine.is_editor_hint(): show()
 	button_enter.disabled = true
 	if Connection.is_node_ready():
 		Connection.connected.connect(_on_connected)

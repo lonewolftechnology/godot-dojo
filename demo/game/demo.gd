@@ -2,7 +2,8 @@
 # TORII https://api.cartridge.gg/x/godot-demo-rookie/torii
 # WORLD 0x07cb912d0029e3799c4b8f2253b21481b2ec814c5daf72de75164ca82e7c42a5
 # Actions 0x0393f8a2d0d47e384c3c61eedc08d2873f5d608f8da7ffb013e5d5aa327ac8f2
-
+# hazel 0x3dc821653fa9ed84324821b26afd5775b128921b9436327211949947a888
+# dtodice 0x75c10973fc5fdfa2f7ff5875f10441e546d98f37f40b97a663f89bdaf81a0
 class_name DemoGame
 extends Node
 
@@ -86,21 +87,19 @@ func _on_start_screen_entered() -> void:
 	Connection.create_subscriptions(_on_events,_on_entities)
 	await get_tree().create_timer(0.5).timeout
 	spawn()
-	await get_tree().create_timer(0.5).timeout
+	#await get_tree().create_timer(0.5).timeout
 	#get_controllers()
-	await get_tree().create_timer(0.5).timeout
-	get_entities()
+	#await get_tree().create_timer(0.5).timeout
+	#get_entities()
 
 
-func get_controllers() -> void:
-	var addrs:Array = []
+func get_controllers(addrs:Array = []) -> void:
 	#addrs.append(Connection.controller_account.get_address())
 	var data = Connection.client.get_controllers(addrs)
 	for controller in data:
 		controllers_manager.spawn_entity(controller)
 	
 	await get_tree().create_timer(0.2).timeout
-	print(controllers_manager.get_child_count())
 
 func get_entities() -> void:
 	var query = {
@@ -178,3 +177,8 @@ func _on_disconnect_pressed() -> void:
 func _on_tokens_pressed() -> void:
 	var client = Connection.client
 	prints("[TORII]", client.get_tokens(), client.get_token_balances("0x2b1754e413c0bd1ef98ddcd99a8f9e996f3765553341d1075b153374cac51"), client.get_token_collections())
+
+@onready var controller_btn: TextEdit = $UI/Arrows/VBoxContainer/PanelContainer/VBoxContainer/ControllerBtn
+
+func _on_get_controller_pressed() -> void:
+	get_controllers([controller_btn.text])

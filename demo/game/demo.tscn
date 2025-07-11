@@ -336,6 +336,15 @@ text = "Move"
 layout_mode = 2
 text = "Tokens"
 
+[node name="ControllerBtn" type="TextEdit" parent="UI/Arrows/VBoxContainer/PanelContainer/VBoxContainer"]
+custom_minimum_size = Vector2(0, 40)
+layout_mode = 2
+placeholder_text = "0x0"
+
+[node name="GetController" type="Button" parent="UI/Arrows/VBoxContainer/PanelContainer/VBoxContainer"]
+layout_mode = 2
+text = "Get Controller"
+
 [node name="Panel" type="PanelContainer" parent="UI"]
 anchors_preset = 5
 anchor_left = 0.5
@@ -371,6 +380,7 @@ layout_mode = 2
 text = "Disconnect"
 
 [node name="StartScreen" parent="UI" instance=ExtResource("12_s1sno")]
+visible = false
 
 [connection signal="pressed" from="UI/Arrows/VBoxContainer/HBoxContainer/ArrowLeft" to="." method="_on_arrow_left_pressed"]
 [connection signal="pressed" from="UI/Arrows/VBoxContainer/HBoxContainer/VBoxContainer/ArrowUp" to="." method="_on_arrow_up_pressed"]
@@ -378,5 +388,6 @@ text = "Disconnect"
 [connection signal="pressed" from="UI/Arrows/VBoxContainer/HBoxContainer/ArrowRight" to="." method="_on_arrow_right_pressed"]
 [connection signal="pressed" from="UI/Arrows/VBoxContainer/PanelContainer/VBoxContainer/HBoxContainer/MoveTo" to="." method="_on_move_to_pressed"]
 [connection signal="pressed" from="UI/Arrows/VBoxContainer/PanelContainer/VBoxContainer/Tokens" to="." method="_on_tokens_pressed"]
+[connection signal="pressed" from="UI/Arrows/VBoxContainer/PanelContainer/VBoxContainer/GetController" to="." method="_on_get_controller_pressed"]
 [connection signal="pressed" from="UI/Panel/HBoxContainer/Disconnect" to="." method="_on_disconnect_pressed"]
 [connection signal="entered" from="UI/StartScreen" to="." method="_on_start_screen_entered"]
