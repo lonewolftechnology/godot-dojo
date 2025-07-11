@@ -172,7 +172,7 @@ if platform != "android":
     # Android build requires lib prefix
     env['SHLIBPREFIX'] = ''
 prefix = env.subst('$SHLIBPREFIX')
-env.Append(CPPPATH=["src/", "include/", "external/dojo.c"])
+env.Append(CPPPATH=["src/", "include/", "external/dojo.c", "external/boost/include"])
 
 if platform == "linux":
     env.Append(LINKFLAGS=['-ldbus-1'])
