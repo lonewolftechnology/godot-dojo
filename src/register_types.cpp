@@ -3,29 +3,28 @@
 //
 #include "register_types.h"
 
-#include <dojo_c_gdextension.h>
+#include "dojo_c_gdextension.h"
 
 #include <gdextension_interface.h>
 #include <godot_cpp/core/defs.hpp>
 #include <godot_cpp/godot.hpp>
 
-#include <../include/variant/ty/primitive.h>
-#include <classes/torii_client.h>
-
-#include <variant/field_element.h>
-
-#include <classes/event_subscription.h>
-
+#include "classes/torii_client.h"
+#include "classes/event_subscription.h"
 #include "classes/controller_account.h"
-#include "resources/dojo_policies.h"
-#include "resources/dojo_policy.h"
-#include "resources/dojo_call.h"
 #include "temp/dojo_helper.h"
+
 #include "variant/ty/dojo_array.h"
 #include "variant/ty/enum.h"
 #include "variant/ty/struct.h"
 #include "variant/ty/ty.h"
+#include "variant/ty/primitive.h"
+#include "variant/field_element.h"
 
+#include "resources/dojo_policies.h"
+#include "resources/dojo_policy.h"
+#include "resources/dojo_call.h"
+#include "resources/dojo_query.h"
 
 using namespace godot;
 
@@ -52,6 +51,8 @@ void initialize_dojoc_module(ModuleInitializationLevel p_level)
     GDREGISTER_CLASS(DojoCall);
     GDREGISTER_CLASS(DojoPolicy);
     GDREGISTER_CLASS(DojoPolicies);
+    GDREGISTER_CLASS(DojoQuery);
+
 }
 
 void uninitialize_dojoc_module(ModuleInitializationLevel p_level)
