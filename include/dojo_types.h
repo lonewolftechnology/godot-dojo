@@ -36,7 +36,28 @@ enum ComparisonOperator;
 enum LogicalOperator;
 enum OrderDirection;
 enum PatternMatching;
-
+enum ResultToriiClient_Tag;
+enum ResultControllerAccount_Tag;
+enum Resultbool_Tag;
+enum ResultFieldElement_Tag;
+enum ResultCArrayFieldElement_Tag;
+enum ResultCArrayController_Tag;
+enum ResultPageEntity_Tag;
+enum ResultWorldMetadata_Tag;
+enum ResultSubscription_Tag;
+enum ResultPageToken_Tag;
+enum ResultPageTokenBalance_Tag;
+enum ResultPageTokenCollection_Tag;
+enum Resultc_char_Tag;
+enum ResultSignature_Tag;
+enum ResultProvider_Tag;
+enum ResultAccount_Tag;
+enum BlockId_Tag;
+enum COptionFieldElement_Tag;
+enum COptionc_char_Tag;
+enum COptionClause_Tag;
+enum MemberValue_Tag;
+enum Clause_Tag;
 
 // ============================================================================
 // Tipos de Datos Fundamentales
@@ -52,7 +73,7 @@ struct Member;
 struct EnumOption;
 struct MemberValue;
 struct Signature;
-
+struct Message;
 
 // ============================================================================
 // Cliente y Conexión
@@ -65,7 +86,6 @@ struct Account; //Deprecated
 struct Controller;
 struct Event;
 struct Subscription;
-
 
 // ============================================================================
 // Metadatos y Modelos
@@ -103,7 +123,6 @@ struct OrderBy;
 struct Call;
 struct BlockId;
 struct Policy;
-
 
 // ============================================================================
 // Páginas y Paginación

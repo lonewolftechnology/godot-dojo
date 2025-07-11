@@ -221,11 +221,9 @@ TypedArray<Dictionary> ToriiClient::get_controllers(const TypedArray<String>& ad
     {
         Logger::info("Addresses is empty, fetching all controllers");
     }
-    std::vector<dojo_bindings::FieldElement> contract_addresses = FieldElement::create_array(addresses);
-    Logger::debug_extra("TORII CLIENT", "Address size: ", contract_addresses.size());
+    std::vector<DOJO::FieldElement> contract_addresses = FieldElement::create_array(addresses);
+    Logger::debug_extra("CLIENT", "Address size: ", contract_addresses.size());
 
-
-    DOJO::FieldElement nulled = FieldElement::nulled();
 
     DOJO::ResultCArrayController resControllers = DOJO::client_controllers(
         client, contract_addresses.data(), contract_addresses.size());
@@ -239,7 +237,7 @@ TypedArray<Dictionary> ToriiClient::get_controllers(const TypedArray<String>& ad
     DOJO::CArrayController controllers = GET_DOJO_OK(resControllers);
     TypedArray<Dictionary> result = ArrayDojo(controllers).get_value();
 
-    Logger::success("Controllers obtained: ", String::num_int64(result.size()));
+    Logger::success_extra("CLIENT", "Controllers obtained: ", String::num_int64(result.size()));
     return result;
 }
 
