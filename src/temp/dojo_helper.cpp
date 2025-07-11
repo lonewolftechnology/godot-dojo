@@ -4,7 +4,13 @@
 #include "godot_cpp/classes/project_settings.hpp"
 #include "tools/logger.h"
 
+#include <boost/multiprecision/cpp_int.hpp>
+#include <boost/multiprecision/cpp_dec_float.hpp>
+
 DojoHelpers* DojoHelpers::singleton = nullptr;
+using boost::multiprecision::cpp_int;
+typedef boost::multiprecision::number<boost::multiprecision::cpp_dec_float<100> > cpp_dec_float_100;
+
 
 void DojoHelpers::_bind_methods()
 {
@@ -59,7 +65,6 @@ Variant DojoHelpers::get_setting(const String& setting)
 }
 
 // these use boost::multiprecision, that can be included separately but not sure if it's header only
-
 double DojoHelpers::variant_to_double_fp(const Variant& value, const int precision) {
 
     cpp_int int_val;
@@ -72,7 +77,7 @@ double DojoHelpers::variant_to_double_fp(const Variant& value, const int precisi
             int_val = (int64_t)value;
             break;
         case Variant::STRING:
-            int_val = cpp_int(String(value).c_str());
+            int_val = cpp_int(String(value).utf8().get_data());
             break;
         case Variant::ARRAY: {
             // Other variant array types go here?
@@ -88,31 +93,31 @@ double DojoHelpers::variant_to_double_fp(const Variant& value, const int precisi
 
     cpp_int divisor = 1;
     divisor <<= precision;
-    cpp_dec_float_50 result = cpp_dec_float_50(int_val) / cpp_dec_float_50(divisor);
+    cpp_dec_float_100 result = cpp_dec_float_100(int_val) / cpp_dec_float_100(divisor);
 
     return (double)result;
 }
 
 Variant DojoHelpers::double_to_variant(const double value, const int precision) {
 
-    fpp_int shift = 1;
-    shift >>= precision;
-    cpp_dec_float_50 val_50 = (double)value;
-    val_50 *= precision;
+    cpp_int shift = 1;
+    shift <<= precision;
+    cpp_dec_float_100 val_100 = (double)value;
+    val_100 *= precision;
 
-    cpp_int val_int(val_50);
+    cpp_int val_int(val_100);
 
-    // convert val_50 to Variant here for use with field element etc
-    if (val_int.mbs() < 64) {
+    // convert val_100 to Variant here for use with field element etc
+    if (msb(val_int) < 64) {
         return Variant((int64_t)val_int);
     };
 
     PackedByteArray arr;
-    int bytes = (val_int.mbs() / 8) + 1
+    int bytes = (msb(val_int) / 8) + 1;
     arr.resize(bytes);
     for (int i=0; i<bytes; i++) {
 
-        arr[bytes - i] = val_int & 0xff;
+        arr[bytes - i] = (uint8_t)(val_int & 0xff);
         val_int >>= 8;
     };
 

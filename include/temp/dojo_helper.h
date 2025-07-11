@@ -37,6 +37,9 @@ public:
     static int64_t float_to_fixed_256(const float& value);
     static double fixed_to_float_256(const int& value);
 
+    static double variant_to_double_fp(const Variant& value, const int precision);
+    static Variant double_to_variant(const double value, const int precision);
+
     // The idea is to turn types to string array, as that what dojo expects for structs
     // For example, in dojo_starter there is a struct called Vec2 which has two members x and y.
     // So to send a Vector2 from Godot/GDScript it should be an array of two members, x and y.
