@@ -2,6 +2,7 @@
 
 Godot Dojo is a cross-platform extension for [Godot Engine](https://godotengine.org/), providing seamless integration with Dojo-based backends and blockchain entities, powered by Rust and C++.  
 It enables advanced networking, subscriptions to blockchain events, and a set of utilities for interacting with decentralized data models directly from Godot.
+During the development of this project, the dojo project used for the demo can be found [here](https://github.com/dannroda/dojo-starter)
 
 ---
 
