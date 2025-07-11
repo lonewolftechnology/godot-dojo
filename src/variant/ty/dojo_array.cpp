@@ -51,7 +51,7 @@ ArrayDojo::ArrayDojo(DOJO::CArrayEnumOption array)
     value = CArrayEnumOptionToVariant(array);
 }
 
-ArrayDojo::ArrayDojo(DOJO::PageController array)
+ArrayDojo::ArrayDojo(DOJO::CArrayController array)
 {
     value = PageControllerToVariant(array);
 }
@@ -76,7 +76,7 @@ ArrayDojo::ArrayDojo(DOJO::CArrayCOptionFieldElement array)
     value = CArrayCOptionFieldElementToVariant(array);
 }
 
-ArrayDojo::ArrayDojo(DOJO::CArrayModel array)
+ArrayDojo::ArrayDojo(DOJO::CArrayCHashItemFieldElementModelMetadata array)
 {
     value = CArrayModelToVariant(array);
 }
@@ -201,7 +201,8 @@ Variant ArrayDojo::CArrayOrderByToVariant(DOJO::CArrayOrderBy array)
     for (const auto& orderby : array_order_by_vector)
     {
         Dictionary data = {};
-        data["field"] = orderby.field;
+        data["model"] = orderby.model;
+        data["member"] = orderby.member;
         data["direction"] = static_cast<uint8_t>(orderby.direction);
         result.append(data);
     }
@@ -224,15 +225,10 @@ Variant ArrayDojo::CArrayEnumOptionToVariant(DOJO::CArrayEnumOption array)
     return result;
 };
 
-Variant ArrayDojo::PageControllerToVariant(const DOJO::PageController& page_controller)
+Variant ArrayDojo::PageControllerToVariant(const DOJO::CArrayController& array)
 {
     TypedArray<Dictionary> result = {};
-    DOJO::CArrayController array = page_controller.items;
-    if (page_controller.next_cursor.tag == DOJO::COptionc_char_Tag::Somec_char)
-    {
-        Logger::debug_extra("PageController", "next_cursor", page_controller.next_cursor.some);
 
-    }
     std::vector<DOJO::Controller> array_controller_vector(array.data, array.data + array.data_len);
     for (const auto& controller : array_controller_vector)
     {
@@ -311,15 +307,16 @@ Variant ArrayDojo::CArrayCOptionFieldElementToVariant(DOJO::CArrayCOptionFieldEl
 };
 
 Variant ArrayDojo::CArrayModelToVariant(
-    DOJO::CArrayModel array)
+    DOJO::CArrayCHashItemFieldElementModelMetadata array)
 {
-    std::vector<DOJO::Model> models_vec(
+    std::vector<DOJO::CHashItemFieldElementModelMetadata> models_vec(
     array.data, array.data + array.data_len
 );
     Array result = {};
-    for (const auto& model : models_vec)
+    for (const auto& model_item : models_vec)
     {
         Dictionary model_dict = {};
+        DOJO::ModelMetadata model = model_item.value;
 
         Logger::debug_extra("METADATA", model.namespace_);
         Logger::debug_extra("METADATA", model.name);
@@ -329,12 +326,12 @@ Variant ArrayDojo::CArrayModelToVariant(
 
         model_dict["namespace"] = model.namespace_;
         model_dict["name"] = model.name;
-        model_dict["selector"] = FieldElement::get_as_string_no_ptr(model.selector);
         model_dict["packed_size"] = Variant(model.packed_size);
         model_dict["unpacked_size"] = Variant(model.unpacked_size);
         model_dict["class_hash"] = FieldElement::get_as_string_no_ptr(model.class_hash);
         model_dict["contract_address"] = FieldElement::get_as_string_no_ptr(model.contract_address);
-        model_dict["layout"] = model.layout;
+        ArrayDojo layout = {model.layout};
+        model_dict["layout"] = layout.get_value();
         Logger::empty_line();
         result.append(model_dict);
     }

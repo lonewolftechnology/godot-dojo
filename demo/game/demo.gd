@@ -86,18 +86,18 @@ func _on_start_screen_entered() -> void:
 	Connection.create_subscriptions(_on_events,_on_entities)
 	await get_tree().create_timer(0.5).timeout
 	spawn()
-	#await get_tree().create_timer(0.5).timeout
+	await get_tree().create_timer(0.5).timeout
 	#get_controllers()
-	#await get_tree().create_timer(0.5).timeout
-	#get_entities()
+	await get_tree().create_timer(0.5).timeout
+	get_entities()
 
 
 func get_controllers() -> void:
 	var addrs:Array = []
 	#addrs.append(Connection.controller_account.get_address())
 	var data = Connection.client.get_controllers(addrs)
-	#for controller in data:
-		#controllers_manager.spawn_entity(controller)
+	for controller in data:
+		controllers_manager.spawn_entity(controller)
 	
 	await get_tree().create_timer(0.2).timeout
 	print(controllers_manager.get_child_count())
@@ -173,3 +173,8 @@ func _on_disconnect_pressed() -> void:
 	await get_tree().process_frame
 	
 	get_tree().reload_current_scene()
+
+
+func _on_tokens_pressed() -> void:
+	var client = Connection.client
+	prints("[TORII]", client.get_tokens(), client.get_token_balances("0x2b1754e413c0bd1ef98ddcd99a8f9e996f3765553341d1075b153374cac51"), client.get_token_collections())

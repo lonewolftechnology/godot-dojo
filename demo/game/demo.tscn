@@ -332,6 +332,10 @@ layout_mode = 2
 size_flags_horizontal = 3
 text = "Move"
 
+[node name="Tokens" type="Button" parent="UI/Arrows/VBoxContainer/PanelContainer/VBoxContainer"]
+layout_mode = 2
+text = "Tokens"
+
 [node name="Panel" type="PanelContainer" parent="UI"]
 anchors_preset = 5
 anchor_left = 0.5
@@ -373,5 +377,6 @@ text = "Disconnect"
 [connection signal="pressed" from="UI/Arrows/VBoxContainer/HBoxContainer/VBoxContainer/ArrowDown" to="." method="_on_arrow_down_pressed"]
 [connection signal="pressed" from="UI/Arrows/VBoxContainer/HBoxContainer/ArrowRight" to="." method="_on_arrow_right_pressed"]
 [connection signal="pressed" from="UI/Arrows/VBoxContainer/PanelContainer/VBoxContainer/HBoxContainer/MoveTo" to="." method="_on_move_to_pressed"]
+[connection signal="pressed" from="UI/Arrows/VBoxContainer/PanelContainer/VBoxContainer/Tokens" to="." method="_on_tokens_pressed"]
 [connection signal="pressed" from="UI/Panel/HBoxContainer/Disconnect" to="." method="_on_disconnect_pressed"]
 [connection signal="entered" from="UI/StartScreen" to="." method="_on_start_screen_entered"]
