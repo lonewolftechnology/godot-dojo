@@ -699,19 +699,34 @@ void ToriiClient::cancel_all_subscriptions()
 
 bool ToriiClient::publish_message(const String& message_data, const Array& signature_felts)
 {
-    Logger::info("publish_message not implemented... yet");
+    Logger::info("publish_message is experimental");
     if (!is_client_connected())
     {
         Logger::error("Cliente no conectado");
         return false;
     }
 
+    DOJO::FieldElement sign_key = DOJO::signing_key_new();
+    DOJO::FieldElement hash = DOJO::verifying_key_new(sign_key);
+    DOJO::ResultSignature resSig = DOJO::signing_key_sign(sign_key, hash);
+    if (resSig.tag == DOJO::ErrSignature)
+    {
+        Logger::error("Error al firmar mensaje: ", GET_DOJO_ERROR(resSig));
+        return false;
+    }
+    Logger::success_extra("Message", message_data);
+    DOJO::Signature signature = GET_DOJO_OK(resSig);
+    DOJO::FieldElement* cfelts = static_cast<DOJO::FieldElement*>(malloc(sizeof(DOJO::FieldElement) * 2));
+    cfelts[0] = signature.r;
+    cfelts[1] = signature.s;
+
+
     std::vector<DOJO::FieldElement> felts = FieldElement::create_array(signature_felts);
     DOJO::Message message = {
         message_data.utf8().get_data(),
         {
-            felts.data(),
-            felts.size()
+            cfelts,
+            2
         }
     };
 

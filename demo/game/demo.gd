@@ -173,7 +173,6 @@ func _on_disconnect_pressed() -> void:
 	
 	get_tree().reload_current_scene()
 
-
 func _on_tokens_pressed() -> void:
 	var client = Connection.client
 	prints("[TORII]", client.get_tokens(), client.get_token_balances("0x2b1754e413c0bd1ef98ddcd99a8f9e996f3765553341d1075b153374cac51"), client.get_token_collections())
@@ -181,4 +180,5 @@ func _on_tokens_pressed() -> void:
 @onready var controller_btn: TextEdit = $UI/Arrows/VBoxContainer/PanelContainer/VBoxContainer/ControllerBtn
 
 func _on_get_controller_pressed() -> void:
-	get_controllers([controller_btn.text])
+	#get_controllers([controller_btn.text])
+	Connection.client.publish_message("AAAAAAAAAAAAAAAAAAAAAAAAAA", ["0x2b1754e413c0bd1ef98ddcd99a8f9e996f3765553341d1075b153374cac51"])
