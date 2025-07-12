@@ -4,7 +4,13 @@
 #include "godot_cpp/classes/project_settings.hpp"
 #include "tools/logger.h"
 
+#include <boost/multiprecision/cpp_int.hpp>
+#include <boost/multiprecision/cpp_dec_float.hpp>
+
 DojoHelpers* DojoHelpers::singleton = nullptr;
+using boost::multiprecision::cpp_int;
+typedef boost::multiprecision::number<boost::multiprecision::cpp_dec_float<100> > cpp_dec_float_100;
+
 
 void DojoHelpers::_bind_methods()
 {
@@ -56,6 +62,66 @@ Variant DojoHelpers::get_setting(const String& setting)
     }
     Logger::error("Setting not found", setting);
     return Variant();
+}
+
+// these use boost::multiprecision, that can be included separately but not sure if it's header only
+double DojoHelpers::variant_to_double_fp(const Variant& value, const int precision) {
+
+    cpp_int int_val;
+    // TODO convert variant (from Cairo, could be a simple int or array of ints for u128 and up) to cpp_int
+    switch (value.get_type()) {
+
+        case Variant::BOOL:
+        case Variant::INT:
+        case Variant::FLOAT:
+            int_val = (int64_t)value;
+            break;
+        case Variant::STRING:
+            int_val = cpp_int(String(value).utf8().get_data());
+            break;
+        case Variant::ARRAY: {
+            // Other variant array types go here?
+            // take the bytes from the array here and construct the big integer
+            PackedByteArray bytes = value;
+            for (int i=0; i<bytes.size(); i++) {
+                int_val += bytes[i];
+                int_val <<= 8;
+            };
+
+        } break;
+    };
+
+    cpp_int divisor = 1;
+    divisor <<= precision;
+    cpp_dec_float_100 result = cpp_dec_float_100(int_val) / cpp_dec_float_100(divisor);
+
+    return (double)result;
+}
+
+Variant DojoHelpers::double_to_variant(const double value, const int precision) {
+
+    cpp_int shift = 1;
+    shift <<= precision;
+    cpp_dec_float_100 val_100 = (double)value;
+    val_100 *= precision;
+
+    cpp_int val_int(val_100);
+
+    // convert val_100 to Variant here for use with field element etc
+    if (msb(val_int) < 64) {
+        return Variant((int64_t)val_int);
+    };
+
+    PackedByteArray arr;
+    int bytes = (msb(val_int) / 8) + 1;
+    arr.resize(bytes);
+    for (int i=0; i<bytes; i++) {
+
+        arr[bytes - i] = (uint8_t)(val_int & 0xff);
+        val_int >>= 8;
+    };
+
+    return Variant(arr);
 }
 
 int64_t DojoHelpers::float_to_fixed(const double& value, const int& precision)
