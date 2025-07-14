@@ -228,36 +228,6 @@ DOJO::COptionc_char DojoHelpers::create_option_from_string(const String& option)
     return coption;
 }
 
-String DojoHelpers::u256ToString(const DOJO::U256& u256)
-{
-    const uint8_t* bytes = u256.data;
-
-    const Num::word* words_ptr = reinterpret_cast<const Num::word*>(bytes);
-
-    Num big_num(words_ptr, words_ptr + 4);
-
-    std::vector<char> char_vec;
-    big_num.print(char_vec);
-    return {&char_vec[0]};
-}
-
-
-String DojoHelpers::packed_byte_array_to_numeric_string(const PackedByteArray& bytes) {
-    if (bytes.size() != 32) {
-        // Manejar el error como prefieras
-        return "Error: PackedByteArray must be 32 bytes long";
-    }
-
-    const uint8_t* ptr = bytes.ptr();
-    const Num::word* words_ptr = reinterpret_cast<const Num::word*>(ptr);
-    Num big_num(words_ptr, words_ptr + 4);
-
-    std::vector<char> char_vec;
-    big_num.print(char_vec);
-
-    return {&char_vec[0]};
-}
-
 String DojoHelpers::u256_to_string_boost(const DOJO::U256& u256)
 {
     std::vector<uint8_t> bytes(u256.data, u256.data + 32);
@@ -269,19 +239,6 @@ String DojoHelpers::u256_to_string_boost(const DOJO::U256& u256)
     import_bits(big_num, bytes.begin(), bytes.end());
 
     return {big_num.str().c_str()};
-}
-
-
-String DojoHelpers::fixed_point_to_string(const String& fixed_point_value_str, int precision)
-{
-    cpp_int fixed_point_value(fixed_point_value_str.utf8().get_data());
-
-    cpp_int divisor = 1;
-    divisor <<= precision;
-
-    cpp_int integer_value = fixed_point_value / divisor;
-
-    return {integer_value.str().c_str()};
 }
 
 DOJO::U256 DojoHelpers::string_to_fixed_point_u256(const String& integer_str, int precision)
