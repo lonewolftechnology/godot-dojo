@@ -6,7 +6,6 @@
 
 #include <boost/multiprecision/cpp_int.hpp>
 #include <boost/multiprecision/cpp_dec_float.hpp>
-#include "tools/num.hpp"
 
 DojoHelpers* DojoHelpers::singleton = nullptr;
 using boost::multiprecision::cpp_int;
