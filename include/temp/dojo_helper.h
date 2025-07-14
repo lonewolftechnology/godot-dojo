@@ -46,6 +46,12 @@ public:
     static TypedArray<String> convert_to_string_array(const Variant& var);
 
     static DOJO::COptionc_char create_option_from_string(const String& option = String());
+    static String u256ToString(const DOJO::U256& u256);
+    static String packed_byte_array_to_numeric_string(const PackedByteArray& bytes);
+    static String u256_to_string_boost(const DOJO::U256& u256);
+    static String fixed_point_to_string(const String& fixed_point_value_str, int precision);
+    static DOJO::U256 string_to_fixed_point_u256(const String& integer_str, int precision);
+    static String u256_fixed_point_to_string(const dojo_bindings::U256& u256, int precision);
 };
 
 

@@ -6,6 +6,7 @@
 
 #include <boost/multiprecision/cpp_int.hpp>
 #include <boost/multiprecision/cpp_dec_float.hpp>
+#include "tools/num.hpp"
 
 DojoHelpers* DojoHelpers::singleton = nullptr;
 using boost::multiprecision::cpp_int;
@@ -61,7 +62,7 @@ Variant DojoHelpers::get_setting(const String& setting)
         return settings->get_setting(setting);
     }
     Logger::error("Setting not found", setting);
-    return Variant();
+    return {};
 }
 
 // these use boost::multiprecision, that can be included separately but not sure if it's header only
@@ -74,7 +75,7 @@ double DojoHelpers::variant_to_double_fp(const Variant& value, const int precisi
         case Variant::BOOL:
         case Variant::INT:
         case Variant::FLOAT:
-            int_val = (int64_t)value;
+            int_val = static_cast<int64_t>(value);
             break;
         case Variant::STRING:
             int_val = cpp_int(String(value).utf8().get_data());
@@ -95,7 +96,7 @@ double DojoHelpers::variant_to_double_fp(const Variant& value, const int precisi
     divisor <<= precision;
     cpp_dec_float_100 result = cpp_dec_float_100(int_val) / cpp_dec_float_100(divisor);
 
-    return (double)result;
+    return static_cast<double>(result);
 }
 
 Variant DojoHelpers::double_to_variant(const double value, const int precision) {
@@ -109,7 +110,7 @@ Variant DojoHelpers::double_to_variant(const double value, const int precision) 
 
     // convert val_100 to Variant here for use with field element etc
     if (msb(val_int) < 64) {
-        return Variant((int64_t)val_int);
+        return {static_cast<int64_t>(val_int)};
     };
 
     PackedByteArray arr;
@@ -117,7 +118,7 @@ Variant DojoHelpers::double_to_variant(const double value, const int precision) 
     arr.resize(bytes);
     for (int i=0; i<bytes; i++) {
 
-        arr[bytes - i] = (uint8_t)(val_int & 0xff);
+        arr[bytes - i] = static_cast<uint8_t>(val_int & 0xff);
         val_int >>= 8;
     };
 
@@ -175,7 +176,7 @@ TypedArray<String> DojoHelpers::convert_to_string_array(const Variant& var)
             Array keys = dict.keys();
             for (int i = 0; i < keys.size(); ++i)
             {
-                Variant val = dict[keys[i]];
+                const Variant& val = dict[keys[i]];
                 // arr.push_back(keys[i]);
                 arr.push_back(val.operator String());
             }
@@ -192,7 +193,7 @@ TypedArray<String> DojoHelpers::convert_to_string_array(const Variant& var)
         }
     case Variant::VECTOR2:
         {
-            Vector2 v = var;
+            const Vector2 v = var;
             arr.push_back(String::num(v.x));
             arr.push_back(String::num(v.y));
             break;
@@ -210,7 +211,7 @@ TypedArray<String> DojoHelpers::convert_to_string_array(const Variant& var)
     return arr;
 }
 
-dojo_bindings::COptionc_char DojoHelpers::create_option_from_string(const String& option)
+DOJO::COptionc_char DojoHelpers::create_option_from_string(const String& option)
 {
     DOJO::COptionc_char coption = {};
     if (option.is_empty())
@@ -225,4 +226,119 @@ dojo_bindings::COptionc_char DojoHelpers::create_option_from_string(const String
         coption.some = option.utf8().get_data();
     }
     return coption;
+}
+
+String DojoHelpers::u256ToString(const DOJO::U256& u256)
+{
+    const uint8_t* bytes = u256.data;
+
+    const Num::word* words_ptr = reinterpret_cast<const Num::word*>(bytes);
+
+    Num big_num(words_ptr, words_ptr + 4);
+
+    std::vector<char> char_vec;
+    big_num.print(char_vec);
+    return {&char_vec[0]};
+}
+
+
+String DojoHelpers::packed_byte_array_to_numeric_string(const PackedByteArray& bytes) {
+    if (bytes.size() != 32) {
+        // Manejar el error como prefieras
+        return "Error: PackedByteArray must be 32 bytes long";
+    }
+
+    const uint8_t* ptr = bytes.ptr();
+    const Num::word* words_ptr = reinterpret_cast<const Num::word*>(ptr);
+    Num big_num(words_ptr, words_ptr + 4);
+
+    std::vector<char> char_vec;
+    big_num.print(char_vec);
+
+    return {&char_vec[0]};
+}
+
+String DojoHelpers::u256_to_string_boost(const DOJO::U256& u256)
+{
+    std::vector<uint8_t> bytes(u256.data, u256.data + 32);
+
+    std::reverse(bytes.begin(), bytes.end());
+
+    cpp_int big_num;
+
+    import_bits(big_num, bytes.begin(), bytes.end());
+
+    return {big_num.str().c_str()};
+}
+
+
+String DojoHelpers::fixed_point_to_string(const String& fixed_point_value_str, int precision)
+{
+    cpp_int fixed_point_value(fixed_point_value_str.utf8().get_data());
+
+    cpp_int divisor = 1;
+    divisor <<= precision;
+
+    cpp_int integer_value = fixed_point_value / divisor;
+
+    return {integer_value.str().c_str()};
+}
+
+DOJO::U256 DojoHelpers::string_to_fixed_point_u256(const String& integer_str, int precision)
+{
+    cpp_int integer_value(integer_str.utf8().get_data());
+
+    cpp_int multiplier = 1;
+    multiplier <<= precision;
+
+    cpp_int fixed_point_value = integer_value * multiplier;
+
+    cpp_int max_u256 = (cpp_int(1) << 256) - 1;
+    if (fixed_point_value > max_u256) {
+        Logger::error("Error: El valor de punto fijo excede los 256 bits.");
+        return {};
+    }
+
+    std::vector<uint8_t> bytes;
+    boost::multiprecision::export_bits(fixed_point_value, std::back_inserter(bytes), 8);
+
+    DOJO::U256 result = {};
+
+    size_t num_bytes = bytes.size();
+    if (num_bytes > 32) {
+         Logger::error("Error: export_bits generó más de 32 bytes.");
+         return {};
+    }
+
+    uint8_t temp_buffer[32] = {0};
+    memcpy(temp_buffer + (32 - num_bytes), bytes.data(), num_bytes);
+
+    std::reverse(std::begin(temp_buffer), std::end(temp_buffer));
+
+    memcpy(result.data, temp_buffer, 32);
+
+    return result;
+}
+
+String DojoHelpers::u256_fixed_point_to_string(const DOJO::U256& u256, int precision)
+{
+    std::vector<uint8_t> bytes(u256.data, u256.data + 32);
+    std::reverse(bytes.begin(), bytes.end()); // Invertir a big-endian para Boost
+
+    cpp_int fixed_point_value;
+    boost::multiprecision::import_bits(fixed_point_value, bytes.begin(), bytes.end());
+
+    cpp_int divisor = 1;
+    divisor <<= precision;
+
+    cpp_dec_float_100 float_result = cpp_dec_float_100(fixed_point_value) / cpp_dec_float_100(divisor);
+
+    std::string std_string_result = float_result.str(100, std::ios_base::fixed);
+
+    std_string_result.erase(std_string_result.find_last_not_of('0') + 1, std::string::npos);
+    if (std_string_result.back() == '.') {
+        std_string_result.pop_back();
+    }
+
+    return {std_string_result.c_str()};
 }

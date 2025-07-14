@@ -51,6 +51,7 @@ void DojoTy::init_form_ty(const DOJO::Ty& ty)
     if (ty.tag == Tag::Primitive_)
     {
         type = Type::Primitive_;
+        Logger::debug_extra("Primitive", "[color=yellow]-----[/color]");
         DojoPrimitive data = {ty.primitive};
         value = data.get_value();
         is_felt = data.is_felt;

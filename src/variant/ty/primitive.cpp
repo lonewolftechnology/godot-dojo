@@ -5,6 +5,8 @@
 
 #include "variant/ty/primitive.h"
 
+#include <temp/dojo_helper.h>
+
 Variant DojoPrimitive::VariantFromPrimitive(dojo_bindings::Primitive primitive)
 {
     switch (primitive.tag)
@@ -28,9 +30,11 @@ Variant DojoPrimitive::VariantFromPrimitive(dojo_bindings::Primitive primitive)
     case DOJO::Primitive_Tag::U64:
         return {primitive.u64};
     case DOJO::Primitive_Tag::U128:
+        Logger::debug_extra("U128");
         return FieldElement::to_packed_array(primitive.u128, 16);
     case DOJO::Primitive_Tag::U256_:
-        return FieldElement::to_packed_array(primitive.u256.data, 32);
+        Logger::debug_extra("U256");
+        return DojoHelpers::u256_to_string_boost(primitive.u256);
     case DOJO::Primitive_Tag::Bool:
         return {primitive.bool_};
     default:
@@ -91,4 +95,5 @@ DojoPrimitive::DojoPrimitive(const DOJO::Primitive& primitive)
         is_felt = true;
         break;
     }
+    Logger::debug_extra("Primitive", value);
 }
