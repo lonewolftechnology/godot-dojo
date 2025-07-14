@@ -1,11 +1,19 @@
-[gd_resource type="DojoPolicies" load_steps=5 format=3 uid="uid://tfmm84euv0h4"]
+[gd_resource type="DojoPolicies" load_steps=7 format=3 uid="uid://tfmm84euv0h4"]
 
 [ext_resource type="DojoPolicy" uid="uid://bv5g6pmeq3pt1" path="res://resources/policies/move_policy.tres" id="1_aiqrk"]
 [ext_resource type="DojoPolicy" uid="uid://btj7knthulhjp" path="res://resources/policies/spawn_policy.tres" id="2_1hqg0"]
 [ext_resource type="DojoPolicy" uid="uid://dcfsvjg7rt33n" path="res://resources/policies/reset_spawn_policy.tres" id="3_0iida"]
 [ext_resource type="DojoPolicy" uid="uid://86qr71xw2y0e" path="res://resources/policies/move_to_policy.tres" id="4_rkmqs"]
 
+[sub_resource type="DojoPolicy" id="DojoPolicy_aiqrk"]
+method = "generate_u128"
+description = "Generates a u128"
+
+[sub_resource type="DojoPolicy" id="DojoPolicy_1hqg0"]
+method = "generate_u256"
+description = "Generates a u256"
+
 [resource]
 name = "actions"
-contract = "0x00d91dee447ef681dbf6ea307c48bf000b1262ce59fc3d1652b44273d74bf18e"
-policies = Array[DojoPolicy]([ExtResource("1_aiqrk"), ExtResource("2_1hqg0"), ExtResource("3_0iida"), ExtResource("4_rkmqs")])
+contract = "0x065d58039c71b4a0fe302d68f9fad4bf49e01fe518d7912d44ba0d07b2d7f556"
+policies = Array[DojoPolicy]([ExtResource("1_aiqrk"), ExtResource("2_1hqg0"), ExtResource("3_0iida"), ExtResource("4_rkmqs"), SubResource("DojoPolicy_aiqrk"), SubResource("DojoPolicy_1hqg0")])

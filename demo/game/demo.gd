@@ -1,9 +1,12 @@
 # CHAIN ID WP_GODOT_DEMO_ROOKIE
+# KATANA https://api.cartridge.gg/x/godot-demo-rookie/katana
 # TORII https://api.cartridge.gg/x/godot-demo-rookie/torii
-# WORLD 0x07cb912d0029e3799c4b8f2253b21481b2ec814c5daf72de75164ca82e7c42a5
-# Actions 0x0393f8a2d0d47e384c3c61eedc08d2873f5d608f8da7ffb013e5d5aa327ac8f2
+# WORLD 0x0393f8a2d0d47e384c3c61eedc08d2873f5d608f8da7ffb013e5d5aa327ac8f2
+# Actions 0x065d58039c71b4a0fe302d68f9fad4bf49e01fe518d7912d44ba0d07b2d7f556
+
 # hazel 0x3dc821653fa9ed84324821b26afd5775b128921b9436327211949947a888
 # dtodice 0x75c10973fc5fdfa2f7ff5875f10441e546d98f37f40b97a663f89bdaf81a0
+
 class_name DemoGame
 extends Node
 
