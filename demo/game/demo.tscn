@@ -1,4 +1,4 @@
-[gd_scene load_steps=22 format=3 uid="uid://cn1gdwiythfn2"]
+[gd_scene load_steps=24 format=3 uid="uid://cn1gdwiythfn2"]
 
 [ext_resource type="Script" uid="uid://dvbwyukos638c" path="res://game/demo.gd" id="1_5nuje"]
 [ext_resource type="Texture2D" uid="uid://blljslsxyx8em" path="res://assets/tile.png" id="2_43tmy"]
@@ -19,12 +19,20 @@
 [ext_resource type="Texture2D" uid="uid://dn0lmukjhns5l" path="res://assets/arrow_right_p.png" id="11_0joe1"]
 [ext_resource type="PackedScene" uid="uid://d1loujwy6tlp4" path="res://ui/screens/start_screen.tscn" id="12_s1sno"]
 
+[sub_resource type="DojoCall" id="DojoCall_r5x6q"]
+to = "0x065d58039c71b4a0fe302d68f9fad4bf49e01fe518d7912d44ba0d07b2d7f556"
+selector = "move_to_signed"
+
 [sub_resource type="AtlasTexture" id="AtlasTexture_vasa2"]
 atlas = ExtResource("2_43tmy")
 region = Rect2(0, 48, 2560, 1440)
 
 [sub_resource type="StyleBoxLine" id="StyleBoxLine_mhvfb"]
 color = Color(0.984564, 0.288109, 0.364559, 1)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_r5x6q"]
+expand_margin_top = 4.0
+expand_margin_bottom = 4.0
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_k3cyb"]
 content_margin_left = 4.0
@@ -39,6 +47,7 @@ spawn_call = ExtResource("2_k3cyb")
 spawn_reset_call = ExtResource("3_p8iq3")
 move_call = ExtResource("4_w8h56")
 move_to = ExtResource("5_r5x6q")
+move_to_signed = SubResource("DojoCall_r5x6q")
 
 [node name="Parallax" type="ParallaxBackground" parent="."]
 layer = -1
@@ -311,26 +320,56 @@ layout_mode = 2
 size_flags_horizontal = 3
 placeholder_text = "Amount"
 
-[node name="HBoxContainer" type="HBoxContainer" parent="UI/Arrows/VBoxContainer/PanelContainer/VBoxContainer"]
+[node name="HSeparator" type="HSeparator" parent="UI/Arrows/VBoxContainer/PanelContainer/VBoxContainer"]
+layout_mode = 2
+theme_override_styles/separator = SubResource("StyleBoxFlat_r5x6q")
+
+[node name="PanelContainer" type="PanelContainer" parent="UI/Arrows/VBoxContainer/PanelContainer/VBoxContainer"]
+layout_mode = 2
+
+[node name="HBoxContainer" type="HBoxContainer" parent="UI/Arrows/VBoxContainer/PanelContainer/VBoxContainer/PanelContainer"]
 custom_minimum_size = Vector2(0, 35)
 layout_mode = 2
 
-[node name="Vx" type="TextEdit" parent="UI/Arrows/VBoxContainer/PanelContainer/VBoxContainer/HBoxContainer"]
+[node name="VBoxContainer" type="VBoxContainer" parent="UI/Arrows/VBoxContainer/PanelContainer/VBoxContainer/PanelContainer/HBoxContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="Vx" type="TextEdit" parent="UI/Arrows/VBoxContainer/PanelContainer/VBoxContainer/PanelContainer/HBoxContainer/VBoxContainer"]
 unique_name_in_owner = true
 layout_mode = 2
 size_flags_horizontal = 3
+size_flags_vertical = 3
 placeholder_text = "x"
 
-[node name="Vy" type="TextEdit" parent="UI/Arrows/VBoxContainer/PanelContainer/VBoxContainer/HBoxContainer"]
+[node name="Vy" type="TextEdit" parent="UI/Arrows/VBoxContainer/PanelContainer/VBoxContainer/PanelContainer/HBoxContainer/VBoxContainer"]
 unique_name_in_owner = true
 layout_mode = 2
 size_flags_horizontal = 3
+size_flags_vertical = 3
 placeholder_text = "y"
 
-[node name="MoveTo" type="Button" parent="UI/Arrows/VBoxContainer/PanelContainer/VBoxContainer/HBoxContainer"]
+[node name="VSeparator" type="VSeparator" parent="UI/Arrows/VBoxContainer/PanelContainer/VBoxContainer/PanelContainer/HBoxContainer"]
+layout_mode = 2
+theme_override_styles/separator = SubResource("StyleBoxFlat_r5x6q")
+
+[node name="VBoxContainer2" type="VBoxContainer" parent="UI/Arrows/VBoxContainer/PanelContainer/VBoxContainer/PanelContainer/HBoxContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="MoveTo" type="Button" parent="UI/Arrows/VBoxContainer/PanelContainer/VBoxContainer/PanelContainer/HBoxContainer/VBoxContainer2"]
 layout_mode = 2
 size_flags_horizontal = 3
 text = "Move"
+
+[node name="MoveToSigned" type="Button" parent="UI/Arrows/VBoxContainer/PanelContainer/VBoxContainer/PanelContainer/HBoxContainer/VBoxContainer2"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Move Sig"
+
+[node name="HSeparator2" type="HSeparator" parent="UI/Arrows/VBoxContainer/PanelContainer/VBoxContainer"]
+layout_mode = 2
+theme_override_styles/separator = SubResource("StyleBoxFlat_r5x6q")
 
 [node name="Tokens" type="Button" parent="UI/Arrows/VBoxContainer/PanelContainer/VBoxContainer"]
 layout_mode = 2
@@ -340,6 +379,10 @@ text = "Tokens"
 custom_minimum_size = Vector2(0, 40)
 layout_mode = 2
 placeholder_text = "0x0"
+
+[node name="HSeparator3" type="HSeparator" parent="UI/Arrows/VBoxContainer/PanelContainer/VBoxContainer"]
+layout_mode = 2
+theme_override_styles/separator = SubResource("StyleBoxFlat_r5x6q")
 
 [node name="GetController" type="Button" parent="UI/Arrows/VBoxContainer/PanelContainer/VBoxContainer"]
 layout_mode = 2
@@ -386,7 +429,8 @@ visible = false
 [connection signal="pressed" from="UI/Arrows/VBoxContainer/HBoxContainer/VBoxContainer/ArrowUp" to="." method="_on_arrow_up_pressed"]
 [connection signal="pressed" from="UI/Arrows/VBoxContainer/HBoxContainer/VBoxContainer/ArrowDown" to="." method="_on_arrow_down_pressed"]
 [connection signal="pressed" from="UI/Arrows/VBoxContainer/HBoxContainer/ArrowRight" to="." method="_on_arrow_right_pressed"]
-[connection signal="pressed" from="UI/Arrows/VBoxContainer/PanelContainer/VBoxContainer/HBoxContainer/MoveTo" to="." method="_on_move_to_pressed"]
+[connection signal="pressed" from="UI/Arrows/VBoxContainer/PanelContainer/VBoxContainer/PanelContainer/HBoxContainer/VBoxContainer2/MoveTo" to="." method="_on_move_to_pressed"]
+[connection signal="pressed" from="UI/Arrows/VBoxContainer/PanelContainer/VBoxContainer/PanelContainer/HBoxContainer/VBoxContainer2/MoveToSigned" to="." method="_on_move_to_signed_pressed"]
 [connection signal="pressed" from="UI/Arrows/VBoxContainer/PanelContainer/VBoxContainer/Tokens" to="." method="_on_tokens_pressed"]
 [connection signal="pressed" from="UI/Arrows/VBoxContainer/PanelContainer/VBoxContainer/GetController" to="." method="_on_get_controller_pressed"]
 [connection signal="pressed" from="UI/Panel/HBoxContainer/Disconnect" to="." method="_on_disconnect_pressed"]

@@ -22,6 +22,7 @@ enum Directions {
 @export var spawn_reset_call : DojoCall
 @export var move_call : DojoCall
 @export var move_to : DojoCall
+@export var move_to_signed : DojoCall
 
 
 @onready var label_username: Label = %LabelUsername
@@ -54,9 +55,9 @@ func _on_events(args:Dictionary):
 		result_data.merge(entry)
 		
 	print("$$$ EVENTS: %s"%str(result_data))
-	if result_data.has("Vec2"):
+	if result_data.has("Vec2Signed"):
 		await get_tree().process_frame
-		var new_pos = Vector2(result_data['Vec2']['x'], result_data['Vec2']['y'] )
+		var new_pos = Vector2(result_data['Vec2Signed']['x'], result_data['Vec2Signed']['y'] )
 		controllers_manager.move_controller(result_data['player'], new_pos)
 	if result_data.has("remaining"):
 		await get_tree().process_frame
@@ -70,9 +71,9 @@ func _on_entities(args:Dictionary):
 		result_data.merge(entry)
 	
 	print("$$$ ENTITIES: %s"%str(result_data))
-	if result_data.has("Vec2"):
+	if result_data.has("Vec2Signed"):
 		await get_tree().process_frame
-		var new_pos = Vector2(result_data['Vec2']['x'], result_data['Vec2']['y'] )
+		var new_pos = Vector2(result_data['Vec2Signed']['x'], result_data['Vec2Signed']['y'] )
 		controllers_manager.move_controller(result_data['player'], new_pos)
 	if result_data.has("remaining"):
 		await get_tree().process_frame
@@ -127,9 +128,9 @@ func get_entities() -> void:
 			var remaining
 			for key in model:
 				var entry:Dictionary = model[key]
-				if entry.has("Vec2"):
+				if entry.has("Vec2Signed"):
 					id = entry["player"]
-					var vec = entry["Vec2"]
+					var vec = entry["Vec2Signed"]
 					position = Vector2(vec['x'], vec['y'])
 					controllers_manager.move_controller(id, position)
 				if entry.has("can_move"):
@@ -141,7 +142,10 @@ func get_entities() -> void:
 func _move(dir:Directions) -> void:
 	move_call.calldata[0] = dir
 	var steps:String = %StepsAmount.text
-	move_call.calldata[1] = int(steps)
+	var u32 = DojoHelpers.signed_to_u32_offset(int(steps))
+	move_call.calldata[1] = u32
+	push_warning(u32)
+	
 	Connection.controller_account.execute_from_outside(move_call)
 
 func _on_arrow_left_pressed() -> void:
@@ -158,14 +162,16 @@ func _on_arrow_right_pressed() -> void:
 
 
 func _on_move_to_pressed() -> void:
-	var x:String = %Vx.text
-	var y:String = %Vy.text
-	if x.is_empty() or float(x) < 0:
-		x = "0"
-	if y.is_empty() or float(y) < 0:
-		y = "0"
-	move_to.calldata[0][1] = int(y)
-	move_to.calldata[0][0] = int(x)
+	var x:int = int(%Vx.text)
+	var y:int = int(%Vy.text)
+	#push_warning("first ", x, " ", y)
+	#x = DojoHelpers.signed_to_u32_offset(x)
+	#y = DojoHelpers.signed_to_u32_offset(y)
+	#push_warning("second ", x, " ", y)
+	#move_to.calldata[0][0] = x
+	#move_to.calldata[0][1] = y
+	move_to.calldata[0] = Vector2i(x,y)
+	
 	Connection.controller_account.execute_from_outside(move_to)
 
 
@@ -185,3 +191,11 @@ func _on_tokens_pressed() -> void:
 func _on_get_controller_pressed() -> void:
 	#get_controllers([controller_btn.text])
 	Connection.client.publish_message("AAAAAAAAAAAAAAAAAAAAAAAAAA", ["0x2b1754e413c0bd1ef98ddcd99a8f9e996f3765553341d1075b153374cac51"])
+
+
+func _on_move_to_signed_pressed() -> void:
+	var x:int = int(%Vx.text)
+	var y:int = int(%Vy.text)
+	move_to.calldata[0] = [x,y]
+	
+	Connection.controller_account.execute_from_outside(move_to_signed)

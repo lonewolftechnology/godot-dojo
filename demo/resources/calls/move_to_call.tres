@@ -3,4 +3,4 @@
 [resource]
 to = "0x065d58039c71b4a0fe302d68f9fad4bf49e01fe518d7912d44ba0d07b2d7f556"
 selector = "move_to"
-calldata = [[5, 5]]
+calldata = [Vector2i(5, 5)]
