@@ -179,8 +179,7 @@ func _update_entities(parsed_entities:Dictionary) -> void:
 
 func _move(dir:Directions) -> void:
 	move_call.calldata[0] = dir
-	var steps:String = %StepsAmount.text
-	var u32 = DojoHelpers.signed_to_u32_offset(int(steps))
+	var u32 = DojoHelpers.signed_to_u32_offset(%StepsAmount.value)
 	move_call.calldata[1] = u32
 	push_warning(u32)
 	
@@ -200,9 +199,9 @@ func _on_arrow_right_pressed() -> void:
 
 
 func _on_move_to_pressed() -> void:
-	var x:int = int(%Vx.text)
-	var y:int = int(%Vy.text)
-	move_to.calldata[0] = Vector2i(x,y)	
+	var x:int = %Vx.value
+	var y:int = %Vy.value
+	move_to.calldata[0] = Vector2i(x,y)
 	connection.controller_account.execute_from_outside(move_to)
 
 
@@ -223,8 +222,8 @@ func _on_get_controller_pressed() -> void:
 
 
 func _on_move_to_signed_pressed() -> void:
-	var x:int = int(%Vx.text)
-	var y:int = int(%Vy.text)
+	var x:int = %Vx.value
+	var y:int = %Vy.value
 	move_to.calldata[0] = [x,y]
 	
 	connection.controller_account.execute_from_outside(move_to_signed)

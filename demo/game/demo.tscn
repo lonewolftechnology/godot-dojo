@@ -315,11 +315,14 @@ layout_mode = 2
 layout_mode = 2
 text = "Amount"
 
-[node name="StepsAmount" type="TextEdit" parent="UI/Arrows/VBoxContainer/PanelContainer/VBoxContainer/HBoxContainer2"]
+[node name="StepsAmount" type="SpinBox" parent="UI/Arrows/VBoxContainer/PanelContainer/VBoxContainer/HBoxContainer2"]
 unique_name_in_owner = true
 layout_mode = 2
 size_flags_horizontal = 3
-placeholder_text = "Amount"
+min_value = 1.0
+value = 1.0
+rounded = true
+allow_greater = true
 
 [node name="HSeparator" type="HSeparator" parent="UI/Arrows/VBoxContainer/PanelContainer/VBoxContainer"]
 layout_mode = 2
@@ -336,19 +339,23 @@ layout_mode = 2
 layout_mode = 2
 size_flags_horizontal = 3
 
-[node name="Vx" type="TextEdit" parent="UI/Arrows/VBoxContainer/PanelContainer/VBoxContainer/PanelContainer/HBoxContainer/VBoxContainer"]
+[node name="Vx" type="SpinBox" parent="UI/Arrows/VBoxContainer/PanelContainer/VBoxContainer/PanelContainer/HBoxContainer/VBoxContainer"]
 unique_name_in_owner = true
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 3
-placeholder_text = "x"
+rounded = true
+allow_greater = true
+allow_lesser = true
 
-[node name="Vy" type="TextEdit" parent="UI/Arrows/VBoxContainer/PanelContainer/VBoxContainer/PanelContainer/HBoxContainer/VBoxContainer"]
+[node name="Vy" type="SpinBox" parent="UI/Arrows/VBoxContainer/PanelContainer/VBoxContainer/PanelContainer/HBoxContainer/VBoxContainer"]
 unique_name_in_owner = true
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 3
-placeholder_text = "y"
+rounded = true
+allow_greater = true
+allow_lesser = true
 
 [node name="VSeparator" type="VSeparator" parent="UI/Arrows/VBoxContainer/PanelContainer/VBoxContainer/PanelContainer/HBoxContainer"]
 layout_mode = 2
