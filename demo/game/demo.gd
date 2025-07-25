@@ -33,8 +33,6 @@ enum Directions {
 
 @onready var controllers_manager: ControllersManager = %ControllersManager
 
-@onready var controller_btn: TextEdit = $UI/Arrows/VBoxContainer/PanelContainer/VBoxContainer/ControllerBtn
-
 func _ready() -> void:
 	OS.set_environment("RUST_BACKTRACE", "full")
 	OS.set_environment("RUST_LOG", "debug")
@@ -44,8 +42,7 @@ func _on_controller_current_user_info(data:Dictionary) -> void:
 	var address : String = data['address']
 	var username : String = data['username']
 	
-	label_username.text = "Username: %s"%username
-	
+	label_username.text = "Username: %s"%username	
 	controllers_manager.spawn_entity(data,true)
 
 
@@ -95,9 +92,7 @@ func _on_start_screen_entered() -> void:
 	
 	
 	await get_tree().create_timer(0.1).timeout
-	for key in parsed.keys():
-		var position : Vector2 = parsed[key].position
-		controllers_manager.move_controller(key,position)
+	_update_entities(parsed)
 	
 	
 	#get_controllers(parsed.keys())
@@ -182,7 +177,6 @@ func _move(dir:Directions) -> void:
 	var u32 = DojoHelpers.signed_to_u32_offset(%StepsAmount.value)
 	move_call.calldata[1] = u32
 	push_warning(u32)
-	
 	connection.controller_account.execute_from_outside(move_call)
 
 func _on_arrow_left_pressed() -> void:
@@ -210,20 +204,3 @@ func _on_disconnect_pressed() -> void:
 	controllers_manager.clear_all_controllers()
 	await get_tree().process_frame	
 	get_tree().reload_current_scene()
-
-func _on_tokens_pressed() -> void:
-	var client = connection.client
-	prints("[TORII]", client.get_tokens(), client.get_token_balances("0x2b1754e413c0bd1ef98ddcd99a8f9e996f3765553341d1075b153374cac51"), client.get_token_collections())
-
-
-func _on_get_controller_pressed() -> void:
-	#get_controllers([controller_btn.text])
-	connection.client.publish_message("AAAAAAAAAAAAAAAAAAAAAAAAAA", ["0x2b1754e413c0bd1ef98ddcd99a8f9e996f3765553341d1075b153374cac51"])
-
-
-func _on_move_to_signed_pressed() -> void:
-	var x:int = %Vx.value
-	var y:int = %Vy.value
-	move_to.calldata[0] = [x,y]
-	
-	connection.controller_account.execute_from_outside(move_to_signed)

@@ -1,7 +1,7 @@
 class_name GenericEntity
 extends Node2D
 
-const STEP_SIZE := Vector2(64,64)
+const STEP_SIZE := Vector2(64,64) * 2
 
 @onready var username_label: Label = $Username
 @onready var position_label: Label = $Position

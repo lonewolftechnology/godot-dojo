@@ -63,7 +63,6 @@ func spawn_entity(_data:Dictionary, is_player:bool = false):
 	entities[address] = username
 
 func _unhandled_input(event: InputEvent) -> void:
-				
 	if event.is_action_pressed("zoom_in"):
 		if camera.zoom.x <= MAX_ZOOM:
 			camera.zoom += Vector2(0.1, 0.1)

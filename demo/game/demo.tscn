@@ -55,12 +55,13 @@ layer = -1
 [node name="ParallaxLayer" type="ParallaxLayer" parent="Parallax"]
 
 [node name="Parallax2D" type="Parallax2D" parent="Parallax/ParallaxLayer"]
-repeat_size = Vector2(1024, 1024)
+repeat_size = Vector2(2048, 2048)
 repeat_times = 128
 
 [node name="Bg" type="Sprite2D" parent="Parallax/ParallaxLayer/Parallax2D"]
 texture_filter = 1
 texture_repeat = 2
+scale = Vector2(2, 2)
 texture = ExtResource("2_43tmy")
 centered = false
 offset = Vector2(32, 32)
@@ -307,15 +308,7 @@ layout_mode = 2
 [node name="VBoxContainer" type="VBoxContainer" parent="UI/Arrows/VBoxContainer/PanelContainer"]
 layout_mode = 2
 
-[node name="HBoxContainer2" type="HBoxContainer" parent="UI/Arrows/VBoxContainer/PanelContainer/VBoxContainer"]
-custom_minimum_size = Vector2(0, 35)
-layout_mode = 2
-
-[node name="Label" type="Label" parent="UI/Arrows/VBoxContainer/PanelContainer/VBoxContainer/HBoxContainer2"]
-layout_mode = 2
-text = "Amount"
-
-[node name="StepsAmount" type="SpinBox" parent="UI/Arrows/VBoxContainer/PanelContainer/VBoxContainer/HBoxContainer2"]
+[node name="StepsAmount" type="SpinBox" parent="UI/Arrows/VBoxContainer/PanelContainer/VBoxContainer"]
 unique_name_in_owner = true
 layout_mode = 2
 size_flags_horizontal = 3
@@ -323,78 +316,42 @@ min_value = 1.0
 value = 1.0
 rounded = true
 allow_greater = true
+prefix = "Amount:"
 
 [node name="HSeparator" type="HSeparator" parent="UI/Arrows/VBoxContainer/PanelContainer/VBoxContainer"]
 layout_mode = 2
 theme_override_styles/separator = SubResource("StyleBoxFlat_r5x6q")
 
-[node name="PanelContainer" type="PanelContainer" parent="UI/Arrows/VBoxContainer/PanelContainer/VBoxContainer"]
+[node name="VBoxContainer" type="VBoxContainer" parent="UI/Arrows/VBoxContainer/PanelContainer/VBoxContainer"]
 layout_mode = 2
+size_flags_horizontal = 3
 
-[node name="HBoxContainer" type="HBoxContainer" parent="UI/Arrows/VBoxContainer/PanelContainer/VBoxContainer/PanelContainer"]
+[node name="HBoxContainer" type="HBoxContainer" parent="UI/Arrows/VBoxContainer/PanelContainer/VBoxContainer/VBoxContainer"]
 custom_minimum_size = Vector2(0, 35)
 layout_mode = 2
 
-[node name="VBoxContainer" type="VBoxContainer" parent="UI/Arrows/VBoxContainer/PanelContainer/VBoxContainer/PanelContainer/HBoxContainer"]
-layout_mode = 2
-size_flags_horizontal = 3
-
-[node name="Vx" type="SpinBox" parent="UI/Arrows/VBoxContainer/PanelContainer/VBoxContainer/PanelContainer/HBoxContainer/VBoxContainer"]
+[node name="Vx" type="SpinBox" parent="UI/Arrows/VBoxContainer/PanelContainer/VBoxContainer/VBoxContainer/HBoxContainer"]
 unique_name_in_owner = true
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 3
+max_value = 255.0
 rounded = true
-allow_greater = true
-allow_lesser = true
+prefix = "x:"
 
-[node name="Vy" type="SpinBox" parent="UI/Arrows/VBoxContainer/PanelContainer/VBoxContainer/PanelContainer/HBoxContainer/VBoxContainer"]
+[node name="Vy" type="SpinBox" parent="UI/Arrows/VBoxContainer/PanelContainer/VBoxContainer/VBoxContainer/HBoxContainer"]
 unique_name_in_owner = true
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 3
+max_value = 255.0
 rounded = true
-allow_greater = true
-allow_lesser = true
+prefix = "y:"
 
-[node name="VSeparator" type="VSeparator" parent="UI/Arrows/VBoxContainer/PanelContainer/VBoxContainer/PanelContainer/HBoxContainer"]
-layout_mode = 2
-theme_override_styles/separator = SubResource("StyleBoxFlat_r5x6q")
-
-[node name="VBoxContainer2" type="VBoxContainer" parent="UI/Arrows/VBoxContainer/PanelContainer/VBoxContainer/PanelContainer/HBoxContainer"]
-layout_mode = 2
-size_flags_horizontal = 3
-
-[node name="MoveTo" type="Button" parent="UI/Arrows/VBoxContainer/PanelContainer/VBoxContainer/PanelContainer/HBoxContainer/VBoxContainer2"]
+[node name="MoveTo" type="Button" parent="UI/Arrows/VBoxContainer/PanelContainer/VBoxContainer/VBoxContainer"]
 layout_mode = 2
 size_flags_horizontal = 3
 text = "Move"
-
-[node name="MoveToSigned" type="Button" parent="UI/Arrows/VBoxContainer/PanelContainer/VBoxContainer/PanelContainer/HBoxContainer/VBoxContainer2"]
-layout_mode = 2
-size_flags_horizontal = 3
-text = "Move Sig"
-
-[node name="HSeparator2" type="HSeparator" parent="UI/Arrows/VBoxContainer/PanelContainer/VBoxContainer"]
-layout_mode = 2
-theme_override_styles/separator = SubResource("StyleBoxFlat_r5x6q")
-
-[node name="Tokens" type="Button" parent="UI/Arrows/VBoxContainer/PanelContainer/VBoxContainer"]
-layout_mode = 2
-text = "Tokens"
-
-[node name="ControllerBtn" type="TextEdit" parent="UI/Arrows/VBoxContainer/PanelContainer/VBoxContainer"]
-custom_minimum_size = Vector2(0, 40)
-layout_mode = 2
-placeholder_text = "0x0"
-
-[node name="HSeparator3" type="HSeparator" parent="UI/Arrows/VBoxContainer/PanelContainer/VBoxContainer"]
-layout_mode = 2
-theme_override_styles/separator = SubResource("StyleBoxFlat_r5x6q")
-
-[node name="GetController" type="Button" parent="UI/Arrows/VBoxContainer/PanelContainer/VBoxContainer"]
-layout_mode = 2
-text = "Get Controller"
 
 [node name="Panel" type="PanelContainer" parent="UI"]
 anchors_preset = 5
@@ -438,9 +395,6 @@ connection = NodePath("../../Connection")
 [connection signal="pressed" from="UI/Arrows/VBoxContainer/HBoxContainer/VBoxContainer/ArrowUp" to="." method="_on_arrow_up_pressed"]
 [connection signal="pressed" from="UI/Arrows/VBoxContainer/HBoxContainer/VBoxContainer/ArrowDown" to="." method="_on_arrow_down_pressed"]
 [connection signal="pressed" from="UI/Arrows/VBoxContainer/HBoxContainer/ArrowRight" to="." method="_on_arrow_right_pressed"]
-[connection signal="pressed" from="UI/Arrows/VBoxContainer/PanelContainer/VBoxContainer/PanelContainer/HBoxContainer/VBoxContainer2/MoveTo" to="." method="_on_move_to_pressed"]
-[connection signal="pressed" from="UI/Arrows/VBoxContainer/PanelContainer/VBoxContainer/PanelContainer/HBoxContainer/VBoxContainer2/MoveToSigned" to="." method="_on_move_to_signed_pressed"]
-[connection signal="pressed" from="UI/Arrows/VBoxContainer/PanelContainer/VBoxContainer/Tokens" to="." method="_on_tokens_pressed"]
-[connection signal="pressed" from="UI/Arrows/VBoxContainer/PanelContainer/VBoxContainer/GetController" to="." method="_on_get_controller_pressed"]
+[connection signal="pressed" from="UI/Arrows/VBoxContainer/PanelContainer/VBoxContainer/VBoxContainer/MoveTo" to="." method="_on_move_to_pressed"]
 [connection signal="pressed" from="UI/Panel/HBoxContainer/Disconnect" to="." method="_on_disconnect_pressed"]
 [connection signal="entered" from="UI/StartScreen" to="." method="_on_start_screen_entered"]
