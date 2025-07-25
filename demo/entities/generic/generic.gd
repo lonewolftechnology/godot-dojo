@@ -9,14 +9,20 @@ const STEP_SIZE := Vector2(64,64)
 var username:String:
 	set(value):
 		username = value
-		username_label.text = username
+		if username.length() > 16:
+			username_label.text = username.substr(0,16)+"..."
+		else:
+			username_label.text = username
 		
 		
 var id:String
 
 func setup(entity_data:Dictionary) -> void:
-	username = entity_data['username']
 	id = entity_data['address']
+	if entity_data.has("username"):
+		username = entity_data['username']
+	else:
+		username = id
 	set_meta("type", name)
 	set_meta("name", username)
 	# Overwrite

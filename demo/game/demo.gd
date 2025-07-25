@@ -24,6 +24,8 @@ enum Directions {
 @export var move_to : DojoCall
 @export var move_to_signed : DojoCall
 
+@export var connection : DojoConnection 
+
 
 @onready var label_username: Label = %LabelUsername
 @onready var label_address: Label = %LabelAddress
@@ -31,46 +33,35 @@ enum Directions {
 
 @onready var controllers_manager: ControllersManager = %ControllersManager
 
+@onready var controller_btn: TextEdit = $UI/Arrows/VBoxContainer/PanelContainer/VBoxContainer/ControllerBtn
+
 func _ready() -> void:
 	OS.set_environment("RUST_BACKTRACE", "full")
 	OS.set_environment("RUST_LOG", "debug")
-	Connection.controller_account.current_user_info.connect(_on_controller_current_user_info)
+	connection.controller_account.current_user_info.connect(_on_controller_current_user_info)
 
 func _on_controller_current_user_info(data:Dictionary) -> void:
 	var address : String = data['address']
 	var username : String = data['username']
 	
 	label_username.text = "Username: %s"%username
-	#label_address.text = "Address: %s"%address
 	
 	controllers_manager.spawn_entity(data,true)
 
 
-func _on_events(args:Dictionary):
-	var data = args["data"]
-	
-	# This is contract specific
-	var result_data : Dictionary
-	for entry : Dictionary in data:
-		result_data.merge(entry)
-		
-	print("$$$ EVENTS: %s"%str(result_data))
-	if result_data.has("Vec2Signed"):
-		await get_tree().process_frame
-		var new_pos = Vector2(result_data['Vec2Signed']['x'], result_data['Vec2Signed']['y'] )
-		controllers_manager.move_controller(result_data['player'], new_pos)
-	if result_data.has("remaining"):
-		await get_tree().process_frame
-		label_moves.text = "Moves: %s" % result_data['remaining']
+func _on_events(args:Dictionary) -> void:
+	_handle_callback(args)
 
-func _on_entities(args:Dictionary):
+func _on_entities(args:Dictionary) -> void:
+	_handle_callback(args)
+
+func _handle_callback(args:Dictionary) -> void:
 	var data = args["data"]
 	# This is contract specific and data structure may change
 	var result_data : Dictionary
 	for entry : Dictionary in data:
 		result_data.merge(entry)
-	
-	print("$$$ ENTITIES: %s"%str(result_data))
+
 	if result_data.has("Vec2Signed"):
 		await get_tree().process_frame
 		var new_pos = Vector2(result_data['Vec2Signed']['x'], result_data['Vec2Signed']['y'] )
@@ -79,33 +70,48 @@ func _on_entities(args:Dictionary):
 		await get_tree().process_frame
 		label_moves.text = "Moves: %s" % result_data['remaining']
 
+
 func spawn(reset:bool = false) -> void:
 	if reset:
-		Connection.controller_account.execute_from_outside(spawn_reset_call)
+		connection.controller_account.execute_from_outside(spawn_reset_call)
 	else:
-		Connection.controller_account.execute_from_outside(spawn_call)
+		connection.controller_account.execute_from_outside(spawn_call)
 
 
 func _on_start_screen_entered() -> void:
-	await get_tree().create_timer(0.5).timeout
-	Connection.create_subscriptions(_on_events,_on_entities)
-	await get_tree().create_timer(0.5).timeout
+	await get_tree().create_timer(0.1).timeout
+	connection.create_subscriptions(_on_events,_on_entities)
+	
+	await get_tree().create_timer(0.1).timeout
 	spawn()
-	#await get_tree().create_timer(0.5).timeout
-	#get_controllers()
-	#await get_tree().create_timer(0.5).timeout
-	#get_entities()
+	
+	await get_tree().create_timer(0.1).timeout
+	var parsed : Dictionary = get_entities()
+	for key in parsed.keys():
+		var data = {
+			"address": key
+		}
+		controllers_manager.spawn_entity(data)
+	
+	
+	await get_tree().create_timer(0.1).timeout
+	for key in parsed.keys():
+		var position : Vector2 = parsed[key].position
+		controllers_manager.move_controller(key,position)
+	
+	
+	#get_controllers(parsed.keys())
 
 
 func get_controllers(addrs:Array = []) -> void:
-	#addrs.append(Connection.controller_account.get_address())
-	var data = Connection.client.get_controllers(addrs)
+	print("Addresses: %s\n"%str(addrs))
+	var data = connection.client.get_controllers(addrs)
+	print("######\nControllers: %s\n######\n"%str(data))
 	for controller in data:
 		controllers_manager.spawn_entity(controller)
-	
-	await get_tree().create_timer(0.2).timeout
 
-func get_entities() -> void:
+
+func get_entities() -> Dictionary:
 	var query = {
 		"pagination":{
 			"limit": 10,
@@ -118,27 +124,59 @@ func get_entities() -> void:
 		"models":[],
 		"historical": false
 	}
-	var data = Connection.client.get_entities(query)
-	print("$$$ moving controllers")
+	var data = connection.client.get_entities(query)
+	var parsed_entities : Dictionary = {}
 	for entity in data:
 		for model:Dictionary in entity.models:
-			var id
-			var position
-			var can_move
-			var remaining
+			var id : String = ""
+			var position : Vector2 = Vector2.ZERO
+			var can_move : bool = true
+			var remaining : int = 100
 			for key in model:
 				var entry:Dictionary = model[key]
-				if entry.has("Vec2Signed"):
-					id = entry["player"]
-					var vec = entry["Vec2Signed"]
-					position = Vector2(vec['x'], vec['y'])
-					controllers_manager.move_controller(id, position)
-				if entry.has("can_move"):
-					if entry.has("can_move"):
-						can_move = entry["can_move"]
-					if entry.has("remaining"):
-						remaining = entry["remaining"]
+				print("###### KEY: %s\n###### ENTRY: %s\n"%[str(key),str(entry)])
+				id = entry["player"]
+				match key:
+					"dojo_starter-Position":#,"dojo_starter-PositionSigned","dojo_starter-PositionI32":
+						var v : Dictionary = {}
+						if entry.has("vec"):
+							v = entry["vec"]
+						elif entry.has("Vector2Signed"):
+							v = entry["Vector2Signed"]
+						var x := v["x"] as float
+						var y := v["y"] as float
+						position = Vector2(x,y)
 						
+						if not parsed_entities.has(id):
+							parsed_entities[id] = {}
+						
+						parsed_entities[id] = {}
+						parsed_entities[id].merge({"position": position})
+					"dojo_starter-Moves":
+						remaining = entry["remaining"] as int
+						can_move = entry["can_move"] as bool
+						
+						if not parsed_entities.has(id):
+							parsed_entities[id] = {}
+							
+						parsed_entities[id]["remaining"] = remaining
+						parsed_entities[id]["can_move"] = can_move
+					"dojo_starter-U128Value":
+						pass
+					"dojo_starter-U256Value":
+						pass
+	
+	return parsed_entities
+
+
+func _update_entities(parsed_entities:Dictionary) -> void:
+	for key in parsed_entities.keys():
+		var id : String = key
+		var position : Vector2 = parsed_entities[key]["position"]
+		controllers_manager.move_controller(id,position)
+
+
+
 func _move(dir:Directions) -> void:
 	move_call.calldata[0] = dir
 	var steps:String = %StepsAmount.text
@@ -146,7 +184,7 @@ func _move(dir:Directions) -> void:
 	move_call.calldata[1] = u32
 	push_warning(u32)
 	
-	Connection.controller_account.execute_from_outside(move_call)
+	connection.controller_account.execute_from_outside(move_call)
 
 func _on_arrow_left_pressed() -> void:
 	_move(Directions.LEFT)
@@ -164,33 +202,24 @@ func _on_arrow_right_pressed() -> void:
 func _on_move_to_pressed() -> void:
 	var x:int = int(%Vx.text)
 	var y:int = int(%Vy.text)
-	#push_warning("first ", x, " ", y)
-	#x = DojoHelpers.signed_to_u32_offset(x)
-	#y = DojoHelpers.signed_to_u32_offset(y)
-	#push_warning("second ", x, " ", y)
-	#move_to.calldata[0][0] = x
-	#move_to.calldata[0][1] = y
-	move_to.calldata[0] = Vector2i(x,y)
-	
-	Connection.controller_account.execute_from_outside(move_to)
+	move_to.calldata[0] = Vector2i(x,y)	
+	connection.controller_account.execute_from_outside(move_to)
 
 
 func _on_disconnect_pressed() -> void:
-	Connection.controller_account.disconnect_controller()
+	connection.controller_account.disconnect_controller()
 	controllers_manager.clear_all_controllers()
-	await get_tree().process_frame
-	
+	await get_tree().process_frame	
 	get_tree().reload_current_scene()
 
 func _on_tokens_pressed() -> void:
-	var client = Connection.client
+	var client = connection.client
 	prints("[TORII]", client.get_tokens(), client.get_token_balances("0x2b1754e413c0bd1ef98ddcd99a8f9e996f3765553341d1075b153374cac51"), client.get_token_collections())
 
-@onready var controller_btn: TextEdit = $UI/Arrows/VBoxContainer/PanelContainer/VBoxContainer/ControllerBtn
 
 func _on_get_controller_pressed() -> void:
 	#get_controllers([controller_btn.text])
-	Connection.client.publish_message("AAAAAAAAAAAAAAAAAAAAAAAAAA", ["0x2b1754e413c0bd1ef98ddcd99a8f9e996f3765553341d1075b153374cac51"])
+	connection.client.publish_message("AAAAAAAAAAAAAAAAAAAAAAAAAA", ["0x2b1754e413c0bd1ef98ddcd99a8f9e996f3765553341d1075b153374cac51"])
 
 
 func _on_move_to_signed_pressed() -> void:
@@ -198,4 +227,4 @@ func _on_move_to_signed_pressed() -> void:
 	var y:int = int(%Vy.text)
 	move_to.calldata[0] = [x,y]
 	
-	Connection.controller_account.execute_from_outside(move_to_signed)
+	connection.controller_account.execute_from_outside(move_to_signed)

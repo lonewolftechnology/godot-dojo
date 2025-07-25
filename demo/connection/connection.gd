@@ -1,4 +1,4 @@
-#Autoload Connection
+class_name DojoConnection
 extends Node
 
 signal connected

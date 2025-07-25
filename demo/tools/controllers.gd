@@ -1,6 +1,9 @@
 class_name ControllersManager
 extends Node2D
 
+const MAX_ZOOM := 2.0
+const MIN_ZOOM := 0.2
+
 @export var generic_entity_scene:PackedScene
 @export var player_entity_scene:PackedScene
 var player:PlayerEntity
@@ -35,16 +38,19 @@ func move_controller(id:String, vec:Vector2)->void:
 	if not entity:
 		return
 	await get_tree().process_frame
-	prints("entity", entity)
 	if entity:
 		await get_tree().process_frame
 		entity.move(vec)
 
 func spawn_entity(_data:Dictionary, is_player:bool = false):
 	var address = _data["address"]
-	var username:String = _data["username"]
-	#prints("Controller", address)
-	if find_user(address): return
+	var username : String = address
+	if _data.has("username"):
+		username = _data["username"]
+	
+	if find_user(address): 
+		return
+	
 	var new_entity:GenericEntity
 	if is_player:
 		new_entity = player_entity_scene.instantiate()
@@ -59,10 +65,12 @@ func spawn_entity(_data:Dictionary, is_player:bool = false):
 func _unhandled_input(event: InputEvent) -> void:
 				
 	if event.is_action_pressed("zoom_in"):
-		camera.zoom += Vector2(0.1, 0.1)
+		if camera.zoom.x <= MAX_ZOOM:
+			camera.zoom += Vector2(0.1, 0.1)
 
 	if event.is_action_pressed("zoom_out"):
-		camera.zoom -= Vector2(0.1, 0.1)
+		if camera.zoom.x >= MIN_ZOOM:
+			camera.zoom -= Vector2(0.1, 0.1)
 
 	if event is InputEventMouseMotion && Input.is_mouse_button_pressed(MOUSE_BUTTON_RIGHT):
 		camera.position -= event.relative * 1/camera.zoom
