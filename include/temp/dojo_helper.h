@@ -6,6 +6,7 @@
 #define DOJO_HELPER_H
 
 #include <godot_cpp/classes/object.hpp>
+#include "godot_cpp/core/class_db.hpp"
 #include "dojo_types.h"
 using namespace godot;
 
@@ -13,13 +14,19 @@ class DojoHelpers : public Object
 {
     GDCLASS(DojoHelpers, Object)
 
-protected:
-    static void _bind_methods();
-    static DojoHelpers* singleton;
-
 public:
     DojoHelpers();
     ~DojoHelpers();
+
+    static constexpr uint64_t U32_OFFSET = 2147483648ULL; // 2^31
+
+    static uint32_t signed_to_u32_offset(int32_t signed_value) {
+        return static_cast<uint32_t>(static_cast<int64_t>(signed_value) + U32_OFFSET);
+    }
+
+    static int32_t u32_to_signed_offset(uint32_t u32_value) {
+        return static_cast<int32_t>(static_cast<uint64_t>(u32_value) - U32_OFFSET);
+    }
 
     static DojoHelpers* get_singleton() { return singleton; };
     static String get_katana_url();
@@ -52,6 +59,40 @@ public:
     static String fixed_point_to_string(const String& fixed_point_value_str, int precision);
     static DOJO::U256 string_to_fixed_point_u256(const String& integer_str, int precision);
     static String u256_fixed_point_to_string(const dojo_bindings::U256& u256, int precision);
+
+
+protected:
+    static void _bind_methods()
+    {
+        ClassDB::bind_static_method("DojoHelpers", D_METHOD("convert_to_string_array", "var"),
+                                    &DojoHelpers::convert_to_string_array);
+        ClassDB::bind_static_method("DojoHelpers", D_METHOD("get_katana_url"), &DojoHelpers::get_katana_url);
+        ClassDB::bind_static_method("DojoHelpers", D_METHOD("get_setting", "setting"), &DojoHelpers::get_setting);
+
+        ClassDB::bind_static_method("DojoHelpers", D_METHOD("signed_to_u32_offset", "signed_value"), &DojoHelpers::signed_to_u32_offset);
+        ClassDB::bind_static_method("DojoHelpers", D_METHOD("u32_to_signed_offset", "u32_value"), &DojoHelpers::u32_to_signed_offset);
+
+        // Generic. Default to precision 24
+        ClassDB::bind_static_method("DojoHelpers", D_METHOD("float_to_fixed", "value", "precision"),
+                                    &DojoHelpers::float_to_fixed, DEFVAL(24));
+        ClassDB::bind_static_method("DojoHelpers", D_METHOD("fixed_to_float", "value", "precision"),
+                                    &DojoHelpers::fixed_to_float, DEFVAL(24));
+        // 64
+        ClassDB::bind_static_method("DojoHelpers", D_METHOD("float_to_fixed_64", "value"), &DojoHelpers::float_to_fixed_64);
+        ClassDB::bind_static_method("DojoHelpers", D_METHOD("fixed_to_float_64", "value"), &DojoHelpers::fixed_to_float_64);
+        // 128
+        ClassDB::bind_static_method("DojoHelpers", D_METHOD("float_to_fixed_128", "value"),
+                                    &DojoHelpers::float_to_fixed_128);
+        ClassDB::bind_static_method("DojoHelpers", D_METHOD("fixed_to_float_128", "value"),
+                                    &DojoHelpers::fixed_to_float_128);
+        // 256
+        ClassDB::bind_static_method("DojoHelpers", D_METHOD("float_to_fixed_256", "value"),
+                                    &DojoHelpers::float_to_fixed_256);
+        ClassDB::bind_static_method("DojoHelpers", D_METHOD("fixed_to_float_256", "value"),
+                                    &DojoHelpers::fixed_to_float_256);
+    }
+    static DojoHelpers* singleton;
+
 };
 
 
