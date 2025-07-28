@@ -1,14 +1,12 @@
-[gd_scene load_steps=24 format=3 uid="uid://cn1gdwiythfn2"]
+[gd_scene load_steps=21 format=3 uid="uid://cn1gdwiythfn2"]
 
 [ext_resource type="Script" uid="uid://dvbwyukos638c" path="res://game/demo.gd" id="1_5nuje"]
 [ext_resource type="Texture2D" uid="uid://blljslsxyx8em" path="res://assets/tile.png" id="2_43tmy"]
 [ext_resource type="DojoCall" uid="uid://dv2i1mr6kuwoh" path="res://resources/calls/spawn_call.tres" id="2_k3cyb"]
 [ext_resource type="Script" uid="uid://c63vfoblqmxxg" path="res://tools/controllers.gd" id="3_k3cyb"]
-[ext_resource type="DojoCall" uid="uid://cgu5bg3mm37rw" path="res://resources/calls/reset_spawn_call.tres" id="3_p8iq3"]
 [ext_resource type="Texture2D" uid="uid://bls0ryaavsbvd" path="res://assets/arrow_left.png" id="4_p8iq3"]
 [ext_resource type="DojoCall" uid="uid://dv3gp8eh77oho" path="res://resources/calls/move_call.tres" id="4_w8h56"]
 [ext_resource type="Texture2D" uid="uid://bqdfqrx7ajogy" path="res://assets/arrow_left_p.png" id="5_2tan0"]
-[ext_resource type="DojoCall" uid="uid://cxtt744f5nyle" path="res://resources/calls/move_to_call.tres" id="5_r5x6q"]
 [ext_resource type="PackedScene" uid="uid://dj5mxqnlsh6q7" path="res://entities/generic/generic.tscn" id="6_2tan0"]
 [ext_resource type="PackedScene" uid="uid://b75yggsnay1mo" path="res://connection/connection.tscn" id="6_3jxqj"]
 [ext_resource type="Texture2D" uid="uid://do4cgyej57yhs" path="res://assets/arrow_up.png" id="6_w8h56"]
@@ -19,10 +17,6 @@
 [ext_resource type="Texture2D" uid="uid://44dwfojqqvam" path="res://assets/arrow_right.png" id="10_qlbmn"]
 [ext_resource type="Texture2D" uid="uid://dn0lmukjhns5l" path="res://assets/arrow_right_p.png" id="11_0joe1"]
 [ext_resource type="PackedScene" uid="uid://d1loujwy6tlp4" path="res://ui/screens/start_screen.tscn" id="12_s1sno"]
-
-[sub_resource type="DojoCall" id="DojoCall_r5x6q"]
-to = "0x065d58039c71b4a0fe302d68f9fad4bf49e01fe518d7912d44ba0d07b2d7f556"
-selector = "move_to_signed"
 
 [sub_resource type="StyleBoxLine" id="StyleBoxLine_mhvfb"]
 color = Color(0.984564, 0.288109, 0.364559, 1)
@@ -41,10 +35,7 @@ bg_color = Color(0.2484, 0.2484, 0.2484, 1)
 [node name="DemoGame" type="Node" node_paths=PackedStringArray("connection")]
 script = ExtResource("1_5nuje")
 spawn_call = ExtResource("2_k3cyb")
-spawn_reset_call = ExtResource("3_p8iq3")
 move_call = ExtResource("4_w8h56")
-move_to = ExtResource("5_r5x6q")
-move_to_signed = SubResource("DojoCall_r5x6q")
 connection = NodePath("Connection")
 
 [node name="Connection" parent="." instance=ExtResource("6_3jxqj")]
@@ -302,6 +293,7 @@ texture_pressed = ExtResource("11_0joe1")
 texture_hover = ExtResource("10_qlbmn")
 
 [node name="PanelContainer" type="PanelContainer" parent="UI/Arrows/VBoxContainer"]
+visible = false
 custom_minimum_size = Vector2(0, 70)
 layout_mode = 2
 

@@ -1,8 +1,8 @@
 # CHAIN ID WP_GODOT_DEMO_ROOKIE
 # KATANA https://api.cartridge.gg/x/godot-demo-rookie/katana
 # TORII https://api.cartridge.gg/x/godot-demo-rookie/torii
-# WORLD 0x0393f8a2d0d47e384c3c61eedc08d2873f5d608f8da7ffb013e5d5aa327ac8f2
-# Actions 0x065d58039c71b4a0fe302d68f9fad4bf49e01fe518d7912d44ba0d07b2d7f556
+# WORLD 0x058565b92f55fb07b53940b4b7eea3df2ac2878210e5c7a4c68201e8c511a546
+# Actions 0x049f9b281bb08aea6d745f28cf31dd529348b04a21d9a5ae1ef19197665c02da
 
 # hazel 0x3dc821653fa9ed84324821b26afd5775b128921b9436327211949947a888
 # dtodice 0x75c10973fc5fdfa2f7ff5875f10441e546d98f37f40b97a663f89bdaf81a0
@@ -19,10 +19,7 @@ enum Directions {
 }
 
 @export var spawn_call : DojoCall
-@export var spawn_reset_call : DojoCall
 @export var move_call : DojoCall
-@export var move_to : DojoCall
-@export var move_to_signed : DojoCall
 
 @export var connection : DojoConnection 
 
@@ -68,11 +65,8 @@ func _handle_callback(args:Dictionary) -> void:
 		label_moves.text = "Moves: %s" % result_data['remaining']
 
 
-func spawn(reset:bool = false) -> void:
-	if reset:
-		connection.controller_account.execute_from_outside(spawn_reset_call)
-	else:
-		connection.controller_account.execute_from_outside(spawn_call)
+func spawn() -> void:
+	connection.controller_account.execute_from_outside(spawn_call)
 
 
 func _on_start_screen_entered() -> void:
@@ -192,11 +186,11 @@ func _on_arrow_right_pressed() -> void:
 	_move(Directions.RIGHT)
 
 
-func _on_move_to_pressed() -> void:
-	var x:int = %Vx.value
-	var y:int = %Vy.value
-	move_to.calldata[0] = Vector2i(x,y)
-	connection.controller_account.execute_from_outside(move_to)
+#func _on_move_to_pressed() -> void:
+	#var x:int = %Vx.value
+	#var y:int = %Vy.value
+	#move_to.calldata[0] = Vector2i(x,y)
+	#connection.controller_account.execute_from_outside(move_to)
 
 
 func _on_disconnect_pressed() -> void:

@@ -1,6 +1,6 @@
 [gd_resource type="DojoCall" format=3 uid="uid://cxtt744f5nyle"]
 
 [resource]
-to = "0x065d58039c71b4a0fe302d68f9fad4bf49e01fe518d7912d44ba0d07b2d7f556"
+to = "0x049f9b281bb08aea6d745f28cf31dd529348b04a21d9a5ae1ef19197665c02da"
 selector = "move_to"
 calldata = [Vector2i(5, 5)]
