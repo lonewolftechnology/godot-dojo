@@ -222,11 +222,22 @@ TypedArray<Dictionary> ToriiClient::get_controllers(const TypedArray<String>& ad
         Logger::info("Addresses is empty, fetching all controllers");
     }
     Logger::debug_extra("Torii", addresses);
-    std::vector<DOJO::FieldElement> contract_addresses = FieldElement::create_array(addresses);
-    Logger::debug_extra("CLIENT", "Address size: ", contract_addresses.size());
+    std::vector<DOJO::FieldElement> contract_addresses_vec = FieldElement::create_array(addresses);
+    Logger::debug_extra("CLIENT", "Address size: ", contract_addresses_vec.size());
 
     // Null for now to retrive all controllers
     DOJO::ControllerQuery controller_query = {};
+
+    // Inicializar correctamente la paginación
+    controller_query.pagination.cursor.tag = DOJO::COptionc_char_Tag::Nonec_char;
+    controller_query.pagination.limit.tag = DOJO::COptionu32_Tag::Noneu32;
+    controller_query.pagination.order_by = {nullptr, 0};
+    controller_query.pagination.direction = DOJO::PaginationDirection::Forward;
+
+    // Inicializar correctamente los CArrays
+    controller_query.contract_addresses = {contract_addresses_vec.data(), contract_addresses_vec.size()};
+    controller_query.usernames = {nullptr, 0};
+
 
     DOJO::ResultPageController resControllers = DOJO::client_controllers(
         client, controller_query);
@@ -312,6 +323,18 @@ TypedArray<Dictionary> ToriiClient::get_tokens(const Dictionary& query_params)
     }
 
     DOJO::TokenQuery token_query = {};
+    token_query.pagination.cursor.tag = DOJO::COptionc_char_Tag::Nonec_char;
+    token_query.pagination.limit.tag = DOJO::COptionu32_Tag::Noneu32;
+    token_query.pagination.order_by = {nullptr, 0};
+    token_query.pagination.direction = DOJO::PaginationDirection::Forward;
+
+    token_query.contract_addresses = {contract_addresses_ptr, contract_addresses_len};
+    token_query.token_ids = {token_ids_ptr, token_ids_len};
+
+    DOJO::ResultPageToken result = DOJO::client_tokens(
+        client,
+        token_query
+    );
 
 
     DOJO::ResultPageToken result = DOJO::client_tokens(
@@ -379,6 +402,19 @@ TypedArray<Dictionary> ToriiClient::get_token_balances(const String& account_add
     size_t token_ids_len = 0;
 
     DOJO::TokenBalanceQuery balance_query = {};
+    balance_query.pagination.cursor.tag = DOJO::COptionc_char_Tag::Nonec_char;
+    balance_query.pagination.limit.tag = DOJO::COptionu32_Tag::Noneu32;
+    balance_query.pagination.order_by = {nullptr, 0};
+    balance_query.pagination.direction = DOJO::PaginationDirection::Forward;
+
+    balance_query.contract_addresses = {contract_addresses, contract_addresses_len};
+    balance_query.account_addresses = {account_addresses, account_addresses_len};
+    balance_query.token_ids = {token_ids, token_ids_len};
+
+    DOJO::ResultPageTokenBalance result = DOJO::client_token_balances(
+        client,
+        balance_query
+    );
 
     DOJO::ResultPageTokenBalance result = DOJO::client_token_balances(
         client,
@@ -433,6 +469,19 @@ TypedArray<Dictionary> ToriiClient::get_token_collections()
     size_t token_ids_len = 0;
 
     DOJO::TokenBalanceQuery balance_query = {};
+    balance_query.pagination.cursor.tag = DOJO::COptionc_char_Tag::Nonec_char;
+    balance_query.pagination.limit.tag = DOJO::COptionu32_Tag::Noneu32;
+    balance_query.pagination.order_by = {nullptr, 0};
+    balance_query.pagination.direction = DOJO::PaginationDirection::Forward;
+
+    balance_query.contract_addresses = {contract_addresses, contract_addresses_len};
+    balance_query.account_addresses = {account_addresses, account_addresses_len};
+    balance_query.token_ids = {token_ids, token_ids_len};
+
+    DOJO::ResultPageTokenCollection result = DOJO::client_token_collections(
+        client,
+        balance_query
+    );
 
     DOJO::ResultPageTokenCollection result = DOJO::client_token_collections(
         client,
@@ -492,6 +541,18 @@ Dictionary ToriiClient::get_token_info(const String& token_address)
     size_t token_ids_len = 0;
 
     DOJO::TokenQuery token_query = {};
+    token_query.pagination.cursor.tag = DOJO::COptionc_char_Tag::Nonec_char;
+    token_query.pagination.limit.tag = DOJO::COptionu32_Tag::Noneu32;
+    token_query.pagination.order_by = {nullptr, 0};
+    token_query.pagination.direction = DOJO::PaginationDirection::Forward;
+
+    token_query.contract_addresses = {contract_addresses, contract_addresses_len};
+    token_query.token_ids = {token_ids, token_ids_len};
+
+    DOJO::ResultPageToken result = DOJO::client_tokens(
+        client,
+        token_query
+    );
 
     DOJO::ResultPageToken result = DOJO::client_tokens(
         client,
