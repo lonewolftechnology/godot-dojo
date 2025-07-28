@@ -1,23 +1,9 @@
-[gd_resource type="DojoPolicies" load_steps=8 format=3 uid="uid://tfmm84euv0h4"]
+[gd_resource type="DojoPolicies" load_steps=3 format=3 uid="uid://tfmm84euv0h4"]
 
 [ext_resource type="DojoPolicy" uid="uid://bv5g6pmeq3pt1" path="res://resources/policies/move_policy.tres" id="1_aiqrk"]
 [ext_resource type="DojoPolicy" uid="uid://btj7knthulhjp" path="res://resources/policies/spawn_policy.tres" id="2_1hqg0"]
-[ext_resource type="DojoPolicy" uid="uid://dcfsvjg7rt33n" path="res://resources/policies/reset_spawn_policy.tres" id="3_0iida"]
-[ext_resource type="DojoPolicy" uid="uid://86qr71xw2y0e" path="res://resources/policies/move_to_policy.tres" id="4_rkmqs"]
-
-[sub_resource type="DojoPolicy" id="DojoPolicy_aiqrk"]
-method = "generate_u128"
-description = "Generates a u128"
-
-[sub_resource type="DojoPolicy" id="DojoPolicy_1hqg0"]
-method = "generate_u256"
-description = "Generates a u256"
-
-[sub_resource type="DojoPolicy" id="DojoPolicy_0iida"]
-method = "move_to_signed"
-description = "Experimental negative numbers"
 
 [resource]
 name = "actions"
 contract = "0x049f9b281bb08aea6d745f28cf31dd529348b04a21d9a5ae1ef19197665c02da"
-policies = Array[DojoPolicy]([ExtResource("1_aiqrk"), ExtResource("2_1hqg0"), ExtResource("3_0iida"), ExtResource("4_rkmqs"), SubResource("DojoPolicy_aiqrk"), SubResource("DojoPolicy_1hqg0"), SubResource("DojoPolicy_0iida")])
+policies = Array[DojoPolicy]([ExtResource("1_aiqrk"), ExtResource("2_1hqg0")])
