@@ -56,9 +56,9 @@ func _handle_callback(args:Dictionary) -> void:
 	for entry : Dictionary in data:
 		result_data.merge(entry)
 
-	if result_data.has("Vec2Signed"):
+	if result_data.has("Vec2"):
 		await get_tree().process_frame
-		var new_pos = Vector2(result_data['Vec2Signed']['x'], result_data['Vec2Signed']['y'] )
+		var new_pos = Vector2(result_data['Vec2']['x'], result_data['Vec2']['y'] )
 		controllers_manager.move_controller(result_data['player'], new_pos)
 	if result_data.has("remaining"):
 		await get_tree().process_frame
@@ -168,9 +168,9 @@ func _update_entities(parsed_entities:Dictionary) -> void:
 
 func _move(dir:Directions) -> void:
 	move_call.calldata[0] = dir
-	var u32 = DojoHelpers.signed_to_u32_offset(%StepsAmount.value)
-	move_call.calldata[1] = u32
-	push_warning(u32)
+	#var u32 = DojoHelpers.signed_to_u32_offset(%StepsAmount.value)
+	#move_call.calldata[1] = u32
+	#push_warning(u32)
 	connection.controller_account.execute_from_outside(move_call)
 
 func _on_arrow_left_pressed() -> void:

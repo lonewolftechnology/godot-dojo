@@ -12,6 +12,7 @@
 
 #include "classes/torii_client.h"
 #include <vector>
+#include <temp/dojo_helper.h>
 
 
 //TODO: refactor a instancia global en vez de singleton
@@ -122,7 +123,6 @@ void ControllerAccount::create(const Ref<DojoPolicies>& policies_data)
     }
 }
 
-
 void ControllerAccount::disconnect_controller()
 {
     if (session_account != nullptr)
@@ -226,7 +226,7 @@ void ControllerAccount::execute_from_outside(const Ref<DojoCall>& action)
             {
             case Variant::Type::ARRAY:
                 {
-                    Array v_array = arg;
+                    Array v_array = static_cast<Array>(arg);
                     // final_args.push_back(v_array.size());
                     final_args.append_array(arg);
                     break;
@@ -234,6 +234,27 @@ void ControllerAccount::execute_from_outside(const Ref<DojoCall>& action)
             case Variant::Type::INT:
                 {
                     final_args.push_back(arg);
+                    break;
+                }
+            case Variant::Type::VECTOR2:
+            case Variant::Type::VECTOR2I:
+                {
+                    Vector2i vec = static_cast<Vector2i>(arg);
+
+                    final_args.append(vec.x);
+                    final_args.append(vec.y);
+
+                    break;
+                }
+            case Variant::Type::VECTOR3:
+            case Variant::Type::VECTOR3I:
+                {
+                    Vector3i vec = static_cast<Vector3i>(arg);
+
+                    final_args.append(vec.x);
+                    final_args.append(vec.y);
+                    final_args.append(vec.z);
+
                     break;
                 }
             default:
