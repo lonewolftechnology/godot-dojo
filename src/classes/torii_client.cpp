@@ -166,7 +166,7 @@ Dictionary ToriiClient::get_world_metadata()
     DOJO::World metadata = GET_DOJO_OK(resMetadata);
     Dictionary result = {};
 
-    TypedArray<Dictionary> models_array = ArrayDojo(metadata.models).get_value();
+    TypedArray<Dictionary> models_array = DojoArray(metadata.models).get_value();
 
     result["models"] = models_array;
     result["world_address"] = world_address;
@@ -202,14 +202,14 @@ TypedArray<Dictionary> ToriiClient::get_entities(const Dictionary& query_params)
     }
 
     DOJO::PageEntity pageEntities = resPageEntities.ok;
-    TypedArray<Dictionary> result = ArrayDojo(pageEntities.items).get_value();
+    TypedArray<Dictionary> result = DojoArray(pageEntities.items).get_value();
 
     Logger::success("Entidades obtenidas: ", String::num_int64(result.size()));
     return result;
 }
 
 
-TypedArray<Dictionary> ToriiClient::get_controllers(const TypedArray<String>& addresses = Array())
+TypedArray<Dictionary> ToriiClient::get_controllers(const TypedArray<String>& usernames = Array(), const TypedArray<String>& addresses = Array())
 {
     if (!is_client_connected())
     {
@@ -236,7 +236,9 @@ TypedArray<Dictionary> ToriiClient::get_controllers(const TypedArray<String>& ad
 
     // Inicializar correctamente los CArrays
     controller_query.contract_addresses = {contract_addresses_vec.data(), contract_addresses_vec.size()};
-    controller_query.usernames = {nullptr, 0};
+    Logger::debug_extra("Usernames", usernames);
+    DojoArray::CStringArrayHelper username(usernames);
+    controller_query.usernames = username.c_array;
 
 
     DOJO::ResultPageController resControllers = DOJO::client_controllers(
@@ -249,7 +251,7 @@ TypedArray<Dictionary> ToriiClient::get_controllers(const TypedArray<String>& ad
     }
 
     DOJO::PageController controllers = GET_DOJO_OK(resControllers);
-    TypedArray<Dictionary> result = ArrayDojo(controllers).get_value();
+    TypedArray<Dictionary> result = DojoArray(controllers).get_value();
 
     Logger::success_extra("CLIENT", "Controllers obtained: ", String::num_int64(result.size()));
     return result;
@@ -257,7 +259,7 @@ TypedArray<Dictionary> ToriiClient::get_controllers(const TypedArray<String>& ad
 
 Dictionary ToriiClient::get_controller_info(const String& controller_address)
 {
-    TypedArray<Dictionary> controllers = get_controllers(Array());
+    TypedArray<Dictionary> controllers = get_controllers(Array(), {controller_address});
 
     for (int i = 0; i < controllers.size(); i++)
     {
@@ -538,7 +540,7 @@ Dictionary ToriiClient::get_token_info(const String& token_address)
         client,
         token_query
     );
-    
+
     if (result.tag == DOJO::ErrPageToken)
     {
         Logger::error("Error getting token info: ", GET_DOJO_ERROR(result));

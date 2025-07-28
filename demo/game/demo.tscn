@@ -293,7 +293,6 @@ texture_pressed = ExtResource("11_0joe1")
 texture_hover = ExtResource("10_qlbmn")
 
 [node name="PanelContainer" type="PanelContainer" parent="UI/Arrows/VBoxContainer"]
-visible = false
 custom_minimum_size = Vector2(0, 70)
 layout_mode = 2
 

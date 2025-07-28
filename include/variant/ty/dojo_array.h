@@ -9,38 +9,38 @@
 #include "dojo_types.h"
 using namespace godot;
 
-class ArrayDojo : public RefCounted
+class DojoArray : public RefCounted
 {
-    GDCLASS(ArrayDojo, RefCounted);
+    GDCLASS(DojoArray, RefCounted);
 
     String name = "";
     Variant value = Variant::NIL;
 
 public:
-    ArrayDojo()
+    DojoArray()
     {
     };
 
-    ~ArrayDojo()
+    ~DojoArray()
     {
     };
     // For now almost every type of CArray is implemented
     // There are some that aren't needed and/or need to be converted (Variant -> CArray)
-    ArrayDojo(DOJO::CArrayTy array);
-    ArrayDojo(DOJO::CArrayToken array);
-    ArrayDojo(DOJO::CArrayEntity array);
-    ArrayDojo(DOJO::CArrayc_char array);
-    ArrayDojo(DOJO::CArrayClause array);
-    ArrayDojo(DOJO::CArrayStruct array);
-    ArrayDojo(DOJO::CArrayMember array);
-    ArrayDojo(DOJO::CArrayOrderBy array);
-    ArrayDojo(DOJO::CArrayEnumOption array);
-    ArrayDojo(DOJO::PageController array);
-    ArrayDojo(DOJO::CArrayMemberValue array);
-    ArrayDojo(DOJO::CArrayFieldElement array);
-    ArrayDojo(DOJO::CArrayTokenCollection array);
-    ArrayDojo(DOJO::CArrayCOptionFieldElement array);
-    ArrayDojo(DOJO::CArrayModel array);
+    DojoArray(DOJO::CArrayTy array);
+    DojoArray(DOJO::CArrayToken array);
+    DojoArray(DOJO::CArrayEntity array);
+    DojoArray(DOJO::CArrayc_char array);
+    DojoArray(DOJO::CArrayClause array);
+    DojoArray(DOJO::CArrayStruct array);
+    DojoArray(DOJO::CArrayMember array);
+    DojoArray(DOJO::CArrayOrderBy array);
+    DojoArray(DOJO::CArrayEnumOption array);
+    DojoArray(DOJO::PageController array);
+    DojoArray(DOJO::CArrayMemberValue array);
+    DojoArray(DOJO::CArrayFieldElement array);
+    DojoArray(DOJO::CArrayTokenCollection array);
+    DojoArray(DOJO::CArrayCOptionFieldElement array);
+    DojoArray(DOJO::CArrayModel array);
 
     // "static" methods.
     static Variant CArrayTyToVariant(DOJO::CArrayTy array);
@@ -63,6 +63,30 @@ public:
     void set_value(const Variant& p_value) { value = p_value; }
     String get_name() const { return name; }
     void set_name(const String& p_name) { name = p_name; }
+
+    struct CStringArrayHelper {
+        std::vector<CharString> utf8_storage;
+
+        std::vector<const char*> ptr_storage;
+
+        DOJO::CArrayc_char c_array;
+
+        CStringArrayHelper(const Array& godot_array) {
+            utf8_storage.reserve(godot_array.size());
+            ptr_storage.reserve(godot_array.size());
+
+            for (int i = 0; i < godot_array.size(); ++i) {
+                utf8_storage.push_back(String(godot_array[i]).utf8());
+            }
+
+            for (const CharString& char_string : utf8_storage) {
+                ptr_storage.push_back(char_string.get_data());
+            }
+
+            c_array.data = ptr_storage.data();
+            c_array.data_len = ptr_storage.size();
+        }
+    };
 
 protected:
     static void _bind_methods()

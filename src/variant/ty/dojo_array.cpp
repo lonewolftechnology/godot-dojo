@@ -2,67 +2,67 @@
 #include "variant/ty/struct.h"
 #include "variant/ty/ty.h"
 
-ArrayDojo::ArrayDojo(DOJO::CArrayTy array) {
+DojoArray::DojoArray(DOJO::CArrayTy array) {
     value = CArrayTyToVariant(array);
 }
 
-ArrayDojo::ArrayDojo(DOJO::CArrayToken array) {
+DojoArray::DojoArray(DOJO::CArrayToken array) {
     value = CArrayTokenToVariant(array);
 }
 
-ArrayDojo::ArrayDojo(DOJO::CArrayEntity array) {
+DojoArray::DojoArray(DOJO::CArrayEntity array) {
     value = CArrayEntityToVariant(array);
 }
 
-ArrayDojo::ArrayDojo(DOJO::CArrayc_char array) {
+DojoArray::DojoArray(DOJO::CArrayc_char array) {
     value = CArrayc_charToVariant(array);
 }
 
-ArrayDojo::ArrayDojo(DOJO::CArrayClause array) {
+DojoArray::DojoArray(DOJO::CArrayClause array) {
     value = CArrayClauseToVariant(array);
 }
 
-ArrayDojo::ArrayDojo(DOJO::CArrayStruct array) {
+DojoArray::DojoArray(DOJO::CArrayStruct array) {
     value = CArrayStructToVariant(array);
 }
 
-ArrayDojo::ArrayDojo(DOJO::CArrayMember array) {
+DojoArray::DojoArray(DOJO::CArrayMember array) {
     value = CArrayMemberToVariant(array);
 }
 
-ArrayDojo::ArrayDojo(DOJO::CArrayOrderBy array) {
+DojoArray::DojoArray(DOJO::CArrayOrderBy array) {
     value = CArrayOrderByToVariant(array);
 }
 
-ArrayDojo::ArrayDojo(DOJO::CArrayEnumOption array) {
+DojoArray::DojoArray(DOJO::CArrayEnumOption array) {
     value = CArrayEnumOptionToVariant(array);
 }
 
-ArrayDojo::ArrayDojo(DOJO::PageController array) {
+DojoArray::DojoArray(DOJO::PageController array) {
     value = PageControllerToVariant(array);
 }
 
-ArrayDojo::ArrayDojo(DOJO::CArrayMemberValue array) {
+DojoArray::DojoArray(DOJO::CArrayMemberValue array) {
     value = CArrayMemberValueToVariant(array);
 }
 
-ArrayDojo::ArrayDojo(DOJO::CArrayFieldElement array) {
+DojoArray::DojoArray(DOJO::CArrayFieldElement array) {
     value = CArrayFieldElementToVariant(array);
 }
 
-ArrayDojo::ArrayDojo(DOJO::CArrayTokenCollection array) {
+DojoArray::DojoArray(DOJO::CArrayTokenCollection array) {
     value = CArrayTokenCollectionToVariant(array);
 }
 
-ArrayDojo::ArrayDojo(DOJO::CArrayCOptionFieldElement array) {
+DojoArray::DojoArray(DOJO::CArrayCOptionFieldElement array) {
     value = CArrayCOptionFieldElementToVariant(array);
 }
 
-ArrayDojo::ArrayDojo(DOJO::CArrayModel array) {
+DojoArray::DojoArray(DOJO::CArrayModel array) {
     value = CArrayModelToVariant(array);
 }
 
-Variant ArrayDojo::CArrayTyToVariant(DOJO::CArrayTy array_ty) {
+Variant DojoArray::CArrayTyToVariant(DOJO::CArrayTy array_ty) {
     std::vector<DOJO::Ty> array_ty_vector(array_ty.data, array_ty.data + array_ty.data_len);
     Array result;
 
@@ -75,26 +75,26 @@ Variant ArrayDojo::CArrayTyToVariant(DOJO::CArrayTy array_ty) {
     return result;
 }
 
-Variant ArrayDojo::CArrayTokenToVariant(DOJO::CArrayToken array) {
+Variant DojoArray::CArrayTokenToVariant(DOJO::CArrayToken array) {
     Logger::warning("CArrayToken not implemented");
     return Array();
 }
 
-Variant ArrayDojo::CArrayEntityToVariant(DOJO::CArrayEntity array) {
+Variant DojoArray::CArrayEntityToVariant(DOJO::CArrayEntity array) {
     Array result;
     std::vector<DOJO::Entity> array_entity_vector(array.data, array.data + array.data_len);
 
     for (const auto& entity : array_entity_vector) {
         Dictionary data;
         data["hashed_keys"] = FieldElement::get_as_string_no_ptr(entity.hashed_keys);
-        ArrayDojo models = {entity.models};
+        DojoArray models = {entity.models};
         data["models"] = models.get_value();
         result.append(data);
     }
     return result;
 }
 
-Variant ArrayDojo::CArrayc_charToVariant(DOJO::CArrayc_char array) {
+Variant DojoArray::CArrayc_charToVariant(DOJO::CArrayc_char array) {
     Array result_array;
     std::vector<const char*> strings(array.data, array.data + array.data_len);
 
@@ -104,7 +104,7 @@ Variant ArrayDojo::CArrayc_charToVariant(DOJO::CArrayc_char array) {
     return result_array;
 }
 
-Variant ArrayDojo::CArrayClauseToVariant(DOJO::CArrayClause array) {
+Variant DojoArray::CArrayClauseToVariant(DOJO::CArrayClause array) {
     Array result;
     std::vector<DOJO::Clause> array_clause_vector(array.data, array.data + array.data_len);
 
@@ -115,7 +115,7 @@ Variant ArrayDojo::CArrayClauseToVariant(DOJO::CArrayClause array) {
     return result;
 }
 
-Variant ArrayDojo::CArrayStructToVariant(DOJO::CArrayStruct array) {
+Variant DojoArray::CArrayStructToVariant(DOJO::CArrayStruct array) {
     Array result;
     std::vector<DOJO::Struct> array_struct_vector(array.data, array.data + array.data_len);
 
@@ -128,7 +128,7 @@ Variant ArrayDojo::CArrayStructToVariant(DOJO::CArrayStruct array) {
     return result;
 }
 
-Variant ArrayDojo::CArrayMemberToVariant(DOJO::CArrayMember array) {
+Variant DojoArray::CArrayMemberToVariant(DOJO::CArrayMember array) {
     Array result;
     std::vector<DOJO::Member> array_member_vector(array.data, array.data + array.data_len);
 
@@ -145,7 +145,7 @@ Variant ArrayDojo::CArrayMemberToVariant(DOJO::CArrayMember array) {
     return result;
 }
 
-Variant ArrayDojo::CArrayOrderByToVariant(DOJO::CArrayOrderBy array) {
+Variant DojoArray::CArrayOrderByToVariant(DOJO::CArrayOrderBy array) {
     Array result;
     std::vector<DOJO::OrderBy> array_order_by_vector(array.data, array.data + array.data_len);
 
@@ -158,7 +158,7 @@ Variant ArrayDojo::CArrayOrderByToVariant(DOJO::CArrayOrderBy array) {
     return result;
 }
 
-Variant ArrayDojo::CArrayEnumOptionToVariant(DOJO::CArrayEnumOption array) {
+Variant DojoArray::CArrayEnumOptionToVariant(DOJO::CArrayEnumOption array) {
     Array result;
     std::vector<DOJO::EnumOption> array_enum_option_vector(array.data, array.data + array.data_len);
 
@@ -171,7 +171,7 @@ Variant ArrayDojo::CArrayEnumOptionToVariant(DOJO::CArrayEnumOption array) {
     return result;
 }
 
-Variant ArrayDojo::PageControllerToVariant(const DOJO::PageController& page) {
+Variant DojoArray::PageControllerToVariant(const DOJO::PageController& page) {
     TypedArray<Dictionary> result;
     DOJO::CArrayController array = page.items;
     std::vector<DOJO::Controller> array_controller_vector(array.data, array.data + array.data_len);
@@ -188,14 +188,14 @@ Variant ArrayDojo::PageControllerToVariant(const DOJO::PageController& page) {
     return result;
 }
 
-Variant ArrayDojo::CArrayMemberValueToVariant(DOJO::CArrayMemberValue array) {
+Variant DojoArray::CArrayMemberValueToVariant(DOJO::CArrayMemberValue array) {
     Array result;
     std::vector<DOJO::MemberValue> array_member_value_vector(array.data, array.data + array.data_len);
 
     for (const auto& member_value : array_member_value_vector) {
         Variant data;
         if (member_value.tag == DOJO::List) {
-            ArrayDojo array_dojo = {member_value.list};
+            DojoArray array_dojo = {member_value.list};
             data = array_dojo.get_value();
         }
         if (member_value.tag == DOJO::PrimitiveValue) {
@@ -210,7 +210,7 @@ Variant ArrayDojo::CArrayMemberValueToVariant(DOJO::CArrayMemberValue array) {
     return result;
 }
 
-Variant ArrayDojo::CArrayFieldElementToVariant(DOJO::CArrayFieldElement array) {
+Variant DojoArray::CArrayFieldElementToVariant(DOJO::CArrayFieldElement array) {
     Array result_array;
     std::vector<DOJO::FieldElement> elements(array.data, array.data + array.data_len);
 
@@ -221,12 +221,12 @@ Variant ArrayDojo::CArrayFieldElementToVariant(DOJO::CArrayFieldElement array) {
     return result_array;
 }
 
-Variant ArrayDojo::CArrayTokenCollectionToVariant(DOJO::CArrayTokenCollection array) {
+Variant DojoArray::CArrayTokenCollectionToVariant(DOJO::CArrayTokenCollection array) {
     Logger::warning("CArrayTokenCollection not implemented");
     return Array();
 }
 
-Variant ArrayDojo::CArrayCOptionFieldElementToVariant(DOJO::CArrayCOptionFieldElement array) {
+Variant DojoArray::CArrayCOptionFieldElementToVariant(DOJO::CArrayCOptionFieldElement array) {
     Array result;
     std::vector<DOJO::COptionFieldElement> options(array.data, array.data + array.data_len);
 
@@ -238,7 +238,7 @@ Variant ArrayDojo::CArrayCOptionFieldElementToVariant(DOJO::CArrayCOptionFieldEl
     return result;
 }
 
-Variant ArrayDojo::CArrayModelToVariant(DOJO::CArrayModel array) {
+Variant DojoArray::CArrayModelToVariant(DOJO::CArrayModel array) {
     std::vector<DOJO::Model> models_vec(array.data, array.data + array.data_len);
     Array result;
 

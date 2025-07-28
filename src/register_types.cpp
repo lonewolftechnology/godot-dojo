@@ -40,7 +40,7 @@ void initialize_dojoc_module(ModuleInitializationLevel p_level)
     GDREGISTER_CLASS(DojoPrimitive);
     GDREGISTER_CLASS(DojoStruct);
     GDREGISTER_CLASS(DojoEnum);
-    GDREGISTER_CLASS(ArrayDojo);
+    GDREGISTER_CLASS(DojoArray);
     GDREGISTER_CLASS(FieldElement);
     // Dojo Classes
     GDREGISTER_CLASS(DojoC);

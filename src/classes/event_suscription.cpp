@@ -147,7 +147,7 @@ void EventSubscription::on_event_update(DOJO::FieldElement* entity_id, DOJO::CAr
         return;
     }
 
-    const ArrayDojo members = {children};
+    const DojoArray members = {children};
     Array arguments = members.get_value();
 
     for (int i = 0; i < arguments.size(); i++)

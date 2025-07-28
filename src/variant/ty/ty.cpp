@@ -73,14 +73,14 @@ void DojoTy::init_form_ty(const DOJO::Ty& ty)
     else if (ty.tag == Tag::Array_)
     {
         type = Type::Array_;
-        ArrayDojo data = {ty.array};
+        DojoArray data = {ty.array};
         name = data.get_name();
         value = data.get_value();
     }
     else if (ty.tag == Tag::Tuple_)
     {
         type = Type::Tuple_;
-        ArrayDojo data = {ty.tuple};
+        DojoArray data = {ty.tuple};
         name = data.get_name();
         value = data.get_value();
     }

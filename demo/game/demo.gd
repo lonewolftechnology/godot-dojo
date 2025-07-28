@@ -198,3 +198,8 @@ func _on_disconnect_pressed() -> void:
 	controllers_manager.clear_all_controllers()
 	await get_tree().process_frame	
 	get_tree().reload_current_scene()
+
+
+func _on_move_to_pressed() -> void:
+	var data = connection.client.get_controllers(["hazel", "danntheoperator", "dtodice"])
+	print("######\nControllers: %s\n######\n"%str(data))
