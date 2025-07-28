@@ -35,12 +35,12 @@ public:
     ArrayDojo(DOJO::CArrayMember array);
     ArrayDojo(DOJO::CArrayOrderBy array);
     ArrayDojo(DOJO::CArrayEnumOption array);
-    ArrayDojo(DOJO::CArrayController array);
+    ArrayDojo(DOJO::PageController array);
     ArrayDojo(DOJO::CArrayMemberValue array);
     ArrayDojo(DOJO::CArrayFieldElement array);
     ArrayDojo(DOJO::CArrayTokenCollection array);
     ArrayDojo(DOJO::CArrayCOptionFieldElement array);
-    ArrayDojo(DOJO::CArrayCHashItemFieldElementModelMetadata array);
+    ArrayDojo(DOJO::CArrayModel array);
 
     // "static" methods.
     static Variant CArrayTyToVariant(DOJO::CArrayTy array);
@@ -52,13 +52,12 @@ public:
     static Variant CArrayMemberToVariant(DOJO::CArrayMember array);
     static Variant CArrayOrderByToVariant(DOJO::CArrayOrderBy array);
     static Variant CArrayEnumOptionToVariant(DOJO::CArrayEnumOption array);
-    static Variant PageControllerToVariant(const DOJO::CArrayController& array);
+    static Variant PageControllerToVariant(const DOJO::PageController& array);
     static Variant CArrayMemberValueToVariant(DOJO::CArrayMemberValue array);
     static Variant CArrayFieldElementToVariant(DOJO::CArrayFieldElement array);
     static Variant CArrayTokenCollectionToVariant(DOJO::CArrayTokenCollection array);
     static Variant CArrayCOptionFieldElementToVariant(DOJO::CArrayCOptionFieldElement array);
-    static Variant CArrayModelToVariant(
-        DOJO::CArrayCHashItemFieldElementModelMetadata array);
+    static Variant CArrayModelToVariant(DOJO::CArrayModel array);
 
     Variant get_value() const { return value; }
     void set_value(const Variant& p_value) { value = p_value; }

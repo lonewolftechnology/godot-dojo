@@ -3,7 +3,7 @@
 //
 #ifndef DOJO_TYPES_H
 #define DOJO_TYPES_H
-#include "dojo.h" // 1.5.9
+#include "dojo.h" // 1.6.0
 
 #define DOJO dojo_bindings
 #define GET_DOJO_ERROR(result) ((result).err.message)
@@ -25,25 +25,41 @@
 namespace dojo_bindings {
 
 // ============================================================================
-// Enumeraciones actualizadas
+// Enumeraciones
 // ============================================================================
 
-enum Ty_Tag;
-enum Primitive_Tag;
-enum PaginationDirection;
 enum BlockTag;
+enum CallType;
 enum ComparisonOperator;
 enum LogicalOperator;
 enum OrderDirection;
+enum PaginationDirection;
 enum PatternMatching;
+enum Primitive_Tag;
+enum MemberValue_Tag;
+enum Clause_Tag;
+enum BlockId_Tag;
+enum Ty_Tag;
+
+// Tags para Tipos Opcionales
+enum COptionc_char_Tag;
+enum COptionu32_Tag;
+enum COptionu64_Tag;
+enum COptionClause_Tag;
+enum COptionTransactionFilter_Tag;
+enum COptionU256_Tag;
+enum COptionFieldElement_Tag;
+
+// Tags para Tipos de Resultado
 enum ResultToriiClient_Tag;
 enum ResultControllerAccount_Tag;
 enum Resultbool_Tag;
 enum ResultFieldElement_Tag;
 enum ResultCArrayFieldElement_Tag;
-enum ResultCArrayController_Tag;
+enum ResultPageController_Tag;
 enum ResultPageEntity_Tag;
-enum ResultWorldMetadata_Tag;
+enum ResultWorld_Tag;
+enum ResultPageTransaction_Tag;
 enum ResultSubscription_Tag;
 enum ResultPageToken_Tag;
 enum ResultPageTokenBalance_Tag;
@@ -52,12 +68,7 @@ enum Resultc_char_Tag;
 enum ResultSignature_Tag;
 enum ResultProvider_Tag;
 enum ResultAccount_Tag;
-enum BlockId_Tag;
-enum COptionFieldElement_Tag;
-enum COptionc_char_Tag;
-enum COptionClause_Tag;
-enum MemberValue_Tag;
-enum Clause_Tag;
+
 
 // ============================================================================
 // Tipos de Datos Fundamentales
@@ -75,25 +86,27 @@ struct MemberValue;
 struct Signature;
 struct Message;
 
+
 // ============================================================================
 // Cliente y Conexión
 // ============================================================================
 
 struct ToriiClient;
 struct Provider;
+struct Account;
 struct ControllerAccount;
-struct Account; //Deprecated
-struct Controller;
-struct Event;
 struct Subscription;
 
+
 // ============================================================================
-// Metadatos y Modelos
+// Mundo, Modelos y Entidades
 // ============================================================================
 
-struct WorldMetadata;
-struct ModelMetadata;
+struct World;
+struct Model;
 struct Entity;
+struct Controller;
+
 
 // ============================================================================
 // Tokens y Balances
@@ -104,34 +117,48 @@ struct TokenBalance;
 struct TokenCollection;
 struct IndexerUpdate;
 
+
 // ============================================================================
-// Sistema de Consultas y Paginación
+// Sistema de Consultas y Cláusulas
 // ============================================================================
 
-struct Pagination;
 struct Query;
+struct ControllerQuery;
+struct TransactionQuery;
+struct TokenQuery;
+struct TokenBalanceQuery;
 struct Clause;
 struct KeysClause;
 struct MemberClause;
 struct CompositeClause;
 struct OrderBy;
+struct TransactionFilter;
+
 
 // ============================================================================
 // Blockchain y Transacciones
 // ============================================================================
 
 struct Call;
+struct Transaction;
+struct TransactionCall;
 struct BlockId;
 struct Policy;
+struct Event;
+
 
 // ============================================================================
-// Páginas y Paginación
+// Paginación y Páginas
 // ============================================================================
 
+struct Pagination;
+struct PageController;
 struct PageEntity;
+struct PageTransaction;
 struct PageToken;
 struct PageTokenBalance;
 struct PageTokenCollection;
+
 
 // ============================================================================
 // Tipos de Resultado
@@ -139,41 +166,47 @@ struct PageTokenCollection;
 
 struct ResultToriiClient;
 struct ResultProvider;
-struct ResultAccount; //Deprecated
+struct ResultAccount;
 struct ResultControllerAccount;
 struct ResultSubscription;
+struct ResultPageController;
 struct ResultPageEntity;
+struct ResultPageTransaction;
 struct ResultPageToken;
 struct ResultPageTokenBalance;
 struct ResultPageTokenCollection;
-struct ResultWorldMetadata;
+struct ResultWorld;
 struct ResultFieldElement;
 struct ResultCArrayFieldElement;
-struct ResultCArrayController;
 struct Resultbool;
 struct Resultc_char;
 struct ResultSignature;
+
 
 // ============================================================================
 // Arrays de C
 // ============================================================================
 
+struct CArrayFieldElement;
 struct CArrayController;
+struct CArrayOrderBy;
+struct CArrayc_char;
 struct CArrayEntity;
+struct CArrayCOptionFieldElement;
+struct CArrayMemberValue;
+struct CArrayClause;
+struct CArrayModel;
+struct CArrayTransaction;
+struct CArrayTransactionCall;
 struct CArrayStruct;
+struct CArrayToken;
+struct CArrayU256;
+struct CArrayTokenBalance;
+struct CArrayTokenCollection;
 struct CArrayMember;
 struct CArrayEnumOption;
 struct CArrayTy;
-struct CArrayOrderBy;
-struct CArrayClause;
-struct CArrayFieldElement;
-struct CArrayCOptionFieldElement;
-struct CArrayc_char;
-struct CArrayMemberValue;
-struct CArrayToken;
-struct CArrayTokenBalance;
-struct CArrayTokenCollection;
-struct CArrayCHashItemFieldElementModelMetadata;
+
 
 // ============================================================================
 // Tipos Opcionales
@@ -181,13 +214,12 @@ struct CArrayCHashItemFieldElementModelMetadata;
 
 struct COptionFieldElement;
 struct COptionc_char;
+struct COptionu32;
+struct COptionu64;
 struct COptionClause;
+struct COptionTransactionFilter;
+struct COptionU256;
 
-// ============================================================================
-// Tipos de Hash
-// ============================================================================
-
-struct CHashItemFieldElementModelMetadata;
 
 // ============================================================================
 // Manejo de Errores

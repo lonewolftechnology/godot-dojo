@@ -156,14 +156,14 @@ Dictionary ToriiClient::get_world_metadata()
         return Logger::error_dict("Client not connected");
     }
 
-    DOJO::ResultWorldMetadata resMetadata = DOJO::client_metadata(client);
+    DOJO::ResultWorld resMetadata = DOJO::client_metadata(client);
 
-    if (resMetadata.tag == DOJO::ErrWorldMetadata)
+    if (resMetadata.tag == DOJO::ErrWorld)
     {
         return Logger::error_dict("Error al obtener metadatos: ", GET_DOJO_ERROR(resMetadata));
     }
 
-    DOJO::WorldMetadata metadata = GET_DOJO_OK(resMetadata);
+    DOJO::World metadata = GET_DOJO_OK(resMetadata);
     Dictionary result = {};
 
     TypedArray<Dictionary> models_array = ArrayDojo(metadata.models).get_value();
@@ -221,20 +221,23 @@ TypedArray<Dictionary> ToriiClient::get_controllers(const TypedArray<String>& ad
     {
         Logger::info("Addresses is empty, fetching all controllers");
     }
+    Logger::debug_extra("Torii", addresses);
     std::vector<DOJO::FieldElement> contract_addresses = FieldElement::create_array(addresses);
     Logger::debug_extra("CLIENT", "Address size: ", contract_addresses.size());
 
+    // Null for now to retrive all controllers
+    DOJO::ControllerQuery controller_query = {};
 
-    DOJO::ResultCArrayController resControllers = DOJO::client_controllers(
-        client, contract_addresses.data(), contract_addresses.size());
+    DOJO::ResultPageController resControllers = DOJO::client_controllers(
+        client, controller_query);
 
-    if (resControllers.tag == DOJO::ErrCArrayController)
+    if (resControllers.tag == DOJO::ErrPageController)
     {
         Logger::error("Error obtaining controllers: ", GET_DOJO_ERROR(resControllers));
         return {Logger::error_dict("Error obtaining controllers: ", GET_DOJO_ERROR(resControllers))};
     }
 
-    DOJO::CArrayController controllers = GET_DOJO_OK(resControllers);
+    DOJO::PageController controllers = GET_DOJO_OK(resControllers);
     TypedArray<Dictionary> result = ArrayDojo(controllers).get_value();
 
     Logger::success_extra("CLIENT", "Controllers obtained: ", String::num_int64(result.size()));
@@ -308,31 +311,35 @@ TypedArray<Dictionary> ToriiClient::get_tokens(const Dictionary& query_params)
         token_ids_len = token_ids_vec.size();
     }
 
+    DOJO::TokenQuery token_query = {};
+
+
     DOJO::ResultPageToken result = DOJO::client_tokens(
         client,
-        contract_addresses_ptr, contract_addresses_len,
-        token_ids_ptr, token_ids_len,
-        limit,
-        DojoHelpers::create_option_from_string(cursor)
+        token_query
     );
-
     if (result.tag == DOJO::ErrPageToken)
     {
         Logger::error("Error getting tokens: ", GET_DOJO_ERROR(result));
         return {};
     }
 
-    // Convert the result to a TypedArray<Dictionary>
-    DOJO::PageToken tokens = result.ok;
+    DOJO::PageToken tokens = GET_DOJO_OK(result);
     TypedArray<Dictionary> result_array;
 
     for (size_t i = 0; i < tokens.items.data_len; i++)
     {
         DOJO::Token token = tokens.items.data[i];
         Dictionary token_dict;
+        if (token.token_id.tag == DOJO::SomeU256)
+        {
+            token_dict["token_id"] = String::num_uint64(token.token_id.some.data[0]);
+        }else
+        {
+            token_dict["token_id"] = nullptr;
+        }
 
         token_dict["contract_address"] = FieldElement::get_as_string(&token.contract_address);
-        token_dict["token_id"] = String::num_uint64(token.token_id.data[0]);
         token_dict["name"] = String(token.name);
         token_dict["symbol"] = String(token.symbol);
         token_dict["decimals"] = token.decimals;
@@ -362,24 +369,20 @@ TypedArray<Dictionary> ToriiClient::get_token_balances(const String& account_add
         return {};
     }
 
-    // Convert account address to FieldElement
     FieldElement account_felt(account_address, 32);
     DOJO::FieldElement* account_addresses = account_felt.get_felt();
     size_t account_addresses_len = 1;
 
-    // Empty arrays for contract addresses and token IDs
     DOJO::FieldElement* contract_addresses = nullptr;
     size_t contract_addresses_len = 0;
     DOJO::U256* token_ids = nullptr;
     size_t token_ids_len = 0;
 
+    DOJO::TokenBalanceQuery balance_query = {};
+
     DOJO::ResultPageTokenBalance result = DOJO::client_token_balances(
         client,
-        contract_addresses, contract_addresses_len,
-        account_addresses, account_addresses_len,
-        token_ids, token_ids_len,
-        10, // Default limit
-        DojoHelpers::create_option_from_string() // No cursor
+        balance_query
     );
 
     if (result.tag == DOJO::ErrPageTokenBalance)
@@ -388,7 +391,6 @@ TypedArray<Dictionary> ToriiClient::get_token_balances(const String& account_add
         return {};
     }
 
-    // Convert the result to a TypedArray<Dictionary>
     DOJO::PageTokenBalance balances = result.ok;
     TypedArray<Dictionary> result_array;
 
@@ -396,11 +398,16 @@ TypedArray<Dictionary> ToriiClient::get_token_balances(const String& account_add
     {
         DOJO::TokenBalance balance = balances.items.data[i];
         Dictionary balance_dict;
-
+        if (balance.token_id.tag == DOJO::SomeU256)
+        {
+            balance_dict["token_id"] = String::num_uint64(balance.token_id.some.data[0]);
+        }else
+        {
+            balance_dict["token_id"] = nullptr;
+        }
         balance_dict["balance"] = String::num_uint64(balance.balance.data[0]);
         balance_dict["account_address"] = FieldElement::get_as_string(&balance.account_address);
         balance_dict["contract_address"] = FieldElement::get_as_string(&balance.contract_address);
-        balance_dict["token_id"] = String::num_uint64(balance.token_id.data[0]);
 
         result_array.push_back(balance_dict);
     }
@@ -418,7 +425,6 @@ TypedArray<Dictionary> ToriiClient::get_token_collections()
         return {};
     }
 
-    // Empty arrays for all parameters
     DOJO::FieldElement* contract_addresses = nullptr;
     size_t contract_addresses_len = 0;
     DOJO::FieldElement* account_addresses = nullptr;
@@ -426,14 +432,11 @@ TypedArray<Dictionary> ToriiClient::get_token_collections()
     DOJO::U256* token_ids = nullptr;
     size_t token_ids_len = 0;
 
-    // Call the dojo.c function
+    DOJO::TokenBalanceQuery balance_query = {};
+
     DOJO::ResultPageTokenCollection result = DOJO::client_token_collections(
         client,
-        contract_addresses, contract_addresses_len,
-        account_addresses, account_addresses_len,
-        token_ids, token_ids_len,
-        10, // Default limit
-        DojoHelpers::create_option_from_string() // No cursor
+        balance_query
     );
 
     if (result.tag == DOJO::ErrPageTokenCollection)
@@ -442,7 +445,6 @@ TypedArray<Dictionary> ToriiClient::get_token_collections()
         return {};
     }
 
-    // Convert the result to a TypedArray<Dictionary>
     DOJO::PageTokenCollection collections = result.ok;
     TypedArray<Dictionary> result_array;
 
@@ -482,21 +484,18 @@ Dictionary ToriiClient::get_token_info(const String& token_address)
         return Logger::error_dict("Client not connected");
     }
 
-    // Convert token address to FieldElement
     FieldElement token_felt(token_address, 32);
     DOJO::FieldElement* contract_addresses = token_felt.get_felt();
     size_t contract_addresses_len = 1;
 
-    // Empty arrays for token IDs
     DOJO::U256* token_ids = nullptr;
     size_t token_ids_len = 0;
 
+    DOJO::TokenQuery token_query = {};
+
     DOJO::ResultPageToken result = DOJO::client_tokens(
         client,
-        contract_addresses, contract_addresses_len,
-        token_ids, token_ids_len,
-        1, // Limit to 1 token
-        DojoHelpers::create_option_from_string() // No cursor
+        token_query
     );
 
     if (result.tag == DOJO::ErrPageToken)
@@ -515,9 +514,14 @@ Dictionary ToriiClient::get_token_info(const String& token_address)
 
     DOJO::Token token = tokens.items.data[0];
     Dictionary token_dict;
-
     token_dict["contract_address"] = FieldElement::get_as_string(&token.contract_address);
-    token_dict["token_id"] = String::num_uint64(token.token_id.data[0]);
+    if (token.token_id.tag == DOJO::SomeU256)
+    {
+        token_dict["token_id"] = String::num_uint64(token.token_id.some.data[0]);
+    }else
+    {
+        token_dict["token_id"] = nullptr;
+    }
     token_dict["name"] = String(token.name);
     token_dict["symbol"] = String(token.symbol);
     token_dict["decimals"] = token.decimals;
@@ -652,9 +656,15 @@ bool ToriiClient::create_token_subscription(const Callable& callback, const Stri
             // Convert token balance to Dictionary
             Dictionary balance_dict;
             balance_dict["balance"] = String::num_uint64(token_balance.balance.data[0]);
+            if (token_balance.token_id.tag == DOJO::SomeU256)
+            {
+                balance_dict["token_id"] = String::num_uint64(token_balance.token_id.some.data[0]);
+            }else
+            {
+                balance_dict["token_id"] = nullptr;
+            }
             balance_dict["account_address"] = FieldElement::get_as_string(&token_balance.account_address);
             balance_dict["contract_address"] = FieldElement::get_as_string(&token_balance.contract_address);
-            balance_dict["token_id"] = String::num_uint64(token_balance.token_id.data[0]);
 
             singleton->emit_signal("token_balance_updated", balance_dict);
         }
@@ -800,7 +810,17 @@ DOJO::Query ToriiClient::create_query_from_dict(const Dictionary& query_params)
     DOJO::Pagination pagination = {};
     Logger::info("Pagination Creation");
     Dictionary pagination_dict = query_params.get("pagination", {});
-    pagination.limit = query_params.get("limit", 10);
+
+    if (query_params.has("limit"))
+    {
+        int _limit = query_params.get("limit", 10);
+        pagination.limit.tag = DOJO::Someu32;
+        pagination.limit.some = query_params.get("limit", 10);
+    }else
+    {
+        pagination.limit.tag = DOJO::Noneu32;
+    }
+
     String cursor = pagination_dict.get("cursor", "");
     if (cursor.is_empty())
     {
@@ -832,12 +852,13 @@ DOJO::Query ToriiClient::create_query_from_dict(const Dictionary& query_params)
         for (int i = 0; i < orderBy_array.size(); i++)
         {
             Dictionary data = orderBy_array[i];
-            String model_name = data.get("model", "");
-            String member_name = data.get("member", "");
+            String field = data.get("field", "");
             uint32_t direction = data.get("order_direction", 0);
             DOJO::OrderDirection order_direction = static_cast<DOJO::OrderDirection>(direction);
+            // Before 1.6.0 OrderBy had  model_name and member_name, now is field.
+            // TODO: Check how it actually works
             orderBy.data[i] = {
-                model_name.utf8().get_data(), member_name.utf8().get_data(), order_direction
+                field.utf8().get_data(), order_direction
             };
         }
     }
@@ -870,7 +891,16 @@ DOJO::Pagination ToriiClient::create_pagination_from_dict(const Dictionary& pagi
 {
     DOJO::Pagination pagination = {};
 
-    pagination.limit = pagination_params.get("limit", 10);
+    if (pagination_params.has("limit"))
+    {
+        int _limit = pagination_params.get("limit", 10);
+        pagination.limit.tag = DOJO::Someu32;
+        pagination.limit.some = pagination_params.get("limit", 10);
+    }else
+    {
+        pagination.limit.tag = DOJO::Noneu32;
+    }
+
     pagination.cursor.tag = DOJO::COptionc_char_Tag::Nonec_char;
 
     String direction = pagination_params.get("direction", "forward");
