@@ -336,11 +336,6 @@ TypedArray<Dictionary> ToriiClient::get_tokens(const Dictionary& query_params)
         token_query
     );
 
-
-    DOJO::ResultPageToken result = DOJO::client_tokens(
-        client,
-        token_query
-    );
     if (result.tag == DOJO::ErrPageToken)
     {
         Logger::error("Error getting tokens: ", GET_DOJO_ERROR(result));
@@ -416,11 +411,6 @@ TypedArray<Dictionary> ToriiClient::get_token_balances(const String& account_add
         balance_query
     );
 
-    DOJO::ResultPageTokenBalance result = DOJO::client_token_balances(
-        client,
-        balance_query
-    );
-
     if (result.tag == DOJO::ErrPageTokenBalance)
     {
         Logger::error("Error getting token balances: ", GET_DOJO_ERROR(result));
@@ -477,11 +467,6 @@ TypedArray<Dictionary> ToriiClient::get_token_collections()
     balance_query.contract_addresses = {contract_addresses, contract_addresses_len};
     balance_query.account_addresses = {account_addresses, account_addresses_len};
     balance_query.token_ids = {token_ids, token_ids_len};
-
-    DOJO::ResultPageTokenCollection result = DOJO::client_token_collections(
-        client,
-        balance_query
-    );
 
     DOJO::ResultPageTokenCollection result = DOJO::client_token_collections(
         client,
@@ -553,12 +538,7 @@ Dictionary ToriiClient::get_token_info(const String& token_address)
         client,
         token_query
     );
-
-    DOJO::ResultPageToken result = DOJO::client_tokens(
-        client,
-        token_query
-    );
-
+    
     if (result.tag == DOJO::ErrPageToken)
     {
         Logger::error("Error getting token info: ", GET_DOJO_ERROR(result));
