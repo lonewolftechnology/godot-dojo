@@ -6,8 +6,8 @@ const MIN_ZOOM := 0.2
 
 @export var generic_entity_scene:PackedScene
 @export var player_entity_scene:PackedScene
-var player:PlayerEntity
 
+var player:PlayerEntity
 var camera:Camera2D:
 	get:
 		if player:
@@ -17,13 +17,10 @@ var camera:Camera2D:
 
 var entities:Dictionary = {}
 
-func filter_children(id:String):
-	for entity in get_children():
-		if entity.id == id:
-			return entity
-	return null
+func get_entity(id:String) -> GenericEntity:
+	return _find_user(id)
 
-func find_user(id:String) -> GenericEntity:
+func _find_user(id:String) -> GenericEntity:
 	var children = get_children()
 	var filter = children.filter(
 		func(c): return c.id == id
@@ -33,34 +30,27 @@ func find_user(id:String) -> GenericEntity:
 	else:
 		return filter[0]
 		
-func move_controller(id:String, vec:Vector2)->void:
-	var entity = find_user(id)
-	if not entity:
-		return
-	await get_tree().process_frame
-	if entity:
-		await get_tree().process_frame
-		entity.move(vec)
+func move_controller(id:String, pos:Vector2)->void:
+	var entity = _find_user(id)
+	if entity != null:
+		entity.move(pos)
 
-func spawn_entity(_data:Dictionary, is_player:bool = false):
-	var address = _data["address"]
-	var username : String = address
-	if _data.has("username"):
-		username = _data["username"]
+func spawn_entity(id:String, is_player:bool = false) -> GenericEntity:
+	if _find_user(id): 
+		return null
 	
-	if find_user(address): 
-		return
-	
-	var new_entity:GenericEntity
+	var new_entity : GenericEntity
 	if is_player:
 		new_entity = player_entity_scene.instantiate()
 		player = new_entity
 	else:
 		new_entity = generic_entity_scene.instantiate()
-	await get_tree().process_frame
+	
+	#await get_tree().process_frame
 	add_child(new_entity)
-	new_entity.setup(_data)
-	entities[address] = username
+	new_entity.setup(id)
+	entities[id] = new_entity
+	return new_entity
 
 func _unhandled_input(event: InputEvent) -> void:
 	if event.is_action_pressed("zoom_in"):
@@ -74,7 +64,7 @@ func _unhandled_input(event: InputEvent) -> void:
 	if event is InputEventMouseMotion && Input.is_mouse_button_pressed(MOUSE_BUTTON_RIGHT):
 		camera.position -= event.relative * 1/camera.zoom
 
-func clear_all_controllers():
+func clear() -> void:
 	get_children().any(
 		func(c:Node2D):
 			c.queue_free()

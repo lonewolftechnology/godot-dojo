@@ -3,9 +3,12 @@ extends Node
 
 signal connected
 
+const WORLD_CONTRACT = "0x0393f8a2d0d47e384c3c61eedc08d2873f5d608f8da7ffb013e5d5aa327ac8f2"
+const ACTIONS_CONTRACT = "0x065d58039c71b4a0fe302d68f9fad4bf49e01fe518d7912d44ba0d07b2d7f556"
+
+
 @onready var client: ToriiClient = $ToriiClient
 @onready var controller_account: ControllerAccount = $ControllerAccount
-
 
 @onready var _client_status: DojoStatusIndicator = %ClientStatus
 @onready var _provider_status: DojoStatusIndicator = %ProviderStatus

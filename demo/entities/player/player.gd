@@ -3,9 +3,8 @@ extends GenericEntity
 
 @onready var camera: Camera2D = $Camera2D
 
-func _move(pos):
-	camera.position = Vector2()
+func _move(_pos:Vector2):
+	camera.position = Vector2.ZERO
 
-
-func _setup(entity_data:Dictionary) -> void:
+func _setup(_id:String) -> void:
 	camera.make_current()

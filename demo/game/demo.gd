@@ -30,6 +30,8 @@ enum Directions {
 
 @onready var controllers_manager: ControllersManager = %ControllersManager
 
+var _player_address : String = ""
+
 func _ready() -> void:
 	OS.set_environment("RUST_BACKTRACE", "full")
 	OS.set_environment("RUST_LOG", "debug")
@@ -38,9 +40,10 @@ func _ready() -> void:
 func _on_controller_current_user_info(data:Dictionary) -> void:
 	var address : String = data['address']
 	var username : String = data['username']
-	
-	label_username.text = "Username: %s"%username	
-	controllers_manager.spawn_entity(data,true)
+	_player_address = address
+	label_username.text = "Username: %s"%username
+	var player_entity := controllers_manager.spawn_entity(address,true)
+	player_entity.set_username(username)
 
 
 func _on_events(args:Dictionary) -> void:
@@ -56,13 +59,15 @@ func _handle_callback(args:Dictionary) -> void:
 	for entry : Dictionary in data:
 		result_data.merge(entry)
 
+	await get_tree().process_frame
 	if result_data.has("Vec2"):
-		await get_tree().process_frame
-		var new_pos = Vector2(result_data['Vec2']['x'], result_data['Vec2']['y'] )
-		controllers_manager.move_controller(result_data['player'], new_pos)
+		var pos := Vector2(result_data['Vec2']['x'], result_data['Vec2']['y'] )
+		var id : String = result_data['player']
+		controllers_manager.move_controller(id, pos)
 	if result_data.has("remaining"):
-		await get_tree().process_frame
-		label_moves.text = "Moves: %s" % result_data['remaining']
+		var id : String = result_data['player']
+		if id == _player_address:
+			label_moves.text = "Moves: %s" % result_data['remaining']
 
 
 func spawn() -> void:
@@ -70,6 +75,9 @@ func spawn() -> void:
 
 
 func _on_start_screen_entered() -> void:
+	start()
+
+func start() -> void:
 	await get_tree().create_timer(0.1).timeout
 	connection.create_subscriptions(_on_events,_on_entities)
 	
@@ -77,27 +85,32 @@ func _on_start_screen_entered() -> void:
 	spawn()
 	
 	await get_tree().create_timer(0.1).timeout
+	
 	var parsed : Dictionary = get_entities()
-	for key in parsed.keys():
-		var data = {
-			"address": key
-		}
-		controllers_manager.spawn_entity(data)
+	
+	for id in parsed.keys():
+		controllers_manager.spawn_entity(id)
 	
 	
-	await get_tree().create_timer(0.1).timeout
+	#await get_tree().create_timer(0.1).timeout
 	_update_entities(parsed)
 	
 	
-	#get_controllers(parsed.keys())
+	get_controllers(parsed.keys())
 
 
 func get_controllers(addrs:Array = []) -> void:
-	print("Addresses: %s\n"%str(addrs))
-	var data = connection.client.get_controllers(addrs)
+	print("&&&&&&& Addresses: %s\n"%str(addrs))
+	var data = connection.client.get_controllers([],addrs)
 	print("######\nControllers: %s\n######\n"%str(data))
 	for controller in data:
-		controllers_manager.spawn_entity(controller)
+		var id : String = controller["address"]
+		var username : String = controller["username"]
+		var entity : GenericEntity = controllers_manager.get_entity(id)
+		if entity == null:
+			entity = controllers_manager.spawn_entity(id)
+		
+		entity.set_username(username)
 
 
 func get_entities() -> Dictionary:
@@ -123,7 +136,7 @@ func get_entities() -> Dictionary:
 			var remaining : int = 100
 			for key in model:
 				var entry:Dictionary = model[key]
-				print("###### KEY: %s\n###### ENTRY: %s\n"%[str(key),str(entry)])
+				#print("###### KEY: %s\n###### ENTRY: %s\n"%[str(key),str(entry)])
 				id = entry["player"]
 				match key:
 					"dojo_starter-Position":#,"dojo_starter-PositionSigned","dojo_starter-PositionI32":
@@ -195,7 +208,7 @@ func _on_arrow_right_pressed() -> void:
 
 func _on_disconnect_pressed() -> void:
 	connection.controller_account.disconnect_controller()
-	controllers_manager.clear_all_controllers()
+	controllers_manager.clear()
 	await get_tree().process_frame	
 	get_tree().reload_current_scene()
 
