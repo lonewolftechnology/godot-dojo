@@ -251,8 +251,7 @@ std::vector<DOJO::FieldElement> FieldElement::create_array(TypedArray<String> ar
     {
         String address = array[i];
 
-        DOJO::FieldElement field_elem = from_string(address);
-        result[i] = field_elem;
+        result.push_back(from_string(address));
     }
     return result;
 }

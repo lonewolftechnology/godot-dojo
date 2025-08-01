@@ -7,6 +7,8 @@
 #include "godot_cpp/classes/ref_counted.hpp"
 
 #include "dojo_types.h"
+#include "variant/field_element.h"
+#include "tools/logger.h"
 using namespace godot;
 
 class DojoArray : public RefCounted
@@ -87,7 +89,27 @@ public:
             c_array.data_len = ptr_storage.size();
         }
     };
+    struct CFieldElementArrayHelper {
+    private:
+        std::vector<DOJO::FieldElement> fe_storage;
 
+    public:
+        DOJO::CArrayFieldElement c_array;
+
+        CFieldElementArrayHelper(const TypedArray<String>& hex_string_array) {
+            fe_storage.reserve(hex_string_array.size());
+
+            for (int i = 0; i < hex_string_array.size(); ++i) {
+                String address = hex_string_array[i];
+                fe_storage.push_back(FieldElement::from_string(address));
+            }
+
+            c_array.data = fe_storage.data();
+            c_array.data_len = fe_storage.size();
+
+            Logger::debug_extra("CXexFelt", fe_storage.size());
+        }
+    };
 protected:
     static void _bind_methods()
     {
