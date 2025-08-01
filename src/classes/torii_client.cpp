@@ -208,6 +208,15 @@ TypedArray<Dictionary> ToriiClient::get_entities(const Dictionary& query_params)
     return result;
 }
 
+TypedArray<Dictionary> ToriiClient::get_contollers_by_usernames(const TypedArray<String>& usernames)
+{
+    return get_controllers(usernames,Array());
+}
+
+TypedArray<Dictionary> ToriiClient::get_contollers_by_addresses(const TypedArray<String>& addresses)
+{
+    return get_controllers(Array(), addresses);
+}
 
 TypedArray<Dictionary> ToriiClient::get_controllers(const TypedArray<String>& usernames = Array(), const TypedArray<String>& addresses = Array())
 {
@@ -221,41 +230,32 @@ TypedArray<Dictionary> ToriiClient::get_controllers(const TypedArray<String>& us
     {
         Logger::info("Addresses is empty, fetching all controllers");
     }
-    Logger::debug_extra("Torii", addresses);
-    std::vector<DOJO::FieldElement> contract_addresses_vec = FieldElement::create_array(addresses);
-    Logger::debug_extra("CLIENT", "Address size: ", contract_addresses_vec.size());
+    DojoArray::CStringArrayHelper usernames_helper(usernames);
 
-    // Null for now to retrive all controllers
+    DojoArray::CFieldElementArrayHelper addresses_helper(addresses);
+
     DOJO::ControllerQuery controller_query = {};
 
-    // Inicializar correctamente la paginación
     controller_query.pagination.cursor.tag = DOJO::COptionc_char_Tag::Nonec_char;
     controller_query.pagination.limit.tag = DOJO::COptionu32_Tag::Noneu32;
     controller_query.pagination.order_by = {nullptr, 0};
     controller_query.pagination.direction = DOJO::PaginationDirection::Forward;
 
-    // Inicializar correctamente los CArrays
-    controller_query.contract_addresses = {contract_addresses_vec.data(), contract_addresses_vec.size()};
-    Logger::debug_extra("Usernames", usernames);
-    DojoArray::CStringArrayHelper username(usernames);
-    controller_query.usernames = username.c_array;
+    controller_query.usernames = usernames_helper.c_array;
+    controller_query.contract_addresses = addresses_helper.c_array;
 
+    DOJO::ResultPageController res_controllers = DOJO::client_controllers(client, controller_query);
 
-    DOJO::ResultPageController resControllers = DOJO::client_controllers(
-        client, controller_query);
-
-    if (resControllers.tag == DOJO::ErrPageController)
-    {
-        Logger::error("Error obtaining controllers: ", GET_DOJO_ERROR(resControllers));
-        return {Logger::error_dict("Error obtaining controllers: ", GET_DOJO_ERROR(resControllers))};
+    if (res_controllers.tag == DOJO::ErrPageController) {
+        Logger::error("Failed to get controllers: ", GET_DOJO_ERROR(res_controllers));
+        DOJO::error_free(&res_controllers.err);
+        return TypedArray<Dictionary>();
     }
 
-    DOJO::PageController controllers = GET_DOJO_OK(resControllers);
-    TypedArray<Dictionary> result = DojoArray(controllers).get_value();
-
-    Logger::success_extra("CLIENT", "Controllers obtained: ", String::num_int64(result.size()));
-    return result;
+    Ref<DojoArray> result_array = memnew(DojoArray(GET_DOJO_OK(res_controllers)));
+    return result_array->get_value();
 }
+
 
 Dictionary ToriiClient::get_controller_info(const String& controller_address)
 {

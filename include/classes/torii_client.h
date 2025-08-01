@@ -57,8 +57,10 @@ public:
     bool refresh_metadata();
 
     TypedArray<Dictionary> get_entities(const Dictionary& query_params = Dictionary());
+    TypedArray<Dictionary> get_contollers_by_usernames(const TypedArray<String>& usernames);
+    TypedArray<Dictionary> get_contollers_by_addresses(const TypedArray<String>& addresses);
 
-    TypedArray<Dictionary> get_controllers(const TypedArray<String>& contract_addresses);
+    TypedArray<Dictionary> get_controllers(const TypedArray<String>& usernames, const TypedArray<String>& addresses);
     Dictionary get_controller_info(const String& controller_address);
 
     TypedArray<Dictionary> get_tokens(const Dictionary& query_params = Dictionary());
@@ -69,6 +71,9 @@ public:
     bool create_entity_subscription(const Callable& callback, const Dictionary& filter_params = Dictionary());
     bool create_event_subscription(const Callable& callback, const Dictionary& filter_params = Dictionary());
     bool create_token_subscription(const Callable& callback, const String& account_address);
+    bool create_event_messages_subscription(const Callable& callback, const String& query);
+    bool create_transactions_subscription(const Callable& callback, const Dictionary& filter_params = Dictionary());
+
     void cancel_all_subscriptions();
 
     bool publish_message(const String& message_data, const Array& signature_felts);
@@ -118,8 +123,15 @@ public:
         ClassDB::bind_method(D_METHOD("get_entities", "query_params"),
                              &ToriiClient::get_entities);
 
-        ClassDB::bind_method(D_METHOD("get_controllers", "player_address"),
-                             &ToriiClient::get_controllers, DEFVAL(Array()));
+        ClassDB::bind_method(D_METHOD("get_controllers", "usernames", "addresses"),
+                             &ToriiClient::get_controllers, DEFVAL(Array()), DEFVAL(Array()));
+
+        ClassDB::bind_method(D_METHOD("get_controllers_by_usernames", "usernames"),
+                             &ToriiClient::get_contollers_by_usernames, DEFVAL(Array()));
+
+        ClassDB::bind_method(D_METHOD("get_controllers_by_addresses", "addresses"),
+                             &ToriiClient::get_contollers_by_addresses, DEFVAL(Array()));
+
         ClassDB::bind_method(D_METHOD("get_controller_info", "controller_address"),
                              &ToriiClient::get_controller_info);
 
