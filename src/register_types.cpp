@@ -12,7 +12,7 @@
 #include "classes/torii_client.h"
 #include "classes/event_subscription.h"
 #include "classes/controller_account.h"
-#include "temp/dojo_helper.h"
+#include "tools/dojo_helper.h"
 
 #include "variant/ty/dojo_array.h"
 #include "variant/ty/enum.h"

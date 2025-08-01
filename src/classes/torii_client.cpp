@@ -7,7 +7,7 @@
 
 #include "classes/torii_client.h"
 
-#include <temp/dojo_helper.h>
+#include "tools/dojo_helper.h"
 
 #include "tools/logger.h"
 #include "classes/event_subscription.h"

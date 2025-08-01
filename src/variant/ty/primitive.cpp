@@ -5,7 +5,7 @@
 
 #include "variant/ty/primitive.h"
 
-#include <temp/dojo_helper.h>
+#include "tools/dojo_helper.h"
 
 Variant DojoPrimitive::VariantFromPrimitive(dojo_bindings::Primitive primitive)
 {

@@ -12,7 +12,7 @@
 
 #include "classes/torii_client.h"
 #include <vector>
-#include <temp/dojo_helper.h>
+#include "tools/dojo_helper.h"
 
 
 //TODO: refactor a instancia global en vez de singleton
