@@ -13,6 +13,8 @@ func setup(_id:String) -> void:
 	id = _id
 	set_meta("type", name)
 	_setup(id)
+	var indicator := OffScreenIndicator.new()
+	add_child(indicator)
 
 func set_username(uname:String) -> void:
 	username = uname
