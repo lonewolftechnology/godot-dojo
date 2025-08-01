@@ -1,4 +1,4 @@
-#include "temp/dojo_helper.h"
+#include "../../include/tools/dojo_helper.h"
 
 #include "godot_cpp/classes/engine.hpp"
 #include "godot_cpp/classes/project_settings.hpp"
