@@ -32,6 +32,7 @@ func _find_user(id:String) -> GenericEntity:
 		
 func move_controller(id:String, pos:Vector2)->void:
 	var entity = _find_user(id)
+	prints("Aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa", entity)
 	if entity != null:
 		entity.move(pos)
 

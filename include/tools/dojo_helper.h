@@ -5,9 +5,11 @@
 #ifndef DOJO_HELPER_H
 #define DOJO_HELPER_H
 
-#include <godot_cpp/classes/object.hpp>
-#include "godot_cpp/core/class_db.hpp"
+#include "godot_cpp/classes/object.hpp"
 #include "dojo_types.h"
+#include "godot_cpp/core/class_db.hpp"
+#include "variant/field_element.h"
+
 using namespace godot;
 
 class DojoHelpers : public Object
@@ -60,6 +62,23 @@ public:
     static DOJO::U256 string_to_fixed_point_u256(const String& integer_str, int precision);
     static String u256_fixed_point_to_string(const dojo_bindings::U256& u256, int precision);
 
+    static void string_to_i8(const String& str, int8_t* out_val);
+    static void string_to_i16(const String& str, int16_t* out_val);
+    static void string_to_i32(const String& str, int32_t* out_val);
+    static void string_to_i64(const String& str, int64_t* out_val);
+    static void string_to_i128(const String& str, uint8_t* out_val);
+    static void string_to_u128(const String& str, uint8_t* out_val);
+    static DOJO::U256 string_to_u256(const String& str);
+    static void string_to_i256(const String& str, uint8_t* out_val);
+
+    static void float_string_to_fixed_point_i128(const String& str, int precision, uint8_t* out_val);
+    static String i128_fixed_point_to_float_string(const uint8_t* val, int precision);
+
+    static void float_string_to_fixed_point_i256(const String& str, int precision, uint8_t* out_val);
+    static String i256_fixed_point_to_float_string(const uint8_t* val, int precision);
+
+    static Ref<FieldElement> string_to_field_element(const String& str);
+
 
 protected:
     static void _bind_methods()
@@ -90,6 +109,8 @@ protected:
                                     &DojoHelpers::float_to_fixed_256);
         ClassDB::bind_static_method("DojoHelpers", D_METHOD("fixed_to_float_256", "value"),
                                     &DojoHelpers::fixed_to_float_256);
+        ClassDB::bind_static_method("DojoHelpers", D_METHOD("string_to_field_element", "str"), &DojoHelpers::string_to_field_element);
+
     }
     static DojoHelpers* singleton;
 

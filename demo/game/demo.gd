@@ -1,8 +1,8 @@
 # CHAIN ID WP_GODOT_DEMO_ROOKIE
 # KATANA https://api.cartridge.gg/x/godot-demo-rookie/katana
 # TORII https://api.cartridge.gg/x/godot-demo-rookie/torii
-# WORLD 0x058565b92f55fb07b53940b4b7eea3df2ac2878210e5c7a4c68201e8c511a546
-# Actions 0x049f9b281bb08aea6d745f28cf31dd529348b04a21d9a5ae1ef19197665c02da
+# WORLD 0x073c2b317136214562b608523812f369a05efe67257842a17c4985ce6d390be7
+# Actions 0x05d64ed5dff420d1d1f1c36958b6c4b0983868e5d0072f3fc928859b95d72a24
 
 # hazel 0x3dc821653fa9ed84324821b26afd5775b128921b9436327211949947a888
 # dtodice 0x75c10973fc5fdfa2f7ff5875f10441e546d98f37f40b97a663f89bdaf81a0
@@ -141,13 +141,16 @@ func get_entities() -> Dictionary:
 				match key:
 					"dojo_starter-Position":#,"dojo_starter-PositionSigned","dojo_starter-PositionI32":
 						var v : Dictionary = {}
+						
 						if entry.has("vec"):
 							v = entry["vec"]
+							
 						elif entry.has("Vector2Signed"):
 							v = entry["Vector2Signed"]
 						var x := v["x"] as float
 						var y := v["y"] as float
 						position = Vector2(x,y)
+						
 						
 						if not parsed_entities.has(id):
 							parsed_entities[id] = {}
@@ -167,23 +170,23 @@ func get_entities() -> Dictionary:
 						pass
 					"dojo_starter-U256Value":
 						pass
-	
 	return parsed_entities
 
 
 func _update_entities(parsed_entities:Dictionary) -> void:
 	for key in parsed_entities.keys():
 		var id : String = key
-		var position : Vector2 = parsed_entities[key]["position"]
-		controllers_manager.move_controller(id,position)
+		if parsed_entities[key].has("position"):
+			var position : Vector2 = parsed_entities[key]["position"]
+			controllers_manager.move_controller(id,position)
 
 
 
 func _move(dir:Directions) -> void:
 	move_call.calldata[0] = dir
-	#var u32 = DojoHelpers.signed_to_u32_offset(%StepsAmount.value)
-	#move_call.calldata[1] = u32
-	#push_warning(u32)
+	var u32 = DojoHelpers.signed_to_u32_offset(%StepsAmount.value)
+	move_call.calldata[1] = u32
+	push_warning(u32)
 	connection.controller_account.execute_from_outside(move_call)
 
 func _on_arrow_left_pressed() -> void:
