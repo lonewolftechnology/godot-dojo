@@ -1,21 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
-  <component name="Black">
-    <option name="sdkName" value="Python 3.13 virtualenv at ~/Proyectos/Godot/GDE/godot-dojo/.venv" />
-  </component>
   <component name="CMakePythonSetting">
-    <option name="pythonIntegrationState" value="NO" />
+    <option name="pythonIntegrationState" value="YES" />
   </component>
   <component name="CMakeWorkspace" PROJECT_DIR="$PROJECT_DIR$" />
-  <component name="CidrRootsConfiguration">
-    <excludeRoots>
-      <file path="$PROJECT_DIR$/.cargo_cache" />
-      <file path="$PROJECT_DIR$/.scons_cache" />
-      <file path="$PROJECT_DIR$/.venv" />
-      <file path="$PROJECT_DIR$/cmake-build-debug" />
-    </excludeRoots>
-  </component>
-  <component name="PythonCompatibilityInspectionAdvertiser">
-    <option name="version" value="3" />
-  </component>
 </project>

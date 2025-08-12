@@ -16,9 +16,7 @@ add_library(godot-dojo SHARED ${SOURCES} ${HEADERS})
 include(FetchContent)
 FetchContent_Declare(
         godot-cpp
-        GIT_REPOSITORY https://github.com/godotengine/godot-cpp.git
-        GIT_TAG godot-4.2.2-stable
-        GIT_SHALLOW TRUE
+        SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/external/godot-cpp
 )
 FetchContent_MakeAvailable(godot-cpp)
 list(APPEND CMAKE_MODULE_PATH "${godot-cpp_SOURCE_DIR}/cmake")
@@ -26,8 +24,7 @@ list(APPEND CMAKE_MODULE_PATH "${godot-cpp_SOURCE_DIR}/cmake")
 # Dojo.c
 FetchContent_Declare(
         dojo_c
-        GIT_REPOSITORY https://github.com/dojoengine/dojo.c.git
-        GIT_TAG v1.6.0
+        SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/external/dojo.c
 )
 FetchContent_MakeAvailable(dojo_c)
 
@@ -49,12 +46,6 @@ configure_file(plugin_template.gdextension.in godot-dojo.gdextension)
 target_include_directories(godot-dojo PRIVATE include src)
 target_include_directories(godot-dojo PUBLIC
         ${CMAKE_CURRENT_SOURCE_DIR}/external/boost/include
-        ${godot-cpp_SOURCE_DIR}/gdextension
-        ${godot-cpp_SOURCE_DIR}/include/godot_cpp
-        ${godot-cpp_SOURCE_DIR}/src
-        ${godot-cpp_BINARY_DIR}/gen/src
-        ${godot-cpp_BINARY_DIR}/gen/include/godot_cpp
-        ${dojo_c_SOURCE_DIR}
 )
 
 target_link_libraries(godot-dojo PRIVATE godot::cpp dojo_c)

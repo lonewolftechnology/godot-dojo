@@ -9,7 +9,42 @@
 #include "dojo_types.h"
 #include "variant/field_element.h"
 #include "tools/logger.h"
+#include "tools/dojo_helper.h"
+
 using namespace godot;
+
+namespace DojoArrayHelpers {
+    inline DOJO::CArrayFieldElement string_array_to_native_carray_felt(const TypedArray<String>& arr) {
+        auto* native_arr = new DOJO::FieldElement[arr.size()];
+        for (int i = 0; i < arr.size(); ++i) {
+            String str = arr[i];
+            DOJO::U256 u256_val = DojoHelpers::string_to_u256(str);
+            memcpy(native_arr[i].data, u256_val.data, 32);
+        }
+        return {native_arr, (uintptr_t)arr.size()};
+    }
+
+    inline DOJO::CArrayU256 string_array_to_native_carray_u256(const TypedArray<String>& arr) {
+        auto* native_arr = new DOJO::U256[arr.size()];
+        for (int i = 0; i < arr.size(); ++i) {
+            String str = arr[i];
+            native_arr[i] = DojoHelpers::string_to_u256(str);
+        }
+        return {native_arr, (uintptr_t)arr.size()};
+    }
+
+    inline DOJO::CArrayc_char string_array_to_native_carray_str(const TypedArray<String>& arr) {
+        const char** native_arr = new const char*[arr.size()];
+        for (int i = 0; i < arr.size(); ++i) {
+            String str = arr[i];
+            char *c_str = new char[str.utf8().length() + 1];
+            strcpy(c_str, str.utf8().get_data());
+            native_arr[i] = c_str;
+        }
+        return {native_arr, (uintptr_t)arr.size()};
+    }
+}
+
 
 class DojoArray : public RefCounted
 {

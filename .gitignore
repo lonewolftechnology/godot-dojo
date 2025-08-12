@@ -78,7 +78,6 @@ fabric.properties
 
 demo/bin/*
 !demo/bin/dojoc_gdextension.gdextension
-notes.md
 
 # ============================================================================
 # BUILD SYSTEM & CACHE
@@ -212,3 +211,12 @@ tramp
 
 # Sublime Text
 *.sublime-workspace
+
+# ============================================================================
+# MISC
+# ============================================================================
+
+# Temp doc
+dojo_methods.md
+notes.md
+commit_script.sh
