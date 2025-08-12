@@ -14,7 +14,16 @@
 #include "godot_cpp/variant/callable.hpp"
 
 #include "dojo_types.h"
+#include "resources/queries/dojo_query.h"
 #include "variant/field_element.h"
+#include "resources/subscriptions/entity.h"
+#include "resources/subscriptions/message.h"
+#include "resources/subscriptions/starknet.h"
+#include "resources/subscriptions/transaction.h"
+#include "resources/subscriptions/token.h"
+#include "resources/subscriptions/indexer.h"
+#include "resources/subscriptions/token_balance.h"
+
 
 using namespace godot;
 
@@ -28,6 +37,14 @@ class ToriiClient : public Node
     Array event_subscriptions;
 
 public:
+    Callable on_entity_state_update_callback;
+    Callable on_event_message_update_callback;
+    Callable on_starknet_event_callback;
+    Callable on_transaction_callback;
+    Callable on_token_update_callback;
+    Callable on_indexer_update_callback;
+    Callable on_token_balance_update_callback;
+
     ToriiClient();
     ~ToriiClient();
 
@@ -48,31 +65,33 @@ public:
     bool create_client();
     void disconnect_client(bool send_signal);
     bool is_client_connected() const;
-    bool is_calable_valid();
-    void callable_call(const char* msg);
+    bool is_callable_valid() const;
+    void callable_call(const char* msg) const;
     FieldElement get_world() const;
     void set_world(const FieldElement& n_world);
 
-    Dictionary get_world_metadata();
+    Dictionary get_world_metadata() const;
     bool refresh_metadata();
 
-    TypedArray<Dictionary> get_entities(const Dictionary& query_params = Dictionary());
+    TypedArray<Dictionary> get_entities(const Dictionary& query_params = Dictionary()) const;
     TypedArray<Dictionary> get_contollers_by_usernames(const TypedArray<String>& usernames);
     TypedArray<Dictionary> get_contollers_by_addresses(const TypedArray<String>& addresses);
 
     TypedArray<Dictionary> get_controllers(const TypedArray<String>& usernames, const TypedArray<String>& addresses);
     Dictionary get_controller_info(const String& controller_address);
 
-    TypedArray<Dictionary> get_tokens(const Dictionary& query_params = Dictionary());
-    TypedArray<Dictionary> get_token_balances(const String& account_address);
-    TypedArray<Dictionary> get_token_collections();
-    Dictionary get_token_info(const String& token_address);
+    TypedArray<Dictionary> get_tokens(const Dictionary& query_params = Dictionary()) const;
+    TypedArray<Dictionary> get_token_balances(const String& account_address) const;
+    TypedArray<Dictionary> get_token_collections() const;
+    Dictionary get_token_info(const String& token_address) const;
 
-    bool create_entity_subscription(const Callable& callback, const Dictionary& filter_params = Dictionary());
-    bool create_event_subscription(const Callable& callback, const Dictionary& filter_params = Dictionary());
-    bool create_token_subscription(const Callable& callback, const String& account_address);
-    bool create_event_messages_subscription(const Callable& callback, const String& query);
-    bool create_transactions_subscription(const Callable& callback, const Dictionary& filter_params = Dictionary());
+    void on_entity_state_update(const Callable& callback, Ref<EntitySubscription> subscription);
+    void on_event_message_update(const Callable& callback, Ref<MessageSubscription> subscription);
+    void on_starknet_event(const Callable& callback, Ref<StarknetSubscription> subscription);
+    void on_transaction(const Callable& callback, Ref<TransactionSubscription> subscription);
+    void on_token_update(const Callable& callback, Ref<TokenSubscription> subscription);
+    void on_indexer_update(const Callable& callback, Ref<IndexerSubscription> subscription);
+    void on_token_balance_update(const Callable& callback, Ref<TokenBalanceSubscription> subscription);
 
     void cancel_all_subscriptions();
 
@@ -84,10 +103,8 @@ public:
 
     Dictionary get_connection_status() const;
 
-    static DOJO::Query create_query_from_dict(const Dictionary& query_params) ;
-    static DOJO::Pagination create_pagination_from_dict(const Dictionary& pagination_params) ;
-    // void on_entity_update_internal(DOJO::FieldElement entity_id, DOJO::CArrayStruct models);
-    // void on_event_update_internal(DOJO::Event event);
+    static DOJO::Query create_query_from_dict(const Dictionary& query_params);
+    static DOJO::Pagination create_pagination_from_dict(const Dictionary& pagination_params);
 
     DOJO::ToriiClient* get_client() const { return client; }
 
@@ -100,7 +117,7 @@ public:
     void set_world_address(const String& p_world_address) { world_address = p_world_address; }
     String get_world_address() const { return world_address; }
 
-    Array get_events(){return event_subscriptions;}
+    Array get_events() const {return event_subscriptions;}
     void set_events(const Array& p_events){event_subscriptions = p_events;}
 
     protected:
@@ -110,90 +127,7 @@ public:
 
     DOJO::FieldElement* world;
 
-    static void _bind_methods()
-    {
-        ClassDB::bind_method(D_METHOD("create_client"),
-                             &ToriiClient::create_client);
-        ClassDB::bind_method(D_METHOD("disconnect_client", "send_signal"), &ToriiClient::disconnect_client);
-        ClassDB::bind_method(D_METHOD("is_client_connected"), &ToriiClient::is_client_connected);
-
-        ClassDB::bind_method(D_METHOD("get_world_metadata"), &ToriiClient::get_world_metadata);
-        ClassDB::bind_method(D_METHOD("refresh_metadata"), &ToriiClient::refresh_metadata);
-
-        ClassDB::bind_method(D_METHOD("get_entities", "query_params"),
-                             &ToriiClient::get_entities);
-
-        ClassDB::bind_method(D_METHOD("get_controllers", "usernames", "addresses"),
-                             &ToriiClient::get_controllers, DEFVAL(Array()), DEFVAL(Array()));
-
-        ClassDB::bind_method(D_METHOD("get_controllers_by_usernames", "usernames"),
-                             &ToriiClient::get_contollers_by_usernames, DEFVAL(Array()));
-
-        ClassDB::bind_method(D_METHOD("get_controllers_by_addresses", "addresses"),
-                             &ToriiClient::get_contollers_by_addresses, DEFVAL(Array()));
-
-        ClassDB::bind_method(D_METHOD("get_controller_info", "controller_address"),
-                             &ToriiClient::get_controller_info);
-
-        ClassDB::bind_method(D_METHOD("get_tokens", "query_params"),
-                             &ToriiClient::get_tokens, DEFVAL(Dictionary()));
-        ClassDB::bind_method(D_METHOD("get_token_balances", "account_address"),
-                             &ToriiClient::get_token_balances);
-        ClassDB::bind_method(D_METHOD("get_token_collections"),
-                             &ToriiClient::get_token_collections);
-        ClassDB::bind_method(D_METHOD("get_token_info", "token_address"),
-                             &ToriiClient::get_token_info);
-
-        ClassDB::bind_method(D_METHOD("create_entity_subscription", "callback", "filter_params"),
-                             &ToriiClient::create_entity_subscription, DEFVAL(Dictionary()));
-        ClassDB::bind_method(D_METHOD("create_event_subscription", "callback", "filter_params"),
-                             &ToriiClient::create_event_subscription, DEFVAL(Dictionary()));
-        ClassDB::bind_method(D_METHOD("create_token_subscription", "callback", "account_address"),
-                             &ToriiClient::create_token_subscription);
-        ClassDB::bind_method(D_METHOD("cancel_all_subscriptions"), &ToriiClient::cancel_all_subscriptions);
-
-        ClassDB::bind_method(D_METHOD("publish_message", "message_data", "signature_felts"),
-                             &ToriiClient::publish_message);
-        ClassDB::bind_method(D_METHOD("publish_typed_message", "typed_data", "signature_felts"),
-                             &ToriiClient::publish_typed_message);
-
-        ClassDB::bind_method(D_METHOD("get_client_info"), &ToriiClient::get_client_info);
-
-        ClassDB::bind_method(D_METHOD("get_connection_status"), &ToriiClient::get_connection_status);
-
-        ADD_SIGNAL(MethodInfo("client_connected", PropertyInfo(Variant::BOOL, "success")));
-        ADD_SIGNAL(MethodInfo("client_disconnected"));
-        ADD_SIGNAL(MethodInfo("entity_updated", PropertyInfo(Variant::DICTIONARY, "entity_data")));
-        ADD_SIGNAL(MethodInfo("event_received", PropertyInfo(Variant::DICTIONARY, "event_data")));
-        ADD_SIGNAL(MethodInfo("subscription_error", PropertyInfo(Variant::STRING, "error_message")));
-        ADD_SIGNAL(MethodInfo("subscription_created", PropertyInfo(Variant::STRING, "subscription_name")));
-        ADD_SIGNAL(MethodInfo("metadata_updated", PropertyInfo(Variant::DICTIONARY, "metadata")));
-        ADD_SIGNAL(MethodInfo("message_published", PropertyInfo(Variant::STRING, "message_hash")));
-        ADD_SIGNAL(MethodInfo("transaction_confirmed", PropertyInfo(Variant::STRING, "transaction_hash")));
-        ADD_SIGNAL(MethodInfo("token_balance_updated", PropertyInfo(Variant::DICTIONARY, "balance_data")));
-
-        BIND_ENUM_CONSTANT(ASC);
-        BIND_ENUM_CONSTANT(DESC);
-        BIND_ENUM_CONSTANT(FORWARD);
-        BIND_ENUM_CONSTANT(BACKWARD);
-
-        ClassDB::bind_method(D_METHOD("get_torii_url"), &ToriiClient::get_torii_url);
-        ClassDB::bind_method(D_METHOD("set_torii_url", "torii_url"), &ToriiClient::set_torii_url);
-        ADD_PROPERTY(PropertyInfo(Variant::STRING, "torii_url"), "set_torii_url", "get_torii_url");
-
-        ClassDB::bind_method(D_METHOD("set_world_address", "world_address"), &ToriiClient::set_world_address);
-        ClassDB::bind_method(D_METHOD("get_world_address"), &ToriiClient::get_world_address);
-        ADD_PROPERTY(PropertyInfo(Variant::STRING, "world_address"), "set_world_address", "get_world_address");
-
-        ClassDB::bind_method(D_METHOD("set_logger_callback", "logger_callback"), &ToriiClient::set_logger_callback);
-        ClassDB::bind_method(D_METHOD("get_logger_callback"), &ToriiClient::get_logger_callback);
-        ADD_PROPERTY(PropertyInfo(Variant::CALLABLE, "logger_callback"), "set_logger_callback", "get_logger_callback");
-
-        ClassDB::bind_method(D_METHOD("get_events"), &ToriiClient::get_events);
-        ClassDB::bind_method(D_METHOD("set_events", "events"), &ToriiClient::set_events);
-        ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "events"), "set_events", "get_events");
-
-    }
+    static void _bind_methods();
 };
 
 VARIANT_ENUM_CAST(ToriiClient::QueryOrderDirection);
