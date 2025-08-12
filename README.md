@@ -137,4 +137,3 @@ This project is licensed under MIT. See [LICENSE](LICENSE) for details.
 - [Dojo Engine](https://github.com/dojoengine)
 - [Godot Engine](https://godotengine.org/)
 - All contributors.
-I8, I16, I32, I64, I128, U8, U16, U32, U64, U128, U256_, Bool, Felt252, ClassHash, ContractAddress, EthAddress
