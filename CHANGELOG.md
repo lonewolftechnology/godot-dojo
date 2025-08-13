@@ -1,5 +1,33 @@
 # CHANGELOG
 
+## [v0.0.5-alpha] - 2025-08-12
+
+### Added
+- Implemented `Account` class for user management.
+- Introduced `DojoQuery` resource for simplified data queries.
+- Added utility functions to filter controllers by usernames or addresses.
+- Implemented off-screen indicators for controllers in demo.
+- Added experimental support for larger integer types using `boost::multiprecision`.
+- Implemented a messaging system.
+- Added support for `DojoArray`.
+- Full-ish Dojo API implementation.
+
+### Improved
+- Updated and refactored the `Torii` client.
+- Reorganized Dojo resource files for better clarity.
+- Major updates to the demo scene and tools.
+- Updated build system, including CMake and CI configurations.
+- Numerous cleanups, refactors, and performance improvements.
+- Updated UI elements and assets in the demo.
+- Refactored calldata generation.
+- Upgraded to `dojo.c` version 1.6.0.
+
+### Fixed
+- Fixed a crash caused by null queries.
+- Corrected calldata generation for move calls in the demo.
+- Addressed issues with missing policy resources.
+- Updated world address to the correct one.
+
 ## [v0.0.4-alpha] - 2025-07-10
 
 ### Added

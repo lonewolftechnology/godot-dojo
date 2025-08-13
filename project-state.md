@@ -10,7 +10,6 @@ This file details the current state of the project, what features are working, a
 - **Struct and array calldata is now fully compatible:** you can send any struct as an array containing each of its members in order.
 - **Error handling is very basic and still being improved.**
 - **Clause types are not implemented yet.**
-- **Nothing related to Dojo tokens is implemented yet.**
 - **Advanced features or complex entity schemas may require manual code or extensions.**
 - **WASM builds should be considered experimental.**
 - **Breaking backend/schema changes may require a rebuild.**
@@ -18,30 +17,22 @@ This file details the current state of the project, what features are working, a
 
 ---
 
-## Recent Changes (as of 2025-07-04)
+## Recent Changes (as of 2025-08-12)
 
-- Added `DojoHelpers` utility for conversion between float and fixed point for 64, 128, and 256-bit integers (configurable in project settings; support for 128 and 256-bit is experimental).
-- Type conversion system cleaned up and refactored for reliability and maintainability.
-- Calldata generation refactored: now supports any struct as array; legacy methods removed.
-- Improved print logging and event data responses.
-- Experimental Android build support added.
-- WebAssembly build process improved, including proper RUSTFLAGS configuration and Rust library handling.
-- Default project configuration added.
-- Various small fixes in demo scenes and build scripts.
+- **Account Management:** Implemented a new `Account` class to simplify user management.
+- **Simplified Queries:** Introduced the `DojoQuery` resource to make data fetching more intuitive.
+- **Controller Filtering:** Added new utility functions to filter controllers by username or address.
+- **UI Enhancements:** Implemented off-screen indicators to help locate controllers outside the screen view.
+- **Torii Client Update:** The Torii client has been updated with new features and improvements.
+- **Demo Overhaul:** The demo has been significantly updated with new features and a reorganized structure.
+- **Build System:** The build system has been improved, with updates to CMake and CI configurations.
 
 ---
 
 ## Missing/Not Implemented
 
-- Clause type and features that rely on it
-- Anything involving Dojo Token primitives:
-    - Creating, querying, or managing tokens
-    - Token metadata, balances, transfers
-    - Token filters in queries
-- Advanced query composition and attributes
-- Deep inheritance or nested mapping
-- Complete error reporting
-
+- TESTING
+- 
 ---
 
 Check back for updates as the project evolves.
