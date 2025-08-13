@@ -26,8 +26,6 @@ public:
     };
     ~DojoQueryBase(){};
 
-    virtual void* get_native_query() const { return nullptr; };
-
     void set_limit(uint32_t p_limit) { limit = p_limit; }
     uint32_t get_limit() const { return limit; }
 

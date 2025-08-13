@@ -18,7 +18,7 @@ public:
     DojoControllerQuery() {}
     ~DojoControllerQuery() {}
 
-    void* get_native_query() const override {
+    void* get_native_query() const {
         auto* query = new DOJO::ControllerQuery();
         
         // Setup pagination

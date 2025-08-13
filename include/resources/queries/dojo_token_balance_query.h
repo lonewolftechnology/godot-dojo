@@ -18,7 +18,7 @@ public:
     DojoTokenBalanceQuery() {}
     ~DojoTokenBalanceQuery() {}
 
-    void* get_native_query() const override {
+    void* get_native_query() const {
         auto* query = new DOJO::TokenBalanceQuery();
 
         // Setup pagination

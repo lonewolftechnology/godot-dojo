@@ -14,8 +14,6 @@
 #include <vector>
 #include "tools/dojo_helper.h"
 
-
-//TODO: refactor a instancia global en vez de singleton
 ControllerAccount* ControllerAccount::singleton = nullptr;
 
 
@@ -237,6 +235,14 @@ void ControllerAccount::execute_from_outside(const Ref<DojoCall>& action)
                     break;
                 }
             case Variant::Type::VECTOR2:
+                {
+                    Vector2 vec = static_cast<Vector2>(arg);
+
+                    final_args.append(vec.x);
+                    final_args.append(vec.y);
+
+                    break;
+                }
             case Variant::Type::VECTOR2I:
                 {
                     Vector2i vec = static_cast<Vector2i>(arg);
@@ -247,6 +253,15 @@ void ControllerAccount::execute_from_outside(const Ref<DojoCall>& action)
                     break;
                 }
             case Variant::Type::VECTOR3:
+                {
+                    Vector3 vec = static_cast<Vector3>(arg);
+
+                    final_args.append(vec.x);
+                    final_args.append(vec.y);
+                    final_args.append(vec.z);
+
+                    break;
+                }
             case Variant::Type::VECTOR3I:
                 {
                     Vector3i vec = static_cast<Vector3i>(arg);
@@ -293,14 +308,12 @@ void ControllerAccount::execute_from_outside(const Ref<DojoCall>& action)
     DOJO::ResultFieldElement result = DOJO::controller_execute_from_outside(
         session_account, &call, 1
     );
-    // Agregar más logging para debug
     if (result.tag == DOJO::ErrFieldElement)
     {
         Logger::error("Transaction failed");
         Logger::error("To:", action->get_to());
         Logger::error("Selector:", action->get_selector());
         Logger::error("Error:", GET_DOJO_ERROR(result));
-        // Imprimir el calldata para debug
         for (int i = 0; i < calldata_len; i++)
         {
             Logger::debug_extra("Calldata[" + String::num_int64(i) + "]",

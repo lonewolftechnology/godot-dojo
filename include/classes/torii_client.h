@@ -15,6 +15,9 @@
 
 #include "dojo_types.h"
 #include "resources/queries/dojo_query.h"
+#include "resources/queries/dojo_token_query.h"
+#include "resources/queries/dojo_token_balance_query.h"
+#include "resources/queries/dojo_controller_query.h"
 #include "variant/field_element.h"
 #include "resources/subscriptions/entity.h"
 #include "resources/subscriptions/message.h"
@@ -73,25 +76,23 @@ public:
     Dictionary get_world_metadata() const;
     bool refresh_metadata();
 
-    TypedArray<Dictionary> get_entities(const Dictionary& query_params = Dictionary()) const;
-    TypedArray<Dictionary> get_contollers_by_usernames(const TypedArray<String>& usernames);
-    TypedArray<Dictionary> get_contollers_by_addresses(const TypedArray<String>& addresses);
+    TypedArray<Dictionary> get_entities(const Ref<DojoQuery>& query) const;
 
-    TypedArray<Dictionary> get_controllers(const TypedArray<String>& usernames, const TypedArray<String>& addresses);
+    TypedArray<Dictionary> get_controllers(Ref<DojoControllerQuery> query);
     Dictionary get_controller_info(const String& controller_address);
 
-    TypedArray<Dictionary> get_tokens(const Dictionary& query_params = Dictionary()) const;
-    TypedArray<Dictionary> get_token_balances(const String& account_address) const;
-    TypedArray<Dictionary> get_token_collections() const;
+    TypedArray<Dictionary> get_tokens(const Ref<DojoTokenQuery>& query) const;
+    TypedArray<Dictionary> get_token_balances(const Ref<DojoTokenBalanceQuery>& query) const;
+    TypedArray<Dictionary> get_token_collections(const Ref<DojoTokenBalanceQuery>& query) const;
     Dictionary get_token_info(const String& token_address) const;
 
-    void on_entity_state_update(const Callable& callback, Ref<EntitySubscription> subscription);
-    void on_event_message_update(const Callable& callback, Ref<MessageSubscription> subscription);
-    void on_starknet_event(const Callable& callback, Ref<StarknetSubscription> subscription);
-    void on_transaction(const Callable& callback, Ref<TransactionSubscription> subscription);
-    void on_token_update(const Callable& callback, Ref<TokenSubscription> subscription);
-    void on_indexer_update(const Callable& callback, Ref<IndexerSubscription> subscription);
-    void on_token_balance_update(const Callable& callback, Ref<TokenBalanceSubscription> subscription);
+    void on_entity_state_update(const Callable& callback, const Ref<EntitySubscription>& subscription);
+    void on_event_message_update(const Callable& callback, const Ref<MessageSubscription>& subscription);
+    void on_starknet_event(const Callable& callback, const Ref<StarknetSubscription>& subscription);
+    void on_transaction(const Callable& callback, const Ref<TransactionSubscription>& subscription);
+    void on_token_update(const Callable& callback, const Ref<TokenSubscription>& subscription);
+    void on_indexer_update(const Callable& callback, const Ref<IndexerSubscription>& subscription);
+    void on_token_balance_update(const Callable& callback, const Ref<TokenBalanceSubscription>& subscription);
 
     void cancel_all_subscriptions();
 

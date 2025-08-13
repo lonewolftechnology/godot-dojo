@@ -17,7 +17,7 @@ public:
     DojoTokenQuery() {}
     ~DojoTokenQuery() {}
 
-    void* get_native_query() const override {
+    void* get_native_query() const {
         auto* query = new DOJO::TokenQuery();
         
         // Setup pagination

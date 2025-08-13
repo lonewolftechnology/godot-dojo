@@ -10,6 +10,9 @@
 #include "tools/logger.h"
 #include "variant/ty/dojo_array.h"
 #include "resources/queries/dojo_query.h"
+#include "resources/queries/dojo_token_query.h"
+#include "resources/queries/dojo_token_balance_query.h"
+#include "resources/queries/dojo_controller_query.h"
 
 ToriiClient* ToriiClient::singleton = nullptr;
 
@@ -171,7 +174,7 @@ bool ToriiClient::refresh_metadata()
     return false;
 }
 
-TypedArray<Dictionary> ToriiClient::get_entities(const Dictionary& query_params) const
+TypedArray<Dictionary> ToriiClient::get_entities(const Ref<DojoQuery>& query) const
 {
     Logger::info("Getting entities...");
     if (!is_client_connected())
@@ -179,9 +182,14 @@ TypedArray<Dictionary> ToriiClient::get_entities(const Dictionary& query_params)
         Logger::error("Client not connected");
         return {};
     }
-    Logger::debug("Converting Query");
-    DOJO::Query query = create_query_from_dict(query_params);
-    DOJO::ResultPageEntity resPageEntities = DOJO::client_entities(client, query);
+
+    if (!query.is_valid()) {
+        Logger::error("Invalid DojoQuery object.");
+        return {};
+    }
+
+    DOJO::Query native_query = query->get_native_query();
+    DOJO::ResultPageEntity resPageEntities = DOJO::client_entities(client, native_query);
 
     if (resPageEntities.tag == DOJO::ErrPageEntity)
     {
@@ -196,17 +204,7 @@ TypedArray<Dictionary> ToriiClient::get_entities(const Dictionary& query_params)
     return result;
 }
 
-TypedArray<Dictionary> ToriiClient::get_contollers_by_usernames(const TypedArray<String>& usernames)
-{
-    return get_controllers(usernames,Array());
-}
-
-TypedArray<Dictionary> ToriiClient::get_contollers_by_addresses(const TypedArray<String>& addresses)
-{
-    return get_controllers(Array(), addresses);
-}
-
-TypedArray<Dictionary> ToriiClient::get_controllers(const TypedArray<String>& usernames = Array(), const TypedArray<String>& addresses = Array())
+TypedArray<Dictionary> ToriiClient::get_controllers(Ref<DojoControllerQuery> query)
 {
     if (!is_client_connected())
     {
@@ -214,25 +212,25 @@ TypedArray<Dictionary> ToriiClient::get_controllers(const TypedArray<String>& us
         return {Logger::error_dict("Client unavailable")};
     }
 
-    if (addresses.is_empty())
-    {
-        Logger::info("Addresses is empty, fetching all controllers");
+    if (!query.is_valid()) {
+        Logger::error("Invalid DojoControllerQuery object.");
+        return {};
     }
-    DojoArray::CStringArrayHelper usernames_helper(usernames);
 
-    DojoArray::CFieldElementArrayHelper addresses_helper(addresses);
+    DOJO::ControllerQuery* controller_query_ptr = static_cast<DOJO::ControllerQuery*>(query->get_native_query());
 
-    DOJO::ControllerQuery controller_query = {};
+    DOJO::ResultPageController res_controllers = DOJO::client_controllers(client, *controller_query_ptr);
 
-    controller_query.pagination.cursor.tag = DOJO::COptionc_char_Tag::Nonec_char;
-    controller_query.pagination.limit.tag = DOJO::COptionu32_Tag::Noneu32;
-    controller_query.pagination.order_by = {nullptr, 0};
-    controller_query.pagination.direction = DOJO::PaginationDirection::Forward;
-
-    controller_query.usernames = usernames_helper.c_array;
-    controller_query.contract_addresses = addresses_helper.c_array;
-
-    DOJO::ResultPageController res_controllers = DOJO::client_controllers(client, controller_query);
+    // Cleanup
+    for (size_t i = 0; i < controller_query_ptr->usernames.data_len; ++i) {
+        delete[] (char*)controller_query_ptr->usernames.data[i];
+    }
+    delete[] controller_query_ptr->usernames.data;
+    delete[] controller_query_ptr->contract_addresses.data;
+    if (controller_query_ptr->pagination.cursor.tag == DOJO::COptionc_char_Tag::Somec_char) {
+        delete[] controller_query_ptr->pagination.cursor.some;
+    }
+    delete controller_query_ptr;
 
     if (res_controllers.tag == DOJO::ErrPageController) {
         Logger::error(String("Failed to get controllers: ") + GET_DOJO_ERROR(res_controllers));
@@ -247,21 +245,22 @@ TypedArray<Dictionary> ToriiClient::get_controllers(const TypedArray<String>& us
 
 Dictionary ToriiClient::get_controller_info(const String& controller_address)
 {
-    TypedArray<Dictionary> controllers = get_controllers(Array(), {controller_address});
+    Ref<DojoControllerQuery> query;
+    query.instantiate();
+    TypedArray<String> addresses;
+    addresses.push_back(controller_address);
+    query->set_contract_addresses(addresses);
 
-    for (int i = 0; i < controllers.size(); i++)
-    {
-        Dictionary controller = controllers[i];
-        if (controller.get("address", "") == controller_address)
-        {
-            return controller;
-        }
+    TypedArray<Dictionary> controllers = get_controllers(query);
+
+    if (!controllers.is_empty()) {
+        return controllers[0];
     }
 
     return Logger::error_dict("Controller not found");
 }
 
-TypedArray<Dictionary> ToriiClient::get_tokens(const Dictionary& query_params) const
+TypedArray<Dictionary> ToriiClient::get_tokens(const Ref<DojoTokenQuery>& query) const
 {
     Logger::info("Getting tokens...");
     if (!is_client_connected())
@@ -270,55 +269,12 @@ TypedArray<Dictionary> ToriiClient::get_tokens(const Dictionary& query_params) c
         return {};
     }
 
-    // Extract parameters from query_params
-    String cursor = query_params.get("cursor", "");
-
-    // Extract contract addresses if provided
-    Array contract_addresses_array = query_params.get("contract_addresses", Array());
-    std::vector<DOJO::FieldElement> contract_addresses_vec;
-    DOJO::FieldElement* contract_addresses_ptr = nullptr;
-    size_t contract_addresses_len = 0;
-
-    if (!contract_addresses_array.is_empty())
-    {
-        for (int i = 0; i < contract_addresses_array.size(); i++)
-        {
-            String address = contract_addresses_array[i];
-            FieldElement felt(address, 32);
-            contract_addresses_vec.push_back(felt.get_felt_no_ptr());
-        }
-        contract_addresses_ptr = contract_addresses_vec.data();
-        contract_addresses_len = contract_addresses_vec.size();
+    if (!query.is_valid()) {
+        Logger::error("Invalid DojoTokenQuery object.");
+        return {};
     }
 
-    // Extract token IDs if provided
-    Array token_ids_array = query_params.get("token_ids", Array());
-    std::vector<DOJO::U256> token_ids_vec;
-    DOJO::U256* token_ids_ptr = nullptr;
-    size_t token_ids_len = 0;
-
-    if (!token_ids_array.is_empty())
-    {
-        for (int i = 0; i < token_ids_array.size(); i++)
-        {
-            // Assuming token IDs are provided as strings
-            String token_id = token_ids_array[i];
-            DOJO::U256 u256_token_id = {};
-            u256_token_id.data[0] = token_id.to_int();
-            token_ids_vec.push_back(u256_token_id);
-        }
-        token_ids_ptr = token_ids_vec.data();
-        token_ids_len = token_ids_vec.size();
-    }
-
-    DOJO::TokenQuery token_query = {};
-    token_query.pagination.cursor.tag = DOJO::COptionc_char_Tag::Nonec_char;
-    token_query.pagination.limit.tag = DOJO::COptionu32_Tag::Noneu32;
-    token_query.pagination.order_by = {nullptr, 0};
-    token_query.pagination.direction = DOJO::PaginationDirection::Forward;
-
-    token_query.contract_addresses = {contract_addresses_ptr, contract_addresses_len};
-    token_query.token_ids = {token_ids_ptr, token_ids_len};
+    DOJO::TokenQuery token_query = query->get_native_query();
 
     DOJO::ResultPageToken result = DOJO::client_tokens(
         client,
@@ -343,7 +299,7 @@ TypedArray<Dictionary> ToriiClient::get_tokens(const Dictionary& query_params) c
             token_dict["token_id"] = String::num_uint64(token.token_id.some.data[0]);
         }else
         {
-            token_dict["token_id"] = nullptr;
+            token_dict["token_id"] = Variant();
         }
 
         token_dict["contract_address"] = FieldElement::get_as_string(&token.contract_address);
@@ -357,7 +313,7 @@ TypedArray<Dictionary> ToriiClient::get_tokens(const Dictionary& query_params) c
         }
         else
         {
-            token_dict["metadata"] = "";
+            token_dict["metadata"] = Variant();
         }
 
         result_array.push_back(token_dict);
@@ -367,33 +323,21 @@ TypedArray<Dictionary> ToriiClient::get_tokens(const Dictionary& query_params) c
     return result_array;
 }
 
-TypedArray<Dictionary> ToriiClient::get_token_balances(const String& account_address) const
+TypedArray<Dictionary> ToriiClient::get_token_balances(const Ref<DojoTokenBalanceQuery>& query) const
 {
-    Logger::info("Getting token balances for account: ", account_address);
+    Logger::info("Getting token balances...");
     if (!is_client_connected())
     {
         Logger::error("Client not connected");
         return {};
     }
 
-    FieldElement account_felt(account_address, 32);
-    DOJO::FieldElement* account_addresses = account_felt.get_felt();
-    size_t account_addresses_len = 1;
+    if (!query.is_valid()) {
+        Logger::error("Invalid DojoTokenBalanceQuery object.");
+        return {};
+    }
 
-    DOJO::FieldElement* contract_addresses = nullptr;
-    size_t contract_addresses_len = 0;
-    DOJO::U256* token_ids = nullptr;
-    size_t token_ids_len = 0;
-
-    DOJO::TokenBalanceQuery balance_query = {};
-    balance_query.pagination.cursor.tag = DOJO::COptionc_char_Tag::Nonec_char;
-    balance_query.pagination.limit.tag = DOJO::COptionu32_Tag::Noneu32;
-    balance_query.pagination.order_by = {nullptr, 0};
-    balance_query.pagination.direction = DOJO::PaginationDirection::Forward;
-
-    balance_query.contract_addresses = {contract_addresses, contract_addresses_len};
-    balance_query.account_addresses = {account_addresses, account_addresses_len};
-    balance_query.token_ids = {token_ids, token_ids_len};
+    DOJO::TokenBalanceQuery balance_query = query->get_native_query();
 
     DOJO::ResultPageTokenBalance result = DOJO::client_token_balances(
         client,
@@ -418,7 +362,7 @@ TypedArray<Dictionary> ToriiClient::get_token_balances(const String& account_add
             balance_dict["token_id"] = String::num_uint64(balance.token_id.some.data[0]);
         }else
         {
-            balance_dict["token_id"] = nullptr;
+            balance_dict["token_id"] = Variant();
         }
         balance_dict["balance"] = String::num_uint64(balance.balance.data[0]);
         balance_dict["account_address"] = FieldElement::get_as_string(&balance.account_address);
@@ -431,7 +375,7 @@ TypedArray<Dictionary> ToriiClient::get_token_balances(const String& account_add
     return result_array;
 }
 
-TypedArray<Dictionary> ToriiClient::get_token_collections() const
+TypedArray<Dictionary> ToriiClient::get_token_collections(const Ref<DojoTokenBalanceQuery>& query) const
 {
     Logger::info("Getting token collections...");
     if (!is_client_connected())
@@ -440,22 +384,12 @@ TypedArray<Dictionary> ToriiClient::get_token_collections() const
         return {};
     }
 
-    DOJO::FieldElement* contract_addresses = nullptr;
-    size_t contract_addresses_len = 0;
-    DOJO::FieldElement* account_addresses = nullptr;
-    size_t account_addresses_len = 0;
-    DOJO::U256* token_ids = nullptr;
-    size_t token_ids_len = 0;
+    if (!query.is_valid()) {
+        Logger::error("Invalid DojoTokenBalanceQuery object.");
+        return {};
+    }
 
-    DOJO::TokenBalanceQuery balance_query = {};
-    balance_query.pagination.cursor.tag = DOJO::COptionc_char_Tag::Nonec_char;
-    balance_query.pagination.limit.tag = DOJO::COptionu32_Tag::Noneu32;
-    balance_query.pagination.order_by = {nullptr, 0};
-    balance_query.pagination.direction = DOJO::PaginationDirection::Forward;
-
-    balance_query.contract_addresses = {contract_addresses, contract_addresses_len};
-    balance_query.account_addresses = {account_addresses, account_addresses_len};
-    balance_query.token_ids = {token_ids, token_ids_len};
+    DOJO::TokenBalanceQuery balance_query = query->get_native_query();
 
     DOJO::ResultPageTokenCollection result = DOJO::client_token_collections(
         client,
@@ -488,7 +422,7 @@ TypedArray<Dictionary> ToriiClient::get_token_collections() const
         }
         else
         {
-            collection_dict["metadata"] = "";
+            collection_dict["metadata"] = Variant();
         }
 
         result_array.push_back(collection_dict);
@@ -550,7 +484,7 @@ Dictionary ToriiClient::get_token_info(const String& token_address) const
         token_dict["token_id"] = String::num_uint64(token.token_id.some.data[0]);
     }else
     {
-        token_dict["token_id"] = nullptr;
+        token_dict["token_id"] = Variant();
     }
     token_dict["name"] = String(token.name);
     token_dict["symbol"] = String(token.symbol);
@@ -562,7 +496,7 @@ Dictionary ToriiClient::get_token_info(const String& token_address) const
     }
     else
     {
-        token_dict["metadata"] = "";
+        token_dict["metadata"] = Variant();
     }
 
     Logger::success("Token info obtained");
@@ -908,7 +842,7 @@ static void token_balance_update_callback_wrapper(DOJO::TokenBalance token_balan
 
 // Subscription method implementations
 
-void ToriiClient::on_entity_state_update(const Callable& callback, Ref<EntitySubscription> subscription) {
+void ToriiClient::on_entity_state_update(const Callable& callback,const Ref<EntitySubscription>& subscription) {
     if (!is_client_connected()) {
         Logger::error("Client not connected");
         return;
@@ -931,7 +865,7 @@ void ToriiClient::on_entity_state_update(const Callable& callback, Ref<EntitySub
     }
 }
 
-void ToriiClient::on_event_message_update(const Callable& callback, Ref<MessageSubscription> subscription) {
+void ToriiClient::on_event_message_update(const Callable& callback, const Ref<MessageSubscription>& subscription) {
     if (!is_client_connected()) {
         Logger::error("Client not connected");
         return;
@@ -954,7 +888,7 @@ void ToriiClient::on_event_message_update(const Callable& callback, Ref<MessageS
     }
 }
 
-void ToriiClient::on_starknet_event(const Callable& callback, Ref<StarknetSubscription> subscription) {
+void ToriiClient::on_starknet_event(const Callable& callback, const Ref<StarknetSubscription>& subscription) {
     if (!is_client_connected()) {
         Logger::error("Client not connected");
         return;
@@ -977,7 +911,7 @@ void ToriiClient::on_starknet_event(const Callable& callback, Ref<StarknetSubscr
     }
 }
 
-void ToriiClient::on_transaction(const Callable& callback, Ref<TransactionSubscription> subscription) {
+void ToriiClient::on_transaction(const Callable& callback, const Ref<TransactionSubscription>& subscription) {
     if (!is_client_connected()) {
         Logger::error("Client not connected");
         return;
@@ -1000,7 +934,7 @@ void ToriiClient::on_transaction(const Callable& callback, Ref<TransactionSubscr
     }
 }
 
-void ToriiClient::on_token_update(const Callable& callback, Ref<TokenSubscription> subscription) {
+void ToriiClient::on_token_update(const Callable& callback, const Ref<TokenSubscription>& subscription) {
     if (!is_client_connected()) {
         Logger::error("Client not connected");
         return;
@@ -1026,7 +960,7 @@ void ToriiClient::on_token_update(const Callable& callback, Ref<TokenSubscriptio
     }
 }
 
-void ToriiClient::on_indexer_update(const Callable& callback, Ref<IndexerSubscription> subscription) {
+void ToriiClient::on_indexer_update(const Callable& callback, const Ref<IndexerSubscription>& subscription) {
     if (!is_client_connected()) {
         Logger::error("Client not connected");
         return;
@@ -1049,7 +983,7 @@ void ToriiClient::on_indexer_update(const Callable& callback, Ref<IndexerSubscri
     }
 }
 
-void ToriiClient::on_token_balance_update(const Callable& callback, Ref<TokenBalanceSubscription> subscription) {
+void ToriiClient::on_token_balance_update(const Callable& callback, const Ref<TokenBalanceSubscription>& subscription) {
     if (!is_client_connected()) {
         Logger::error("Client not connected");
         return;
@@ -1084,13 +1018,13 @@ void ToriiClient::_bind_methods() {
     ClassDB::bind_method(D_METHOD("get_world_metadata"), &ToriiClient::get_world_metadata);
     ClassDB::bind_method(D_METHOD("refresh_metadata"), &ToriiClient::refresh_metadata);
 
-    ClassDB::bind_method(D_METHOD("get_entities", "query_params"), &ToriiClient::get_entities, DEFVAL(Dictionary()));
-    ClassDB::bind_method(D_METHOD("get_controllers", "usernames", "addresses"), &ToriiClient::get_controllers, DEFVAL(Array()), DEFVAL(Array()));
+    ClassDB::bind_method(D_METHOD("get_entities", "query"), &ToriiClient::get_entities);
+    ClassDB::bind_method(D_METHOD("get_controllers", "query"), &ToriiClient::get_controllers);
     ClassDB::bind_method(D_METHOD("get_controller_info", "controller_address"), &ToriiClient::get_controller_info);
 
-    ClassDB::bind_method(D_METHOD("get_tokens", "query_params"), &ToriiClient::get_tokens, DEFVAL(Dictionary()));
-    ClassDB::bind_method(D_METHOD("get_token_balances", "account_address"), &ToriiClient::get_token_balances);
-    ClassDB::bind_method(D_METHOD("get_token_collections"), &ToriiClient::get_token_collections);
+    ClassDB::bind_method(D_METHOD("get_tokens", "query"), &ToriiClient::get_tokens);
+    ClassDB::bind_method(D_METHOD("get_token_balances", "query"), &ToriiClient::get_token_balances);
+    ClassDB::bind_method(D_METHOD("get_token_collections", "query"), &ToriiClient::get_token_collections);
     ClassDB::bind_method(D_METHOD("get_token_info", "token_address"), &ToriiClient::get_token_info);
 
     ClassDB::bind_method(D_METHOD("on_entity_state_update", "callback", "subscription"), &ToriiClient::on_entity_state_update);
