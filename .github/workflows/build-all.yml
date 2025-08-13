@@ -127,10 +127,9 @@ jobs:
         run: sudo apt-get update && sudo apt-get install -y build-essential pkg-config libdbus-1-dev protobuf-compiler libprotobuf-dev
 
       - name: Set up Rust stable
-        uses: actions-rs/toolchain@v1
+        uses: dtolnay/rust-toolchain@stable
         with:
           toolchain: stable
-          override: true
 
       - name: Cache Rust dependencies
         uses: actions/cache@v3
@@ -214,10 +213,9 @@ jobs:
         run: sudo apt-get update && sudo apt-get install -y build-essential pkg-config libdbus-1-dev protobuf-compiler libprotobuf-dev
 
       - name: Set up Rust stable
-        uses: actions-rs/toolchain@v1
+        uses: dtolnay/rust-toolchain@stable
         with:
           toolchain: stable
-          override: true
 
       - name: Cache Rust dependencies
         uses: actions/cache@v3
@@ -301,10 +299,9 @@ jobs:
         run: brew install protobuf
 
       - name: Set up Rust stable
-        uses: actions-rs/toolchain@v1
+        uses: dtolnay/rust-toolchain@stable
         with:
           toolchain: stable
-          override: true
 
       - name: Add target for macOS builds
         run: rustup target add x86_64-apple-darwin
@@ -399,10 +396,9 @@ jobs:
         run: brew install protobuf
 
       - name: Set up Rust stable
-        uses: actions-rs/toolchain@v1
+        uses: dtolnay/rust-toolchain@stable
         with:
           toolchain: stable
-          override: true
 
       - name: Add target for macOS builds
         run: rustup target add x86_64-apple-darwin
@@ -497,10 +493,9 @@ jobs:
         run: brew install protobuf
 
       - name: Set up Rust stable
-        uses: actions-rs/toolchain@v1
+        uses: dtolnay/rust-toolchain@stable
         with:
           toolchain: stable
-          override: true
 
       - name: Add target for macOS builds
         run: rustup target add aarch64-apple-darwin
@@ -595,10 +590,9 @@ jobs:
         run: brew install protobuf
 
       - name: Set up Rust stable
-        uses: actions-rs/toolchain@v1
+        uses: dtolnay/rust-toolchain@stable
         with:
           toolchain: stable
-          override: true
 
       - name: Add target for macOS builds
         run: rustup target add aarch64-apple-darwin
@@ -693,10 +687,9 @@ jobs:
         run: choco install protoc
 
       - name: Set up Rust stable
-        uses: actions-rs/toolchain@v1
+        uses: dtolnay/rust-toolchain@stable
         with:
           toolchain: stable
-          override: true
 
       - name: Cache Rust dependencies
         uses: actions/cache@v3
@@ -780,10 +773,9 @@ jobs:
         run: choco install protoc
 
       - name: Set up Rust stable
-        uses: actions-rs/toolchain@v1
+        uses: dtolnay/rust-toolchain@stable
         with:
           toolchain: stable
-          override: true
 
       - name: Cache Rust dependencies
         uses: actions/cache@v3
