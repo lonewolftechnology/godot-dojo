@@ -44,15 +44,24 @@ jobs:
 
           if [ -z "$PREVIOUS_TAG" ]; then
             # If there's no previous tag, get all commits
-            COMMITS=$(git log --pretty=format:"- %h %s (%an)" $CURRENT_TAG)
+            COMMITS_LOG=$(git log --pretty=format:"- %h %s (%an)" $CURRENT_TAG)
           else
             # Get commits between the previous tag and the current tag
-            COMMITS=$(git log --pretty=format:"- %h %s (%an)" $PREVIOUS_TAG..$CURRENT_TAG)
+            COMMITS_LOG=$(git log --pretty=format:"- %h %s (%an)" $PREVIOUS_TAG..$CURRENT_TAG)
+          fi
+
+          COMMIT_COUNT=$(echo "$COMMITS_LOG" | wc -l)
+
+          if [ $COMMIT_COUNT -gt 5 ]; then
+            COMMITS=$(echo "$COMMITS_LOG" | head -n 5)
+            COMMITS="$COMMITS\n\n[See all commits](https://github.com/${{ github.repository }}/compare/$PREVIOUS_TAG...$CURRENT_TAG)"
+          else
+            COMMITS="$COMMITS_LOG"
           fi
 
           # Set output using multiline string
           echo "commits<<EOF" >> $GITHUB_OUTPUT
-          echo "$COMMITS" >> $GITHUB_OUTPUT
+          echo -e "$COMMITS" >> $GITHUB_OUTPUT
           echo "EOF" >> $GITHUB_OUTPUT
 
       - name: Check if tag is from dev branch
