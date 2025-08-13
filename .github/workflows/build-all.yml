@@ -68,11 +68,17 @@ jobs:
             echo "is_dev_branch=false" >> $GITHUB_OUTPUT
           fi
 
+      - name: Get dojo.c version
+        id: get_dojoc_version
+        run: |
+          DOJOC_VERSION=$(cd external/dojo.c && git describe --tags --abbrev=0)
+          echo "DOJOC_VERSION=$DOJOC_VERSION" >> $GITHUB_OUTPUT
+
       - name: Create release
         id: create_release
         uses: softprops/action-gh-release@v2
         with:
-          name: "Release ${{ github.ref_name }}"
+          name: "${{ github.ref_name }} - Dojo.c ${{ steps.get_dojoc_version.outputs.DOJOC_VERSION }}"
           body: |
             ## Latest Changes
 
