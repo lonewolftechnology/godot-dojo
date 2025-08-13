@@ -188,8 +188,18 @@ TypedArray<Dictionary> ToriiClient::get_entities(const Ref<DojoQuery>& query) co
         return {};
     }
 
-    DOJO::Query native_query = query->get_native_query();
-    DOJO::ResultPageEntity resPageEntities = DOJO::client_entities(client, native_query);
+    DOJO::Query* native_query_ptr = static_cast<DOJO::Query*>(query->get_native_query());
+    DOJO::ResultPageEntity resPageEntities = DOJO::client_entities(client, *native_query_ptr);
+
+    // Assuming get_native_query heap allocates memory for the query and its members.
+    // We need to free it.
+    if (native_query_ptr->pagination.cursor.tag == DOJO::COptionc_char_Tag::Somec_char) {
+        delete[] native_query_ptr->pagination.cursor.some;
+    }
+    delete[] native_query_ptr->pagination.order_by.data;
+    delete[] native_query_ptr->models.data;
+    // TODO: Cleanup clause if it allocates memory.
+    delete native_query_ptr;
 
     if (resPageEntities.tag == DOJO::ErrPageEntity)
     {
@@ -274,12 +284,20 @@ TypedArray<Dictionary> ToriiClient::get_tokens(const Ref<DojoTokenQuery>& query)
         return {};
     }
 
-    DOJO::TokenQuery token_query = query->get_native_query();
+    DOJO::TokenQuery* token_query_ptr = static_cast<DOJO::TokenQuery*>(query->get_native_query());
 
     DOJO::ResultPageToken result = DOJO::client_tokens(
         client,
-        token_query
+        *token_query_ptr
     );
+
+    // Cleanup
+    delete[] token_query_ptr->contract_addresses.data;
+    delete[] token_query_ptr->token_ids.data;
+    if (token_query_ptr->pagination.cursor.tag == DOJO::COptionc_char_Tag::Somec_char) {
+        delete[] token_query_ptr->pagination.cursor.some;
+    }
+    delete token_query_ptr;
 
     if (result.tag == DOJO::ErrPageToken)
     {
@@ -337,11 +355,11 @@ TypedArray<Dictionary> ToriiClient::get_token_balances(const Ref<DojoTokenBalanc
         return {};
     }
 
-    DOJO::TokenBalanceQuery balance_query = query->get_native_query();
+    DOJO::TokenBalanceQuery* balance_query_ptr = static_cast<DOJO::TokenBalanceQuery*>(query->get_native_query());
 
     DOJO::ResultPageTokenBalance result = DOJO::client_token_balances(
         client,
-        balance_query
+        *balance_query_ptr
     );
 
     if (result.tag == DOJO::ErrPageTokenBalance)
@@ -389,11 +407,11 @@ TypedArray<Dictionary> ToriiClient::get_token_collections(const Ref<DojoTokenBal
         return {};
     }
 
-    DOJO::TokenBalanceQuery balance_query = query->get_native_query();
+    DOJO::TokenBalanceQuery* balance_query_ptr = static_cast<DOJO::TokenBalanceQuery*>(query->get_native_query());
 
     DOJO::ResultPageTokenCollection result = DOJO::client_token_collections(
         client,
-        balance_query
+        *balance_query_ptr
     );
 
     if (result.tag == DOJO::ErrPageTokenCollection)
