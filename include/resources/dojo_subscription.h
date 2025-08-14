@@ -33,7 +33,7 @@ public:
 
     void cancel() {
         if (subscription) {
-            Logger::info("Subscription '", name, "' canceled");
+            Logger::info("Subscription [color=Green]",name, "[/color] canceled");
             DOJO::subscription_cancel(subscription);
             subscription = nullptr;
         }

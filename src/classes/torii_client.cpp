@@ -167,7 +167,8 @@ Dictionary ToriiClient::get_world_metadata() const
 bool ToriiClient::refresh_metadata()
 {
     Dictionary metadata = get_world_metadata();
-    if (!metadata.is_empty()) {
+    if (!metadata.is_empty())
+    {
         emit_signal("metadata_updated", metadata);
         return true;
     }
@@ -183,23 +184,15 @@ TypedArray<Dictionary> ToriiClient::get_entities(const Ref<DojoQuery>& query) co
         return {};
     }
 
-    if (!query.is_valid()) {
+    if (!query.is_valid())
+    {
         Logger::error("Invalid DojoQuery object.");
         return {};
     }
 
     DOJO::Query* native_query_ptr = static_cast<DOJO::Query*>(query->get_native_query());
-    DOJO::ResultPageEntity resPageEntities = DOJO::client_entities(client, *native_query_ptr);
 
-    // Assuming get_native_query heap allocates memory for the query and its members.
-    // We need to free it.
-    if (native_query_ptr->pagination.cursor.tag == DOJO::COptionc_char_Tag::Somec_char) {
-        delete[] native_query_ptr->pagination.cursor.some;
-    }
-    delete[] native_query_ptr->pagination.order_by.data;
-    delete[] native_query_ptr->models.data;
-    // TODO: Cleanup clause if it allocates memory.
-    delete native_query_ptr;
+    DOJO::ResultPageEntity resPageEntities = DOJO::client_entities(client, *native_query_ptr);
 
     if (resPageEntities.tag == DOJO::ErrPageEntity)
     {
@@ -222,7 +215,8 @@ TypedArray<Dictionary> ToriiClient::get_controllers(Ref<DojoControllerQuery> que
         return {Logger::error_dict("Client unavailable")};
     }
 
-    if (!query.is_valid()) {
+    if (!query.is_valid())
+    {
         Logger::error("Invalid DojoControllerQuery object.");
         return {};
     }
@@ -232,17 +226,20 @@ TypedArray<Dictionary> ToriiClient::get_controllers(Ref<DojoControllerQuery> que
     DOJO::ResultPageController res_controllers = DOJO::client_controllers(client, *controller_query_ptr);
 
     // Cleanup
-    for (size_t i = 0; i < controller_query_ptr->usernames.data_len; ++i) {
+    for (size_t i = 0; i < controller_query_ptr->usernames.data_len; ++i)
+    {
         delete[] (char*)controller_query_ptr->usernames.data[i];
     }
     delete[] controller_query_ptr->usernames.data;
     delete[] controller_query_ptr->contract_addresses.data;
-    if (controller_query_ptr->pagination.cursor.tag == DOJO::COptionc_char_Tag::Somec_char) {
+    if (controller_query_ptr->pagination.cursor.tag == DOJO::COptionc_char_Tag::Somec_char)
+    {
         delete[] controller_query_ptr->pagination.cursor.some;
     }
     delete controller_query_ptr;
 
-    if (res_controllers.tag == DOJO::ErrPageController) {
+    if (res_controllers.tag == DOJO::ErrPageController)
+    {
         Logger::error(String("Failed to get controllers: ") + GET_DOJO_ERROR(res_controllers));
         DOJO::error_free(&res_controllers.err);
         return {};
@@ -263,7 +260,8 @@ Dictionary ToriiClient::get_controller_info(const String& controller_address)
 
     TypedArray<Dictionary> controllers = get_controllers(query);
 
-    if (!controllers.is_empty()) {
+    if (!controllers.is_empty())
+    {
         return controllers[0];
     }
 
@@ -279,7 +277,8 @@ TypedArray<Dictionary> ToriiClient::get_tokens(const Ref<DojoTokenQuery>& query)
         return {};
     }
 
-    if (!query.is_valid()) {
+    if (!query.is_valid())
+    {
         Logger::error("Invalid DojoTokenQuery object.");
         return {};
     }
@@ -294,7 +293,8 @@ TypedArray<Dictionary> ToriiClient::get_tokens(const Ref<DojoTokenQuery>& query)
     // Cleanup
     delete[] token_query_ptr->contract_addresses.data;
     delete[] token_query_ptr->token_ids.data;
-    if (token_query_ptr->pagination.cursor.tag == DOJO::COptionc_char_Tag::Somec_char) {
+    if (token_query_ptr->pagination.cursor.tag == DOJO::COptionc_char_Tag::Somec_char)
+    {
         delete[] token_query_ptr->pagination.cursor.some;
     }
     delete token_query_ptr;
@@ -315,7 +315,8 @@ TypedArray<Dictionary> ToriiClient::get_tokens(const Ref<DojoTokenQuery>& query)
         if (token.token_id.tag == DOJO::SomeU256)
         {
             token_dict["token_id"] = String::num_uint64(token.token_id.some.data[0]);
-        }else
+        }
+        else
         {
             token_dict["token_id"] = Variant();
         }
@@ -350,7 +351,8 @@ TypedArray<Dictionary> ToriiClient::get_token_balances(const Ref<DojoTokenBalanc
         return {};
     }
 
-    if (!query.is_valid()) {
+    if (!query.is_valid())
+    {
         Logger::error("Invalid DojoTokenBalanceQuery object.");
         return {};
     }
@@ -378,7 +380,8 @@ TypedArray<Dictionary> ToriiClient::get_token_balances(const Ref<DojoTokenBalanc
         if (balance.token_id.tag == DOJO::SomeU256)
         {
             balance_dict["token_id"] = String::num_uint64(balance.token_id.some.data[0]);
-        }else
+        }
+        else
         {
             balance_dict["token_id"] = Variant();
         }
@@ -402,7 +405,8 @@ TypedArray<Dictionary> ToriiClient::get_token_collections(const Ref<DojoTokenBal
         return {};
     }
 
-    if (!query.is_valid()) {
+    if (!query.is_valid())
+    {
         Logger::error("Invalid DojoTokenBalanceQuery object.");
         return {};
     }
@@ -500,7 +504,8 @@ Dictionary ToriiClient::get_token_info(const String& token_address) const
     if (token.token_id.tag == DOJO::SomeU256)
     {
         token_dict["token_id"] = String::num_uint64(token.token_id.some.data[0]);
-    }else
+    }
+    else
     {
         token_dict["token_id"] = Variant();
     }
@@ -528,7 +533,8 @@ void ToriiClient::cancel_all_subscriptions()
     for (int i = 0; i < event_subscriptions.size(); i++)
     {
         Ref<DojoSubscription> subscription = event_subscriptions[i];
-        if (subscription.is_valid()) {
+        if (subscription.is_valid())
+        {
             subscription->cancel();
         }
     }
@@ -646,7 +652,8 @@ DOJO::Query ToriiClient::create_query_from_dict(const Dictionary& query_params)
     {
         pagination.limit.tag = DOJO::Someu32;
         pagination.limit.some = query_params.get("limit", 10);
-    }else
+    }
+    else
     {
         pagination.limit.tag = DOJO::Noneu32;
     }
@@ -725,7 +732,8 @@ DOJO::Pagination ToriiClient::create_pagination_from_dict(const Dictionary& pagi
     {
         pagination.limit.tag = DOJO::Someu32;
         pagination.limit.some = pagination_params.get("limit", 10);
-    }else
+    }
+    else
     {
         pagination.limit.tag = DOJO::Noneu32;
     }
@@ -745,9 +753,12 @@ DOJO::Pagination ToriiClient::create_pagination_from_dict(const Dictionary& pagi
 
 // Static subscription callbacks
 
-static void entity_state_update_callback_wrapper(DOJO::FieldElement entity_id, DOJO::CArrayStruct models) {
+void entity_state_update_callback_wrapper(DOJO::FieldElement entity_id, DOJO::CArrayStruct models)
+{
+    Logger::info("entity_state_update_callback_wrapper");
     ToriiClient* singleton = ToriiClient::get_singleton();
-    if (singleton && singleton->on_entity_state_update_callback.is_valid()) {
+    if (singleton && singleton->on_entity_state_update_callback.is_valid())
+    {
         Dictionary entity_data;
         entity_data["id"] = FieldElement::get_as_string(&entity_id);
         entity_data["models"] = DojoArray(models).get_value();
@@ -755,9 +766,12 @@ static void entity_state_update_callback_wrapper(DOJO::FieldElement entity_id, D
     }
 }
 
-static void event_message_update_callback_wrapper(DOJO::FieldElement entity_id, DOJO::CArrayStruct models) {
+void event_message_update_callback_wrapper(DOJO::FieldElement entity_id, DOJO::CArrayStruct models)
+{
+    Logger::info("event_message_update_callback_wrapper");
     ToriiClient* singleton = ToriiClient::get_singleton();
-    if (singleton && singleton->on_event_message_update_callback.is_valid()) {
+    if (singleton && singleton->on_event_message_update_callback.is_valid())
+    {
         Dictionary message_data;
         message_data["id"] = FieldElement::get_as_string(&entity_id);
         message_data["models"] = DojoArray(models).get_value();
@@ -765,9 +779,12 @@ static void event_message_update_callback_wrapper(DOJO::FieldElement entity_id, 
     }
 }
 
-static void starknet_event_callback_wrapper(DOJO::Event event) {
+void starknet_event_callback_wrapper(DOJO::Event event)
+{
+    Logger::info("starknet_event_callback_wrapper");
     ToriiClient* singleton = ToriiClient::get_singleton();
-    if (singleton && singleton->on_starknet_event_callback.is_valid()) {
+    if (singleton && singleton->on_starknet_event_callback.is_valid())
+    {
         Dictionary event_data;
         event_data["keys"] = DojoArray(event.keys).get_value();
         event_data["data"] = DojoArray(event.data).get_value();
@@ -776,9 +793,12 @@ static void starknet_event_callback_wrapper(DOJO::Event event) {
     }
 }
 
-static void transaction_callback_wrapper(DOJO::Transaction transaction) {
+void transaction_callback_wrapper(DOJO::Transaction transaction)
+{
+    Logger::info("transaction_callback_wrapper");
     ToriiClient* singleton = ToriiClient::get_singleton();
-    if (singleton && singleton->on_transaction_callback.is_valid()) {
+    if (singleton && singleton->on_transaction_callback.is_valid())
+    {
         Dictionary tx_dict;
         tx_dict["transaction_hash"] = FieldElement::get_as_string(&transaction.transaction_hash);
         tx_dict["sender_address"] = FieldElement::get_as_string(&transaction.sender_address);
@@ -789,9 +809,10 @@ static void transaction_callback_wrapper(DOJO::Transaction transaction) {
         tx_dict["block_number"] = static_cast<int64_t>(transaction.block_number);
         tx_dict["transaction_type"] = String(transaction.transaction_type);
         tx_dict["block_timestamp"] = static_cast<int64_t>(transaction.block_timestamp);
-        
+
         TypedArray<Dictionary> calls_array;
-        for (size_t i = 0; i < transaction.calls.data_len; ++i) {
+        for (size_t i = 0; i < transaction.calls.data_len; ++i)
+        {
             DOJO::TransactionCall call = transaction.calls.data[i];
             Dictionary call_dict;
             call_dict["contract_address"] = FieldElement::get_as_string(&call.contract_address);
@@ -808,31 +829,43 @@ static void transaction_callback_wrapper(DOJO::Transaction transaction) {
     }
 }
 
-static void token_update_callback_wrapper(DOJO::Token token) {
+void token_update_callback_wrapper(DOJO::Token token)
+{
+    Logger::info("token_update_callback_wrapper");
     ToriiClient* singleton = ToriiClient::get_singleton();
-    if (singleton && singleton->on_token_update_callback.is_valid()) {
+    if (singleton && singleton->on_token_update_callback.is_valid())
+    {
         Dictionary token_dict;
         token_dict["contract_address"] = FieldElement::get_as_string(&token.contract_address);
-        if (token.token_id.tag == DOJO::SomeU256) {
+        if (token.token_id.tag == DOJO::SomeU256)
+        {
             token_dict["token_id"] = String::num_uint64(token.token_id.some.data[0]);
-        } else {
+        }
+        else
+        {
             token_dict["token_id"] = Variant();
         }
         token_dict["name"] = String(token.name);
         token_dict["symbol"] = String(token.symbol);
         token_dict["decimals"] = token.decimals;
-        if (token.metadata) {
+        if (token.metadata)
+        {
             token_dict["metadata"] = String(token.metadata);
-        } else {
+        }
+        else
+        {
             token_dict["metadata"] = Variant();
         }
         (void)singleton->on_token_update_callback.call(token_dict);
     }
 }
 
-static void indexer_update_callback_wrapper(DOJO::IndexerUpdate indexer_update) {
+void indexer_update_callback_wrapper(DOJO::IndexerUpdate indexer_update)
+{
+    Logger::info("indexer_update_callback_wrapper");
     ToriiClient* singleton = ToriiClient::get_singleton();
-    if (singleton && singleton->on_indexer_update_callback.is_valid()) {
+    if (singleton && singleton->on_indexer_update_callback.is_valid())
+    {
         Dictionary update_dict;
         update_dict["head"] = indexer_update.head;
         update_dict["tps"] = indexer_update.tps;
@@ -842,16 +875,22 @@ static void indexer_update_callback_wrapper(DOJO::IndexerUpdate indexer_update) 
     }
 }
 
-static void token_balance_update_callback_wrapper(DOJO::TokenBalance token_balance) {
+void token_balance_update_callback_wrapper(DOJO::TokenBalance token_balance)
+{
+    Logger::info("token_balance_update_callback_wrapper");
     ToriiClient* singleton = ToriiClient::get_singleton();
-    if (singleton && singleton->on_token_balance_update_callback.is_valid()) {
+    if (singleton && singleton->on_token_balance_update_callback.is_valid())
+    {
         Dictionary balance_dict;
         balance_dict["balance"] = String::num_uint64(token_balance.balance.data[0]);
         balance_dict["account_address"] = FieldElement::get_as_string(&token_balance.account_address);
         balance_dict["contract_address"] = FieldElement::get_as_string(&token_balance.contract_address);
-        if (token_balance.token_id.tag == DOJO::SomeU256) {
+        if (token_balance.token_id.tag == DOJO::SomeU256)
+        {
             balance_dict["token_id"] = String::num_uint64(token_balance.token_id.some.data[0]);
-        } else {
+        }
+        else
+        {
             balance_dict["token_id"] = Variant();
         }
         (void)singleton->on_token_balance_update_callback.call(balance_dict);
@@ -860,236 +899,253 @@ static void token_balance_update_callback_wrapper(DOJO::TokenBalance token_balan
 
 // Subscription method implementations
 
-void ToriiClient::on_entity_state_update(const Callable& callback,const Ref<EntitySubscription>& subscription) {
-    if (!is_client_connected()) {
+void ToriiClient::on_entity_state_update(const Callable& callback, const Ref<EntitySubscription>& subscription)
+{
+    if (!is_client_connected())
+    {
         Logger::error("Client not connected");
         return;
     }
-    if (!subscription.is_valid()) {
+    if (!subscription.is_valid())
+    {
         Logger::error("Invalid entity subscription resource");
         return;
     }
 
-    this->on_entity_state_update_callback = callback;
-    DOJO::ResultSubscription result = DOJO::client_on_entity_state_update(client, subscription->get_native_clause(), entity_state_update_callback_wrapper);
+    on_entity_state_update_callback = callback;
+    subscription->set_callback(callback);
 
-    if (result.tag == DOJO::ErrSubscription) {
-        Logger::error(String("Failed to subscribe to entity state updates: ") + GET_DOJO_ERROR(result));
-        this->on_entity_state_update_callback = Callable();
-    } else {
+    DOJO::ResultSubscription result = DOJO::client_on_entity_state_update(
+        client, subscription->get_native_clause(), entity_state_update_callback_wrapper);
+
+    if (result.tag == DOJO::ErrSubscription)
+    {
+        String error_msg = "Failed to subscribe to entity state updates: " + String(GET_DOJO_ERROR(result));
+        Logger::error(error_msg);
+        emit_signal("subscription_error", error_msg);
+        on_entity_state_update_callback = Callable();
+    }
+    else
+    {
         Logger::success("Subscribed to entity state updates");
+        emit_signal("subscription_created", "entity_state_update");
         subscription->set_subscription(result.ok);
         event_subscriptions.append(subscription);
     }
 }
 
-void ToriiClient::on_event_message_update(const Callable& callback, const Ref<MessageSubscription>& subscription) {
-    if (!is_client_connected()) {
+void ToriiClient::on_event_message_update(const Callable& callback, const Ref<MessageSubscription>& subscription)
+{
+    if (!is_client_connected())
+    {
         Logger::error("Client not connected");
         return;
     }
-     if (!subscription.is_valid()) {
+    if (!subscription.is_valid())
+    {
         Logger::error("Invalid message subscription resource");
         return;
     }
 
-    this->on_event_message_update_callback = callback;
-    DOJO::ResultSubscription result = DOJO::client_on_event_message_update(client, subscription->get_native_clause(), event_message_update_callback_wrapper);
+    on_event_message_update_callback = callback;
+    subscription->set_callback(callback);
+    DOJO::ResultSubscription result = DOJO::client_on_event_message_update(
+        client, subscription->get_native_clause(), event_message_update_callback_wrapper);
 
-    if (result.tag == DOJO::ErrSubscription) {
-        Logger::error(String("Failed to subscribe to event message updates: ") + GET_DOJO_ERROR(result));
-        this->on_event_message_update_callback = Callable();
-    } else {
+    if (result.tag == DOJO::ErrSubscription)
+    {
+        String error_msg = "Failed to subscribe to event message updates: " + String(GET_DOJO_ERROR(result));
+        Logger::error(error_msg);
+        emit_signal("subscription_error", error_msg);
+        on_event_message_update_callback = Callable();
+    }
+    else
+    {
         Logger::success("Subscribed to event message updates");
+        emit_signal("subscription_created", "event_message_update");
         subscription->set_subscription(result.ok);
         event_subscriptions.append(subscription);
     }
 }
 
-void ToriiClient::on_starknet_event(const Callable& callback, const Ref<StarknetSubscription>& subscription) {
-    if (!is_client_connected()) {
+void ToriiClient::on_starknet_event(const Callable& callback, const Ref<StarknetSubscription>& subscription)
+{
+    if (!is_client_connected())
+    {
         Logger::error("Client not connected");
         return;
     }
-    if (!subscription.is_valid()) {
+    if (!subscription.is_valid())
+    {
         Logger::error("Invalid starknet subscription resource");
         return;
     }
 
     this->on_starknet_event_callback = callback;
-    DOJO::ResultSubscription result = DOJO::client_on_starknet_event(client, subscription->get_native_clause(), 1, starknet_event_callback_wrapper);
+    subscription->set_callback(callback);
+    DOJO::ResultSubscription result = DOJO::client_on_starknet_event(client, subscription->get_native_clause(), 1,
+                                                                     starknet_event_callback_wrapper);
 
-     if (result.tag == DOJO::ErrSubscription) {
-        Logger::error(String("Failed to subscribe to starknet events: ") + GET_DOJO_ERROR(result));
+    if (result.tag == DOJO::ErrSubscription)
+    {
+        String error_msg = "Failed to subscribe to starknet events: " + String(GET_DOJO_ERROR(result));
+        Logger::error(error_msg);
+        emit_signal("subscription_error", error_msg);
         this->on_starknet_event_callback = Callable();
-    } else {
+    }
+    else
+    {
         Logger::success("Subscribed to starknet events");
+        emit_signal("subscription_created", "starknet_event");
         subscription->set_subscription(result.ok);
         event_subscriptions.append(subscription);
     }
 }
 
-void ToriiClient::on_transaction(const Callable& callback, const Ref<TransactionSubscription>& subscription) {
-    if (!is_client_connected()) {
+void ToriiClient::on_transaction(const Callable& callback, const Ref<TransactionSubscription>& subscription)
+{
+    if (!is_client_connected())
+    {
         Logger::error("Client not connected");
         return;
     }
-    if (!subscription.is_valid()) {
+    if (!subscription.is_valid())
+    {
         Logger::error("Invalid transaction subscription resource");
         return;
     }
 
     this->on_transaction_callback = callback;
-    DOJO::ResultSubscription result = DOJO::client_on_transaction(client, subscription->get_native_filter(), transaction_callback_wrapper);
+    subscription->set_callback(callback);
+    DOJO::ResultSubscription result = DOJO::client_on_transaction(client, subscription->get_native_filter(),
+                                                                  transaction_callback_wrapper);
 
-    if (result.tag == DOJO::ErrSubscription) {
-        Logger::error(String("Failed to subscribe to transactions: ") + GET_DOJO_ERROR(result));
+    if (result.tag == DOJO::ErrSubscription)
+    {
+        String error_msg = "Failed to subscribe to transactions: " + String(GET_DOJO_ERROR(result));
+        Logger::error(error_msg);
+        emit_signal("subscription_error", error_msg);
         this->on_transaction_callback = Callable();
-    } else {
+    }
+    else
+    {
         Logger::success("Subscribed to transactions");
+        emit_signal("subscription_created", "transaction");
         subscription->set_subscription(result.ok);
         event_subscriptions.append(subscription);
     }
 }
 
-void ToriiClient::on_token_update(const Callable& callback, const Ref<TokenSubscription>& subscription) {
-    if (!is_client_connected()) {
+void ToriiClient::on_token_update(const Callable& callback, const Ref<TokenSubscription>& subscription)
+{
+    if (!is_client_connected())
+    {
         Logger::error("Client not connected");
         return;
     }
-    if (!subscription.is_valid()) {
+    if (!subscription.is_valid())
+    {
         Logger::error("Invalid token subscription resource");
         return;
     }
 
-    this->on_token_update_callback = callback;
+    on_token_update_callback = callback;
+    subscription->set_callback(callback);
+
     DOJO::CArrayFieldElement contracts = subscription->get_native_contract_addresses();
     DOJO::CArrayU256 token_ids = subscription->get_native_token_ids();
 
-    DOJO::ResultSubscription result = DOJO::client_on_token_update(client, contracts.data, contracts.data_len, token_ids.data, token_ids.data_len, token_update_callback_wrapper);
+    DOJO::ResultSubscription result = DOJO::client_on_token_update(client, contracts.data, contracts.data_len,
+                                                                   token_ids.data, token_ids.data_len,
+                                                                   token_update_callback_wrapper);
 
-    if (result.tag == DOJO::ErrSubscription) {
-        Logger::error(String("Failed to subscribe to token updates: ") + GET_DOJO_ERROR(result));
-        this->on_token_update_callback = Callable();
-    } else {
+    if (result.tag == DOJO::ErrSubscription)
+    {
+        String error_msg = "Failed to subscribe to token updates: " + String(GET_DOJO_ERROR(result));
+        Logger::error(error_msg);
+        emit_signal("subscription_error", error_msg);
+        on_token_update_callback = Callable();
+    }
+    else
+    {
         Logger::success("Subscribed to token updates");
+        emit_signal("subscription_created", "token_update");
         subscription->set_subscription(result.ok);
         event_subscriptions.append(subscription);
     }
 }
 
-void ToriiClient::on_indexer_update(const Callable& callback, const Ref<IndexerSubscription>& subscription) {
-    if (!is_client_connected()) {
+void ToriiClient::on_indexer_update(const Callable& callback, const Ref<IndexerSubscription>& subscription)
+{
+    if (!is_client_connected())
+    {
         Logger::error("Client not connected");
         return;
     }
-    if (!subscription.is_valid()) {
+    if (!subscription.is_valid())
+    {
         Logger::error("Invalid indexer subscription resource");
         return;
     }
 
-    this->on_indexer_update_callback = callback;
-    DOJO::ResultSubscription result = DOJO::on_indexer_update(client, subscription->get_native_contract_address(), indexer_update_callback_wrapper);
+    on_indexer_update_callback = callback;
+    subscription->set_callback(callback);
 
-    if (result.tag == DOJO::ErrSubscription) {
-        Logger::error(String("Failed to subscribe to indexer updates: ") + GET_DOJO_ERROR(result));
-        this->on_indexer_update_callback = Callable();
-    } else {
+    DOJO::ResultSubscription result = DOJO::on_indexer_update(client, subscription->get_native_contract_address(),
+                                                              indexer_update_callback_wrapper);
+
+    if (result.tag == DOJO::ErrSubscription)
+    {
+        String error_msg = "Failed to subscribe to indexer updates: " + String(GET_DOJO_ERROR(result));
+        Logger::error(error_msg);
+        emit_signal("subscription_error", error_msg);
+        on_indexer_update_callback = Callable();
+    }
+    else
+    {
         Logger::success("Subscribed to indexer updates");
+        emit_signal("subscription_created", "indexer_update");
         subscription->set_subscription(result.ok);
         event_subscriptions.append(subscription);
     }
 }
 
-void ToriiClient::on_token_balance_update(const Callable& callback, const Ref<TokenBalanceSubscription>& subscription) {
-    if (!is_client_connected()) {
+void ToriiClient::on_token_balance_update(const Callable& callback, const Ref<TokenBalanceSubscription>& subscription)
+{
+    if (!is_client_connected())
+    {
         Logger::error("Client not connected");
         return;
     }
-    if (!subscription.is_valid()) {
+    if (!subscription.is_valid())
+    {
         Logger::error("Invalid token balance subscription resource");
         return;
     }
 
-    this->on_token_balance_update_callback = callback;
+    on_token_balance_update_callback = callback;
+    subscription->set_callback(callback);
+
     DOJO::CArrayFieldElement contracts = subscription->get_native_contract_addresses();
     DOJO::CArrayFieldElement accounts = subscription->get_native_account_addresses();
     DOJO::CArrayU256 token_ids = subscription->get_native_token_ids();
 
-    DOJO::ResultSubscription result = DOJO::client_on_token_balance_update(client, contracts.data, contracts.data_len, accounts.data, accounts.data_len, token_ids.data, token_ids.data_len, token_balance_update_callback_wrapper);
+    DOJO::ResultSubscription result = DOJO::client_on_token_balance_update(
+        client, contracts.data, contracts.data_len, accounts.data, accounts.data_len, token_ids.data,
+        token_ids.data_len, token_balance_update_callback_wrapper);
 
-    if (result.tag == DOJO::ErrSubscription) {
-        Logger::error(String("Failed to subscribe to token balance updates: ") + GET_DOJO_ERROR(result));
-        this->on_token_balance_update_callback = Callable();
-    } else {
+    if (result.tag == DOJO::ErrSubscription)
+    {
+        String error_msg = "Failed to subscribe to token balance updates: " + String(GET_DOJO_ERROR(result));
+        Logger::error(error_msg);
+        emit_signal("subscription_error", error_msg);
+        on_token_balance_update_callback = Callable();
+    }
+    else
+    {
         Logger::success("Subscribed to token balance updates");
+        emit_signal("subscription_created", "token_balance_update");
         subscription->set_subscription(result.ok);
         event_subscriptions.append(subscription);
     }
-}
-
-void ToriiClient::_bind_methods() {
-    ClassDB::bind_method(D_METHOD("create_client"), &ToriiClient::create_client);
-    ClassDB::bind_method(D_METHOD("disconnect_client", "send_signal"), &ToriiClient::disconnect_client);
-    ClassDB::bind_method(D_METHOD("is_client_connected"), &ToriiClient::is_client_connected);
-
-    ClassDB::bind_method(D_METHOD("get_world_metadata"), &ToriiClient::get_world_metadata);
-    ClassDB::bind_method(D_METHOD("refresh_metadata"), &ToriiClient::refresh_metadata);
-
-    ClassDB::bind_method(D_METHOD("get_entities", "query"), &ToriiClient::get_entities);
-    ClassDB::bind_method(D_METHOD("get_controllers", "query"), &ToriiClient::get_controllers);
-    ClassDB::bind_method(D_METHOD("get_controller_info", "controller_address"), &ToriiClient::get_controller_info);
-
-    ClassDB::bind_method(D_METHOD("get_tokens", "query"), &ToriiClient::get_tokens);
-    ClassDB::bind_method(D_METHOD("get_token_balances", "query"), &ToriiClient::get_token_balances);
-    ClassDB::bind_method(D_METHOD("get_token_collections", "query"), &ToriiClient::get_token_collections);
-    ClassDB::bind_method(D_METHOD("get_token_info", "token_address"), &ToriiClient::get_token_info);
-
-    ClassDB::bind_method(D_METHOD("on_entity_state_update", "callback", "subscription"), &ToriiClient::on_entity_state_update);
-    ClassDB::bind_method(D_METHOD("on_event_message_update", "callback", "subscription"), &ToriiClient::on_event_message_update);
-    ClassDB::bind_method(D_METHOD("on_starknet_event", "callback", "subscription"), &ToriiClient::on_starknet_event);
-    ClassDB::bind_method(D_METHOD("on_transaction", "callback", "subscription"), &ToriiClient::on_transaction);
-    ClassDB::bind_method(D_METHOD("on_token_update", "callback", "subscription"), &ToriiClient::on_token_update);
-    ClassDB::bind_method(D_METHOD("on_indexer_update", "callback", "subscription"), &ToriiClient::on_indexer_update);
-    ClassDB::bind_method(D_METHOD("on_token_balance_update", "callback", "subscription"), &ToriiClient::on_token_balance_update);
-
-    ClassDB::bind_method(D_METHOD("cancel_all_subscriptions"), &ToriiClient::cancel_all_subscriptions);
-
-    ClassDB::bind_method(D_METHOD("publish_message", "message_data", "signature_felts"), &ToriiClient::publish_message);
-    ClassDB::bind_method(D_METHOD("publish_typed_message", "typed_data", "signature_felts"), &ToriiClient::publish_typed_message);
-
-    ClassDB::bind_method(D_METHOD("get_client_info"), &ToriiClient::get_client_info);
-    ClassDB::bind_method(D_METHOD("get_connection_status"), &ToriiClient::get_connection_status);
-
-    ADD_SIGNAL(MethodInfo("client_connected", PropertyInfo(Variant::BOOL, "success")));
-    ADD_SIGNAL(MethodInfo("client_disconnected"));
-    ADD_SIGNAL(MethodInfo("entity_updated", PropertyInfo(Variant::DICTIONARY, "entity_data")));
-    ADD_SIGNAL(MethodInfo("event_received", PropertyInfo(Variant::DICTIONARY, "event_data")));
-    ADD_SIGNAL(MethodInfo("subscription_error", PropertyInfo(Variant::STRING, "error_message")));
-    ADD_SIGNAL(MethodInfo("subscription_created", PropertyInfo(Variant::STRING, "subscription_name")));
-    ADD_SIGNAL(MethodInfo("metadata_updated", PropertyInfo(Variant::DICTIONARY, "metadata")));
-    ADD_SIGNAL(MethodInfo("message_published", PropertyInfo(Variant::STRING, "message_hash")));
-    ADD_SIGNAL(MethodInfo("transaction_confirmed", PropertyInfo(Variant::STRING, "transaction_hash")));
-    ADD_SIGNAL(MethodInfo("token_balance_updated", PropertyInfo(Variant::DICTIONARY, "balance_data")));
-
-    BIND_ENUM_CONSTANT(ASC);
-    BIND_ENUM_CONSTANT(DESC);
-    BIND_ENUM_CONSTANT(FORWARD);
-    BIND_ENUM_CONSTANT(BACKWARD);
-
-    ClassDB::bind_method(D_METHOD("get_torii_url"), &ToriiClient::get_torii_url);
-    ClassDB::bind_method(D_METHOD("set_torii_url", "torii_url"), &ToriiClient::set_torii_url);
-    ADD_PROPERTY(PropertyInfo(Variant::STRING, "torii_url"), "set_torii_url", "get_torii_url");
-
-    ClassDB::bind_method(D_METHOD("set_world_address", "world_address"), &ToriiClient::set_world_address);
-    ClassDB::bind_method(D_METHOD("get_world_address"), &ToriiClient::get_world_address);
-    ADD_PROPERTY(PropertyInfo(Variant::STRING, "world_address"), "set_world_address", "get_world_address");
-
-    ClassDB::bind_method(D_METHOD("set_logger_callback", "logger_callback"), &ToriiClient::set_logger_callback);
-    ClassDB::bind_method(D_METHOD("get_logger_callback"), &ToriiClient::get_logger_callback);
-    ADD_PROPERTY(PropertyInfo(Variant::CALLABLE, "logger_callback"), "set_logger_callback", "get_logger_callback");
-
-    ClassDB::bind_method(D_METHOD("get_events"), &ToriiClient::get_events);
-    ClassDB::bind_method(D_METHOD("set_events", "events"), &ToriiClient::set_events);
-    ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "events"), "set_events", "get_events");
 }
