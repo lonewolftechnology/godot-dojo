@@ -7,6 +7,8 @@ const WORLD_CONTRACT = "0x0393f8a2d0d47e384c3c61eedc08d2873f5d608f8da7ffb013e5d5
 const ACTIONS_CONTRACT = "0x065d58039c71b4a0fe302d68f9fad4bf49e01fe518d7912d44ba0d07b2d7f556"
 
 @export var query:DojoQuery
+@export var entity_sub:EntitySubscription
+@export var message_sub:MessageSubscription
 
 @onready var client: ToriiClient = $ToriiClient
 @onready var controller_account: ControllerAccount = $ControllerAccount
@@ -54,14 +56,12 @@ func _on_controller_account_provider_status_updated(success: bool) -> void:
 	_provider_status.set_status(success)
 
 func _on_torii_client_subscription_created(subscription_name: String) -> void:
-	if subscription_name == "entity":
+	if subscription_name == "entity_state_update":
 		_entities_status.set_status(true)
-	if subscription_name == "event":
+	if subscription_name == "event_message_update":
 		_events_status.set_status(true)
 
 func create_subscriptions(events:Callable,entities:Callable) -> void:
-	# For now, COptionClause is not fullly implemented
-	# So an empty dictionary is used for now 
-	client.create_event_subscription(events, {})
+	client.on_entity_state_update(entities, entity_sub)
+	client.on_event_message_update(events, message_sub)
 	
-	client.create_entity_subscription(entities, query)

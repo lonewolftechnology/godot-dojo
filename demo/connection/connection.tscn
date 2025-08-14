@@ -1,10 +1,16 @@
-[gd_scene load_steps=6 format=3 uid="uid://b75yggsnay1mo"]
+[gd_scene load_steps=8 format=3 uid="uid://b75yggsnay1mo"]
 
 [ext_resource type="Script" uid="uid://bx5rlh0opi80k" path="res://connection/connection.gd" id="1_c7jwa"]
 [ext_resource type="DojoPolicies" uid="uid://tfmm84euv0h4" path="res://resources/policies.tres" id="2_r3uhw"]
 [ext_resource type="PackedScene" uid="uid://b5vmo8llucetx" path="res://ui/status_indicator.tscn" id="3_bya50"]
 
 [sub_resource type="DojoQuery" id="DojoQuery_erpqw"]
+
+[sub_resource type="EntitySubscription" id="EntitySubscription_erpqw"]
+name = "Entity"
+
+[sub_resource type="MessageSubscription" id="MessageSubscription_erpqw"]
+name = "Message"
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_gm8ps"]
 content_margin_left = 4.0
@@ -16,6 +22,8 @@ bg_color = Color(0.2484, 0.2484, 0.2484, 1)
 [node name="Connection" type="Node"]
 script = ExtResource("1_c7jwa")
 query = SubResource("DojoQuery_erpqw")
+entity_sub = SubResource("EntitySubscription_erpqw")
+message_sub = SubResource("MessageSubscription_erpqw")
 
 [node name="ToriiClient" type="ToriiClient" parent="."]
 torii_url = "https://api.cartridge.gg/x/godot-demo-rookie/torii"

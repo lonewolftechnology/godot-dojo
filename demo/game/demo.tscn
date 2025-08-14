@@ -1,4 +1,4 @@
-[gd_scene load_steps=24 format=3 uid="uid://cn1gdwiythfn2"]
+[gd_scene load_steps=22 format=3 uid="uid://cn1gdwiythfn2"]
 
 [ext_resource type="Script" uid="uid://dvbwyukos638c" path="res://game/demo.gd" id="1_5nuje"]
 [ext_resource type="Texture2D" uid="uid://blljslsxyx8em" path="res://assets/tile.png" id="2_43tmy"]
@@ -25,13 +25,6 @@ name = "DojoEntity"
 
 [sub_resource type="MessageSubscription" id="MessageSubscription_r5x6q"]
 name = "DojoMessage"
-
-[sub_resource type="StyleBoxLine" id="StyleBoxLine_mhvfb"]
-color = Color(0.984564, 0.288109, 0.364559, 1)
-
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_r5x6q"]
-expand_margin_top = 4.0
-expand_margin_bottom = 4.0
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_k3cyb"]
 content_margin_left = 4.0
@@ -85,174 +78,6 @@ position_smoothing_speed = 4.0
 
 [node name="UI" type="CanvasLayer" parent="."]
 
-[node name="VBoxContainer" type="VBoxContainer" parent="UI"]
-visible = false
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
-
-[node name="HSplitContainer" type="HBoxContainer" parent="UI/VBoxContainer"]
-layout_mode = 2
-size_flags_vertical = 3
-
-[node name="Menu" type="HBoxContainer" parent="UI/VBoxContainer/HSplitContainer"]
-layout_mode = 2
-
-[node name="ButtonToggle" type="Button" parent="UI/VBoxContainer/HSplitContainer/Menu"]
-unique_name_in_owner = true
-custom_minimum_size = Vector2(30, 30)
-layout_mode = 2
-size_flags_horizontal = 0
-toggle_mode = true
-text = "="
-
-[node name="Tabs" type="TabContainer" parent="UI/VBoxContainer/HSplitContainer/Menu"]
-unique_name_in_owner = true
-custom_minimum_size = Vector2(200, 0)
-layout_mode = 2
-size_flags_horizontal = 3
-tab_alignment = 1
-current_tab = 1
-use_hidden_tabs_for_min_size = true
-
-[node name="Main" type="VBoxContainer" parent="UI/VBoxContainer/HSplitContainer/Menu/Tabs"]
-visible = false
-layout_mode = 2
-size_flags_horizontal = 3
-alignment = 1
-metadata/_tab_index = 0
-
-[node name="WorldClientLabel" type="Label" parent="UI/VBoxContainer/HSplitContainer/Menu/Tabs/Main"]
-layout_mode = 2
-text = "World Client"
-horizontal_alignment = 1
-
-[node name="StartToriiClient" type="Button" parent="UI/VBoxContainer/HSplitContainer/Menu/Tabs/Main"]
-unique_name_in_owner = true
-layout_mode = 2
-text = "Connect Client"
-
-[node name="ConnectController" type="Button" parent="UI/VBoxContainer/HSplitContainer/Menu/Tabs/Main"]
-unique_name_in_owner = true
-layout_mode = 2
-disabled = true
-text = "Login"
-
-[node name="Disconnect" type="Button" parent="UI/VBoxContainer/HSplitContainer/Menu/Tabs/Main"]
-unique_name_in_owner = true
-layout_mode = 2
-disabled = true
-text = "Disconnect"
-
-[node name="TestMenu" type="ScrollContainer" parent="UI/VBoxContainer/HSplitContainer/Menu/Tabs"]
-layout_mode = 2
-follow_focus = true
-metadata/_tab_index = 1
-
-[node name="Test" type="VBoxContainer" parent="UI/VBoxContainer/HSplitContainer/Menu/Tabs/TestMenu"]
-layout_mode = 2
-size_flags_horizontal = 3
-size_flags_vertical = 3
-alignment = 1
-
-[node name="Label2" type="Label" parent="UI/VBoxContainer/HSplitContainer/Menu/Tabs/TestMenu/Test"]
-layout_mode = 2
-text = "Tests"
-horizontal_alignment = 1
-vertical_alignment = 1
-
-[node name="CreateSubscriptions" type="Button" parent="UI/VBoxContainer/HSplitContainer/Menu/Tabs/TestMenu/Test"]
-unique_name_in_owner = true
-layout_mode = 2
-text = "Create Subscriptions"
-
-[node name="GetControllers" type="Button" parent="UI/VBoxContainer/HSplitContainer/Menu/Tabs/TestMenu/Test"]
-unique_name_in_owner = true
-layout_mode = 2
-disabled = true
-text = "Get Controllers"
-
-[node name="GetEntities" type="Button" parent="UI/VBoxContainer/HSplitContainer/Menu/Tabs/TestMenu/Test"]
-unique_name_in_owner = true
-layout_mode = 2
-disabled = true
-text = "Get Entities"
-
-[node name="GetWorldMetadata" type="Button" parent="UI/VBoxContainer/HSplitContainer/Menu/Tabs/TestMenu/Test"]
-unique_name_in_owner = true
-layout_mode = 2
-disabled = true
-text = "Get World Metadata"
-
-[node name="HSeparator" type="HSeparator" parent="UI/VBoxContainer/HSplitContainer/Menu/Tabs/TestMenu/Test"]
-layout_mode = 2
-theme_override_styles/separator = SubResource("StyleBoxLine_mhvfb")
-
-[node name="Label" type="Label" parent="UI/VBoxContainer/HSplitContainer/Menu/Tabs/TestMenu/Test"]
-layout_mode = 2
-text = "Actions"
-horizontal_alignment = 1
-vertical_alignment = 1
-
-[node name="HBoxContainer" type="HBoxContainer" parent="UI/VBoxContainer/HSplitContainer/Menu/Tabs/TestMenu/Test"]
-layout_mode = 2
-
-[node name="ResetSpawn" type="CheckBox" parent="UI/VBoxContainer/HSplitContainer/Menu/Tabs/TestMenu/Test/HBoxContainer"]
-unique_name_in_owner = true
-visible = false
-layout_mode = 2
-text = "Reset"
-
-[node name="Spawn" type="Button" parent="UI/VBoxContainer/HSplitContainer/Menu/Tabs/TestMenu/Test/HBoxContainer"]
-unique_name_in_owner = true
-layout_mode = 2
-size_flags_horizontal = 3
-text = "SPAWN"
-
-[node name="SpawnRaw" type="Button" parent="UI/VBoxContainer/HSplitContainer/Menu/Tabs/TestMenu/Test"]
-unique_name_in_owner = true
-visible = false
-layout_mode = 2
-size_flags_horizontal = 3
-text = "SPAWN Raw"
-
-[node name="Move" type="Button" parent="UI/VBoxContainer/HSplitContainer/Menu/Tabs/TestMenu/Test"]
-unique_name_in_owner = true
-layout_mode = 2
-disabled = true
-text = "MOVE"
-
-[node name="TESTING" type="Button" parent="UI/VBoxContainer/HSplitContainer/Menu/Tabs/TestMenu/Test"]
-unique_name_in_owner = true
-visible = false
-layout_mode = 2
-text = "TESTING"
-
-[node name="SetupPolicies" type="Button" parent="UI/VBoxContainer/HSplitContainer/Menu/Tabs/TestMenu/Test"]
-unique_name_in_owner = true
-layout_mode = 2
-text = "SetupPolicies
-"
-
-[node name="Chat" type="VBoxContainer" parent="UI/VBoxContainer/HSplitContainer/Menu/Tabs"]
-visible = false
-custom_minimum_size = Vector2(400, 200)
-layout_mode = 2
-metadata/_tab_index = 2
-
-[node name="Label" type="Label" parent="UI/VBoxContainer/HSplitContainer/Menu/Tabs/Chat"]
-layout_mode = 2
-text = "-WIP- "
-horizontal_alignment = 1
-
-[node name="ChatBox" type="TextEdit" parent="UI/VBoxContainer/HSplitContainer/Menu/Tabs/Chat"]
-unique_name_in_owner = true
-visible = false
-custom_minimum_size = Vector2(0, 200)
-layout_mode = 2
-
 [node name="Arrows" type="MarginContainer" parent="UI"]
 anchors_preset = 1
 anchor_left = 1.0
@@ -303,58 +128,6 @@ texture_normal = ExtResource("10_qlbmn")
 texture_pressed = ExtResource("11_0joe1")
 texture_hover = ExtResource("10_qlbmn")
 
-[node name="PanelContainer" type="PanelContainer" parent="UI/Arrows/VBoxContainer"]
-custom_minimum_size = Vector2(0, 70)
-layout_mode = 2
-
-[node name="VBoxContainer" type="VBoxContainer" parent="UI/Arrows/VBoxContainer/PanelContainer"]
-layout_mode = 2
-
-[node name="StepsAmount" type="SpinBox" parent="UI/Arrows/VBoxContainer/PanelContainer/VBoxContainer"]
-unique_name_in_owner = true
-layout_mode = 2
-size_flags_horizontal = 3
-min_value = 1.0
-value = 1.0
-rounded = true
-allow_greater = true
-prefix = "Amount:"
-
-[node name="HSeparator" type="HSeparator" parent="UI/Arrows/VBoxContainer/PanelContainer/VBoxContainer"]
-layout_mode = 2
-theme_override_styles/separator = SubResource("StyleBoxFlat_r5x6q")
-
-[node name="VBoxContainer" type="VBoxContainer" parent="UI/Arrows/VBoxContainer/PanelContainer/VBoxContainer"]
-layout_mode = 2
-size_flags_horizontal = 3
-
-[node name="HBoxContainer" type="HBoxContainer" parent="UI/Arrows/VBoxContainer/PanelContainer/VBoxContainer/VBoxContainer"]
-custom_minimum_size = Vector2(0, 35)
-layout_mode = 2
-
-[node name="Vx" type="SpinBox" parent="UI/Arrows/VBoxContainer/PanelContainer/VBoxContainer/VBoxContainer/HBoxContainer"]
-unique_name_in_owner = true
-layout_mode = 2
-size_flags_horizontal = 3
-size_flags_vertical = 3
-max_value = 255.0
-rounded = true
-prefix = "x:"
-
-[node name="Vy" type="SpinBox" parent="UI/Arrows/VBoxContainer/PanelContainer/VBoxContainer/VBoxContainer/HBoxContainer"]
-unique_name_in_owner = true
-layout_mode = 2
-size_flags_horizontal = 3
-size_flags_vertical = 3
-max_value = 255.0
-rounded = true
-prefix = "y:"
-
-[node name="MoveTo" type="Button" parent="UI/Arrows/VBoxContainer/PanelContainer/VBoxContainer/VBoxContainer"]
-layout_mode = 2
-size_flags_horizontal = 3
-text = "Move"
-
 [node name="Panel" type="PanelContainer" parent="UI"]
 anchors_preset = 5
 anchor_left = 0.5
@@ -397,6 +170,5 @@ connection = NodePath("../../Connection")
 [connection signal="pressed" from="UI/Arrows/VBoxContainer/HBoxContainer/VBoxContainer/ArrowUp" to="." method="_on_arrow_up_pressed"]
 [connection signal="pressed" from="UI/Arrows/VBoxContainer/HBoxContainer/VBoxContainer/ArrowDown" to="." method="_on_arrow_down_pressed"]
 [connection signal="pressed" from="UI/Arrows/VBoxContainer/HBoxContainer/ArrowRight" to="." method="_on_arrow_right_pressed"]
-[connection signal="pressed" from="UI/Arrows/VBoxContainer/PanelContainer/VBoxContainer/VBoxContainer/MoveTo" to="." method="_on_move_to_pressed"]
 [connection signal="pressed" from="UI/Panel/HBoxContainer/Disconnect" to="." method="_on_disconnect_pressed"]
 [connection signal="entered" from="UI/StartScreen" to="." method="_on_start_screen_entered"]
