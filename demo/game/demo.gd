@@ -48,7 +48,8 @@ func _on_controller_current_user_info(data:Dictionary) -> void:
 
 
 func _on_events(args:Dictionary) -> void:
-	_handle_callback(args)
+	push_warning("CALLBACK EVENTS", args)
+	#_handle_callback(args)
 
 func _on_entities(args:Dictionary) -> void:
 	_handle_callback(args)

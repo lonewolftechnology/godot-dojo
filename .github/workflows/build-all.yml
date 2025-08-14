@@ -153,7 +153,7 @@ jobs:
         with:
           path: |
             .sconsign.dblite
-            bin/
+            demo/addons/godot-dojo/
             external/godot-cpp/bin/
             external/godot-cpp/.sconsign.dblite
             external/godot-cpp/gen/
@@ -178,7 +178,7 @@ jobs:
             PRECISION_ARG="precision=double"
           fi
 
-          mkdir -p demo/bin
+          mkdir -p demo/addons/godot-dojo
 
           # Debug
           scons $PLATFORM_ARG $ARCH_ARG target=template_debug $PRECISION_ARG -j2
@@ -188,8 +188,8 @@ jobs:
         with:
           name: bin-${{ matrix.precision }}-linux-x86_64-debug
           path: |
-            demo/bin/*
-            demo/bin/*.gdextension
+            demo/addons/godot-dojo/*
+            demo/addons/godot-dojo/*.gdextension
           if-no-files-found: error
 
   build-linux-release:
@@ -239,7 +239,7 @@ jobs:
         with:
           path: |
             .sconsign.dblite
-            bin/
+            demo/addons/godot-dojo/
             external/godot-cpp/bin/
             external/godot-cpp/.sconsign.dblite
             external/godot-cpp/gen/
@@ -264,7 +264,7 @@ jobs:
             PRECISION_ARG="precision=double"
           fi
 
-          mkdir -p demo/bin
+          mkdir -p demo/addons/godot-dojo
 
           # Release
           scons $PLATFORM_ARG $ARCH_ARG target=template_release $PRECISION_ARG -j2
@@ -274,8 +274,8 @@ jobs:
         with:
           name: bin-${{ matrix.precision }}-linux-x86_64-release
           path: |
-            demo/bin/*
-            demo/bin/*.gdextension
+            demo/addons/godot-dojo/*
+            demo/addons/godot-dojo/*.gdextension
           if-no-files-found: error
 
   build-macos-x86_64-debug:
@@ -328,7 +328,7 @@ jobs:
         with:
           path: |
             .sconsign.dblite
-            bin/
+            demo/addons/godot-dojo/
             external/godot-cpp/bin/
             external/godot-cpp/.sconsign.dblite
             external/godot-cpp/gen/
@@ -361,7 +361,7 @@ jobs:
             PRECISION_ARG="precision=double"
           fi
 
-          mkdir -p demo/bin
+          mkdir -p demo/addons/godot-dojo
 
           # Debug
           scons $PLATFORM_ARG $ARCH_ARG target=template_debug $PRECISION_ARG -j2
@@ -371,8 +371,8 @@ jobs:
         with:
           name: bin-${{ matrix.precision }}-macos-x86_64-debug
           path: |
-            demo/bin/*
-            demo/bin/*.gdextension
+            demo/addons/godot-dojo/*
+            demo/addons/godot-dojo/*.gdextension
           if-no-files-found: error
 
   build-macos-x86_64-release:
@@ -425,7 +425,7 @@ jobs:
         with:
           path: |
             .sconsign.dblite
-            bin/
+            demo/addons/godot-dojo/
             external/godot-cpp/bin/
             external/godot-cpp/.sconsign.dblite
             external/godot-cpp/gen/
@@ -458,7 +458,7 @@ jobs:
             PRECISION_ARG="precision=double"
           fi
 
-          mkdir -p demo/bin
+          mkdir -p demo/addons/godot-dojo
 
           # Release
           scons $PLATFORM_ARG $ARCH_ARG target=template_release $PRECISION_ARG -j2
@@ -468,8 +468,8 @@ jobs:
         with:
           name: bin-${{ matrix.precision }}-macos-x86_64-release
           path: |
-            demo/bin/*
-            demo/bin/*.gdextension
+            demo/addons/godot-dojo/*
+            demo/addons/godot-dojo/*.gdextension
           if-no-files-found: error
 
   build-macos-arm64-debug:
@@ -522,7 +522,7 @@ jobs:
         with:
           path: |
             .sconsign.dblite
-            bin/
+            demo/addons/godot-dojo/
             external/godot-cpp/bin/
             external/godot-cpp/.sconsign.dblite
             external/godot-cpp/gen/
@@ -555,7 +555,7 @@ jobs:
             PRECISION_ARG="precision=double"
           fi
 
-          mkdir -p demo/bin
+          mkdir -p demo/addons/godot-dojo
 
           # Debug
           scons $PLATFORM_ARG $ARCH_ARG target=template_debug $PRECISION_ARG -j2
@@ -565,8 +565,8 @@ jobs:
         with:
           name: bin-${{ matrix.precision }}-macos-arm64-debug
           path: |
-            demo/bin/*
-            demo/bin/*.gdextension
+            demo/addons/godot-dojo/*
+            demo/addons/godot-dojo/*.gdextension
           if-no-files-found: error
 
   build-macos-arm64-release:
@@ -619,7 +619,7 @@ jobs:
         with:
           path: |
             .sconsign.dblite
-            bin/
+            demo/addons/godot-dojo/
             external/godot-cpp/bin/
             external/godot-cpp/.sconsign.dblite
             external/godot-cpp/gen/
@@ -652,7 +652,7 @@ jobs:
             PRECISION_ARG="precision=double"
           fi
 
-          mkdir -p demo/bin
+          mkdir -p demo/addons/godot-dojo
 
           # Release
           scons $PLATFORM_ARG $ARCH_ARG target=template_release $PRECISION_ARG -j2
@@ -662,8 +662,8 @@ jobs:
         with:
           name: bin-${{ matrix.precision }}-macos-arm64-release
           path: |
-            demo/bin/*
-            demo/bin/*.gdextension
+            demo/addons/godot-dojo/*
+            demo/addons/godot-dojo/*.gdextension
           if-no-files-found: error
 
   build-windows-debug:
@@ -713,7 +713,7 @@ jobs:
         with:
           path: |
             .sconsign.dblite
-            bin/
+            demo/addons/godot-dojo/
             external/godot-cpp/bin/
             external/godot-cpp/.sconsign.dblite
             external/godot-cpp/gen/
@@ -738,7 +738,7 @@ jobs:
             PRECISION_ARG="precision=double"
           fi
 
-          mkdir -p demo/bin
+          mkdir -p demo/addons/godot-dojo
 
           # Debug
           scons $PLATFORM_ARG $ARCH_ARG target=template_debug $PRECISION_ARG -j2
@@ -748,8 +748,8 @@ jobs:
         with:
           name: bin-${{ matrix.precision }}-windows-x86_64-debug
           path: |
-            demo/bin/*.dll
-            demo/bin/*.gdextension
+            demo/addons/godot-dojo/*.dll
+            demo/addons/godot-dojo/*.gdextension
           if-no-files-found: error
 
   build-windows-release:
@@ -799,7 +799,7 @@ jobs:
         with:
           path: |
             .sconsign.dblite
-            bin/
+            demo/addons/godot-dojo/
             external/godot-cpp/bin/
             external/godot-cpp/.sconsign.dblite
             external/godot-cpp/gen/
@@ -824,7 +824,7 @@ jobs:
             PRECISION_ARG="precision=double"
           fi
 
-          mkdir -p demo/bin
+          mkdir -p demo/addons/godot-dojo
 
           # Release
           scons $PLATFORM_ARG $ARCH_ARG target=template_release $PRECISION_ARG -j2
@@ -834,8 +834,8 @@ jobs:
         with:
           name: bin-${{ matrix.precision }}-windows-x86_64-release
           path: |
-            demo/bin/*.dll
-            demo/bin/*.gdextension
+            demo/addons/godot-dojo/*.dll
+            demo/addons/godot-dojo/*.gdextension
           if-no-files-found: error
 
   package:

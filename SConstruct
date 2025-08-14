@@ -37,7 +37,7 @@ if GetOption('clean'):
     print(f"{Y}{broom} Cleaning...{X}")
     try:
         subprocess.run(["cargo", "clean"], cwd="external/dojo.c", check=True)
-        shutil.rmtree("demo/bin", ignore_errors=True)
+        shutil.rmtree("demo/addons/godot-dojo", ignore_errors=True)
         subprocess.run(["scons", "-C", "external/godot-cpp", "--clean"], check=False)
     except:
         pass
@@ -45,7 +45,7 @@ if GetOption('clean'):
     Return()
 
 # Setup
-os.makedirs("demo/bin", exist_ok=True)
+os.makedirs("demo/addons/godot-dojo", exist_ok=True)
 env = SConscript("external/godot-cpp/SConstruct")
 platform, arch, target = env["platform"], env["arch"], env.get("target", "template_debug")
 
@@ -194,7 +194,7 @@ rust_lib_dir = f"external/dojo.c/target/{rust_target}/{build_mode}"
 if platform == "windows":
     rust_lib = ""
     target_dll_name = f"dojo_c.dll"
-    target_dll_path = f"demo/bin/{target_dll_name}"
+    target_dll_path = f"demo/addons/godot-dojo/{target_dll_name}"
 
     if use_mingw:
         rust_lib = f"{rust_lib_dir}/dojo_c.dll"
@@ -229,7 +229,7 @@ suffix_map = {
     "web": f".web.{target}.wasm32.wasm"
 }
 
-lib_name = f"demo/bin/{prefix}godot-dojo{suffix_map.get(platform, f'.{platform}.{target}.{arch}.so')}"
+lib_name = f"demo/addons/godot-dojo/{prefix}godot-dojo{suffix_map.get(platform, f'.{platform}.{target}.{arch}.so')}"
 library = env.SharedLibrary(target=lib_name, source=sources)
 
 # Generate .gdextension
@@ -240,7 +240,7 @@ gdext = template.replace("${PROJECT_NAME}", "godot-dojo")
 gdext = gdext.replace("${ENTRY_POINT}", "dojoc_library_init")
 gdext = gdext.replace("${GODOT_MIN_REQUIREMENT}", "4.2")
 
-with open("demo/bin/godot-dojo.gdextension", 'w') as f:
+with open("demo/addons/godot-dojo/godot-dojo.gdextension", 'w') as f:
     f.write(gdext)
 
 def build_complete_callback(target, source, env):
