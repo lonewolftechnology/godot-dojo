@@ -64,7 +64,7 @@ Variant DojoHelpers::get_setting(const String& setting)
     return Variant();
 }
 
-// these use boost::multiprecision, that can be included separately but not sure if it's header only
+// these use boost::multiprecision
 double DojoHelpers::variant_to_double_fp(const Variant& value, const int precision) {
 
     cpp_int int_val;
@@ -102,12 +102,12 @@ Variant DojoHelpers::double_to_variant(const double value, const int precision) 
 
     cpp_int shift = 1;
     shift <<= precision;
-    cpp_dec_float_100 val_100 = (double)value;
+    cpp_dec_float_100 val_100 = value;
     val_100 *= precision;
 
     cpp_int val_int(val_100);
 
-    // convert val_100 to Variant here for use with field element etc
+    // convert val_int to Variant here for use with field element etc
     if (msb(val_int) < 64) {
         return Variant((int64_t)val_int);
     };
