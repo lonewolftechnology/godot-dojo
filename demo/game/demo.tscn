@@ -1,4 +1,4 @@
-[gd_scene load_steps=21 format=3 uid="uid://cn1gdwiythfn2"]
+[gd_scene load_steps=24 format=3 uid="uid://cn1gdwiythfn2"]
 
 [ext_resource type="Script" uid="uid://dvbwyukos638c" path="res://game/demo.gd" id="1_5nuje"]
 [ext_resource type="Texture2D" uid="uid://blljslsxyx8em" path="res://assets/tile.png" id="2_43tmy"]
@@ -17,6 +17,14 @@
 [ext_resource type="Texture2D" uid="uid://44dwfojqqvam" path="res://assets/arrow_right.png" id="10_qlbmn"]
 [ext_resource type="Texture2D" uid="uid://dn0lmukjhns5l" path="res://assets/arrow_right_p.png" id="11_0joe1"]
 [ext_resource type="PackedScene" uid="uid://d1loujwy6tlp4" path="res://ui/screens/start_screen.tscn" id="12_s1sno"]
+
+[sub_resource type="DojoControllerQuery" id="DojoControllerQuery_w8h56"]
+
+[sub_resource type="EntitySubscription" id="EntitySubscription_w8h56"]
+name = "DojoEntity"
+
+[sub_resource type="MessageSubscription" id="MessageSubscription_r5x6q"]
+name = "DojoMessage"
 
 [sub_resource type="StyleBoxLine" id="StyleBoxLine_mhvfb"]
 color = Color(0.984564, 0.288109, 0.364559, 1)
@@ -37,8 +45,11 @@ script = ExtResource("1_5nuje")
 spawn_call = ExtResource("2_k3cyb")
 move_call = ExtResource("4_w8h56")
 connection = NodePath("Connection")
+controller_query = SubResource("DojoControllerQuery_w8h56")
 
 [node name="Connection" parent="." instance=ExtResource("6_3jxqj")]
+entity_sub = SubResource("EntitySubscription_w8h56")
+message_sub = SubResource("MessageSubscription_r5x6q")
 
 [node name="Parallax" type="ParallaxBackground" parent="."]
 layer = -1
