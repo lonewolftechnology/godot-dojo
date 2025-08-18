@@ -27,12 +27,15 @@ using namespace godot;
 class ControllerAccount : public Node
 {
     GDCLASS(ControllerAccount, Node)
+
     DOJO::ControllerAccount* session_account;
     DOJO::Provider* provider;
     bool is_connected;
     static ControllerAccount* singleton;
     Ref<DojoPolicies> policies;
     String rpc_url;
+
+    static void on_account_callback(DOJO::ControllerAccount* account);
 
 public:
     ControllerAccount();
@@ -55,7 +58,7 @@ public:
     String get_chain_id() const;
     void set_chain_id(const String& p_chain_id) { chain_id = p_chain_id; }
 
-    void execute_from_outside(const Ref<DojoCall>& action);
+    void execute_from_outside(const String& to, const String& selector, const Array& args);
 
     Dictionary get_account_info() const;
 
@@ -64,10 +67,6 @@ public:
     void set_policies(const Ref<DojoPolicies>& p_policies){policies = p_policies;};
 
     Ref<DojoPolicies> get_policies() {return policies;};
-
-
-
-
 
 protected:
 
@@ -84,8 +83,8 @@ protected:
         ClassDB::bind_method(D_METHOD("get_username"), &ControllerAccount::get_username);
         ClassDB::bind_method(D_METHOD("get_address"), &ControllerAccount::get_address);
 
-        ClassDB::bind_method(D_METHOD("execute_from_outside", "action"),
-                             &ControllerAccount::execute_from_outside);
+        ClassDB::bind_method(D_METHOD("execute_from_outside", "to", "selector", "args"),
+                             &ControllerAccount::execute_from_outside, DEFVAL(Array()));
 
         ClassDB::bind_method(D_METHOD("get_account_info"), &ControllerAccount::get_account_info);
         // ClassDB::bind_method(D_METHOD("sign_message", "message"), &ControllerAccount::sign_message);

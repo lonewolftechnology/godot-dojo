@@ -54,10 +54,10 @@ DOJO::ControllerAccount* ControllerAccount::get_session_account() const
     return session_account;
 }
 
-void on_account(DOJO::ControllerAccount* account)
+void ControllerAccount::on_account_callback(DOJO::ControllerAccount* account)
 {
     Logger::success("Account Data received");
-    ControllerAccount::get_singleton()->set_session_account(account);
+    get_singleton()->set_session_account(account);
 
     DOJO::FieldElement player_address = DOJO::controller_address(account);
     DOJO::FieldElement player_chain_id = DOJO::controller_chain_id(account);
@@ -112,12 +112,16 @@ void ControllerAccount::create(const Ref<DojoPolicies>& policies_data)
     {
         Logger::info("Session account already connected");
         session_account = GET_DOJO_OK(resControllerAccount);
-        on_account(session_account);
+        on_account_callback(session_account);
     }
     else
     {
         Logger::info("Session account not connected, connecting...");
-        DOJO::controller_connect(rpc_url.utf8().get_data(), policies.data(), policies_len, on_account);
+        DOJO::controller_connect(
+            rpc_url.utf8().get_data(),
+            policies.data(),
+            policies_len,
+            on_account_callback);
     }
 }
 
@@ -171,6 +175,10 @@ String ControllerAccount::get_chain_id() const
 {
     if (!is_controller_connected())
     {
+        if (!Engine::get_singleton()->is_editor_hint())
+        {
+            Logger::debug_extra("ControllerAccount", "Controller not connected, using provided chain id");
+        }
         return chain_id;
     }
     DOJO::FieldElement felt = DOJO::controller_chain_id(session_account);
@@ -182,12 +190,14 @@ String ControllerAccount::get_chain_id() const
     if (controller_chain_id != katana_chain_id)
     {
         Logger::warning("Chain ID mismatch ", controller_chain_id, " | ", katana_chain_id);
+        return controller_chain_id;
     }
     return chain_id;
 }
 
-
-void ControllerAccount::execute_from_outside(const Ref<DojoCall>& action)
+// TODO: DojoCall -> parametros
+// TODO: Ver Threads
+void ControllerAccount::execute_from_outside(const String& to, const String& selector, const Array& args = Array())
 {
     if (!is_controller_connected())
     {
@@ -195,18 +205,16 @@ void ControllerAccount::execute_from_outside(const Ref<DojoCall>& action)
         emit_signal("transaction_failed", "Cuenta no conectada");
     }
     // Refactor based on UE implementation
-    DOJO::FieldElement actions = FieldElement::from_string(action->get_to());
-    std::string selector = action->get_selector_ctr();
+    DOJO::FieldElement actions = FieldElement::from_string(to);
 
-    uintptr_t calldata_len = action->get_size();
-    Array args = action->get_calldata();
+    uintptr_t calldata_len = args.size();
 
-    DOJO::FieldElement* felts = nullptr;
+    std::vector<DOJO::FieldElement> felts_vec;
     Logger::debug_extra("Controller", "Building Call");
 
     DOJO::Call call = {
         actions,
-        selector.c_str(),
+        selector.utf8().get_data()
     };
 
     if (calldata_len > 0)
@@ -234,47 +242,63 @@ void ControllerAccount::execute_from_outside(const Ref<DojoCall>& action)
                     final_args.push_back(arg);
                     break;
                 }
-            case Variant::Type::VECTOR2:
+            case Variant::Type::FLOAT:
                 {
-                    Vector2 vec = static_cast<Vector2>(arg);
-
-                    final_args.append(vec.x);
-                    final_args.append(vec.y);
-
+                    final_args.push_back(
+                        DojoHelpers::variant_to_double_fp(
+                            arg,
+                            DojoHelpers::get_setting("dojo/config/fixed_point/default")
+                            )
+                        );
                     break;
                 }
-            case Variant::Type::VECTOR2I:
+            case Variant::Type::PACKED_BYTE_ARRAY:
                 {
-                    Vector2i vec = static_cast<Vector2i>(arg);
-
-                    final_args.append(vec.x);
-                    final_args.append(vec.y);
-
+                    final_args.push_back(arg);
                     break;
                 }
-            case Variant::Type::VECTOR3:
-                {
-                    Vector3 vec = static_cast<Vector3>(arg);
-
-                    final_args.append(vec.x);
-                    final_args.append(vec.y);
-                    final_args.append(vec.z);
-
-                    break;
-                }
-            case Variant::Type::VECTOR3I:
-                {
-                    Vector3i vec = static_cast<Vector3i>(arg);
-
-                    final_args.append(vec.x);
-                    final_args.append(vec.y);
-                    final_args.append(vec.z);
-
-                    break;
-                }
+            // case Variant::Type::VECTOR2:
+            //     {
+            //         Vector2 vec = static_cast<Vector2>(arg);
+            //
+            //         final_args.append(vec.x);
+            //         final_args.append(vec.y);
+            //
+            //         break;
+            //     }
+            // case Variant::Type::VECTOR2I:
+            //     {
+            //         Vector2i vec = static_cast<Vector2i>(arg);
+            //
+            //         final_args.append(vec.x);
+            //         final_args.append(vec.y);
+            //
+            //         break;
+            //     }
+            // case Variant::Type::VECTOR3:
+            //     {
+            //         Vector3 vec = static_cast<Vector3>(arg);
+            //
+            //         final_args.append(vec.x);
+            //         final_args.append(vec.y);
+            //         final_args.append(vec.z);
+            //
+            //         break;
+            //     }
+            // case Variant::Type::VECTOR3I:
+            //     {
+            //         Vector3i vec = static_cast<Vector3i>(arg);
+            //
+            //         final_args.append(vec.x);
+            //         final_args.append(vec.y);
+            //         final_args.append(vec.z);
+            //
+            //         break;
+            //     }
             default:
                 {
-                    final_args.push_back(arg.stringify());
+                    Logger::warning("Calldata", "Unsupported type", Variant::get_type_name(arg.get_type()));
+                    // final_args.push_back(arg.stringify());
                     break;
                 }
             }
@@ -282,25 +306,49 @@ void ControllerAccount::execute_from_outside(const Ref<DojoCall>& action)
         Logger::custom("CALLDATA", calldata_len);
         calldata_len = final_args.size();
         Logger::debug_extra("CALLDATA", calldata_len, Variant(final_args).stringify());
-        felts = static_cast<DOJO::FieldElement*>(malloc(sizeof(*felts) * calldata_len));
-        memset(felts, 0, sizeof(*felts) * calldata_len);
+        felts_vec.reserve(calldata_len);
         for (int i = 0; i < calldata_len; i++)
         {
             const Variant& arg = final_args[i];
             if (arg.get_type() == Variant::Type::INT)
             {
-                felts[i] = FieldElement::from_enum(arg);
+                felts_vec.push_back(FieldElement::from_enum(arg));
+            }
+            else if (arg.get_type() == Variant::Type::PACKED_BYTE_ARRAY)
+            {
+                const PackedByteArray v_array = static_cast<PackedByteArray>(arg);
+                if (v_array.size() == 32) // u256 / felt252
+                {
+                    DOJO::FieldElement felt;
+                    memcpy(&felt, v_array.ptr(), 32);
+                    felts_vec.push_back(felt);
+                }
+                else if (v_array.size() == 16) // u128 / i128
+                {
+                    DOJO::FieldElement felt;
+                    memset(&felt, 0, sizeof(DOJO::FieldElement)); // Complete bytes
+                    memcpy(&felt, v_array.ptr(), 16);
+                    felts_vec.push_back(felt);
+                }
+                else
+                {
+                    String error_msg = "Unsupported PackedByteArray size: " + String::num_int64(v_array.size()) + ". Expected 16 (for u128) or 32 (for u256/felt252).";
+                    Logger::error("Calldata", error_msg);
+                    emit_signal("transaction_failed", error_msg);
+                    return;
+                }
+            }
+            else if (static_cast<String>(arg).begins_with("0x"))
+            {
+                felts_vec.push_back(FieldElement::from_string(arg));
             }
             else
             {
-                felts[i] = FieldElement::from_string(arg);
+                felts_vec.push_back(FieldElement::cairo_short_string_to_felt(arg));
             }
         }
 
-        call.calldata = {
-            felts,
-            calldata_len
-        };
+        call.calldata = {felts_vec.data(), felts_vec.size()};
         Logger::debug_extra("CALLDATA", "Calldata added, size:", call.calldata.data_len);
     }
 
@@ -311,13 +359,13 @@ void ControllerAccount::execute_from_outside(const Ref<DojoCall>& action)
     if (result.tag == DOJO::ErrFieldElement)
     {
         Logger::error("Transaction failed");
-        Logger::error("To:", action->get_to());
-        Logger::error("Selector:", action->get_selector());
+        Logger::error("To:", to);
+        Logger::error("Selector:", selector);
         Logger::error("Error:", GET_DOJO_ERROR(result));
         for (int i = 0; i < calldata_len; i++)
         {
             Logger::debug_extra("Calldata[" + String::num_int64(i) + "]",
-                                FieldElement::get_as_string(&felts[i]));
+                                FieldElement::get_as_string(&felts_vec[i]));
         }
         emit_signal("transaction_failed", GET_DOJO_ERROR(result));
     }
@@ -326,10 +374,7 @@ void ControllerAccount::execute_from_outside(const Ref<DojoCall>& action)
         DOJO::wait_for_transaction(provider, GET_DOJO_OK(result));
         Logger::success_extra("EXECUTED", call.selector);
     }
-    if (felts)
-    {
-        free(felts, nullptr);
-    }
+    // felts_vec is automatically cleaned up when it goes out of scope. No need to free.
 }
 
 Dictionary ControllerAccount::get_account_info() const

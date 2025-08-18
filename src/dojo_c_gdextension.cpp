@@ -41,6 +41,7 @@ void DojoC::init_config(bool reset)
     {
         Logger::debug_extra("DojoC", "is running in editor mode");
         set_setting("dojo/config/katana/rpc_url", "http://localhost:5050", reset);
+        set_setting("dojo/config/fixed_point/default", 24, reset);
         set_setting("dojo/config/fixed_point/64", 40, reset);
         set_setting("dojo/config/fixed_point/128", 60, reset);
         set_setting("dojo/config/fixed_point/256", 123, reset);

@@ -34,7 +34,7 @@ Variant DojoPrimitive::VariantFromPrimitive(dojo_bindings::Primitive primitive)
         return FieldElement::to_packed_array(primitive.u128, 16);
     case DOJO::Primitive_Tag::U256_:
         Logger::debug_extra("U256");
-        return DojoHelpers::u256_to_string_boost(primitive.u256);
+        return FieldElement::to_packed_array(primitive.u256.data,32);
     case DOJO::Primitive_Tag::Bool:
         return {primitive.bool_};
     default:
