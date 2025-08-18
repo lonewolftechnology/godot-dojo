@@ -47,7 +47,29 @@ public:
         callback = p_callback;
     }
 
-    String get_name() const { return name; }
+    void update_callback(const Callable& p_callback) {
+        if (!callback.is_valid())
+        {
+            Logger::debug_extra(get_name(), "Invalid or null callback, ignoring callback update");
+        }
+        else
+        {
+            Logger::debug_extra(get_name(), "Updated Callback");
+            set_callback(callback);
+
+        }
+    }
+
+    String get_name() const
+    {
+        if (name.is_empty())
+        {
+            return get_class();
+        }else
+        {
+            return name;
+        }
+    }
     void set_name(const String& p_name) { name = p_name; }
 
     DOJO::Subscription* get_subscription() const { return subscription; }
