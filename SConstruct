@@ -105,7 +105,10 @@ if target == "template_release":
 
 # Environment variables for WebAssembly
 if env["platform"] == "web":
+    cmd.insert(1, "+nightly")
+    cmd.extend(["-Z", "build-std=std,panic_abort"])
     env_vars = os.environ.copy()
+
     rustflags = "-C target-feature=+atomics,+bulk-memory,+mutable-globals"
     rustflags += " -C relocation-model=pic"
     rustflags += " --print=native-static-libs"
@@ -113,19 +116,6 @@ if env["platform"] == "web":
     # rustflags += " -C opt-level=z"
 
     env_vars["RUSTFLAGS"] = rustflags
-
-    # env_vars["CC"] = "emcc"
-    # env_vars["CXX"] = "em++"
-    # env_vars["AR"] = "emar"
-    # env.Append(LINKFLAGS=[
-        # '-sALLOW_MEMORY_GROWTH',
-        # '-sWASM=1',
-        # '-sEXPORTED_FUNCTIONS=["_malloc","_free"]',
-        # '-sEXPORTED_RUNTIME_METHODS=["ccall","cwrap"]',
-        # '-sMODULARIZE=1',
-        # '-sEXPORT_NAME="GodotDojo"',
-        # '--no-entry'
-    # ])
 
 
     subprocess.run(cmd, check=True, cwd="external/dojo.c", env=env_vars)
@@ -209,15 +199,16 @@ if platform == "windows":
         print(f"{G}{clipboard} Copied {dll_dest} -> {target_dll_path}{X}")
         # rust_lib = target_dll_path
 
-elif platform == "web":
-    rust_lib = f"{rust_lib_dir}/libdojo_c.rlib"
-else:
+elif platform in ["linux", "macos", "web", "android"]:
     rust_lib = f"{rust_lib_dir}/libdojo_c.a"
-
-if os.path.exists(rust_lib):
     env.Append(LIBS=[File(rust_lib)])
 else:
+    print(f"{R}{cross} Rust library not found for platform {platform}{X}")
+    Exit(1)
+
+if not os.path.exists(rust_lib):
     print(f"{R}{cross} Rust library not found: {rust_lib}{X}")
+    Exit(1)
 
 sources = sorted(glob.glob("src/**/*.cpp", recursive=True))
 
