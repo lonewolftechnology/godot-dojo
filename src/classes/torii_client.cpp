@@ -98,6 +98,7 @@ void ToriiClient::disconnect_client(bool send_signal = true)
     if (client != nullptr)
     {
         cancel_all_subscriptions();
+        // DOJO::client_free(client);
 
         client = nullptr;
         is_connected = false;
@@ -530,16 +531,16 @@ void ToriiClient::cancel_all_subscriptions()
 {
     Logger::info("Cancelling all subscriptions");
 
-    for (int i = 0; i < event_subscriptions.size(); i++)
+    for (int i = 0; i < subscriptions.size(); i++)
     {
-        Ref<DojoSubscription> subscription = event_subscriptions[i];
+        Ref<DojoSubscription> subscription = subscriptions[i];
         if (subscription.is_valid())
         {
             subscription->cancel();
         }
     }
 
-    event_subscriptions.clear();
+    subscriptions.clear();
 
     Logger::success("All subscriptions cancelled");
 }
@@ -930,7 +931,7 @@ void ToriiClient::on_entity_state_update(const Callable& callback, const Ref<Ent
         Logger::success("Subscribed to entity state updates");
         emit_signal("subscription_created", "entity_state_update");
         subscription->set_subscription(result.ok);
-        event_subscriptions.append(subscription);
+        subscriptions.append(subscription);
     }
 }
 
@@ -964,7 +965,7 @@ void ToriiClient::on_event_message_update(const Callable& callback, const Ref<Me
         Logger::success("Subscribed to event message updates");
         emit_signal("subscription_created", "event_message_update");
         subscription->set_subscription(result.ok);
-        event_subscriptions.append(subscription);
+        subscriptions.append(subscription);
     }
 }
 
@@ -998,7 +999,7 @@ void ToriiClient::on_starknet_event(const Callable& callback, const Ref<Starknet
         Logger::success("Subscribed to starknet events");
         emit_signal("subscription_created", "starknet_event");
         subscription->set_subscription(result.ok);
-        event_subscriptions.append(subscription);
+        subscriptions.append(subscription);
     }
 }
 
@@ -1032,7 +1033,7 @@ void ToriiClient::on_transaction(const Callable& callback, const Ref<Transaction
         Logger::success("Subscribed to transactions");
         emit_signal("subscription_created", "transaction");
         subscription->set_subscription(result.ok);
-        event_subscriptions.append(subscription);
+        subscriptions.append(subscription);
     }
 }
 
@@ -1071,7 +1072,7 @@ void ToriiClient::on_token_update(const Callable& callback, const Ref<TokenSubsc
         Logger::success("Subscribed to token updates");
         emit_signal("subscription_created", "token_update");
         subscription->set_subscription(result.ok);
-        event_subscriptions.append(subscription);
+        subscriptions.append(subscription);
     }
 }
 
@@ -1106,7 +1107,7 @@ void ToriiClient::on_indexer_update(const Callable& callback, const Ref<IndexerS
         Logger::success("Subscribed to indexer updates");
         emit_signal("subscription_created", "indexer_update");
         subscription->set_subscription(result.ok);
-        event_subscriptions.append(subscription);
+        subscriptions.append(subscription);
     }
 }
 
@@ -1146,6 +1147,125 @@ void ToriiClient::on_token_balance_update(const Callable& callback, const Ref<To
         Logger::success("Subscribed to token balance updates");
         emit_signal("subscription_created", "token_balance_update");
         subscription->set_subscription(result.ok);
-        event_subscriptions.append(subscription);
+        subscriptions.append(subscription);
+    }
+}
+
+void ToriiClient::update_subscription(const Ref<DojoSubscription>& subscription, const Callable& callback)
+{
+    using SubType = DojoSubscription::Type;
+    Logger::info("Updating Subscription[color=Green]", subscription->get_name(), "[/color]");
+
+    switch (subscription->get_type())
+    {
+    case SubType::ENTITY:
+        update_entity_subscription(subscription, callback);
+        break;
+    case SubType::EVENT:
+        update_event_message_subscription(subscription, callback);
+        break;
+    case SubType::INDEXER:
+        update_indexer_subscription(subscription, callback);
+        break;
+    case SubType::TOKEN:
+        update_token_subscription(subscription, callback);
+        break;
+    case SubType::TOKEN_BALANCE:
+        update_token_balance_subscription(subscription, callback);
+        break;
+    case SubType::TRANSACTION:
+        update_transaction_subscription(subscription, callback);
+        break;
+    case SubType::STARKNET:
+        update_starknet_event_subscription(subscription, callback);
+        break;
+    default:
+        break;
+    }
+}
+
+void ToriiClient::update_entity_subscription(const Ref<EntitySubscription>& subscription, const Callable& callback)
+{
+    DOJO::Resultbool result = DOJO::client_update_entity_subscription(client, subscription->get_subscription(),
+                                                                      subscription->get_native_clause());
+    if (result.tag == DOJO::Errbool)
+    {
+        String error_msg = "Failed to update entity subscription: " + String(GET_DOJO_ERROR(result));
+        Logger::error(error_msg);
+        emit_signal("subscription_error", error_msg);
+    }
+    else
+    {
+        Logger::success("Updated entity subscription");
+        subscription->update_callback(callback);
+    }
+}
+
+void ToriiClient::update_event_message_subscription(const Ref<MessageSubscription>& subscription,
+                                                    const Callable& callback)
+{
+    DOJO::Resultbool result = DOJO::client_update_event_message_subscription(
+        client, subscription->get_subscription(), subscription->get_native_clause());
+    if (result.tag == DOJO::Errbool)
+    {
+        String error_msg = "Failed to update event message subscription: " + String(GET_DOJO_ERROR(result));
+        Logger::error(error_msg);
+        emit_signal("subscription_error", error_msg);
+    }
+    else
+    {
+        Logger::success("Updated event message subscription");
+        subscription->update_callback(callback);
+    }
+}
+
+void ToriiClient::update_starknet_event_subscription(const Ref<StarknetSubscription>& subscription,
+                                                     const Callable& callback)
+{
+    Logger::warning("update_starknet_event_subscription not implemented on dojo.c side");
+}
+
+void ToriiClient::update_transaction_subscription(const Ref<TransactionSubscription>& subscription,
+                                                  const Callable& callback)
+{
+    Logger::warning("update_transaction_subscription not implemented on dojo.c side");
+}
+
+void ToriiClient::update_token_subscription(const Ref<TokenSubscription>& subscription, const Callable& callback)
+{
+    Logger::warning("update_token_subscription not implemented on dojo.c side");
+}
+
+void ToriiClient::update_indexer_subscription(const Ref<IndexerSubscription>& subscription, const Callable& callback)
+{
+    Logger::warning("update_indexer_subscription not implemented on dojo.c side");
+}
+
+void ToriiClient::update_token_balance_subscription(const Ref<TokenBalanceSubscription>& subscription,
+                                                    const Callable& callback)
+{
+    DOJO::CArrayFieldElement contracts = subscription->get_native_contract_addresses();
+    DOJO::CArrayFieldElement accounts = subscription->get_native_account_addresses();
+    DOJO::CArrayU256 token_ids = subscription->get_native_token_ids();
+
+    DOJO::Resultbool result = DOJO::client_update_token_balance_subscription(
+        client,
+        subscription->get_subscription(),
+        contracts.data,
+        contracts.data_len,
+        accounts.data,
+        accounts.data_len,
+        token_ids.data, token_ids.data_len
+    );
+    if (result.tag == DOJO::Errbool)
+    {
+        String error_msg = "Failed to update token balance subscription: " + String(GET_DOJO_ERROR(result));
+        Logger::error(error_msg);
+        emit_signal("subscription_error", error_msg);
+    }
+    else
+    {
+        Logger::success("Updated token balance subscription");
+        subscription->update_callback(callback);
     }
 }
