@@ -195,7 +195,6 @@ String ControllerAccount::get_chain_id() const
     return chain_id;
 }
 
-// TODO: DojoCall -> parametros
 // TODO: Ver Threads
 void ControllerAccount::execute_from_outside(const String& to, const String& selector, const Array& args = Array())
 {
@@ -209,12 +208,14 @@ void ControllerAccount::execute_from_outside(const String& to, const String& sel
 
     uintptr_t calldata_len = args.size();
 
+    std::string selector_str = selector.utf8().get_data();
+
     std::vector<DOJO::FieldElement> felts_vec;
     Logger::debug_extra("Controller", "Building Call");
 
     DOJO::Call call = {
         actions,
-        selector.utf8().get_data()
+        selector_str.c_str()
     };
 
     if (calldata_len > 0)
