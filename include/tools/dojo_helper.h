@@ -49,12 +49,6 @@ public:
     static double variant_to_double_fp(const Variant& value, const int precision);
     static Variant double_to_variant(const double value, const int precision);
 
-    // The idea is to turn types to string array, as that what dojo expects for structs
-    // For example, in dojo_starter there is a struct called Vec2 which has two members x and y.
-    // So to send a Vector2 from Godot/GDScript it should be an array of two members, x and y.
-    static TypedArray<String> convert_to_string_array(const Variant& var);
-
-    static DOJO::COptionc_char create_option_from_string(const String& option = String());
     static String u256ToString(const DOJO::U256& u256);
     static String packed_byte_array_to_numeric_string(const PackedByteArray& bytes);
     static String u256_to_string_boost(const DOJO::U256& u256);
@@ -83,8 +77,6 @@ public:
 protected:
     static void _bind_methods()
     {
-        ClassDB::bind_static_method("DojoHelpers", D_METHOD("convert_to_string_array", "var"),
-                                    &DojoHelpers::convert_to_string_array);
         ClassDB::bind_static_method("DojoHelpers", D_METHOD("get_katana_url"), &DojoHelpers::get_katana_url);
         ClassDB::bind_static_method("DojoHelpers", D_METHOD("get_setting", "setting"), &DojoHelpers::get_setting);
 
