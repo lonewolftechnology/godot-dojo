@@ -1,7 +1,7 @@
 [submodule "external/dojo.c"]
 	path = external/dojo.c
- 	url = https://github.com/dojoengine/dojo.c
-	branch = v1.6.1
+ 	url = https://github.com/dannorda/dojo.c
+	branch = logger
 
 [submodule "external/godot-cpp"]
 	path = external/godot-cpp
