@@ -3,8 +3,8 @@ extends Node
 
 signal connected
 
-const WORLD_CONTRACT = "0x0393f8a2d0d47e384c3c61eedc08d2873f5d608f8da7ffb013e5d5aa327ac8f2"
-const ACTIONS_CONTRACT = "0x065d58039c71b4a0fe302d68f9fad4bf49e01fe518d7912d44ba0d07b2d7f556"
+const WORLD_CONTRACT = "0x073c2b317136214562b608523812f369a05efe67257842a17c4985ce6d390be7"
+const ACTIONS_CONTRACT = "0x038c3535090be3807d95354db3ae8dc0ceb19a0240739a3338cbc0d6c8ee47b4"
 
 @export var query:DojoQuery
 @export var entity_sub:EntitySubscription

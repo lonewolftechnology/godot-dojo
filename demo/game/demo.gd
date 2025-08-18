@@ -18,9 +18,6 @@ enum Directions {
 	DOWN = 3,
 }
 
-@export var spawn_call : DojoCall
-@export var move_call : DojoCall
-
 @export var connection : DojoConnection 
 
 @export var controller_query:DojoControllerQuery
@@ -74,7 +71,7 @@ func _handle_callback(args:Dictionary) -> void:
 
 
 func spawn() -> void:
-	connection.controller_account.execute_from_outside(spawn_call)
+	connection.controller_account.execute_from_outside(connection.ACTIONS_CONTRACT, "spawn")
 
 
 func _on_start_screen_entered() -> void:
@@ -174,8 +171,8 @@ func _update_entities(parsed_entities:Dictionary) -> void:
 
 
 func _move(dir:Directions) -> void:
-	move_call.calldata[0] = dir
-	connection.controller_account.execute_from_outside(move_call)
+	var calldata:Array = [dir,1]
+	connection.controller_account.execute_from_outside(connection.ACTIONS_CONTRACT, "move", calldata)
 
 func _on_arrow_left_pressed() -> void:
 	_move(Directions.LEFT)
