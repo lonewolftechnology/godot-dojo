@@ -42,7 +42,7 @@ Variant DojoHelpers::get_setting(const String& setting)
     return {};
 }
 
-// these use boost::multiprecision, that can be included separately but not sure if it's header only
+// these use boost::multiprecision
 double DojoHelpers::variant_to_double_fp(const Variant& value, const int precision) {
 
     cpp_int int_val;
@@ -80,12 +80,12 @@ Variant DojoHelpers::double_to_variant(const double value, const int precision) 
 
     cpp_int shift = 1;
     shift <<= precision;
-    cpp_dec_float_100 val_100 = (double)value;
+    cpp_dec_float_100 val_100 = value;
     val_100 *= precision;
 
     cpp_int val_int(val_100);
 
-    // convert val_100 to Variant here for use with field element etc
+    // convert val_int to Variant here for use with field element etc
     if (msb(val_int) < 64) {
         return {static_cast<int64_t>(val_int)};
     };
@@ -140,69 +140,6 @@ int64_t DojoHelpers::float_to_fixed_256(const float& value)
 double DojoHelpers::fixed_to_float_256(const int& value)
 {
     return fixed_to_float(value, get_setting("dojo/config/fixed_point/256"));
-}
-
-TypedArray<String> DojoHelpers::convert_to_string_array(const Variant& var)
-{
-    TypedArray<String> arr;
-    switch (var.get_type())
-    {
-    case Variant::DICTIONARY:
-        {
-            Dictionary dict = var;
-            Array keys = dict.keys();
-            for (int i = 0; i < keys.size(); ++i)
-            {
-                const Variant& val = dict[keys[i]];
-                // arr.push_back(keys[i]);
-                arr.push_back(val.operator String());
-            }
-            break;
-        }
-    case Variant::ARRAY:
-        {
-            Array v_arr = var;
-            for (int i = 0; i < v_arr.size(); ++i)
-            {
-                arr.push_back(v_arr[i].operator String());
-            }
-            break;
-        }
-    case Variant::VECTOR2:
-        {
-            const Vector2 v = var;
-            arr.push_back(String::num(v.x));
-            arr.push_back(String::num(v.y));
-            break;
-        }
-    case Variant::INT:
-    case Variant::FLOAT:
-    case Variant::STRING:
-        {
-            arr.push_back(var.operator String());
-            break;
-        }
-    default:
-        break;
-    }
-    return arr;
-}
-
-DOJO::COptionc_char DojoHelpers::create_option_from_string(const String& option)
-{
-    DOJO::COptionc_char coption = {};
-    if (option.is_empty())
-    {
-        Logger::debug_extra("Option", "Empty option, setting to Nonec_char");
-        coption.tag = DOJO::COptionc_char_Tag::Nonec_char;
-    }
-    else
-    {
-        Logger::debug_extra("Option", "Setting option to Somec_char with", option);
-        coption.tag = DOJO::COptionc_char_Tag::Somec_char;
-        coption.some = option.utf8().get_data();
-    }
-    return coption;
 }
 
 String DojoHelpers::u256_to_string_boost(const DOJO::U256& u256)
