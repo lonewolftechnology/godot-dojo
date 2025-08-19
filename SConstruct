@@ -198,6 +198,7 @@ if platform == "windows":
         shutil.copy2(dll_dest, target_dll_path)
         print(f"{G}{clipboard} Copied {dll_dest} -> {target_dll_path}{X}")
         # rust_lib = target_dll_path
+    env.Append(LIBS=[File(rust_lib)])
 
 elif platform in ["linux", "macos", "web", "android"]:
     rust_lib = f"{rust_lib_dir}/libdojo_c.a"
