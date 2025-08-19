@@ -246,7 +246,7 @@ void ControllerAccount::execute_from_outside(const String& to, const String& sel
             case Variant::Type::FLOAT:
                 {
                     final_args.push_back(
-                        DojoHelpers::variant_to_double_fp(
+                        DojoHelpers::double_to_variant_fp(
                             arg,
                             DojoHelpers::get_setting("dojo/config/fixed_point/default")
                             )

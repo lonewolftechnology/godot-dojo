@@ -47,7 +47,7 @@ public:
     static double fixed_to_float_256(const int& value);
 
     static double variant_to_double_fp(const Variant& value, const int& precision);
-    static Variant double_to_variant(const double& value, const int& precision);
+    static Variant double_to_variant_fp(const double& value, const int& precision);
 
     static String u256ToString(const DOJO::U256& u256);
     static String packed_byte_array_to_numeric_string(const PackedByteArray& bytes);

@@ -76,7 +76,7 @@ double DojoHelpers::variant_to_double_fp(const Variant& value, const int& precis
     return static_cast<double>(result);
 }
 
-Variant DojoHelpers::double_to_variant(const double& value, const int& precision) {
+Variant DojoHelpers::double_to_variant_fp(const double& value, const int& precision) {
 
     cpp_int shift = 1;
     shift <<= precision;
