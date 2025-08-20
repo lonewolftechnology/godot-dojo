@@ -18,6 +18,8 @@ func _generate_abi():
 	var world = manifest_data["world"]
 	# For now, we have only one
 	var contract = manifest_data["contracts"][0]
+	var contract_abi = contract["abi"]
+
 	var models = manifest_data["models"]
 	var events = manifest_data["events"]
 	
@@ -48,7 +50,10 @@ func _generate_abi():
 	torii_client.events = parsed_events
 	
 	var policies := DojoPolicies.new()
-	policies.name = contract["tag"].split("-")[1]
+	var contract_namespace:String = contract["tag"].split("-")[0]
+	var contract_name:String = contract["tag"].split("-")[1]
+	
+	policies.name = contract_name
 	policies.contract = contract["address"]
 	
 	var result_policies: Array = []
@@ -61,6 +66,12 @@ func _generate_abi():
 		
 	policies.policies = result_policies
 	controller_account.policies = policies
+	controller_account.chain_id = chain_id
 	
+	var _script:GDScript = GDScript.new()
+	_script.source_code = "class_name %s\n" % contract_namespace.to_pascal_case()
+	var script_path:String = "res://%s_%s_bindings.gd" % [contract_namespace, contract_name]
+	var err = ResourceSaver.save(_script, script_path)
 	
-	
+	if Engine.has_singleton("EditorInterface") and err == OK:
+		Engine.get_singleton("EditorInterface").get_editor_toaster().push_toast("%s created" % script_path.get_file())
