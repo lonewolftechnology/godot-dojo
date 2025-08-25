@@ -31,10 +31,13 @@ void Account::start_provider()
     DOJO::ResultProvider res_provider = DOJO::provider_new(rpc_url.utf8().get_data());
     if (res_provider.tag == DOJO::ErrProvider)
     {
-        UtilityFunctions::printerr("Error creating provider: ", GET_DOJO_ERROR(res_provider));
-        return;
+        Logger::error("Error creating provider: ", GET_DOJO_ERROR(res_provider));
     }
-    provider = GET_DOJO_OK(res_provider);
+    else
+    {
+        Logger::success("Provider created");
+        provider = GET_DOJO_OK(res_provider);
+    }
 }
 
 void Account::create(const String& _rpc_url, const String& address, const String& private_key)
@@ -50,8 +53,11 @@ void Account::create(const String& _rpc_url, const String& address, const String
 
     if (res_account.tag == DOJO::ErrAccount)
     {
-        UtilityFunctions::printerr("Error creating account: ", GET_DOJO_ERROR(res_account));
-        return;
+        Logger::error("Error creating account: ", GET_DOJO_ERROR(res_account));
+    }
+    else
+    {
+        Logger::success("Account created");
     }
 
     account = GET_DOJO_OK(res_account);
@@ -71,7 +77,7 @@ void Account::deploy_burner(Account* master_account, const String& signing_key)
 
     if (res_burner.tag == DOJO::ErrAccount)
     {
-        UtilityFunctions::printerr("Error deploying burner: ", GET_DOJO_ERROR(res_burner));
+        Logger::error("Error deploying burner: ", GET_DOJO_ERROR(res_burner));
         return;
     }
 
@@ -89,14 +95,19 @@ String Account::get_address() const
     return FieldElement::get_as_string(&address);
 }
 
-String Account::get_chain_id() const
+String Account::get_chain_id(const bool& parse) const
 {
     if (!account)
     {
         return "";
     }
     DOJO::FieldElement chain_id = DOJO::account_chain_id(account);
-    return FieldElement::get_as_string(&chain_id);
+    FieldElement chain_id_felt(chain_id);
+    if (parse)
+    {
+        return chain_id_felt.parse_cairo();
+    }
+    return chain_id_felt.to_string();
 }
 
 void Account::set_block_id(const String& block_id)
@@ -105,12 +116,10 @@ void Account::set_block_id(const String& block_id)
     {
         return;
     }
-    // This is a simplification. In a real scenario, you would need to handle different block_id types (hash, number, tag).
-    // Assuming block tag for now.
+
     DOJO::BlockId block;
     block.tag = DOJO::BlockTag_;
-    block.block_tag = DOJO::Latest; // Or Pending, based on the string
-
+    block.block_tag = DOJO::Pending;
     DOJO::account_set_block_id(account, block);
 }
 
@@ -123,7 +132,7 @@ String Account::get_nonce() const
     DOJO::ResultFieldElement nonce_res = DOJO::account_nonce(account);
     if (nonce_res.tag == DOJO::ErrFieldElement)
     {
-        UtilityFunctions::printerr("Error getting nonce: ", GET_DOJO_ERROR(nonce_res));
+        Logger::error("Error getting nonce: ", GET_DOJO_ERROR(nonce_res));
         return "";
     }
     DOJO::FieldElement nonce = GET_DOJO_OK(nonce_res);
@@ -154,7 +163,7 @@ void Account::execute_raw(const String& to, const String& selector, const Array&
 
     if (calldata_len > 0)
     {
-        Logger::debug_extra("Controller", "Building Calldata");
+        Logger::debug_extra("Account", "Building Calldata");
 
         Array final_args = {};
 
@@ -194,7 +203,8 @@ void Account::execute_raw(const String& to, const String& selector, const Array&
                 }
             default:
                 {
-                    Logger::warning("Calldata", "Unsupported type", Variant::get_type_name(arg.get_type()), arg.stringify());
+                    Logger::warning("Calldata", "Unsupported type", Variant::get_type_name(arg.get_type()),
+                                    arg.stringify());
                     // final_args.push_back(arg.stringify());
                     break;
                 }

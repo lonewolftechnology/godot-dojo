@@ -39,11 +39,11 @@ public:
     void deploy_burner(Account* master_account, const String& signing_key);
 
     String get_address() const;
-    String get_chain_id() const;
+    String get_chain_id(const bool& parse = false) const;
     void set_block_id(const String& block_id);
     String get_nonce() const;
 
-    void execute_raw(const String& to, const String& selector, const Array& args);
+    void execute_raw(const String& to, const String& selector, const Array& args = Array());
 
 
 protected:
@@ -52,10 +52,10 @@ protected:
         ClassDB::bind_method(D_METHOD("start_provider"), &Account::start_provider);
         ClassDB::bind_method(D_METHOD("deploy_burner", "master_account", "signing_key"), &Account::deploy_burner);
         ClassDB::bind_method(D_METHOD("get_address"), &Account::get_address);
-        ClassDB::bind_method(D_METHOD("get_chain_id"), &Account::get_chain_id);
+        ClassDB::bind_method(D_METHOD("get_chain_id", "parse"), &Account::get_chain_id, DEFVAL(false));
         ClassDB::bind_method(D_METHOD("set_block_id", "block_id"), &Account::set_block_id);
         ClassDB::bind_method(D_METHOD("get_nonce"), &Account::get_nonce);
-        ClassDB::bind_method(D_METHOD("execute_raw", "call"), &Account::execute_raw);
+        ClassDB::bind_method(D_METHOD("execute_raw", "to", "selector", "calldata"), &Account::execute_raw, DEFVAL(Array()));
 
         ADD_SIGNAL(MethodInfo("transaction_executed", PropertyInfo(Variant::STRING, "transaction_hash")));
         ADD_SIGNAL(MethodInfo("transaction_failed", PropertyInfo(Variant::STRING, "error_message")));
