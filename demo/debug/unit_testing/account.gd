@@ -9,8 +9,8 @@ const rpc_url = "https://api.cartridge.gg/x/godot-demo-rookie/katana"
 const torii_url = "https://api.cartridge.gg/x/godot-demo-rookie/torii"
 
 const contract_namespace = "dojo_starter"
-#const contract_address = "0x038c3535090be3807d95354db3ae8dc0ceb19a0240739a3338cbc0d6c8ee47b4"
-const contract_address = "0x06b71e9a3aa5198aa78f7d8c407024d863e1d1263e735081c824deea349d3852" #Plain Starter
+const contract_address = "0x038c3535090be3807d95354db3ae8dc0ceb19a0240739a3338cbc0d6c8ee47b4"
+const local_contract_address = "0x06b71e9a3aa5198aa78f7d8c407024d863e1d1263e735081c824deea349d3852" #Plain Starter
 const world_address = "0x073c2b317136214562b608523812f369a05efe67257842a17c4985ce6d390be7"
 
 # First account of contract
@@ -54,11 +54,16 @@ func _ready() -> void:
 	torii_client.world_address = world_address
 	
 	if use_slot:
+		print_rich("[color=yellow]Using Slot[/color]")
 		torii_client.torii_url = torii_url
 	else:
+		print_rich("[color=yellow]Using Local[/color]")
 		torii_client.torii_url = local_torii_url
 
 	torii_client.create_client()
+
+func _torii_logger(_msg:String):
+	prints("[TORII LOGGER]", _msg)
 
 func _on_events(args:Dictionary) -> void:
 	push_warning("CALLBACK EVENTS", args)
@@ -67,10 +72,11 @@ func _on_events_message(args:Dictionary) -> void:
 	push_warning("CALLBACK EVENTS MESSAGE", args)
 
 func _on_torii_client_client_connected(success: bool) -> void:
-	await get_tree().create_timer(0.1).timeout
-	torii_client.on_entity_state_update(_on_events, entity_sub)
-	await get_tree().create_timer(0.1).timeout
-	torii_client.on_event_message_update(_on_events_message, event_message_sub)
+	torii_client.set_logger_callback(_torii_logger)
+	#await get_tree().create_timer(0.1).timeout
+	#torii_client.on_entity_state_update(_on_events, entity_sub)
+	#await get_tree().create_timer(0.1).timeout
+	#torii_client.on_event_message_update(_on_events_message, event_message_sub)
 	
 	if use_slot:
 		account.create(rpc_url, account_address, private_key)
@@ -85,11 +91,17 @@ func _on_torii_client_client_connected(success: bool) -> void:
 		for selector in tests.keys():
 			var data:Array = tests[selector]
 			if data.is_empty():
-				account.execute_raw(contract_address, selector)
+				if use_slot:
+					account.execute_raw(contract_address, selector)
+				else:
+					account.execute_raw(local_contract_address, selector)
 				await get_tree().process_frame
 				continue
 			for calldata in data:
-				account.execute_raw(contract_address, selector, [calldata])
+				if use_slot:
+					account.execute_raw(contract_address, selector, [calldata])
+				else:
+					account.execute_raw(local_contract_address, selector, [calldata])
 				await get_tree().process_frame
 
 
