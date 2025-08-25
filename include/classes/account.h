@@ -40,8 +40,10 @@ public:
 
     String get_address() const;
     String get_chain_id(const bool& parse = false) const;
-    void set_block_id(const String& block_id);
+    void set_block_id(const String& block_id = String());
     String get_nonce() const;
+
+    bool is_account_valid() const;
 
     void execute_raw(const String& to, const String& selector, const Array& args = Array());
 
@@ -53,9 +55,10 @@ protected:
         ClassDB::bind_method(D_METHOD("deploy_burner", "master_account", "signing_key"), &Account::deploy_burner);
         ClassDB::bind_method(D_METHOD("get_address"), &Account::get_address);
         ClassDB::bind_method(D_METHOD("get_chain_id", "parse"), &Account::get_chain_id, DEFVAL(false));
-        ClassDB::bind_method(D_METHOD("set_block_id", "block_id"), &Account::set_block_id);
+        ClassDB::bind_method(D_METHOD("set_block_id", "block_id"), &Account::set_block_id, DEFVAL(String()));
         ClassDB::bind_method(D_METHOD("get_nonce"), &Account::get_nonce);
         ClassDB::bind_method(D_METHOD("execute_raw", "to", "selector", "calldata"), &Account::execute_raw, DEFVAL(Array()));
+        ClassDB::bind_method(D_METHOD("is_account_valid"), &Account::is_account_valid);
 
         ADD_SIGNAL(MethodInfo("transaction_executed", PropertyInfo(Variant::DICTIONARY, "success_message")));
         ADD_SIGNAL(MethodInfo("transaction_failed", PropertyInfo(Variant::DICTIONARY, "error_message")));

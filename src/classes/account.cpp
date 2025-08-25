@@ -16,11 +16,11 @@ Account::Account()
 
 Account::~Account()
 {
-    if (account)
+    if (account != nullptr)
     {
         DOJO::account_free(account);
     }
-    if (provider)
+    if (provider != nullptr)
     {
         DOJO::provider_free(provider);
     }
@@ -43,7 +43,7 @@ void Account::start_provider()
 void Account::create(const String& _rpc_url, const String& address, const String& private_key)
 {
     this->rpc_url = _rpc_url;
-    if (!provider)
+    if (provider == nullptr)
     {
         start_provider();
     }
@@ -58,9 +58,8 @@ void Account::create(const String& _rpc_url, const String& address, const String
     else
     {
         Logger::success("Account created");
+        account = GET_DOJO_OK(res_account);
     }
-
-    account = GET_DOJO_OK(res_account);
 }
 
 void Account::deploy_burner(Account* master_account, const String& signing_key)
@@ -78,16 +77,18 @@ void Account::deploy_burner(Account* master_account, const String& signing_key)
     if (res_burner.tag == DOJO::ErrAccount)
     {
         Logger::error("Error deploying burner: ", GET_DOJO_ERROR(res_burner));
-        return;
+    }else
+    {
+        account = GET_DOJO_OK(res_burner);
+        provider = master_account->provider; // The burner uses the same provider
     }
 
-    account = GET_DOJO_OK(res_burner);
-    provider = master_account->provider; // The burner uses the same provider
+
 }
 
 String Account::get_address() const
 {
-    if (!account)
+    if (!is_account_valid())
     {
         return "";
     }
@@ -97,7 +98,7 @@ String Account::get_address() const
 
 String Account::get_chain_id(const bool& parse) const
 {
-    if (!account)
+    if (!is_account_valid())
     {
         return "";
     }
@@ -112,20 +113,36 @@ String Account::get_chain_id(const bool& parse) const
 
 void Account::set_block_id(const String& block_id)
 {
-    if (!account)
+    if (!is_account_valid())
     {
         return;
     }
 
     DOJO::BlockId block;
-    block.tag = DOJO::BlockTag_;
-    block.block_tag = DOJO::Pending;
+    if (block_id.begins_with("0x"))
+    {
+        Logger::debug("Setting block id to hash");
+        block.tag = DOJO::Hash;
+        block.hash = FieldElement::from_string(block_id);
+    }
+    else if (block_id.is_valid_int())
+    {
+        Logger::debug("Setting block id to number");
+        block.tag = DOJO::Number;
+        block.number = block_id.to_int();
+    }else
+    {
+        Logger::debug("Setting block id to pending");
+        block.tag = DOJO::BlockTag_;
+        block.block_tag = DOJO::Pending;
+    }
+
     DOJO::account_set_block_id(account, block);
 }
 
 String Account::get_nonce() const
 {
-    if (!account)
+    if (!is_account_valid())
     {
         return "";
     }
@@ -139,11 +156,16 @@ String Account::get_nonce() const
     return FieldElement::get_as_string(&nonce);
 }
 
+bool Account::is_account_valid() const
+{
+    return account != nullptr;
+}
+
 void Account::execute_raw(const String& to, const String& selector, const Array& args)
 {
-    if (!account)
+    if (!is_account_valid())
     {
-        Logger::error("Account is not valid");
+        return;
     }
 
     DOJO::FieldElement contract = FieldElement::from_string(to);
