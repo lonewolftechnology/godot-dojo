@@ -1,0 +1,19 @@
+[gd_scene load_steps=4 format=3 uid="uid://cx3d2471dm0va"]
+
+[ext_resource type="Script" uid="uid://tglr6c87m0ic" path="res://debug/unit_testing/account.gd" id="1_t46s5"]
+
+[sub_resource type="EntitySubscription" id="EntitySubscription_t46s5"]
+
+[sub_resource type="MessageSubscription" id="MessageSubscription_t46s5"]
+
+[node name="UnitTesting" type="Node"]
+script = ExtResource("1_t46s5")
+entity_sub = SubResource("EntitySubscription_t46s5")
+event_message_sub = SubResource("MessageSubscription_t46s5")
+
+[node name="Account" type="Account" parent="."]
+
+[node name="ToriiClient" type="ToriiClient" parent="."]
+
+[connection signal="transaction_failed" from="Account" to="." method="_on_account_transaction_failed"]
+[connection signal="client_connected" from="ToriiClient" to="." method="_on_torii_client_client_connected"]
