@@ -33,8 +33,9 @@ class Account : public Node
 public:
     Account();
     ~Account();
+    void start_provider();
 
-    void create(const String& rpc_url, const String& private_key, const String& address);
+    void create(const String& _rpc_url, const String& address, const String& private_key);
     void deploy_burner(Account* master_account, const String& signing_key);
 
     String get_address() const;
@@ -42,18 +43,23 @@ public:
     void set_block_id(const String& block_id);
     String get_nonce() const;
 
-    String execute_raw(const Ref<DojoCall>& call);
+    void execute_raw(const String& to, const String& selector, const Array& args);
 
 
 protected:
     static void _bind_methods() {
-        ClassDB::bind_method(D_METHOD("create", "rpc_url", "private_key", "address"), &Account::create);
+        ClassDB::bind_method(D_METHOD("create", "rpc_url", "address", "private_key"), &Account::create);
+        ClassDB::bind_method(D_METHOD("start_provider"), &Account::start_provider);
         ClassDB::bind_method(D_METHOD("deploy_burner", "master_account", "signing_key"), &Account::deploy_burner);
         ClassDB::bind_method(D_METHOD("get_address"), &Account::get_address);
         ClassDB::bind_method(D_METHOD("get_chain_id"), &Account::get_chain_id);
         ClassDB::bind_method(D_METHOD("set_block_id", "block_id"), &Account::set_block_id);
         ClassDB::bind_method(D_METHOD("get_nonce"), &Account::get_nonce);
         ClassDB::bind_method(D_METHOD("execute_raw", "call"), &Account::execute_raw);
+
+        ADD_SIGNAL(MethodInfo("transaction_executed", PropertyInfo(Variant::STRING, "transaction_hash")));
+        ADD_SIGNAL(MethodInfo("transaction_failed", PropertyInfo(Variant::STRING, "error_message")));
+
     }
 };
 
