@@ -1,12 +1,16 @@
 extends Node
 
+signal validation_result(result:bool, selector:String, calldata:Variant)
+
 const local_rpc_url = "http://localhost:5050"
 const local_torii_url = "http://localhost:8080"
 
 const rpc_url = "https://api.cartridge.gg/x/godot-demo-rookie/katana"
 const torii_url = "https://api.cartridge.gg/x/godot-demo-rookie/torii"
 
-const contract_address = "0x038c3535090be3807d95354db3ae8dc0ceb19a0240739a3338cbc0d6c8ee47b4"
+const contract_namespace = "dojo_starter"
+#const contract_address = "0x038c3535090be3807d95354db3ae8dc0ceb19a0240739a3338cbc0d6c8ee47b4"
+const contract_address = "0x06b71e9a3aa5198aa78f7d8c407024d863e1d1263e735081c824deea349d3852" #Plain Starter
 const world_address = "0x073c2b317136214562b608523812f369a05efe67257842a17c4985ce6d390be7"
 
 # First account of contract
@@ -15,17 +19,18 @@ const private_key = "0xc5b2fcab997346f3ea1c00b002ecf6f382c5f9c9659a3894eb783c532
 
 # The key is the selector and the array contains the data to validate to
 const tests = {
-	"validate_i8": [0,1,2,3],
-	"validate_i16": [0,1,2,3],
-	"validate_i32": [0,1,2,3],
-	"validate_i64": [0,1,2,3],
-	"validate_i128": [0,1,2,3],
-	"validate_u8": [0,1,2,3],
-	"validate_u16": [0,1,2,3],
-	"validate_u32": [0,1,2,3],
-	"validate_u64": [0,1,2,3],
-	"validate_u128": [0,1,2,3],
-	"validate_u256": [0,1,2,3],
+	"spawn": [],
+	#"validate_i8": [0,1,2,3],
+	#"validate_i16": [0,1,2,3],
+	#"validate_i32": [0,1,2,3],
+	#"validate_i64": [0,1,2,3],
+	#"validate_i128": [0,1,2,3],
+	#"validate_u8": [0,1,2,3],
+	#"validate_u16": [0,1,2,3],
+	#"validate_u32": [0,1,2,3],
+	#"validate_u64": [0,1,2,3],
+	#"validate_u128": [0,1,2,3],
+	#"validate_u256": [0,1,2,3],
 	#"validate_bool": [true, false],
 	#"validate_felt252": [],
 	#"validate_class_hash": [],
@@ -62,34 +67,38 @@ func _on_events_message(args:Dictionary) -> void:
 	push_warning("CALLBACK EVENTS MESSAGE", args)
 
 func _on_torii_client_client_connected(success: bool) -> void:
-	# Por alguna razón, las subscripciones quedan bloqueadas.
-	# Nada cambió, esperemos que sea cosa del slot
-	
-	#await get_tree().create_timer(0.1).timeout
-	#torii_client.on_entity_state_update(_on_events, entity_sub)
-	#await get_tree().create_timer(0.1).timeout
-	#torii_client.on_event_message_update(_on_events_message, event_message_sub)
-	
 	await get_tree().create_timer(0.1).timeout
+	torii_client.on_entity_state_update(_on_events, entity_sub)
+	await get_tree().create_timer(0.1).timeout
+	torii_client.on_event_message_update(_on_events_message, event_message_sub)
+	
 	if use_slot:
 		account.create(rpc_url, account_address, private_key)
 	else:
 		account.create(local_rpc_url, account_address, private_key)
-		
 	await get_tree().create_timer(0.1).timeout
+	
 	account.set_block_id()
 	await get_tree().create_timer(0.1).timeout
+	
 	if account.is_account_valid():
 		for selector in tests.keys():
-			var data = tests[selector]
+			var data:Array = tests[selector]
+			if data.is_empty():
+				account.execute_raw(contract_address, selector)
+				await get_tree().process_frame
+				continue
 			for calldata in data:
 				account.execute_raw(contract_address, selector, [calldata])
 				await get_tree().process_frame
 
 
 func _on_account_transaction_failed(error_message: Dictionary) -> void:
-	output_text.append_text("[color=cyan]Selector: [/color]%s[color=yellow] Calldata: [/color] %s [color=Red]%s[/color]\n" % [error_message["selector"], error_message["calldata"], error_message["error"]] )
-
+	output_text.append_text("[color=Red]%s: [/color][color=cyan]Selector: [/color]%s[color=yellow] Calldata: [/color] %s\n" % [error_message["error"], error_message["selector"], error_message["calldata"]] )
 
 func _on_account_transaction_executed(success_message: Dictionary) -> void:
 	output_text.append_text("[color=cyan]Selector: [/color]%s[color=yellow] Calldata: [/color] %s [color=Green]%s[/color]\n" % [success_message["selector"], success_message["calldata"], success_message["txn"]] )
+	var selector:String = success_message["selector"]
+	selector = selector.replace("validate", "validated")
+	var event = "%s-%s" % [contract_namespace, selector.to_pascal_case()]
+	
