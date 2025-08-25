@@ -57,8 +57,12 @@ void Account::create(const String& _rpc_url, const String& address, const String
     }
     else
     {
-        Logger::success("Account created");
+        // Logger::success("Account created");
         account = GET_DOJO_OK(res_account);
+        DOJO::FieldElement account_address = DOJO::account_address(account);
+        Logger::success("Account address: ", FieldElement::get_as_string(&account_address));
+        DOJO::FieldElement chain_id = DOJO::account_chain_id(account);
+        Logger::success("Account chain id: ", FieldElement::get_as_string(&chain_id));
     }
 }
 
@@ -70,7 +74,8 @@ void Account::deploy_burner(Account* master_account, const String& signing_key)
         return;
     }
 
-    DOJO::FieldElement signing_key_felt = FieldElement::from_string(signing_key);
+    // DOJO::FieldElement signing_key_felt = FieldElement::from_string(signing_key);
+    DOJO::FieldElement signing_key_felt = DOJO::signing_key_new();
     DOJO::ResultAccount res_burner = DOJO::account_deploy_burner(master_account->provider, master_account->account,
                                                                  signing_key_felt);
 
