@@ -57,8 +57,8 @@ protected:
         ClassDB::bind_method(D_METHOD("get_nonce"), &Account::get_nonce);
         ClassDB::bind_method(D_METHOD("execute_raw", "to", "selector", "calldata"), &Account::execute_raw, DEFVAL(Array()));
 
-        ADD_SIGNAL(MethodInfo("transaction_executed", PropertyInfo(Variant::STRING, "transaction_hash")));
-        ADD_SIGNAL(MethodInfo("transaction_failed", PropertyInfo(Variant::STRING, "error_message")));
+        ADD_SIGNAL(MethodInfo("transaction_executed", PropertyInfo(Variant::DICTIONARY, "success_message")));
+        ADD_SIGNAL(MethodInfo("transaction_failed", PropertyInfo(Variant::DICTIONARY, "error_message")));
 
     }
 };

@@ -15,5 +15,30 @@ event_message_sub = SubResource("MessageSubscription_t46s5")
 
 [node name="ToriiClient" type="ToriiClient" parent="."]
 
+[node name="CanvasLayer" type="CanvasLayer" parent="."]
+
+[node name="Panel" type="Panel" parent="CanvasLayer"]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="VBoxContainer" type="VBoxContainer" parent="CanvasLayer/Panel"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="OutputText" type="RichTextLabel" parent="CanvasLayer/Panel/VBoxContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_vertical = 3
+bbcode_enabled = true
+scroll_following = true
+
+[connection signal="transaction_executed" from="Account" to="." method="_on_account_transaction_executed"]
 [connection signal="transaction_failed" from="Account" to="." method="_on_account_transaction_failed"]
 [connection signal="client_connected" from="ToriiClient" to="." method="_on_torii_client_client_connected"]

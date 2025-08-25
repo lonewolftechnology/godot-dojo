@@ -265,20 +265,23 @@ void Account::execute_raw(const String& to, const String& selector, const Array&
     DOJO::ResultFieldElement res_tx = DOJO::account_execute_raw(account, &call, 1);
     if (res_tx.tag == DOJO::ErrFieldElement)
     {
-        Logger::error("Transaction failed");
-        Logger::error("To:", to);
-        Logger::error("Selector:", selector);
-        Logger::error("Error:", GET_DOJO_ERROR(res_tx));
-        for (int i = 0; i < calldata_len; i++)
-        {
-            Logger::debug_extra("Calldata[" + String::num_int64(i) + "]", args[i].stringify());
-        }
-        emit_signal("transaction_failed", GET_DOJO_ERROR(res_tx));
+        Logger::error("Transaction failed:", GET_DOJO_ERROR(res_tx));
+
+        Dictionary error_dict = {};
+        error_dict["error"] = GET_DOJO_ERROR(res_tx);
+        error_dict["selector"] = selector;
+        error_dict["calldata"] = args;
+
+        emit_signal("transaction_failed", error_dict);
     }
     else
     {
         DOJO::wait_for_transaction(provider, GET_DOJO_OK(res_tx));
-        emit_signal("transaction_executed", FieldElement::get_as_string(&GET_DOJO_OK(res_tx)));
+        Dictionary success_dict = {};
+        success_dict["selector"] = selector;
+        success_dict["calldata"] = args;
+        success_dict["txn"] = FieldElement::get_as_string(&GET_DOJO_OK(res_tx));
+        emit_signal("transaction_executed", success_dict);
         Logger::success("Transaction sent");
     }
 }

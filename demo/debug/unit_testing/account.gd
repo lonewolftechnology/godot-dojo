@@ -32,6 +32,8 @@ const tests = {
 @onready var account: Account = $Account
 @onready var torii_client: ToriiClient = $ToriiClient
 
+@onready var output_text: RichTextLabel = %OutputText
+
 @export var entity_sub:EntitySubscription
 @export var event_message_sub:MessageSubscription
 
@@ -66,7 +68,12 @@ func _on_torii_client_client_connected(success: bool) -> void:
 		var data = tests[selector]
 		for calldata in data:
 			account.execute_raw(contract_address, selector, [calldata])
+			await get_tree().process_frame
 
 
-func _on_account_transaction_failed(error_message: String) -> void:
-	print_rich("[color=Red]Error: [/color]", error_message)
+func _on_account_transaction_failed(error_message: Dictionary) -> void:
+	output_text.append_text("[color=cyan]Selector: [/color]%s[color=yellow] Calldata: [/color] %s [color=Red]%s[/color]\n" % [error_message["selector"], error_message["calldata"], error_message["error"]] )
+
+
+func _on_account_transaction_executed(success_message: Dictionary) -> void:
+	output_text.append_text("[color=cyan]Selector: [/color]%s[color=yellow] Calldata: [/color] %s [color=Green]%s[/color]\n" % [success_message["selector"], success_message["calldata"], success_message["txn"]] )
