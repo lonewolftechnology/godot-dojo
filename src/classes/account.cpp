@@ -284,6 +284,7 @@ void Account::execute_raw(const String& to, const String& selector, const Array&
         }
 
         call.calldata = {felts_vec.data(), felts_vec.size()};
+
         Logger::debug_extra("CALLDATA", "Calldata added, size:", call.calldata.data_len);
     }
 
