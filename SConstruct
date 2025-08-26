@@ -123,9 +123,6 @@ else:
     env_vars = os.environ.copy()
     # Explicitly set RUSTUP_TOOLCHAIN to ensure the correct toolchain is used
     if platform == "macos" and arch == "x86_64":
-        print(f"{Y}Setting RUSTUP_TOOLCHAIN to 1.85.0-x86_64-apple-darwin...{X}")
-        env_vars["RUSTUP_TOOLCHAIN"] = "1.85.0-x86_64-apple-darwin"
-
         # Set macOS deployment target to 14.0 to ensure compatibility
         print(f"{Y}Setting macOS deployment target to 14.0...{X}")
         env_vars["MACOSX_DEPLOYMENT_TARGET"] = "14.0"
