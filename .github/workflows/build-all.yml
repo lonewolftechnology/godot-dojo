@@ -16,6 +16,8 @@ jobs:
     if: startsWith(github.ref, 'refs/tags/')
     outputs:
       upload_url: ${{ steps.create_release.outputs.upload_url }}
+      changelog_content: ${{ steps.changelog.outputs.content }}
+      commits_log: ${{ steps.get_commits.outputs.commits }}
 
     steps:
       - name: Checkout code
@@ -96,12 +98,6 @@ jobs:
 
             ### Commits Since Last Tag
             ${{ steps.get_commits.outputs.commits }}
-
-            ### Downloads
-            - [Standard Precision](https://github.com/${{ github.repository }}/releases/download/${{ github.ref_name }}/godot-dojo-${{ github.ref_name }}.zip)
-            - [Double Precision](https://github.com/${{ github.repository }}/releases/download/${{ github.ref_name }}/godot-dojo-double-${{ github.ref_name }}.zip)
-
-            [View full changelog](https://github.com/${{ github.repository }}/blob/main/CHANGELOG.md)
           draft: false
           prerelease: ${{ steps.check_branch.outputs.is_prerelease == 'true' }}
         env:
@@ -127,10 +123,10 @@ jobs:
       - name: Install build dependencies
         run: sudo apt-get update && sudo apt-get install -y build-essential pkg-config libdbus-1-dev protobuf-compiler libprotobuf-dev
 
-      - name: Set up Rust stable
+      - name: Set up Rust 1.87.0
         uses: dtolnay/rust-toolchain@stable
         with:
-          toolchain: stable
+          toolchain: 1.87.0
 
       - name: Cache Rust dependencies
         uses: actions/cache@v3
@@ -213,10 +209,10 @@ jobs:
       - name: Install build dependencies
         run: sudo apt-get update && sudo apt-get install -y build-essential pkg-config libdbus-1-dev protobuf-compiler libprotobuf-dev
 
-      - name: Set up Rust stable
+      - name: Set up Rust 1.87.0
         uses: dtolnay/rust-toolchain@stable
         with:
-          toolchain: stable
+          toolchain: 1.87.0
 
       - name: Cache Rust dependencies
         uses: actions/cache@v3
@@ -299,10 +295,10 @@ jobs:
       - name: Install build dependencies
         run: brew install protobuf
 
-      - name: Set up Rust stable
+      - name: Set up Rust 1.87.0
         uses: dtolnay/rust-toolchain@stable
         with:
-          toolchain: stable
+          toolchain: 1.87.0
 
       - name: Add target for macOS builds
         run: rustup target add x86_64-apple-darwin
@@ -396,10 +392,10 @@ jobs:
       - name: Install build dependencies
         run: brew install protobuf
 
-      - name: Set up Rust stable
+      - name: Set up Rust 1.87.0
         uses: dtolnay/rust-toolchain@stable
         with:
-          toolchain: stable
+          toolchain: 1.87.0
 
       - name: Add target for macOS builds
         run: rustup target add x86_64-apple-darwin
@@ -493,10 +489,10 @@ jobs:
       - name: Install build dependencies
         run: brew install protobuf
 
-      - name: Set up Rust stable
+      - name: Set up Rust 1.87.0
         uses: dtolnay/rust-toolchain@stable
         with:
-          toolchain: stable
+          toolchain: 1.87.0
 
       - name: Add target for macOS builds
         run: rustup target add aarch64-apple-darwin
@@ -590,10 +586,10 @@ jobs:
       - name: Install build dependencies
         run: brew install protobuf
 
-      - name: Set up Rust stable
+      - name: Set up Rust 1.87.0
         uses: dtolnay/rust-toolchain@stable
         with:
-          toolchain: stable
+          toolchain: 1.87.0
 
       - name: Add target for macOS builds
         run: rustup target add aarch64-apple-darwin
@@ -687,10 +683,10 @@ jobs:
       - name: Install build dependencies
         run: choco install protoc
 
-      - name: Set up Rust stable
+      - name: Set up Rust 1.87.0
         uses: dtolnay/rust-toolchain@stable
         with:
-          toolchain: stable
+          toolchain: 1.87.0
 
       - name: Cache Rust dependencies
         uses: actions/cache@v3
@@ -773,10 +769,10 @@ jobs:
       - name: Install build dependencies
         run: choco install protoc
 
-      - name: Set up Rust stable
+      - name: Set up Rust 1.87.0
         uses: dtolnay/rust-toolchain@stable
         with:
-          toolchain: stable
+          toolchain: 1.87.0
 
       - name: Cache Rust dependencies
         uses: actions/cache@v3
@@ -884,6 +880,17 @@ jobs:
         uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ github.ref_name }}
+          body: |
+            ## Latest Changes
+
+            ${{ needs.create_release.outputs.changelog_content }}
+
+            ### Commits Since Last Tag
+            ${{ needs.create_release.outputs.commits_log }}
+
+            ### Downloads
+            - [Standard Precision](https://github.com/${{ github.repository }}/releases/download/${{ github.ref_name }}/godot-dojo-${{ github.ref_name }}.zip)
+            - [Double Precision](https://github.com/${{ github.repository }}/releases/download/${{ github.ref_name }}/godot-dojo-double-${{ github.ref_name }}.zip)
           files: |
             godot-dojo-${{ github.ref_name }}.zip
             godot-dojo-double-${{ github.ref_name }}.zip
