@@ -26,6 +26,7 @@ window/stretch/aspect="expand"
 [dojo]
 
 config/katana/rpc_url="https://api.cartridge.gg/x/godot-demo-rookie/katana"
+config/fixed_point/default=40
 
 [input]
 
