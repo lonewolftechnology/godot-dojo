@@ -137,9 +137,9 @@ void Account::set_block_id(const String& block_id)
         block.number = block_id.to_int();
     }else
     {
-        Logger::debug("Setting block id to pending");
+        Logger::debug("Setting block id to Latest");
         block.tag = DOJO::BlockTag_;
-        block.block_tag = DOJO::Pending;
+        block.block_tag = DOJO::Latest;
     }
 
     DOJO::account_set_block_id(account, block);

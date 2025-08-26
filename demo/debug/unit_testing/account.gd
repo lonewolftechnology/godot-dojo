@@ -14,23 +14,24 @@ const local_contract_address = "0x06b71e9a3aa5198aa78f7d8c407024d863e1d1263e7350
 const world_address = "0x073c2b317136214562b608523812f369a05efe67257842a17c4985ce6d390be7"
 
 # First account of contract
-const account_address = "0x127fd5f1fe78a71f8bcd1fec63e3fe2f0486b6ecd5c86a0466c3a21fa5cfcec"
-const private_key = "0xc5b2fcab997346f3ea1c00b002ecf6f382c5f9c9659a3894eb783c5320f912"
+const account_address = "0x6677fe62ee39c7b07401f754138502bab7fac99d2d3c5d37df7d1c6fab10819"
+const private_key = "0x3e3979c1ed728490308054fe357a9f49cf67f80f9721f44cc57235129e090f4"
+const public_key = "0x1e8965b7d0b20b91a62fe515dd991dc9fcb748acddf6b2cf18cec3bdd0f9f9a"
 
 # The key is the selector and the array contains the data to validate to
 const tests = {
 	"spawn": [],
-	#"validate_i8": [0,1,2,3],
-	#"validate_i16": [0,1,2,3],
-	#"validate_i32": [0,1,2,3],
-	#"validate_i64": [0,1,2,3],
-	#"validate_i128": [0,1,2,3],
-	#"validate_u8": [0,1,2,3],
-	#"validate_u16": [0,1,2,3],
-	#"validate_u32": [0,1,2,3],
-	#"validate_u64": [0,1,2,3],
-	#"validate_u128": [0,1,2,3],
-	#"validate_u256": [0,1,2,3],
+	"validate_i8": [0,1,2,3],
+	"validate_i16": [0,1,2,3],
+	"validate_i32": [0,1,2,3],
+	"validate_i64": [0,1,2,3],
+	"validate_i128": [0,1,2,3],
+	"validate_u8": [0,1,2,3],
+	"validate_u16": [0,1,2,3],
+	"validate_u32": [0,1,2,3],
+	"validate_u64": [0,1,2,3],
+	"validate_u128": [0,1,2,3],
+	"validate_u256": [0,1,2,3],
 	#"validate_bool": [true, false],
 	#"validate_felt252": [],
 	#"validate_class_hash": [],
@@ -73,28 +74,40 @@ func _on_events_message(args:Dictionary) -> void:
 
 func _on_torii_client_client_connected(success: bool) -> void:
 	torii_client.set_logger_callback(_torii_logger)
-	#await get_tree().create_timer(0.1).timeout
+	await get_tree().create_timer(0.1).timeout
 	#torii_client.on_entity_state_update(_on_events, entity_sub)
-	#await get_tree().create_timer(0.1).timeout
+	await get_tree().create_timer(0.1).timeout
 	#torii_client.on_event_message_update(_on_events_message, event_message_sub)
-	
+	await get_tree().process_frame
+	await get_tree().process_frame
+	await get_tree().process_frame
+	await get_tree().process_frame
 	if use_slot:
 		account.create(rpc_url, account_address, private_key)
 	else:
 		account.create(local_rpc_url, account_address, private_key)
-	await get_tree().create_timer(0.1).timeout
+	await get_tree().process_frame
+	await get_tree().process_frame
+	await get_tree().process_frame
+	await get_tree().process_frame
 	
 	account.set_block_id()
-	await get_tree().create_timer(0.1).timeout
+	await get_tree().process_frame
+	await get_tree().process_frame
+	await get_tree().process_frame
+	await get_tree().process_frame
 	
 	if account.is_account_valid():
 		for selector in tests.keys():
 			var data:Array = tests[selector]
 			if data.is_empty():
 				if use_slot:
-					account.execute_raw(contract_address, selector)
+					account.execute_raw(contract_address, selector, [])
 				else:
 					account.execute_raw(local_contract_address, selector)
+				await get_tree().process_frame
+				await get_tree().process_frame
+				await get_tree().process_frame
 				await get_tree().process_frame
 				continue
 			for calldata in data:
@@ -102,6 +115,9 @@ func _on_torii_client_client_connected(success: bool) -> void:
 					account.execute_raw(contract_address, selector, [calldata])
 				else:
 					account.execute_raw(local_contract_address, selector, [calldata])
+				await get_tree().process_frame
+				await get_tree().process_frame
+				await get_tree().process_frame
 				await get_tree().process_frame
 
 
