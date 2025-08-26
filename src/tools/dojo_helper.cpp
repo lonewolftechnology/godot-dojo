@@ -14,7 +14,7 @@ using boost::multiprecision::uint128_t;
 using boost::multiprecision::uint256_t;
 using boost::multiprecision::int256_t;
 
-typedef boost::multiprecision::number<boost::multiprecision::cpp_dec_float<100> > cpp_dec_float_100;
+typedef boost::multiprecision::number<boost::multiprecision::cpp_dec_float<100>> cpp_dec_float_100;
 
 DojoHelpers::DojoHelpers()
 {
@@ -33,40 +33,38 @@ String DojoHelpers::get_katana_url()
 
 Variant DojoHelpers::get_setting(const String& setting)
 {
-    ProjectSettings* settings = ProjectSettings::get_singleton();
-    if (settings->has_setting(setting))
-    {
-        return settings->get_setting(setting);
-    }
-    Logger::error("Setting not found", setting);
-    return {};
+
+    return ProjectSettings::get_singleton()->get(setting);
+
 }
 
 // these use boost::multiprecision
-double DojoHelpers::variant_to_double_fp(const Variant& value, const int& precision) {
-
+double DojoHelpers::variant_to_double_fp(const Variant& value, const int& precision)
+{
     cpp_int int_val;
     // TODO convert variant (from Cairo, could be a simple int or array of ints for u128 and up) to cpp_int
-    switch (value.get_type()) {
-
-        case Variant::BOOL:
-        case Variant::INT:
-        case Variant::FLOAT:
-            int_val = static_cast<int64_t>(value);
-            break;
-        case Variant::STRING:
-            int_val = cpp_int(String(value).utf8().get_data());
-            break;
-        case Variant::ARRAY: {
+    switch (value.get_type())
+    {
+    case Variant::BOOL:
+    case Variant::INT:
+    case Variant::FLOAT:
+        int_val = static_cast<int64_t>(value);
+        break;
+    case Variant::STRING:
+        int_val = cpp_int(String(value).utf8().get_data());
+        break;
+    case Variant::ARRAY:
+        {
             // Other variant array types go here?
             // take the bytes from the array here and construct the big integer
             PackedByteArray bytes = value;
-            for (int i=0; i<bytes.size(); i++) {
+            for (int i = 0; i < bytes.size(); i++)
+            {
                 int_val += bytes[i];
                 int_val <<= 8;
             };
-
-        } break;
+        }
+        break;
     };
 
     cpp_int divisor = 1;
@@ -76,8 +74,8 @@ double DojoHelpers::variant_to_double_fp(const Variant& value, const int& precis
     return static_cast<double>(result);
 }
 
-Variant DojoHelpers::double_to_variant_fp(const double& value, const int& precision) {
-
+Variant DojoHelpers::double_to_variant_fp(const double& value, const int& precision)
+{
     cpp_int shift = 1;
     shift <<= precision;
     cpp_dec_float_100 val_100 = value;
@@ -86,15 +84,16 @@ Variant DojoHelpers::double_to_variant_fp(const double& value, const int& precis
     cpp_int val_int(val_100);
 
     // convert val_int to Variant here for use with field element etc
-    if (msb(val_int) < 64) {
+    if (msb(val_int) < 64)
+    {
         return {static_cast<int64_t>(val_int)};
     };
 
     PackedByteArray arr;
     int bytes = (msb(val_int) / 8) + 1;
     arr.resize(bytes);
-    for (int i=0; i<bytes; i++) {
-
+    for (int i = 0; i < bytes; i++)
+    {
         arr[bytes - i] = static_cast<uint8_t>(val_int & 0xff);
         val_int >>= 8;
     };
@@ -165,7 +164,8 @@ DOJO::U256 DojoHelpers::string_to_fixed_point_u256(const String& integer_str, in
     cpp_int fixed_point_value = integer_value * multiplier;
 
     cpp_int max_u256 = (cpp_int(1) << 256) - 1;
-    if (fixed_point_value > max_u256) {
+    if (fixed_point_value > max_u256)
+    {
         Logger::error("Error: El valor de punto fijo excede los 256 bits.");
         return {};
     }
@@ -176,9 +176,10 @@ DOJO::U256 DojoHelpers::string_to_fixed_point_u256(const String& integer_str, in
     DOJO::U256 result = {};
 
     size_t num_bytes = bytes.size();
-    if (num_bytes > 32) {
-         Logger::error("Error: export_bits generó más de 32 bytes.");
-         return {};
+    if (num_bytes > 32)
+    {
+        Logger::error("Error: export_bits generó más de 32 bytes.");
+        return {};
     }
 
     uint8_t temp_buffer[32] = {0};
@@ -207,36 +208,43 @@ String DojoHelpers::u256_fixed_point_to_string(const DOJO::U256& u256, int preci
     std::string std_string_result = float_result.str(100, std::ios_base::fixed);
 
     std_string_result.erase(std_string_result.find_last_not_of('0') + 1, std::string::npos);
-    if (std_string_result.back() == '.') {
+    if (std_string_result.back() == '.')
+    {
         std_string_result.pop_back();
     }
 
     return {std_string_result.c_str()};
 }
 
-void DojoHelpers::string_to_i8(const String& str, int8_t* out_val) {
+void DojoHelpers::string_to_i8(const String& str, int8_t* out_val)
+{
     *out_val = static_cast<int8_t>(str.to_int());
 }
 
-void DojoHelpers::string_to_i16(const String& str, int16_t* out_val) {
+void DojoHelpers::string_to_i16(const String& str, int16_t* out_val)
+{
     *out_val = static_cast<int16_t>(str.to_int());
 }
 
-void DojoHelpers::string_to_i32(const String& str, int32_t* out_val) {
+void DojoHelpers::string_to_i32(const String& str, int32_t* out_val)
+{
     *out_val = static_cast<int32_t>(str.to_int());
 }
 
-void DojoHelpers::string_to_i64(const String& str, int64_t* out_val) {
+void DojoHelpers::string_to_i64(const String& str, int64_t* out_val)
+{
     *out_val = str.to_int();
 }
 
-void DojoHelpers::string_to_i128(const String& str, uint8_t* out_val) {
+void DojoHelpers::string_to_i128(const String& str, uint8_t* out_val)
+{
     int128_t val(str.utf8().get_data());
     std::vector<uint8_t> bytes;
     export_bits(val, std::back_inserter(bytes), 8);
 
     size_t num_bytes = bytes.size();
-    if (num_bytes > 16) {
+    if (num_bytes > 16)
+    {
         Logger::error("Error: String value exceeds 128 bits.");
         return;
     }
@@ -250,13 +258,15 @@ void DojoHelpers::string_to_i128(const String& str, uint8_t* out_val) {
     memcpy(out_val, temp_buffer, 16);
 }
 
-void DojoHelpers::string_to_u128(const String& str, uint8_t* out_val) {
+void DojoHelpers::string_to_u128(const String& str, uint8_t* out_val)
+{
     uint128_t val(str.utf8().get_data());
     std::vector<uint8_t> bytes;
     export_bits(val, std::back_inserter(bytes), 8);
 
     size_t num_bytes = bytes.size();
-    if (num_bytes > 16) {
+    if (num_bytes > 16)
+    {
         Logger::error("Error: String value exceeds 128 bits.");
         return;
     }
@@ -267,14 +277,16 @@ void DojoHelpers::string_to_u128(const String& str, uint8_t* out_val) {
     memcpy(out_val, temp_buffer, 16);
 }
 
-DOJO::U256 DojoHelpers::string_to_u256(const String& str) {
+DOJO::U256 DojoHelpers::string_to_u256(const String& str)
+{
     uint256_t val(str.utf8().get_data());
     std::vector<uint8_t> bytes;
     export_bits(val, std::back_inserter(bytes), 8);
 
     DOJO::U256 result = {};
     size_t num_bytes = bytes.size();
-    if (num_bytes > 32) {
+    if (num_bytes > 32)
+    {
         Logger::error("Error: String value exceeds 256 bits.");
         return result;
     }
@@ -287,13 +299,15 @@ DOJO::U256 DojoHelpers::string_to_u256(const String& str) {
     return result;
 }
 
-void DojoHelpers::string_to_i256(const String& str, uint8_t* out_val) {
+void DojoHelpers::string_to_i256(const String& str, uint8_t* out_val)
+{
     int256_t val(str.utf8().get_data());
     std::vector<uint8_t> bytes;
     export_bits(val, std::back_inserter(bytes), 8);
 
     size_t num_bytes = bytes.size();
-    if (num_bytes > 32) {
+    if (num_bytes > 32)
+    {
         Logger::error("Error: String value exceeds 256 bits.");
         return;
     }
@@ -307,7 +321,8 @@ void DojoHelpers::string_to_i256(const String& str, uint8_t* out_val) {
     memcpy(out_val, temp_buffer, 32);
 }
 
-void DojoHelpers::float_string_to_fixed_point_i128(const String& str, int precision, uint8_t* out_val) {
+void DojoHelpers::float_string_to_fixed_point_i128(const String& str, int precision, uint8_t* out_val)
+{
     cpp_dec_float_100 float_val(str.utf8().get_data());
     cpp_int multiplier = 1;
     multiplier <<= precision;
@@ -318,7 +333,8 @@ void DojoHelpers::float_string_to_fixed_point_i128(const String& str, int precis
     export_bits(fixed_point_val, std::back_inserter(bytes), 8);
 
     size_t num_bytes = bytes.size();
-    if (num_bytes > 16) {
+    if (num_bytes > 16)
+    {
         Logger::error("Error: Fixed point value exceeds 128 bits.");
         return;
     }
@@ -332,7 +348,8 @@ void DojoHelpers::float_string_to_fixed_point_i128(const String& str, int precis
     memcpy(out_val, temp_buffer, 16);
 }
 
-String DojoHelpers::i128_fixed_point_to_float_string(const uint8_t* val, int precision) {
+String DojoHelpers::i128_fixed_point_to_float_string(const uint8_t* val, int precision)
+{
     std::vector<uint8_t> bytes(val, val + 16);
     std::reverse(bytes.begin(), bytes.end());
 
@@ -347,7 +364,8 @@ String DojoHelpers::i128_fixed_point_to_float_string(const uint8_t* val, int pre
     return {float_result.str(100, std::ios_base::fixed).c_str()};
 }
 
-void DojoHelpers::float_string_to_fixed_point_i256(const String& str, int precision, uint8_t* out_val) {
+void DojoHelpers::float_string_to_fixed_point_i256(const String& str, int precision, uint8_t* out_val)
+{
     cpp_dec_float_100 float_val(str.utf8().get_data());
     cpp_int multiplier = 1;
     multiplier <<= precision;
@@ -358,7 +376,8 @@ void DojoHelpers::float_string_to_fixed_point_i256(const String& str, int precis
     export_bits(fixed_point_val, std::back_inserter(bytes), 8);
 
     size_t num_bytes = bytes.size();
-    if (num_bytes > 32) {
+    if (num_bytes > 32)
+    {
         Logger::error("Error: Fixed point value exceeds 256 bits.");
         return;
     }
@@ -372,7 +391,8 @@ void DojoHelpers::float_string_to_fixed_point_i256(const String& str, int precis
     memcpy(out_val, temp_buffer, 32);
 }
 
-String DojoHelpers::i256_fixed_point_to_float_string(const uint8_t* val, int precision) {
+String DojoHelpers::i256_fixed_point_to_float_string(const uint8_t* val, int precision)
+{
     std::vector<uint8_t> bytes(val, val + 32);
     std::reverse(bytes.begin(), bytes.end());
 
@@ -387,7 +407,8 @@ String DojoHelpers::i256_fixed_point_to_float_string(const uint8_t* val, int pre
     return {float_result.str(100, std::ios_base::fixed).c_str()};
 }
 
-Ref<FieldElement> DojoHelpers::string_to_field_element(const String& str) {
+Ref<FieldElement> DojoHelpers::string_to_field_element(const String& str)
+{
     Ref<FieldElement> felt = memnew(FieldElement(str));
     return felt;
 }
