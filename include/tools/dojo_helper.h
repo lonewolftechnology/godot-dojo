@@ -103,6 +103,9 @@ protected:
                                     &DojoHelpers::fixed_to_float_256);
         ClassDB::bind_static_method("DojoHelpers", D_METHOD("string_to_field_element", "str"), &DojoHelpers::string_to_field_element);
 
+        ClassDB::bind_static_method("DojoHelpers", D_METHOD("double_to_variant_fp", "value", "precision"), &DojoHelpers::double_to_variant_fp);
+        ClassDB::bind_static_method("DojoHelpers", D_METHOD("variant_to_double_fp", "value", "precision"), &DojoHelpers::variant_to_double_fp);
+
     }
     static DojoHelpers* singleton;
 
