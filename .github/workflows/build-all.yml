@@ -123,10 +123,10 @@ jobs:
       - name: Install build dependencies
         run: sudo apt-get update && sudo apt-get install -y build-essential pkg-config libdbus-1-dev protobuf-compiler libprotobuf-dev
 
-      - name: Set up Rust 1.87.0
+      - name: Set up Rust stable
         uses: dtolnay/rust-toolchain@stable
         with:
-          toolchain: 1.87.0
+          toolchain: stable
 
       - name: Cache Rust dependencies
         uses: actions/cache@v3
@@ -209,10 +209,10 @@ jobs:
       - name: Install build dependencies
         run: sudo apt-get update && sudo apt-get install -y build-essential pkg-config libdbus-1-dev protobuf-compiler libprotobuf-dev
 
-      - name: Set up Rust 1.87.0
+      - name: Set up Rust stable
         uses: dtolnay/rust-toolchain@stable
         with:
-          toolchain: 1.87.0
+          toolchain: stable
 
       - name: Cache Rust dependencies
         uses: actions/cache@v3
@@ -295,10 +295,10 @@ jobs:
       - name: Install build dependencies
         run: brew install protobuf
 
-      - name: Set up Rust 1.87.0
+      - name: Set up Rust stable
         uses: dtolnay/rust-toolchain@stable
         with:
-          toolchain: 1.87.0
+          toolchain: stable
 
       - name: Add target for macOS builds
         run: rustup target add x86_64-apple-darwin
@@ -392,10 +392,10 @@ jobs:
       - name: Install build dependencies
         run: brew install protobuf
 
-      - name: Set up Rust 1.87.0
+      - name: Set up Rust stable
         uses: dtolnay/rust-toolchain@stable
         with:
-          toolchain: 1.87.0
+          toolchain: stable
 
       - name: Add target for macOS builds
         run: rustup target add x86_64-apple-darwin
@@ -489,10 +489,10 @@ jobs:
       - name: Install build dependencies
         run: brew install protobuf
 
-      - name: Set up Rust 1.87.0
+      - name: Set up Rust stable
         uses: dtolnay/rust-toolchain@stable
         with:
-          toolchain: 1.87.0
+          toolchain: stable
 
       - name: Add target for macOS builds
         run: rustup target add aarch64-apple-darwin
@@ -586,10 +586,10 @@ jobs:
       - name: Install build dependencies
         run: brew install protobuf
 
-      - name: Set up Rust 1.87.0
+      - name: Set up Rust stable
         uses: dtolnay/rust-toolchain@stable
         with:
-          toolchain: 1.87.0
+          toolchain: stable
 
       - name: Add target for macOS builds
         run: rustup target add aarch64-apple-darwin
@@ -683,10 +683,10 @@ jobs:
       - name: Install build dependencies
         run: choco install protoc
 
-      - name: Set up Rust 1.87.0
+      - name: Set up Rust stable
         uses: dtolnay/rust-toolchain@stable
         with:
-          toolchain: 1.87.0
+          toolchain: stable
 
       - name: Cache Rust dependencies
         uses: actions/cache@v3
@@ -769,10 +769,10 @@ jobs:
       - name: Install build dependencies
         run: choco install protoc
 
-      - name: Set up Rust 1.87.0
+      - name: Set up Rust stable
         uses: dtolnay/rust-toolchain@stable
         with:
-          toolchain: 1.87.0
+          toolchain: stable
 
       - name: Cache Rust dependencies
         uses: actions/cache@v3
