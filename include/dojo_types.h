@@ -25,7 +25,105 @@
 namespace dojo_bindings {
 
 // ============================================================================
-// Enumeraciones
+// Structs
+// ============================================================================
+
+struct ToriiClient;
+struct Policy;
+struct ControllerAccount;
+struct Call;
+struct Controller;
+struct OrderBy;
+struct Entity;
+struct COptionFieldElement;
+struct Model;
+struct Transaction;
+struct Subscription;
+struct TransactionCall;
+struct Struct;
+struct Token;
+struct TokenBalance;
+struct TokenCollection;
+struct Provider;
+struct Account;
+struct Ty;
+struct Member;
+struct EnumOption;
+struct Error;
+struct ResultToriiClient;
+struct FieldElement;
+struct ResultControllerAccount;
+struct Resultbool;
+struct ResultFieldElement;
+struct CArrayFieldElement;
+struct Message;
+struct ResultCArrayFieldElement;
+struct CArrayController;
+struct COptionc_char;
+struct PageController;
+struct ResultPageController;
+struct COptionu32;
+struct CArrayOrderBy;
+struct Pagination;
+struct CArrayc_char;
+struct ControllerQuery;
+struct CArrayEntity;
+struct PageEntity;
+struct ResultPageEntity;
+struct CArrayCOptionFieldElement;
+struct KeysClause;
+struct U256;
+struct Primitive;
+struct CArrayMemberValue;
+struct MemberValue;
+struct MemberClause;
+struct CArrayClause;
+struct CompositeClause;
+struct Clause;
+struct COptionClause;
+struct Query;
+struct CArrayModel;
+struct World;
+struct ResultWorld;
+struct CArrayTransaction;
+struct PageTransaction;
+struct ResultPageTransaction;
+struct COptionu64;
+struct TransactionFilter;
+struct COptionTransactionFilter;
+struct TransactionQuery;
+struct ResultSubscription;
+struct CArrayTransactionCall;
+struct CArrayStruct;
+struct Event;
+struct CArrayToken;
+struct PageToken;
+struct ResultPageToken;
+struct CArrayU256;
+struct TokenQuery;
+struct COptionU256;
+struct CArrayTokenBalance;
+struct PageTokenBalance;
+struct ResultPageTokenBalance;
+struct TokenBalanceQuery;
+struct CArrayTokenCollection;
+struct PageTokenCollection;
+struct ResultPageTokenCollection;
+struct IndexerUpdate;
+struct Resultc_char;
+struct Signature;
+struct ResultSignature;
+struct ResultProvider;
+struct ResultAccount;
+struct BlockId;
+struct CArrayMember;
+struct CArrayEnumOption;
+struct Enum;
+struct CArrayTy;
+struct FixedSizeArray;
+
+// ============================================================================
+// Enums
 // ============================================================================
 
 enum BlockTag;
@@ -41,191 +139,31 @@ enum Clause_Tag;
 enum BlockId_Tag;
 enum Ty_Tag;
 
-// Tags para Tipos Opcionales
-enum COptionc_char_Tag;
-enum COptionu32_Tag;
-enum COptionu64_Tag;
-enum COptionClause_Tag;
-enum COptionTransactionFilter_Tag;
-enum COptionU256_Tag;
-enum COptionFieldElement_Tag;
-
-// Tags para Tipos de Resultado
+// Enum Tags
 enum ResultToriiClient_Tag;
 enum ResultControllerAccount_Tag;
 enum Resultbool_Tag;
 enum ResultFieldElement_Tag;
 enum ResultCArrayFieldElement_Tag;
+enum COptionc_char_Tag;
 enum ResultPageController_Tag;
+enum COptionu32_Tag;
 enum ResultPageEntity_Tag;
+enum COptionClause_Tag;
 enum ResultWorld_Tag;
 enum ResultPageTransaction_Tag;
+enum COptionu64_Tag;
+enum COptionTransactionFilter_Tag;
 enum ResultSubscription_Tag;
 enum ResultPageToken_Tag;
+enum COptionU256_Tag;
 enum ResultPageTokenBalance_Tag;
 enum ResultPageTokenCollection_Tag;
 enum Resultc_char_Tag;
 enum ResultSignature_Tag;
 enum ResultProvider_Tag;
 enum ResultAccount_Tag;
-
-
-// ============================================================================
-// Tipos de Datos Fundamentales
-// ============================================================================
-
-struct FieldElement;
-struct U256;
-struct Primitive;
-struct Struct;
-struct Enum;
-struct Ty;
-struct Member;
-struct EnumOption;
-struct MemberValue;
-struct Signature;
-struct Message;
-
-
-// ============================================================================
-// Cliente y Conexión
-// ============================================================================
-
-struct ToriiClient;
-struct Provider;
-struct Account;
-struct ControllerAccount;
-struct Subscription;
-
-
-// ============================================================================
-// Mundo, Modelos y Entidades
-// ============================================================================
-
-struct World;
-struct Model;
-struct Entity;
-struct Controller;
-
-
-// ============================================================================
-// Tokens y Balances
-// ============================================================================
-
-struct Token;
-struct TokenBalance;
-struct TokenCollection;
-struct IndexerUpdate;
-
-
-// ============================================================================
-// Sistema de Consultas y Cláusulas
-// ============================================================================
-
-struct Query;
-struct ControllerQuery;
-struct TransactionQuery;
-struct TokenQuery;
-struct TokenBalanceQuery;
-struct Clause;
-struct KeysClause;
-struct MemberClause;
-struct CompositeClause;
-struct OrderBy;
-struct TransactionFilter;
-
-
-// ============================================================================
-// Blockchain y Transacciones
-// ============================================================================
-
-struct Call;
-struct Transaction;
-struct TransactionCall;
-struct BlockId;
-struct Policy;
-struct Event;
-
-
-// ============================================================================
-// Paginación y Páginas
-// ============================================================================
-
-struct Pagination;
-struct PageController;
-struct PageEntity;
-struct PageTransaction;
-struct PageToken;
-struct PageTokenBalance;
-struct PageTokenCollection;
-
-
-// ============================================================================
-// Tipos de Resultado
-// ============================================================================
-
-struct ResultToriiClient;
-struct ResultProvider;
-struct ResultAccount;
-struct ResultControllerAccount;
-struct ResultSubscription;
-struct ResultPageController;
-struct ResultPageEntity;
-struct ResultPageTransaction;
-struct ResultPageToken;
-struct ResultPageTokenBalance;
-struct ResultPageTokenCollection;
-struct ResultWorld;
-struct ResultFieldElement;
-struct ResultCArrayFieldElement;
-struct Resultbool;
-struct Resultc_char;
-struct ResultSignature;
-
-
-// ============================================================================
-// Arrays de C
-// ============================================================================
-
-struct CArrayFieldElement;
-struct CArrayController;
-struct CArrayOrderBy;
-struct CArrayc_char;
-struct CArrayEntity;
-struct CArrayCOptionFieldElement;
-struct CArrayMemberValue;
-struct CArrayClause;
-struct CArrayModel;
-struct CArrayTransaction;
-struct CArrayTransactionCall;
-struct CArrayStruct;
-struct CArrayToken;
-struct CArrayU256;
-struct CArrayTokenBalance;
-struct CArrayTokenCollection;
-struct CArrayMember;
-struct CArrayEnumOption;
-struct CArrayTy;
-
-
-// ============================================================================
-// Tipos Opcionales
-// ============================================================================
-
-struct COptionFieldElement;
-struct COptionc_char;
-struct COptionu32;
-struct COptionu64;
-struct COptionClause;
-struct COptionTransactionFilter;
-struct COptionU256;
-
-
-// ============================================================================
-// Manejo de Errores
-// ============================================================================
-
-struct Error;
+enum COptionFieldElement_Tag;
 
 } // namespace dojo_bindings
 
