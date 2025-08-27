@@ -173,122 +173,23 @@ void Account::execute_raw(const String& to, const String& selector, const Array&
         return;
     }
 
-    DOJO::FieldElement contract = FieldElement::from_string(to);
+    DojoCallData call_data = DojoHelpers::prepare_dojo_call_data(to, selector, args);
 
-    uint8_t calldata_len = args.size();
-
-    std::string selector_str = selector.utf8().get_data();
-
-    std::vector<DOJO::FieldElement> felts_vec;
-    Logger::debug_extra("Account", "Building Call");
-
-    DOJO::Call call = {
-        contract,
-        selector_str.c_str(),
-    };
-
-
-    if (calldata_len > 0)
-    {
-        Logger::debug_extra("Account", "Building Calldata");
-
-        Array final_args = {};
-
-        for (int i = 0; i < calldata_len; i++)
-        {
-            const Variant& arg = args[i];
-            Logger::custom("Calldata", Variant::get_type_name(arg.get_type()), arg.stringify());
-
-            switch (arg.get_type())
-            {
-            case Variant::Type::ARRAY:
-                {
-                    Array v_array = static_cast<Array>(arg);
-                    // final_args.push_back(v_array.size());
-                    final_args.append_array(arg);
-                    break;
-                }
-            case Variant::Type::INT:
-                {
-                    final_args.push_back(arg);
-                    break;
-                }
-            case Variant::Type::FLOAT:
-                {
-                    final_args.push_back(
-                        DojoHelpers::double_to_variant_fp(
-                            arg,
-                            DojoHelpers::get_setting("dojo/config/fixed_point/default")
-                        )
-                    );
-                    break;
-                }
-            case Variant::Type::PACKED_BYTE_ARRAY:
-                {
-                    final_args.push_back(arg);
-                    break;
-                }
-            default:
-                {
-                    Logger::warning("Calldata", "Unsupported type", Variant::get_type_name(arg.get_type()),
-                                    arg.stringify());
-                    // final_args.push_back(arg.stringify());
-                    break;
-                }
-            }
-        }
-        Logger::custom("CALLDATA", calldata_len);
-        calldata_len = final_args.size();
-        Logger::debug_extra("CALLDATA", calldata_len, Variant(final_args).stringify());
-        felts_vec.reserve(calldata_len);
-        for (int i = 0; i < calldata_len; i++)
-        {
-            const Variant& arg = final_args[i];
-            if (arg.get_type() == Variant::Type::INT)
-            {
-                felts_vec.push_back(FieldElement::from_enum(arg));
-            }
-            else if (arg.get_type() == Variant::Type::PACKED_BYTE_ARRAY)
-            {
-                const PackedByteArray v_array = static_cast<PackedByteArray>(arg);
-                if (v_array.size() == 32) // u256 / felt252
-                {
-                    DOJO::FieldElement felt;
-                    memcpy(&felt, v_array.ptr(), 32);
-                    felts_vec.push_back(felt);
-                }
-                else if (v_array.size() == 16) // u128 / i128
-                {
-                    DOJO::FieldElement felt;
-                    memset(&felt, 0, sizeof(DOJO::FieldElement)); // Complete bytes
-                    memcpy(&felt, v_array.ptr(), 16);
-                    felts_vec.push_back(felt);
-                }
-                else
-                {
-                    String error_msg = "Unsupported PackedByteArray size: " + String::num_int64(v_array.size()) +
-                        ". Expected 16 (for u128) or 32 (for u256/felt252).";
-                    Logger::error("Calldata", error_msg);
-                    emit_signal("transaction_failed", error_msg);
-                    return;
-                }
-            }
-            else if (static_cast<String>(arg).begins_with("0x"))
-            {
-                felts_vec.push_back(FieldElement::from_string(arg));
-            }
-            else
-            {
-                felts_vec.push_back(FieldElement::cairo_short_string_to_felt(arg));
-            }
-        }
-
-        call.calldata = {felts_vec.data(), felts_vec.size()};
-
-        Logger::debug_extra("CALLDATA", "Calldata added, size:", call.calldata.data_len);
+    if (!call_data.is_valid) {
+        Dictionary error_dict;
+        error_dict["error"] = "Failed to create transaction call. Check logs for details.";
+        error_dict["selector"] = selector;
+        error_dict["calldata"] = args;
+        Logger::error_dict(error_dict);
+        emit_signal("transaction_failed", error_dict);
+        return;
     }
 
-    Logger::debug_extra("CALL", Variant(call.selector));
+    DOJO::Call call = {
+        call_data.to,
+        call_data.selector_str.c_str(),
+        {call_data.calldata_felts.data(), call_data.calldata_felts.size()}
+    };
 
     DOJO::ResultFieldElement res_tx = DOJO::account_execute_raw(account, &call, 1);
     if (res_tx.tag == DOJO::ErrFieldElement)

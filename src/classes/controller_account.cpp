@@ -200,160 +200,18 @@ void ControllerAccount::execute_from_outside(const String& to, const String& sel
 {
     if (!is_controller_connected())
     {
-        Logger::error("ControllerAccount no está conectado");
-        emit_signal("transaction_failed", "Cuenta no conectada");
+        Logger::error("ControllerAccount not found");
+        emit_signal("transaction_failed", "Controller not found");
     }
-    // Refactor based on UE implementation
-    DOJO::FieldElement actions = FieldElement::from_string(to);
+    DojoCallData call_data = DojoHelpers::prepare_dojo_call_data(to, selector, args);
 
-    uintptr_t calldata_len = args.size();
-
-    std::string selector_str = selector.utf8().get_data();
-
-    std::vector<DOJO::FieldElement> felts_vec;
-    Logger::debug_extra("Controller", "Building Call");
 
     DOJO::Call call = {
-        actions,
-        selector_str.c_str()
+        call_data.to,
+        call_data.selector_str.c_str(),
+        {call_data.calldata_felts.data(), call_data.calldata_felts.size()}
     };
 
-    if (calldata_len > 0)
-    {
-        Logger::debug_extra("Controller", "Building Calldata");
-
-        Array final_args = {};
-
-        for (int i = 0; i < calldata_len; i++)
-        {
-            const Variant& arg = args[i];
-            Logger::custom("Calldata", Variant::get_type_name(arg.get_type()), arg.stringify());
-
-            switch (arg.get_type())
-            {
-            case Variant::Type::ARRAY:
-                {
-                    Array v_array = static_cast<Array>(arg);
-                    // final_args.push_back(v_array.size());
-                    final_args.append_array(arg);
-                    break;
-                }
-            case Variant::Type::INT:
-                {
-                    final_args.push_back(arg);
-                    break;
-                }
-            case Variant::Type::FLOAT:
-                {
-                    final_args.push_back(
-                        DojoHelpers::double_to_variant_fp(
-                            arg,
-                            DojoHelpers::get_setting("dojo/config/fixed_point/default")
-                            )
-                        );
-                    break;
-                }
-            case Variant::Type::PACKED_BYTE_ARRAY:
-                {
-                    final_args.push_back(arg);
-                    break;
-                }
-            // case Variant::Type::VECTOR2:
-            //     {
-            //         Vector2 vec = static_cast<Vector2>(arg);
-            //
-            //         final_args.append(vec.x);
-            //         final_args.append(vec.y);
-            //
-            //         break;
-            //     }
-            // case Variant::Type::VECTOR2I:
-            //     {
-            //         Vector2i vec = static_cast<Vector2i>(arg);
-            //
-            //         final_args.append(vec.x);
-            //         final_args.append(vec.y);
-            //
-            //         break;
-            //     }
-            // case Variant::Type::VECTOR3:
-            //     {
-            //         Vector3 vec = static_cast<Vector3>(arg);
-            //
-            //         final_args.append(vec.x);
-            //         final_args.append(vec.y);
-            //         final_args.append(vec.z);
-            //
-            //         break;
-            //     }
-            // case Variant::Type::VECTOR3I:
-            //     {
-            //         Vector3i vec = static_cast<Vector3i>(arg);
-            //
-            //         final_args.append(vec.x);
-            //         final_args.append(vec.y);
-            //         final_args.append(vec.z);
-            //
-            //         break;
-            //     }
-            default:
-                {
-                    Logger::warning("Calldata", "Unsupported type", Variant::get_type_name(arg.get_type()));
-                    // final_args.push_back(arg.stringify());
-                    break;
-                }
-            }
-        }
-        Logger::custom("CALLDATA", calldata_len);
-        calldata_len = final_args.size();
-        Logger::debug_extra("CALLDATA", calldata_len, Variant(final_args).stringify());
-        felts_vec.reserve(calldata_len);
-        for (int i = 0; i < calldata_len; i++)
-        {
-            const Variant& arg = final_args[i];
-            if (arg.get_type() == Variant::Type::INT)
-            {
-                felts_vec.push_back(FieldElement::from_enum(arg));
-            }
-            else if (arg.get_type() == Variant::Type::PACKED_BYTE_ARRAY)
-            {
-                const PackedByteArray v_array = static_cast<PackedByteArray>(arg);
-                if (v_array.size() == 32) // u256 / felt252
-                {
-                    DOJO::FieldElement felt;
-                    memcpy(&felt, v_array.ptr(), 32);
-                    felts_vec.push_back(felt);
-                }
-                else if (v_array.size() == 16) // u128 / i128
-                {
-                    DOJO::FieldElement felt;
-                    memset(&felt, 0, sizeof(DOJO::FieldElement)); // Complete bytes
-                    memcpy(&felt, v_array.ptr(), 16);
-                    felts_vec.push_back(felt);
-                }
-                else
-                {
-                    String error_msg = "Unsupported PackedByteArray size: " + String::num_int64(v_array.size()) + ". Expected 16 (for u128) or 32 (for u256/felt252).";
-                    Logger::error("Calldata", error_msg);
-                    emit_signal("transaction_failed", error_msg);
-                    return;
-                }
-            }
-            else if (static_cast<String>(arg).begins_with("0x"))
-            {
-                felts_vec.push_back(FieldElement::from_string(arg));
-            }
-            else
-            {
-                felts_vec.push_back(FieldElement::cairo_short_string_to_felt(arg));
-            }
-        }
-
-        call.calldata = {felts_vec.data(), felts_vec.size()};
-        Logger::debug_extra("CALLDATA", "Calldata added, size:", call.calldata.data_len);
-    }
-
-    Logger::debug_extra("CALL", Variant(call.selector));
     DOJO::ResultFieldElement result = DOJO::controller_execute_from_outside(
         session_account, &call, 1
     );
@@ -363,19 +221,13 @@ void ControllerAccount::execute_from_outside(const String& to, const String& sel
         Logger::error("To:", to);
         Logger::error("Selector:", selector);
         Logger::error("Error:", GET_DOJO_ERROR(result));
-        for (int i = 0; i < calldata_len; i++)
-        {
-            Logger::debug_extra("Calldata[" + String::num_int64(i) + "]",
-                                FieldElement::get_as_string(&felts_vec[i]));
-        }
         emit_signal("transaction_failed", GET_DOJO_ERROR(result));
     }
     else
     {
         DOJO::wait_for_transaction(provider, GET_DOJO_OK(result));
-        Logger::success_extra("EXECUTED", call.selector);
+        Logger::success_extra("EXECUTED", &call.selector);
     }
-    // felts_vec is automatically cleaned up when it goes out of scope. No need to free.
 }
 
 Dictionary ControllerAccount::get_account_info() const

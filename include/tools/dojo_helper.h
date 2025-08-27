@@ -9,8 +9,20 @@
 #include "dojo_types.h"
 #include "godot_cpp/core/class_db.hpp"
 #include "variant/field_element.h"
+#include <vector>
+#include <string>
 
 using namespace godot;
+
+// Struct to hold the data for a DOJO::Call
+// This is used to prepare the data in a helper and then construct the
+// final DOJO::Call in the calling scope to avoid lifetime issues.
+struct DojoCallData {
+    DOJO::FieldElement to;
+    std::string selector_str;
+    std::vector<DOJO::FieldElement> calldata_felts;
+    bool is_valid = false;
+};
 
 class DojoHelpers : public Object
 {
@@ -72,6 +84,7 @@ public:
     static String i256_fixed_point_to_float_string(const uint8_t* val, int precision);
 
     static Ref<FieldElement> string_to_field_element(const String& str);
+    static DojoCallData prepare_dojo_call_data(const String& to, const String& selector, const Array& args);
 
 
 protected:

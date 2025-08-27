@@ -12,7 +12,6 @@
 #include "godot_cpp/variant/dictionary.hpp"
 
 #include "dojo_types.h"
-#include "resources/dojo_call.h"
 
 using namespace godot;
 

@@ -412,3 +412,110 @@ Ref<FieldElement> DojoHelpers::string_to_field_element(const String& str)
     Ref<FieldElement> felt = memnew(FieldElement(str));
     return felt;
 }
+
+DojoCallData DojoHelpers::prepare_dojo_call_data(const String& to, const String& selector, const Array& args)
+{
+    DojoCallData call_data;
+
+    call_data.to = FieldElement::from_string(to);
+    call_data.selector_str = selector.utf8().get_data();
+
+    uint8_t calldata_len = args.size();
+
+    if (calldata_len > 0)
+    {
+        Logger::debug_extra("DojoHelpers", "Building Calldata");
+
+        Array final_args = {};
+
+        for (int i = 0; i < calldata_len; i++)
+        {
+            const Variant& arg = args[i];
+            Logger::custom("Calldata", Variant::get_type_name(arg.get_type()), arg.stringify());
+
+            switch (arg.get_type())
+            {
+            case Variant::Type::ARRAY:
+                {
+                    Array v_array = static_cast<Array>(arg);
+                    final_args.append_array(arg);
+                    break;
+                }
+            case Variant::BOOL:
+            case Variant::INT:
+                {
+                    final_args.push_back(static_cast<int64_t>(arg));
+                    break;
+                }
+            case Variant::Type::FLOAT:
+                {
+                    final_args.push_back(
+                        DojoHelpers::double_to_variant_fp(
+                            arg,
+                            DojoHelpers::get_setting("dojo/config/fixed_point/default")
+                        )
+                    );
+                    break;
+                }
+            case Variant::Type::PACKED_BYTE_ARRAY:
+                {
+                    final_args.push_back(arg);
+                    break;
+                }
+            default:
+                {
+                    Logger::warning("Calldata", "Unsupported type", Variant::get_type_name(arg.get_type()),
+                                    arg.stringify());
+                    break;
+                }
+            }
+        }
+        Logger::custom("CALLDATA", calldata_len);
+        calldata_len = final_args.size();
+        Logger::debug_extra("CALLDATA", calldata_len, Variant(final_args).stringify());
+        call_data.calldata_felts.reserve(calldata_len);
+        for (int i = 0; i < calldata_len; i++)
+        {
+            const Variant& arg = final_args[i];
+            if (arg.get_type() == Variant::Type::INT)
+            {
+                call_data.calldata_felts.push_back(FieldElement::from_enum(arg));
+            }
+            else if (arg.get_type() == Variant::Type::PACKED_BYTE_ARRAY)
+            {
+                const PackedByteArray v_array = static_cast<PackedByteArray>(arg);
+                if (v_array.size() == 32) // u256 / felt252
+                {
+                    DOJO::FieldElement felt;
+                    memcpy(&felt, v_array.ptr(), 32);
+                    call_data.calldata_felts.push_back(felt);
+                }
+                else if (v_array.size() == 16) // u128 / i128
+                {
+                    DOJO::FieldElement felt;
+                    memset(&felt, 0, sizeof(DOJO::FieldElement)); // Complete bytes
+                    memcpy(&felt, v_array.ptr(), 16);
+                    call_data.calldata_felts.push_back(felt);
+                }
+                else
+                {
+                    String error_msg = "Unsupported PackedByteArray size: " + String::num_int64(v_array.size()) +
+                        ". Expected 16 (for u128) or 32 (for u256/felt252).";
+                    Logger::error("Calldata", error_msg);
+                    return call_data; // is_valid is false
+                }
+            }
+            else if (static_cast<String>(arg).begins_with("0x"))
+            {
+                call_data.calldata_felts.push_back(FieldElement::from_string(arg));
+            }
+            else
+            {
+                call_data.calldata_felts.push_back(FieldElement::cairo_short_string_to_felt(arg));
+            }
+        }
+    }
+
+    call_data.is_valid = true;
+    return call_data;
+}
