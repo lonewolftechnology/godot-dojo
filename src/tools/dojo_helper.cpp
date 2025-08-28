@@ -56,7 +56,7 @@ double DojoHelpers::variant_to_double_fp(const Variant& value, const int& precis
             // Other variant array types go here?
             // take the bytes from the array here and construct the big integer
             PackedByteArray bytes = value;
-            for (int i = 0; i < bytes.size(); i++)
+            for (int i = 1; i <= bytes.size(); i++)
             {
                 int_val += bytes[i];
                 int_val <<= 8;
@@ -90,7 +90,7 @@ Variant DojoHelpers::double_to_variant_fp(const double& value, const int& precis
     PackedByteArray arr;
     int bytes = (msb(val_int) / 8) + 1;
     arr.resize(bytes);
-    for (int i = 0; i < bytes; i++)
+    for (int i = 1; i <= bytes; i++)
     {
         arr[bytes - i] = static_cast<uint8_t>(val_int & 0xff);
         val_int >>= 8;
