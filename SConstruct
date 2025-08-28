@@ -117,7 +117,6 @@ if env["platform"] == "web":
 
     env_vars["RUSTFLAGS"] = rustflags
 
-
     subprocess.run(cmd, check=True, cwd="external/dojo.c", env=env_vars)
 else:
     env_vars = os.environ.copy()
@@ -162,6 +161,12 @@ prefix = env.subst('$SHLIBPREFIX')
 env.Append(CPPPATH=["src/", "include/", "external/dojo.c", "external/boost/include"])
 
 if platform == "linux":
+    try:
+        env.ParseConfig("pkg-config --cflags --libs dbus-1")
+        print("Configured with dbus-1 flags.")
+    except OSError:
+        print("pkg-config for dbus-1 not found. DBus features might not be available.")
+        Exit(1)
     env.Append(LINKFLAGS=['-ldbus-1'])
     # Forced because for some reason it uses an older standard
     env.Append(
@@ -232,9 +237,11 @@ gdext = gdext.replace("${GODOT_MIN_REQUIREMENT}", "4.2")
 with open("demo/addons/godot-dojo/godot-dojo.gdextension", 'w') as f:
     f.write(gdext)
 
+
 def build_complete_callback(target, source, env):
     print(f"{G}{party} Build complete!{X}")
     return None
+
 
 env.AddPostAction(library, build_complete_callback)
 
