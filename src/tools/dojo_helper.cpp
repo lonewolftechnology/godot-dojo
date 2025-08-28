@@ -61,8 +61,8 @@ double DojoHelpers::variant_to_double_fp(const Variant& value, const int& precis
                 int_val += bytes[i];
                 int_val <<= 8;
             };
+            break;
         }
-        break;
     };
 
     cpp_int divisor = 1;
@@ -96,7 +96,7 @@ Variant DojoHelpers::double_to_variant_fp(const double& value, const int& precis
         val_int >>= 8;
     };
 
-    return Variant(arr);
+    return {arr};
 }
 
 int64_t DojoHelpers::float_to_fixed(const double& value, const int& precision)
