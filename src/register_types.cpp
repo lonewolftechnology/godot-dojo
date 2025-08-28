@@ -20,6 +20,7 @@
 #include "variant/ty/ty.h"
 #include "variant/ty/primitive.h"
 #include "variant/field_element.h"
+#include "types/big_int.h"
 
 #include "resources/dojo_policies.h"
 #include "resources/dojo_policy.h"
@@ -67,6 +68,9 @@ void initialize_dojoc_module(ModuleInitializationLevel p_level)
         GDREGISTER_CLASS(DojoEnum);
         GDREGISTER_CLASS(DojoArray);
         GDREGISTER_CLASS(FieldElement);
+        GDREGISTER_CLASS(U128);
+        GDREGISTER_CLASS(I128);
+        GDREGISTER_CLASS(U256);
         // Classes
         GDREGISTER_CLASS(DojoC);
         GDREGISTER_CLASS(ToriiClient);

@@ -4,6 +4,8 @@
 
 #include "variant/ty/primitive.h"
 
+#include <types/big_int.h>
+
 #include "tools/dojo_helper.h"
 
 Variant DojoPrimitive::VariantFromPrimitive(dojo_bindings::Primitive primitive)
@@ -19,7 +21,10 @@ Variant DojoPrimitive::VariantFromPrimitive(dojo_bindings::Primitive primitive)
     case DOJO::Primitive_Tag::I64:
         return {primitive.i64};
     case DOJO::Primitive_Tag::I128:
-        return FieldElement::to_packed_array(primitive.i128, 16);
+        {
+            Ref<I128> val = memnew(I128(primitive.i128));
+            return val;
+        }
     case DOJO::Primitive_Tag::U8:
         return {primitive.u8};
     case DOJO::Primitive_Tag::U16:
@@ -29,11 +34,15 @@ Variant DojoPrimitive::VariantFromPrimitive(dojo_bindings::Primitive primitive)
     case DOJO::Primitive_Tag::U64:
         return {primitive.u64};
     case DOJO::Primitive_Tag::U128:
-        Logger::debug_extra("U128");
-        return FieldElement::to_packed_array(primitive.u128, 16);
+        {
+            Ref<U128> val = memnew(U128(primitive.u128));
+            return val;
+        }
     case DOJO::Primitive_Tag::U256_:
-        Logger::debug_extra("U256");
-        return FieldElement::to_packed_array(primitive.u256.data,32);
+        {
+            Ref<U256> val = memnew(U256(primitive.u256));
+            return val;
+        }
     case DOJO::Primitive_Tag::Bool:
         return {primitive.bool_};
     default:
