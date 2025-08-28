@@ -473,20 +473,48 @@ DojoCallData DojoHelpers::prepare_dojo_call_data(const String& to, const String&
                     break;
                 }
             case Variant::Type::VECTOR2:
+                {
+                    Vector2 vec = arg;
+                    final_args.push_back(double_to_variant_fp(
+                            vec.x,
+                            get_setting("dojo/config/fixed_point/default")
+                        ));
+                    final_args.push_back(double_to_variant_fp(
+                            vec.y,
+                            get_setting("dojo/config/fixed_point/default")
+                        ));
+                    break;
+                }
             case Variant::Type::VECTOR2I:
                 {
                     Vector2 vec = arg;
-                    final_args.push_back(vec.x);
-                    final_args.push_back(vec.y);
+                    final_args.push_back(static_cast<int64_t>(vec.x));
+                    final_args.push_back(static_cast<int64_t>(vec.y));
                     break;
                 }
             case Variant::Type::VECTOR3:
+                {
+                    Vector3 vec = arg;
+                    final_args.push_back(double_to_variant_fp(
+                            vec.x,
+                            get_setting("dojo/config/fixed_point/default")
+                        ));
+                    final_args.push_back(double_to_variant_fp(
+                            vec.y,
+                            get_setting("dojo/config/fixed_point/default")
+                        ));
+                    final_args.push_back(double_to_variant_fp(
+                            vec.z,
+                            get_setting("dojo/config/fixed_point/default")
+                        ));
+                    break;
+                }
             case Variant::Type::VECTOR3I:
                 {
                     Vector3 vec = arg;
-                    final_args.push_back(vec.x);
-                    final_args.push_back(vec.y);
-                    final_args.push_back(vec.z);
+                    final_args.push_back(static_cast<int64_t>(vec.x));
+                    final_args.push_back(static_cast<int64_t>(vec.y));
+                    final_args.push_back(static_cast<int64_t>(vec.z));
                     break;
                 }
             default:
