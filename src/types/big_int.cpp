@@ -44,6 +44,45 @@ PackedByteArray value_to_bytes(const T& value)
     return bytes;
 }
 
+template <typename T>
+DOJO::FieldElement value_to_felt(const T& value)
+{
+    std::vector<uint8_t> bytes_vec;
+    boost::multiprecision::export_bits(value, std::back_inserter(bytes_vec), 8);
+
+    DOJO::FieldElement felt;
+
+    uint8_t padding = 0x00;
+    if constexpr (std::is_signed<T>::value)
+    {
+        if (value < 0)
+        {
+            padding = 0xFF;
+        }
+    }
+    memset(felt.data, padding, 32);
+
+    // export_bits is big-endian, we need little-endian for contracts
+    uint8_t temp_buffer[32];
+    memset(temp_buffer, padding, 32);
+
+    if (bytes_vec.size() > 32)
+    {
+        // This handles cases where boost might give more bytes than expected for negative numbers
+        memcpy(temp_buffer, bytes_vec.data() + (bytes_vec.size() - 32), 32);
+    }
+    else
+    {
+        memcpy(temp_buffer + (32 - bytes_vec.size()), bytes_vec.data(), bytes_vec.size());
+    }
+
+    std::reverse(std::begin(temp_buffer), std::end(temp_buffer));
+    memcpy(felt.data, temp_buffer, 32);
+
+    return felt;
+}
+
+
 // U128 Implementation
 U128::U128()
 {
@@ -61,6 +100,8 @@ void U128::_init_from_string(const String& p_value)
     value = uint128_t(p_value.utf8().get_data());
 }
 
+void U128::_init_from_int(int64_t p_value) { value = p_value; }
+
 U128::U128(const uint8_t p_bytes[16])
 {
     std::vector<uint8_t> bytes(p_bytes, p_bytes + 16);
@@ -76,11 +117,14 @@ String U128::to_string() const
 
 PackedByteArray U128::to_bytes() const { return value_to_bytes<uint128_t, 16>(value); }
 
-void U128::_bind_methods()
-{
-    ClassDB::bind_method(D_METHOD("_init_from_string", "value"), &U128::_init_from_string);
-    ClassDB::bind_method(D_METHOD("to_string"), &U128::to_string);
-    ClassDB::bind_method(D_METHOD("to_bytes"), &U128::to_bytes);
+DOJO::FieldElement U128::to_felt() const { return value_to_felt<uint128_t>(value); }
+
+PackedByteArray U128::_to_felt_bytes() const {
+    DOJO::FieldElement felt = to_felt();
+    PackedByteArray bytes;
+    bytes.resize(32);
+    memcpy(bytes.ptrw(), felt.data, 32);
+    return bytes;
 }
 
 // I128 Implementation
@@ -100,6 +144,8 @@ void I128::_init_from_string(const String& p_value)
     value = int128_t(p_value.utf8().get_data());
 }
 
+void I128::_init_from_int(int64_t p_value) { value = p_value; }
+
 I128::I128(const uint8_t p_bytes[16])
 {
     std::vector<uint8_t> bytes(p_bytes, p_bytes + 16);
@@ -115,11 +161,14 @@ String I128::to_string() const
 
 PackedByteArray I128::to_bytes() const { return value_to_bytes<int128_t, 16>(value); }
 
-void I128::_bind_methods()
-{
-    ClassDB::bind_method(D_METHOD("_init_from_string", "value"), &I128::_init_from_string);
-    ClassDB::bind_method(D_METHOD("to_string"), &I128::to_string);
-    ClassDB::bind_method(D_METHOD("to_bytes"), &I128::to_bytes);
+DOJO::FieldElement I128::to_felt() const { return value_to_felt<int128_t>(value); }
+
+PackedByteArray I128::_to_felt_bytes() const {
+    DOJO::FieldElement felt = to_felt();
+    PackedByteArray bytes;
+    bytes.resize(32);
+    memcpy(bytes.ptrw(), felt.data, 32);
+    return bytes;
 }
 
 // U256 Implementation
@@ -139,6 +188,8 @@ void U256::_init_from_string(const String& p_value)
     value = uint256_t(p_value.utf8().get_data());
 }
 
+void U256::_init_from_int(int64_t p_value) { value = p_value; }
+
 U256::U256(const DOJO::U256& p_value)
 {
     std::vector<uint8_t> bytes(p_value.data, p_value.data + 32);
@@ -154,9 +205,12 @@ String U256::to_string() const
 
 PackedByteArray U256::to_bytes() const { return value_to_bytes<uint256_t, 32>(value); }
 
-void U256::_bind_methods()
-{
-    ClassDB::bind_method(D_METHOD("_init_from_string", "value"), &U256::_init_from_string);
-    ClassDB::bind_method(D_METHOD("to_string"), &U256::to_string);
-    ClassDB::bind_method(D_METHOD("to_bytes"), &U256::to_bytes);
+DOJO::FieldElement U256::to_felt() const { return value_to_felt<uint256_t>(value); }
+
+PackedByteArray U256::_to_felt_bytes() const {
+    DOJO::FieldElement felt = to_felt();
+    PackedByteArray bytes;
+    bytes.resize(32);
+    memcpy(bytes.ptrw(), felt.data, 32);
+    return bytes;
 }

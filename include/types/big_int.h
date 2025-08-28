@@ -29,11 +29,22 @@ public:
 
     void _init();
     void _init_from_string(const String& p_value);
+    void _init_from_int(int64_t p_value);
     U128(const uint8_t p_bytes[16]);
 
     String to_string() const;
     PackedByteArray to_bytes() const;
+    DOJO::FieldElement to_felt() const;
+    PackedByteArray _to_felt_bytes() const;
 };
+
+inline void U128::_bind_methods() {
+    ClassDB::bind_method(D_METHOD("_init_from_string", "value"), &U128::_init_from_string);
+    ClassDB::bind_method(D_METHOD("_init_from_int", "value"), &U128::_init_from_int);
+    ClassDB::bind_method(D_METHOD("to_string"), &U128::to_string);
+    ClassDB::bind_method(D_METHOD("to_bytes"), &U128::to_bytes);
+    ClassDB::bind_method(D_METHOD("to_felt"), &U128::_to_felt_bytes);
+}
 
 // --- I128 ---
 class I128 : public RefCounted {
@@ -51,11 +62,22 @@ public:
 
     void _init();
     void _init_from_string(const String& p_value);
+    void _init_from_int(int64_t p_value);
     I128(const uint8_t p_bytes[16]);
 
     String to_string() const;
     PackedByteArray to_bytes() const;
+    DOJO::FieldElement to_felt() const;
+    PackedByteArray _to_felt_bytes() const;
 };
+
+inline void I128::_bind_methods() {
+    ClassDB::bind_method(D_METHOD("_init_from_string", "value"), &I128::_init_from_string);
+    ClassDB::bind_method(D_METHOD("_init_from_int", "value"), &I128::_init_from_int);
+    ClassDB::bind_method(D_METHOD("to_string"), &I128::to_string);
+    ClassDB::bind_method(D_METHOD("to_bytes"), &I128::to_bytes);
+    ClassDB::bind_method(D_METHOD("to_felt"), &I128::_to_felt_bytes);
+}
 
 // --- U256 ---
 class U256 : public RefCounted {
@@ -73,10 +95,21 @@ public:
 
     void _init();
     void _init_from_string(const String& p_value);
+    void _init_from_int(int64_t p_value);
     U256(const DOJO::U256& p_value);
 
     String to_string() const;
     PackedByteArray to_bytes() const;
+    DOJO::FieldElement to_felt() const;
+    PackedByteArray _to_felt_bytes() const;
 };
+
+inline void U256::_bind_methods() {
+    ClassDB::bind_method(D_METHOD("_init_from_string", "value"), &U256::_init_from_string);
+    ClassDB::bind_method(D_METHOD("_init_from_int", "value"), &U256::_init_from_int);
+    ClassDB::bind_method(D_METHOD("to_string"), &U256::to_string);
+    ClassDB::bind_method(D_METHOD("to_bytes"), &U256::to_bytes);
+    ClassDB::bind_method(D_METHOD("to_felt"), &U256::_to_felt_bytes);
+}
 
 #endif // BIG_INT_H
