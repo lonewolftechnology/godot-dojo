@@ -185,6 +185,8 @@ void Account::execute_raw(const String& to, const String& selector, const Array&
         return;
     }
 
+    Logger::debug_extra("Account", "Populating Call");
+
     DOJO::Call call = {
         call_data.to,
         call_data.selector_str.c_str(),

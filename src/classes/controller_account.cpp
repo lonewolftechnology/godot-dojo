@@ -205,6 +205,7 @@ void ControllerAccount::execute_from_outside(const String& to, const String& sel
     }
     DojoCallData call_data = DojoHelpers::prepare_dojo_call_data(to, selector, args);
 
+    Logger::debug_extra("ControllerAccount", "Populating Call");
 
     DOJO::Call call = {
         call_data.to,
@@ -220,6 +221,7 @@ void ControllerAccount::execute_from_outside(const String& to, const String& sel
         Logger::error("Transaction failed");
         Logger::error("To:", to);
         Logger::error("Selector:", selector);
+        Logger::error("Args:", args);
         Logger::error("Error:", GET_DOJO_ERROR(result));
         emit_signal("transaction_failed", GET_DOJO_ERROR(result));
     }

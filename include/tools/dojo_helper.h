@@ -9,8 +9,6 @@
 #include "dojo_types.h"
 #include "godot_cpp/core/class_db.hpp"
 #include "variant/field_element.h"
-#include <vector>
-#include <string>
 
 using namespace godot;
 
