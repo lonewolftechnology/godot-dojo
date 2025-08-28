@@ -56,7 +56,7 @@ double DojoHelpers::variant_to_double_fp(const Variant& value, const int& precis
             // Other variant array types go here?
             // take the bytes from the array here and construct the big integer
             PackedByteArray bytes = value;
-            for (int i = 1; i <= bytes.size(); i++)
+            for (int i = 0; i < bytes.size(); i++)
             {
                 int_val += bytes[i];
                 int_val <<= 8;
@@ -90,7 +90,7 @@ Variant DojoHelpers::double_to_variant_fp(const double& value, const int& precis
     PackedByteArray arr;
     int bytes = (msb(val_int) / 8) + 1;
     arr.resize(bytes);
-    for (int i = 1; i <= bytes; i++)
+    for (int i = 0; i < bytes; i++)
     {
         arr[bytes - i] = static_cast<uint8_t>(val_int & 0xff);
         val_int >>= 8;
@@ -448,7 +448,24 @@ DojoCallData DojoHelpers::prepare_dojo_call_data(const String& to, const String&
             {
             case Variant::Type::ARRAY:
                 {
-                    final_args.append_array(arg);
+                    Array original_array = arg;
+                    Array result;
+                    for (int j = 0; j < original_array.size(); j++)
+                    {
+                        const Variant& array_element = original_array[j];
+                        if (array_element.get_type() == Variant::Type::FLOAT)
+                        {
+                            result.push_back(double_to_variant_fp(
+                                array_element,
+                                get_setting("dojo/config/fixed_point/default")
+                            ));
+                        }
+                        else
+                        {
+                            result.push_back(array_element);
+                        }
+                    }
+                    final_args.append_array(result);
                     break;
                 }
             case Variant::BOOL:
@@ -476,13 +493,13 @@ DojoCallData DojoHelpers::prepare_dojo_call_data(const String& to, const String&
                 {
                     Vector2 vec = arg;
                     final_args.push_back(double_to_variant_fp(
-                            vec.x,
-                            get_setting("dojo/config/fixed_point/default")
-                        ));
+                        vec.x,
+                        get_setting("dojo/config/fixed_point/default")
+                    ));
                     final_args.push_back(double_to_variant_fp(
-                            vec.y,
-                            get_setting("dojo/config/fixed_point/default")
-                        ));
+                        vec.y,
+                        get_setting("dojo/config/fixed_point/default")
+                    ));
                     break;
                 }
             case Variant::Type::VECTOR2I:
@@ -496,17 +513,17 @@ DojoCallData DojoHelpers::prepare_dojo_call_data(const String& to, const String&
                 {
                     Vector3 vec = arg;
                     final_args.push_back(double_to_variant_fp(
-                            vec.x,
-                            get_setting("dojo/config/fixed_point/default")
-                        ));
+                        vec.x,
+                        get_setting("dojo/config/fixed_point/default")
+                    ));
                     final_args.push_back(double_to_variant_fp(
-                            vec.y,
-                            get_setting("dojo/config/fixed_point/default")
-                        ));
+                        vec.y,
+                        get_setting("dojo/config/fixed_point/default")
+                    ));
                     final_args.push_back(double_to_variant_fp(
-                            vec.z,
-                            get_setting("dojo/config/fixed_point/default")
-                        ));
+                        vec.z,
+                        get_setting("dojo/config/fixed_point/default")
+                    ));
                     break;
                 }
             case Variant::Type::VECTOR3I:
@@ -519,8 +536,12 @@ DojoCallData DojoHelpers::prepare_dojo_call_data(const String& to, const String&
                 }
             default:
                 {
-                    Logger::warning("Calldata", "Unsupported type", Variant::get_type_name(arg.get_type()),
-                                    arg.stringify());
+                    Logger::warning(
+                        "CalldataVariant",
+                        "Unsupported type",
+                        Variant::get_type_name(arg.get_type()),
+                        arg.stringify()
+                    );
                     break;
                 }
             }
@@ -556,7 +577,7 @@ DojoCallData DojoHelpers::prepare_dojo_call_data(const String& to, const String&
                     }
                     else
                     {
-                        call_data.calldata_felts.push_back(FieldElement::from_enum(arg));
+                        call_data.calldata_felts.push_back(FieldElement::from_int(arg));
                     }
                     break;
                 }
@@ -599,7 +620,11 @@ DojoCallData DojoHelpers::prepare_dojo_call_data(const String& to, const String&
                 }
             default:
                 {
-                    Logger::warning("Calldata", "Unsupported type", Variant::get_type_name(arg.get_type()));
+                    Logger::warning(
+                        "CalldataFelt",
+                        "Unsupported type",
+                        Variant::get_type_name(arg.get_type())
+                    );
                     break;
                 }
             }

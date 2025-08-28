@@ -174,6 +174,23 @@ DOJO::FieldElement FieldElement::from_enum(int enum_value)
     return field_element;
 }
 
+DOJO::FieldElement FieldElement::from_int(int64_t value)
+{
+    DOJO::FieldElement field_element = {};
+    memset(field_element.data, 0, 32);
+
+    // We assume value is non-negative, as negative values are handled
+    // by the caller by adding the prime P.
+    uint64_t u_value = static_cast<uint64_t>(value);
+
+    // Place the 64-bit integer in the last 8 bytes of the 32-byte array,
+    // in big-endian format.
+    for (int i = 0; i < 8; ++i) {
+        field_element.data[31 - i] = (u_value >> (i * 8)) & 0xFF;
+    }
+    return field_element;
+}
+
 String FieldElement::bytearray_deserialize(const uintptr_t& data_len = 32)
 {
     DOJO::Resultc_char testing = DOJO::bytearray_deserialize(get_felt(), data_len);
