@@ -84,6 +84,9 @@ var torii_url:String:
 @onready var output_text: RichTextLabel = %OutputText
 @onready var sub_output: RichTextLabel = %SubOutput
 
+@onready var output_container: ScrollContainer = %OutputContainer
+@onready var response_container: ScrollContainer = %ResponseContainer
+
 @export var event_message_sub:MessageSubscription
 @export var txn_sub:TransactionSubscription
 
@@ -93,6 +96,11 @@ var torii_url:String:
 func _ready() -> void:
 	OS.set_environment("RUST_BACKTRACE", "full")
 	OS.set_environment("RUST_LOG", "full")
+	var call_result_scroll = output_text.get_v_scroll_bar()
+	var call_response_scroll = sub_output.get_v_scroll_bar()
+	call_response_scroll.scrolling.connect(_on_scrolling.bind(call_response_scroll,call_result_scroll))
+	call_result_scroll.scrolling.connect(_on_scrolling.bind(call_result_scroll,call_response_scroll))
+	
 	torii_client.world_address = world_address
 	var env = "Slot" if use_slot else "Local"
 	print_rich("[color=yellow]Using %s[/color]" % env)
@@ -150,13 +158,15 @@ func _on_torii_client_client_connected(success: bool) -> void:
 				
 
 func _on_account_transaction_failed(error_message: Dictionary) -> void:
-	output_text.append_text("[color=cyan]Selector: [/color]%s[color=yellow] Calldata: [/color] %s | [color=Red]Error[/color]\n" % [error_message["selector"], error_message["calldata"]] )
+	var selector_data = "[color=cyan]Selector: [/color]%s[color=yellow] Calldata: [/color] %s [color=Red]Error[/color]\n" % [error_message["selector"], error_message["calldata"]] 
 	var error:String = error_message["error"]
 	var regex = RegEx.new()
 	regex.compile("\\(([^\\)]+)\\)")
 	var regex_result = regex.search_all(error)
+	var error_msg = "[color=red]%s[/color]\n" % [regex_result[-1].get_string()]
 	#push_warning(stripped_error[-1].get_string())
-	sub_output.call_deferred("append_text","[color=red]%s[/color]\n" % [regex_result[-1].get_string()])
+	output_text.append_text(selector_data)
+	sub_output.append_text(error_msg)
 
 
 func _on_account_transaction_executed(success_message: Dictionary) -> void:
@@ -165,4 +175,7 @@ func _on_account_transaction_executed(success_message: Dictionary) -> void:
 	selector = selector.replace("validate", "validated")
 	var event = "%s-%s" % [contract_namespace, selector.to_pascal_case()]
 	#sub_output.append_text("[color=yellow]%s[/color]\n" % event)
+	
+func _on_scrolling(active:VScrollBar, mirror:VScrollBar):
+	mirror.value = active.value
 	

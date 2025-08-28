@@ -21,15 +21,7 @@ use_slot = false
 
 [node name="CanvasLayer" type="CanvasLayer" parent="."]
 
-[node name="Panel" type="Panel" parent="CanvasLayer"]
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
-
-[node name="HSplitContainer" type="HSplitContainer" parent="CanvasLayer/Panel"]
-layout_mode = 1
+[node name="HSplitContainer" type="HSplitContainer" parent="CanvasLayer"]
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
@@ -41,26 +33,35 @@ drag_area_margin_begin = 4
 drag_area_margin_end = 4
 drag_area_highlight_in_editor = true
 
-[node name="VBoxContainer" type="VBoxContainer" parent="CanvasLayer/Panel/HSplitContainer"]
-layout_mode = 2
-size_flags_horizontal = 3
-
-[node name="OutputText" type="RichTextLabel" parent="CanvasLayer/Panel/HSplitContainer/VBoxContainer"]
+[node name="OutputContainer" type="ScrollContainer" parent="CanvasLayer/HSplitContainer"]
 unique_name_in_owner = true
 layout_mode = 2
+size_flags_horizontal = 3
+draw_focus_border = true
+
+[node name="OutputText" type="RichTextLabel" parent="CanvasLayer/HSplitContainer/OutputContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
 size_flags_vertical = 3
 bbcode_enabled = true
 scroll_following = true
 
-[node name="VBoxContainer2" type="VBoxContainer" parent="CanvasLayer/Panel/HSplitContainer"]
-layout_mode = 2
-size_flags_horizontal = 3
-
-[node name="SubOutput" type="RichTextLabel" parent="CanvasLayer/Panel/HSplitContainer/VBoxContainer2"]
+[node name="ResponseContainer" type="ScrollContainer" parent="CanvasLayer/HSplitContainer"]
 unique_name_in_owner = true
 layout_mode = 2
+size_flags_horizontal = 3
+draw_focus_border = true
+
+[node name="SubOutput" type="RichTextLabel" parent="CanvasLayer/HSplitContainer/ResponseContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
 size_flags_vertical = 3
 bbcode_enabled = true
+fit_content = true
+scroll_following = true
+autowrap_mode = 0
 
 [connection signal="transaction_executed" from="Account" to="." method="_on_account_transaction_executed"]
 [connection signal="transaction_failed" from="Account" to="." method="_on_account_transaction_failed"]
