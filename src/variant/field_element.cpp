@@ -8,10 +8,15 @@
 using namespace godot;
 
 FieldElement::FieldElement()
-= default;
+{
+    felt = new DOJO::FieldElement();
+    memset(felt->data, 0, 32);
+};
 
 FieldElement::FieldElement(const String& hex_str, size_t max_bytes)
 {
+    felt = new DOJO::FieldElement();
+    memset(felt->data, 0, 32);
     // Skip "0x" prefix if present
     size_t start_idx = (hex_str.substr(0, 2) == "0x") ? 2 : 0;
 
@@ -48,22 +53,26 @@ FieldElement::FieldElement(const String& hex_str, size_t max_bytes)
 
 FieldElement::FieldElement(int enum_value)
 {
+    felt = new DOJO::FieldElement();
     memset(felt->data, 0, 32);
     felt->data[31] = static_cast<uint8_t>(enum_value);
 }
 
 FieldElement::FieldElement(DOJO::FieldElement* existing_felt)
 {
-    felt = existing_felt;
+    felt = new DOJO::FieldElement();
+    *felt = *existing_felt;
 }
 
 FieldElement::FieldElement(DOJO::FieldElement existing_felt)
 {
-    felt = &existing_felt;
+    felt = new DOJO::FieldElement();
+    *felt = existing_felt;
 }
 
 FieldElement::FieldElement(TypedArray<String>& addresses)
 {
+    felt = new DOJO::FieldElement();
     for (int i = 0; i < addresses.size(); i++)
     {
         String address = addresses[i];
@@ -80,6 +89,8 @@ FieldElement::FieldElement(TypedArray<String>& addresses)
 
 FieldElement::~FieldElement()
 {
+    delete felt;
+    felt = nullptr;
 }
 
 PackedByteArray FieldElement::to_packed_array(const void* data, const int size)
