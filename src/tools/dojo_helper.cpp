@@ -161,6 +161,12 @@ DOJO::U256 DojoHelpers::string_to_fixed_point_u256(const String& integer_str, in
 
     cpp_int fixed_point_value = integer_value * multiplier;
 
+    if (fixed_point_value < 0)
+    {
+        cpp_int P = (cpp_int(1) << 251) + (cpp_int(17) * (cpp_int(1) << 192)) + 1;
+        fixed_point_value += P;
+    }
+
     cpp_int max_u256 = (cpp_int(1) << 256) - 1;
     if (fixed_point_value > max_u256)
     {
@@ -198,6 +204,13 @@ String DojoHelpers::u256_fixed_point_to_string(const DOJO::U256& u256, int preci
     cpp_int fixed_point_value;
     boost::multiprecision::import_bits(fixed_point_value, bytes.begin(), bytes.end());
 
+    cpp_int P = (cpp_int(1) << 251) + (cpp_int(17) * (cpp_int(1) << 192)) + 1;
+
+    if (fixed_point_value > P / 2)
+    {
+        fixed_point_value -= P;
+    }
+
     cpp_int divisor = 1;
     divisor <<= precision;
 
@@ -206,7 +219,7 @@ String DojoHelpers::u256_fixed_point_to_string(const DOJO::U256& u256, int preci
     std::string std_string_result = float_result.str(100, std::ios_base::fixed);
 
     std_string_result.erase(std_string_result.find_last_not_of('0') + 1, std::string::npos);
-    if (std_string_result.back() == '.')
+    if (!std_string_result.empty() && std_string_result.back() == '.')
     {
         std_string_result.pop_back();
     }
@@ -500,7 +513,23 @@ DojoCallData DojoHelpers::prepare_dojo_call_data(const String& to, const String&
                 }
             case Variant::Type::INT:
                 {
-                    call_data.calldata_felts.push_back(FieldElement::from_enum(arg));
+                    int64_t int_val = arg;
+                    if (int_val < 0)
+                    {
+                        // Refer https://www.starknet.io/cairo-book/ch102-04-serialization-of-cairo-types.html#data-types-using-at-most-252-bits
+                        cpp_int P = (cpp_int(1) << 251) + (cpp_int(17) * (cpp_int(1) << 192)) + 1;
+                        cpp_int felt_val = int_val;
+                        felt_val += P;
+
+                        std::stringstream ss;
+                        ss << "0x" << std::hex << felt_val;
+
+                        call_data.calldata_felts.push_back(FieldElement::from_string(ss.str().c_str()));
+                    }
+                    else
+                    {
+                        call_data.calldata_felts.push_back(FieldElement::from_enum(arg));
+                    }
                     break;
                 }
             case Variant::Type::PACKED_BYTE_ARRAY:
