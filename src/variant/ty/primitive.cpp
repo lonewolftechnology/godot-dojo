@@ -1,7 +1,6 @@
-// De:
+//
 // Created by hazel on 27/05/25.
-// A:
-// Created by hazel on 27/05/25.
+//
 
 #include "variant/ty/primitive.h"
 

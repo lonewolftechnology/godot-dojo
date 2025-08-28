@@ -581,3 +581,60 @@ DojoCallData DojoHelpers::prepare_dojo_call_data(const String& to, const String&
     call_data.is_valid = true;
     return call_data;
 }
+
+String DojoHelpers::bytes_to_i128_string(const PackedByteArray& bytes)
+{
+    if (bytes.size() != 16)
+    {
+        Logger::error("Error: PackedByteArray must be 16 bytes for i128.");
+        return "";
+    }
+
+    std::vector<uint8_t> byte_vector;
+    byte_vector.resize(16);
+    memcpy(byte_vector.data(), bytes.ptr(), 16);
+    std::reverse(byte_vector.begin(), byte_vector.end());
+
+    int128_t val;
+    import_bits(val, byte_vector.begin(), byte_vector.end());
+
+    return {val.str().c_str()};
+}
+
+String DojoHelpers::bytes_to_u128_string(const PackedByteArray& bytes)
+{
+    if (bytes.size() != 16)
+    {
+        Logger::error("Error: PackedByteArray must be 16 bytes for u128.");
+        return "";
+    }
+
+    std::vector<uint8_t> byte_vector;
+    byte_vector.resize(16);
+    memcpy(byte_vector.data(), bytes.ptr(), 16);
+    std::reverse(byte_vector.begin(), byte_vector.end());
+
+    uint128_t val;
+    import_bits(val, byte_vector.begin(), byte_vector.end());
+
+    return {val.str().c_str()};
+}
+
+String DojoHelpers::bytes_to_u256_string(const PackedByteArray& bytes)
+{
+    if (bytes.size() != 32)
+    {
+        Logger::error("Error: PackedByteArray must be 32 bytes for u256.");
+        return "";
+    }
+
+    std::vector<uint8_t> byte_vector;
+    byte_vector.resize(32);
+    memcpy(byte_vector.data(), bytes.ptr(), 32);
+    std::reverse(byte_vector.begin(), byte_vector.end());
+
+    uint256_t val;
+    import_bits(val, byte_vector.begin(), byte_vector.end());
+
+    return {val.str().c_str()};
+}

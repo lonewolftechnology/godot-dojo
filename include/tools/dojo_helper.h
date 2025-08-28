@@ -81,6 +81,10 @@ public:
     static void float_string_to_fixed_point_i256(const String& str, int precision, uint8_t* out_val);
     static String i256_fixed_point_to_float_string(const uint8_t* val, int precision);
 
+    static String bytes_to_i128_string(const PackedByteArray& bytes);
+    static String bytes_to_u128_string(const PackedByteArray& bytes);
+    static String bytes_to_u256_string(const PackedByteArray& bytes);
+
     static Ref<FieldElement> string_to_field_element(const String& str);
     static DojoCallData prepare_dojo_call_data(const String& to, const String& selector, const Array& args);
 
@@ -117,6 +121,9 @@ protected:
         ClassDB::bind_static_method("DojoHelpers", D_METHOD("double_to_variant_fp", "value", "precision"), &DojoHelpers::double_to_variant_fp);
         ClassDB::bind_static_method("DojoHelpers", D_METHOD("variant_to_double_fp", "value", "precision"), &DojoHelpers::variant_to_double_fp);
 
+        ClassDB::bind_static_method("DojoHelpers", D_METHOD("bytes_to_i128_string", "bytes"), &DojoHelpers::bytes_to_i128_string);
+        ClassDB::bind_static_method("DojoHelpers", D_METHOD("bytes_to_u128_string", "bytes"), &DojoHelpers::bytes_to_u128_string);
+        ClassDB::bind_static_method("DojoHelpers", D_METHOD("bytes_to_u256_string", "bytes"), &DojoHelpers::bytes_to_u256_string);
     }
     static DojoHelpers* singleton;
 
