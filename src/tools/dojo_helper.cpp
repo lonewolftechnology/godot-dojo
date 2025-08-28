@@ -77,7 +77,7 @@ Variant DojoHelpers::double_to_variant_fp(const double& value, const int& precis
     cpp_int shift = 1;
     shift <<= precision;
     cpp_dec_float_100 val_100 = value;
-    val_100 *= precision;
+    val_100 *= cpp_dec_float_100(shift);
 
     cpp_int val_int(val_100);
 
@@ -92,7 +92,7 @@ Variant DojoHelpers::double_to_variant_fp(const double& value, const int& precis
     arr.resize(bytes);
     for (int i = 0; i < bytes; i++)
     {
-        arr[bytes - i] = static_cast<uint8_t>(val_int & 0xff);
+        arr[bytes - 1 - i] = static_cast<uint8_t>(val_int & 0xff);
         val_int >>= 8;
     };
 
