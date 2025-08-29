@@ -18,19 +18,20 @@ ToriiClient* ToriiClient::singleton = nullptr;
 
 ToriiClient::ToriiClient()
 {
+
     singleton = this;
     client = nullptr;
     is_connected = false;
     world_address = "";
     world = {};
-    Logger::info("ToriiClient initialized");
+    Logger::debug_extra("ToriiClient", "CONSTRUCTOR CALLED");
 }
 
 ToriiClient::~ToriiClient()
 {
     disconnect_client(false);
     singleton = nullptr;
-    Logger::info("ToriiClient destroyed");
+    Logger::debug_extra("ToriiClient", "DESTRUCTOR CALLED");
 }
 
 ToriiClient* ToriiClient::get_singleton()

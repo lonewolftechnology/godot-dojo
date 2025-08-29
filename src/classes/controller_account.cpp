@@ -19,11 +19,13 @@ ControllerAccount* ControllerAccount::singleton = nullptr;
 
 ControllerAccount::ControllerAccount()
 {
+
     singleton = this;
     session_account = nullptr;
     is_connected = false;
     provider = nullptr;
     rpc_url = "";
+    Logger::debug_extra("ControllerAccount", "CONSTRUCTOR CALLED");
 }
 
 ControllerAccount::~ControllerAccount()
@@ -68,6 +70,7 @@ void ControllerAccount::on_account_callback(DOJO::ControllerAccount* account)
 
 void ControllerAccount::setup()
 {
+    check_rpc_url();
     init_provider();
     create(policies);
 }
@@ -75,7 +78,11 @@ void ControllerAccount::setup()
 void ControllerAccount::init_provider()
 {
     // Provider
-    check_rpc_url();
+    if (rpc_url.is_empty())
+    {
+        Logger::error("RPC URL not set");
+        return;
+    }
     Logger::debug_extra("Provider", rpc_url);
     DOJO::ResultProvider resControllerProvider = DOJO::provider_new(rpc_url.utf8().get_data());
     if (resControllerProvider.tag == DOJO::ErrProvider)
@@ -92,8 +99,11 @@ void ControllerAccount::init_provider()
 void ControllerAccount::create(const Ref<DojoPolicies>& policies_data)
 {
     Logger::info("RPC URL: ", rpc_url);
-
-
+    if (provider == nullptr)
+    {
+        Logger::error("Provider not initialized");
+        return;
+    }
     if (policies_data->is_empty())
     {
         Logger::error("Invalid policies data");
@@ -198,6 +208,7 @@ String ControllerAccount::get_chain_id() const
 
 void ControllerAccount::check_rpc_url()
 {
+    Logger::debug_extra("ControllerAccount", "Checking RPC URL", rpc_url, rpc_url.is_empty());
     if (rpc_url.is_empty())
     {
         Logger::debug_extra("ControllerAccount", "RPC URL not set, checking project settings");
