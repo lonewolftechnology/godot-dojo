@@ -58,10 +58,13 @@ unique_name_in_owner = true
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 3
+focus_mode = 2
 bbcode_enabled = true
 fit_content = true
 scroll_following = true
 autowrap_mode = 0
+context_menu_enabled = true
+selection_enabled = true
 
 [connection signal="transaction_executed" from="Account" to="." method="_on_account_transaction_executed"]
 [connection signal="transaction_failed" from="Account" to="." method="_on_account_transaction_failed"]
