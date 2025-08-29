@@ -18,12 +18,6 @@ ToriiClient* ToriiClient::singleton = nullptr;
 
 ToriiClient::ToriiClient()
 {
-    if (Engine::get_singleton()->is_editor_hint())
-    {
-        Logger::debug_extra("Torii", "Editor mode, ignoring constructor");
-        return;
-    }
-
     singleton = this;
     client = nullptr;
     is_connected = false;

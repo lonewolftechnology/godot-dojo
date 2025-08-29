@@ -57,6 +57,9 @@ public:
     String get_chain_id() const;
     void set_chain_id(const String& p_chain_id) { chain_id = p_chain_id; }
 
+    String get_rpc_url() const;
+    void set_rpc_url(const String& p_rpc_url){ rpc_url = p_rpc_url;};
+
     void execute_from_outside(const String& to, const String& selector, const Array& args);
 
     Dictionary get_account_info() const;
@@ -95,6 +98,9 @@ protected:
         ADD_SIGNAL(MethodInfo("transaction_failed", PropertyInfo(Variant::STRING, "error_message")));
         ADD_SIGNAL(MethodInfo("current_user_info", PropertyInfo(Variant::DICTIONARY, "user_info")));
 
+        ClassDB::bind_method(D_METHOD("set_rpc_url", "rpc_url"), &ControllerAccount::set_rpc_url);
+        ClassDB::bind_method(D_METHOD("get_rpc_url"), &ControllerAccount::get_rpc_url);
+        ADD_PROPERTY(PropertyInfo(Variant::STRING, "rpc_url"), "set_rpc_url", "get_rpc_url");
 
         ClassDB::bind_method(D_METHOD("set_chain_id", "chain_id"), &ControllerAccount::set_chain_id);
         ClassDB::bind_method(D_METHOD("get_chain_id"), &ControllerAccount::get_chain_id);

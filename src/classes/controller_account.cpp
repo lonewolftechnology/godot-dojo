@@ -23,7 +23,7 @@ ControllerAccount::ControllerAccount()
     session_account = nullptr;
     is_connected = false;
     provider = nullptr;
-    rpc_url = ProjectSettings::get_singleton()->get("dojo/config/katana/rpc_url");
+    rpc_url = "";
 }
 
 ControllerAccount::~ControllerAccount()
@@ -194,6 +194,19 @@ String ControllerAccount::get_chain_id() const
     }
     return chain_id;
 }
+
+String ControllerAccount::get_rpc_url() const
+{
+    if (rpc_url.is_empty())
+    {
+        String setting= ProjectSettings::get_singleton()->get("dojo/config/katana/rpc_url");
+        if (! setting.is_empty())
+        {
+            return setting;
+        }
+    }
+        return rpc_url;
+    }
 
 // TODO: Ver Threads
 void ControllerAccount::execute_from_outside(const String& to, const String& selector, const Array& args = Array())
