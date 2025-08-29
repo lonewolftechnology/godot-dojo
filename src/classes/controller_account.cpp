@@ -202,14 +202,17 @@ void ControllerAccount::execute_from_outside(const String& to, const String& sel
     {
         Logger::error("ControllerAccount not found");
         emit_signal("transaction_failed", "Controller not found");
+        return; 
     }
     DojoCallData call_data = DojoHelpers::prepare_dojo_call_data(to, selector, args);
 
     Logger::debug_extra("ControllerAccount", "Populating Call");
 
+    std::string selector_str = selector.utf8().get_data();
+
     DOJO::Call call = {
         call_data.to,
-        call_data.selector_str.c_str(),
+        selector_str.c_str(),
         {call_data.calldata_felts.data(), call_data.calldata_felts.size()}
     };
 
@@ -228,7 +231,7 @@ void ControllerAccount::execute_from_outside(const String& to, const String& sel
     else
     {
         DOJO::wait_for_transaction(provider, GET_DOJO_OK(result));
-        Logger::success_extra("EXECUTED", &call.selector);
+        Logger::success_extra("EXECUTED", selector);
     }
 }
 

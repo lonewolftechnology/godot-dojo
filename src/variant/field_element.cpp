@@ -73,7 +73,10 @@ FieldElement::FieldElement(DOJO::FieldElement existing_felt)
 FieldElement::FieldElement(TypedArray<String>& addresses)
 {
     felt = new DOJO::FieldElement();
-    for (int i = 0; i < addresses.size(); i++)
+
+    memset(felt->data, 0, 32);
+
+    for (int i = 0; i < addresses.size() && i < 32; i++)
     {
         String address = addresses[i];
         if (address.length() == 42)
@@ -167,11 +170,6 @@ String FieldElement::to_string() const
     };
 
     return ret;
-}
-
-const char* FieldElement::to_string_c_str() const
-{
-    return to_string().utf8().get_data();
 }
 
 DOJO::FieldElement FieldElement::from_enum(int enum_value)
@@ -273,12 +271,11 @@ String FieldElement::parse_cairo()
 std::vector<DOJO::FieldElement> FieldElement::create_array(TypedArray<String> array)
 {
     std::vector<DOJO::FieldElement> result;
-    result.resize(array.size());
+    result.reserve(array.size());
 
     for (int i = 0; i < array.size(); i++)
     {
         String address = array[i];
-
         result.push_back(from_string(address));
     }
     return result;
