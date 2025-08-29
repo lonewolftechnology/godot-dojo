@@ -248,6 +248,45 @@ void ControllerAccount::execute_from_outside(const String& to, const String& sel
     }
 }
 
+void ControllerAccount::execute_raw(const String& to, const String& selector, const Array& args = Array())
+{
+    if (!is_controller_connected())
+    {
+        Logger::error("ControllerAccount not found");
+        emit_signal("transaction_failed", "Controller not found");
+        return;
+    }
+    DojoCallData call_data = DojoHelpers::prepare_dojo_call_data(to, selector, args);
+
+    Logger::debug_extra("ControllerAccount", "Populating Call");
+
+    std::string selector_str = selector.utf8().get_data();
+
+    DOJO::Call call = {
+        call_data.to,
+        selector_str.c_str(),
+        {call_data.calldata_felts.data(), call_data.calldata_felts.size()}
+    };
+
+    DOJO::ResultFieldElement result = DOJO::controller_execute_raw(
+        session_account, &call, 1
+    );
+    if (result.tag == DOJO::ErrFieldElement)
+    {
+        Logger::error("Transaction failed");
+        Logger::error("To:", to);
+        Logger::error("Selector:", selector);
+        Logger::error("Args:", args);
+        Logger::error("Error:", GET_DOJO_ERROR(result));
+        emit_signal("transaction_failed", GET_DOJO_ERROR(result));
+    }
+    else
+    {
+        DOJO::wait_for_transaction(provider, GET_DOJO_OK(result));
+        Logger::success_extra("EXECUTED", selector);
+    }
+}
+
 Dictionary ControllerAccount::get_account_info() const
 {
     Dictionary info = {};

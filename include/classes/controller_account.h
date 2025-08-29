@@ -61,6 +61,7 @@ public:
     void set_rpc_url(const String& p_rpc_url){ rpc_url = p_rpc_url;};
 
     void execute_from_outside(const String& to, const String& selector, const Array& args);
+    void execute_raw(const String& to, const String& selector, const Array& args);
 
     Dictionary get_account_info() const;
 
@@ -87,6 +88,8 @@ protected:
 
         ClassDB::bind_method(D_METHOD("execute_from_outside", "to", "selector", "args"),
                              &ControllerAccount::execute_from_outside, DEFVAL(Array()));
+        ClassDB::bind_method(D_METHOD("execute_raw", "to", "selector", "args"),
+                     &ControllerAccount::execute_raw, DEFVAL(Array()));
 
         ClassDB::bind_method(D_METHOD("get_account_info"), &ControllerAccount::get_account_info);
         // ClassDB::bind_method(D_METHOD("sign_message", "message"), &ControllerAccount::sign_message);
