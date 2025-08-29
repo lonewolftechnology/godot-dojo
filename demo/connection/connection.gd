@@ -4,7 +4,7 @@ extends Node
 signal connected
 
 const WORLD_CONTRACT = "0x073c2b317136214562b608523812f369a05efe67257842a17c4985ce6d390be7"
-const ACTIONS_CONTRACT = "0x038c3535090be3807d95354db3ae8dc0ceb19a0240739a3338cbc0d6c8ee47b4"
+const ACTIONS_CONTRACT = "0x0509fe72ac9512081b7dcbfc673b18ea3a323b164e45008fa774376031f88521"
 
 @export var query:DojoQuery
 @export var entity_sub:EntitySubscription
