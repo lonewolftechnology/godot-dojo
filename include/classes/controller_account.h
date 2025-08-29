@@ -57,7 +57,8 @@ public:
     String get_chain_id() const;
     void set_chain_id(const String& p_chain_id) { chain_id = p_chain_id; }
 
-    String get_rpc_url() const;
+    void check_rpc_url();
+    String get_rpc_url();
     void set_rpc_url(const String& p_rpc_url){ rpc_url = p_rpc_url;};
 
     void execute_from_outside(const String& to, const String& selector, const Array& args);

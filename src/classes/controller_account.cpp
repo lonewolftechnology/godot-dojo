@@ -195,18 +195,26 @@ String ControllerAccount::get_chain_id() const
     return chain_id;
 }
 
-String ControllerAccount::get_rpc_url() const
+void ControllerAccount::check_rpc_url()
 {
     if (rpc_url.is_empty())
     {
-        String setting= ProjectSettings::get_singleton()->get("dojo/config/katana/rpc_url");
-        if (! setting.is_empty())
+        Logger::debug_extra("ControllerAccount", "RPC URL not set, checking project settings");
+        String setting = ProjectSettings::get_singleton()->get("dojo/config/katana/rpc_url");
+        if (setting.is_empty())
         {
-            return setting;
+            Logger::error("RPC URL not set");
+            return;
         }
+        rpc_url = setting;
+        Logger::debug_extra("ControllerAccount", "RPC URL set to: ", rpc_url);
     }
-        return rpc_url;
-    }
+}
+
+String ControllerAccount::get_rpc_url()
+{
+    return rpc_url;
+}
 
 // TODO: Ver Threads
 void ControllerAccount::execute_from_outside(const String& to, const String& selector, const Array& args = Array())
@@ -215,7 +223,7 @@ void ControllerAccount::execute_from_outside(const String& to, const String& sel
     {
         Logger::error("ControllerAccount not found");
         emit_signal("transaction_failed", "Controller not found");
-        return; 
+        return;
     }
     DojoCallData call_data = DojoHelpers::prepare_dojo_call_data(to, selector, args);
 
