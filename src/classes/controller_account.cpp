@@ -75,6 +75,7 @@ void ControllerAccount::setup()
 void ControllerAccount::init_provider()
 {
     // Provider
+    check_rpc_url();
     Logger::debug_extra("Provider", rpc_url);
     DOJO::ResultProvider resControllerProvider = DOJO::provider_new(rpc_url.utf8().get_data());
     if (resControllerProvider.tag == DOJO::ErrProvider)
