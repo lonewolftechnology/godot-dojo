@@ -161,12 +161,7 @@ prefix = env.subst('$SHLIBPREFIX')
 env.Append(CPPPATH=["src/", "include/", "external/dojo.c", "external/boost/include"])
 
 if platform == "linux":
-    try:
-        env.ParseConfig("pkg-config --cflags --libs dbus-1")
-        print("Configured with dbus-1 flags.")
-    except OSError:
-        print("pkg-config for dbus-1 not found. DBus features might not be available.")
-        Exit(1)
+    env.Append(LINKFLAGS=['-ldbus-1'])
     env.Append(
         CXXFLAGS=["-std=c++17"]
     )
