@@ -167,8 +167,6 @@ if platform == "linux":
     except OSError:
         print("pkg-config for dbus-1 not found. DBus features might not be available.")
         Exit(1)
-    env.Append(LINKFLAGS=['-ldbus-1'])
-    # Forced because for some reason it uses an older standard
     env.Append(
         CXXFLAGS=["-std=c++17"]
     )
