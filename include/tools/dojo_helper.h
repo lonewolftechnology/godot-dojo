@@ -9,8 +9,9 @@
 #include "dojo_types.h"
 #include "godot_cpp/core/class_db.hpp"
 #include "variant/field_element.h"
-
+#include <boost/multiprecision/cpp_int.hpp>
 using namespace godot;
+using boost::multiprecision::cpp_int;
 
 // Struct to hold the data for a DOJO::Call
 // This is used to prepare the data in a helper and then construct the
@@ -25,6 +26,8 @@ struct DojoCallData {
 class DojoHelpers : public Object
 {
     GDCLASS(DojoHelpers, Object)
+    static const cpp_int STARK_PRIME;
+    static cpp_int to_starknet_negative_felt(cpp_int val);
 
 public:
     DojoHelpers();

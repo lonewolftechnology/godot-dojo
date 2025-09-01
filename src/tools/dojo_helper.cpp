@@ -3,8 +3,6 @@
 #include "godot_cpp/classes/engine.hpp"
 #include "godot_cpp/classes/project_settings.hpp"
 #include "tools/logger.h"
-
-#include <boost/multiprecision/cpp_int.hpp>
 #include <boost/multiprecision/cpp_dec_float.hpp>
 
 DojoHelpers* DojoHelpers::singleton = nullptr;
@@ -15,6 +13,18 @@ using boost::multiprecision::uint256_t;
 using boost::multiprecision::int256_t;
 
 typedef boost::multiprecision::number<boost::multiprecision::cpp_dec_float<100>> cpp_dec_float_100;
+
+// The STARK prime P, as a constant.
+// P = 2^251 + 17 * 2^192 + 1
+const cpp_int DojoHelpers::STARK_PRIME = (cpp_int(1) << 251) + (cpp_int(17) * (cpp_int(1) << 192)) + 1;
+
+cpp_int DojoHelpers::to_starknet_negative_felt(cpp_int val)
+{
+	if (val < 0) {
+		val += STARK_PRIME;
+	}
+	return val;
+}
 
 DojoHelpers::DojoHelpers()
 {
@@ -55,12 +65,12 @@ double DojoHelpers::variant_to_double_fp(const Variant& value, const int& precis
         {
             // Other variant array types go here?
             // take the bytes from the array here and construct the big integer
+            // Assumes little-endian PackedByteArray
             PackedByteArray bytes = value;
-            for (int i = 0; i < bytes.size(); i++)
-            {
-                int_val += bytes[i];
+            for (int i = bytes.size() - 1; i >= 0; i--) {
                 int_val <<= 8;
-            };
+                int_val |= bytes[i];
+            }
             break;
         }
     };
@@ -81,22 +91,23 @@ Variant DojoHelpers::double_to_variant_fp(const double& value, const int& precis
 
     cpp_int val_int(val_100);
 
-    // convert val_int to Variant here for use with field element etc
-    if (msb(val_int) < 64)
-    {
-        return {static_cast<int64_t>(val_int)};
-    };
+	// If it fits in int64, let the INT handler in prepare_dojo_call_data deal with it.
+	// This handles small positive and negative numbers.
+	if (val_int >= std::numeric_limits<int64_t>::min() && val_int <= std::numeric_limits<int64_t>::max()) {
+		return { static_cast<int64_t>(val_int) };
+	}
+
+	val_int = to_starknet_negative_felt(val_int);
 
     PackedByteArray arr;
-    int bytes = (msb(val_int) / 8) + 1;
+	int bytes = (val_int == 0) ? 0 : (msb(val_int) / 8) + 1;
     arr.resize(bytes);
-    for (int i = 0; i < bytes; i++)
-    {
-        arr[bytes - 1 - i] = static_cast<uint8_t>(val_int & 0xff);
+	// Serialize as little-endian
+    for (int i = 0; i < bytes; i++) {
+        arr[i] = static_cast<uint8_t>(val_int & 0xff);
         val_int >>= 8;
-    };
-
-    return {arr};
+	}
+	return { arr };
 }
 
 int64_t DojoHelpers::float_to_fixed(const double& value, const int& precision)
@@ -163,8 +174,7 @@ DOJO::U256 DojoHelpers::string_to_fixed_point_u256(const String& integer_str, in
 
     if (fixed_point_value < 0)
     {
-        cpp_int P = (cpp_int(1) << 251) + (cpp_int(17) * (cpp_int(1) << 192)) + 1;
-        fixed_point_value += P;
+        fixed_point_value += STARK_PRIME;
     }
 
     cpp_int max_u256 = (cpp_int(1) << 256) - 1;
@@ -204,11 +214,9 @@ String DojoHelpers::u256_fixed_point_to_string(const DOJO::U256& u256, int preci
     cpp_int fixed_point_value;
     boost::multiprecision::import_bits(fixed_point_value, bytes.begin(), bytes.end());
 
-    cpp_int P = (cpp_int(1) << 251) + (cpp_int(17) * (cpp_int(1) << 192)) + 1;
-
-    if (fixed_point_value > P / 2)
+    if (fixed_point_value > STARK_PRIME / 2)
     {
-        fixed_point_value -= P;
+        fixed_point_value -= STARK_PRIME;
     }
 
     cpp_int divisor = 1;
@@ -565,14 +573,10 @@ DojoCallData DojoHelpers::prepare_dojo_call_data(const String& to, const String&
                     int64_t int_val = arg;
                     if (int_val < 0)
                     {
-                        // Refer https://www.starknet.io/cairo-book/ch102-04-serialization-of-cairo-types.html#data-types-using-at-most-252-bits
-                        cpp_int P = (cpp_int(1) << 251) + (cpp_int(17) * (cpp_int(1) << 192)) + 1;
-                        cpp_int felt_val = int_val;
-                        felt_val += P;
-
+                        cpp_int felt_val = to_starknet_negative_felt(int_val);
                         std::stringstream ss;
                         ss << "0x" << std::hex << felt_val;
-
+                        
                         call_data.calldata_felts.push_back(FieldElement::from_string(ss.str().c_str()));
                     }
                     else
@@ -586,12 +590,15 @@ DojoCallData DojoHelpers::prepare_dojo_call_data(const String& to, const String&
                     const PackedByteArray v_array = static_cast<PackedByteArray>(arg);
                     if (v_array.size() == 32) // u256 / felt252
                     {
+                        Logger::debug_extra("Calldata", "PackedByteArray u256");
+
                         DOJO::FieldElement felt;
                         memcpy(&felt, v_array.ptr(), 32);
                         call_data.calldata_felts.push_back(felt);
                     }
                     else if (v_array.size() == 16) // u128 / i128
                     {
+                        Logger::debug_extra("Calldata", "PackedByteArray u128 / i128");
                         DOJO::FieldElement felt;
                         memset(&felt, 0, sizeof(DOJO::FieldElement)); // Complete bytes
                         memcpy(&felt, v_array.ptr(), 16);
