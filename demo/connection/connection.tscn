@@ -1,7 +1,7 @@
 [gd_scene load_steps=8 format=3 uid="uid://b75yggsnay1mo"]
 
 [ext_resource type="Script" uid="uid://bx5rlh0opi80k" path="res://connection/connection.gd" id="1_c7jwa"]
-[ext_resource type="DojoPolicies" uid="uid://tfmm84euv0h4" path="res://resources/policies.tres" id="2_r3uhw"]
+[ext_resource type="DojoPolicies" uid="uid://tfmm84euv0h4" path="res://resources/policies.tres" id="2_erpqw"]
 [ext_resource type="PackedScene" uid="uid://b5vmo8llucetx" path="res://ui/status_indicator.tscn" id="3_bya50"]
 
 [sub_resource type="DojoQuery" id="DojoQuery_erpqw"]
@@ -25,11 +25,12 @@ message_sub = SubResource("MessageSubscription_advu3")
 
 [node name="ToriiClient" type="ToriiClient" parent="."]
 torii_url = "https://api.cartridge.gg/x/godot-demo-rookie/torii"
-world_address = "0x073c2b317136214562b608523812f369a05efe67257842a17c4985ce6d390be7"
+world_address = "0x044508ff3a94c19844702f34dd64c5a933870116a42ac1105fd324335ca7b3f9"
 
 [node name="ControllerAccount" type="ControllerAccount" parent="."]
+rpc_url = "https://api.cartridge.gg/x/godot-demo-rookie/katana"
 chain_id = "WP_GODOT_DEMO_ROOKIE"
-policies = ExtResource("2_r3uhw")
+policies = ExtResource("2_erpqw")
 
 [node name="CanvasLayer" type="CanvasLayer" parent="."]
 layer = 10

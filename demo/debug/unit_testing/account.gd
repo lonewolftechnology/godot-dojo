@@ -7,14 +7,16 @@ const local_rpc_url = "http://localhost:5050"
 const local_torii_url = "http://localhost:8080"
 
 const slot_rpc_url = "https://api.cartridge.gg/x/godot-demo-rookie/katana"
-const slot_torii_url = "https://api.cartridge.gg/x/godot-demo-rookie/torii/rpc/v0_8"
+const slot_torii_url = "https://api.cartridge.gg/x/godot-demo-rookie/torii"
 
 const contract_namespace = "dojo_starter"
-const slot_contract_address = "0x038c3535090be3807d95354db3ae8dc0ceb19a0240739a3338cbc0d6c8ee47b4"
-const local_contract_address = "0x0509fe72ac9512081b7dcbfc673b18ea3a323b164e45008fa774376031f88521"
 
+const slot_contract_address = "0x00123e4e8a65b4e1f7c6004d99764e89d065bb1ec479ad41b1c195a19d325a3f"
+const local_contract_address = "0x0509fe72ac9512081b7dcbfc673b18ea3a323b164e45008fa774376031f88521"
 const starter_contract = "0x06b71e9a3aa5198aa78f7d8c407024d863e1d1263e735081c824deea349d3852" #Plain Starter
-const world_address = "0x073c2b317136214562b608523812f369a05efe67257842a17c4985ce6d390be7"
+
+const slot_world_address = "0x044508ff3a94c19844702f34dd64c5a933870116a42ac1105fd324335ca7b3f9"
+const local_world_address = "0x073c2b317136214562b608523812f369a05efe67257842a17c4985ce6d390be7"
 
 # First account of contract
 const account_address = "0x6677fe62ee39c7b07401f754138502bab7fac99d2d3c5d37df7d1c6fab10819"
@@ -23,10 +25,10 @@ const public_key = "0x1e8965b7d0b20b91a62fe515dd991dc9fcb748acddf6b2cf18cec3bdd0
 
 # The key is the selector and the array contains the data to validate to
 #const to_validate = [20,1.5,2.6,9.5,1.2,1.6,-1.5]
-#const to_validate = [-5,-1,-2,-4,-3,-8,-6,-200,-100,-60]
-const to_validate = [255,256,260]
+const to_validate = [-5,-1,-2,-4.5,-3,-8.6,-6,-200,-100,-60]
+#const to_validate = [255,256,260]
 const tests = {
-	"validate_fp_40": [6, 1.9, 2.6, 200000000, 654, 255, 256, 978, 56.74],
+	"validate_fp_40": [1.9, -1.9, -2.6, 200000000, 654, 255, 256, 978, 56.74],
 	"validate_vec3": [
 		Vector3(7.71271926302993,3,7), 
 		[7.71271926302993, 3, 7]
@@ -93,6 +95,13 @@ var torii_url:String:
 			return slot_torii_url
 		else:
 			return local_torii_url
+			
+var world_address:String:
+	get: 
+		if use_slot:
+			return slot_world_address
+		else:
+			return local_world_address
 
 @onready var account: Account = $Account
 @onready var torii_client: ToriiClient = $ToriiClient
@@ -112,7 +121,6 @@ var torii_url:String:
 func _ready() -> void:
 	OS.set_environment("RUST_BACKTRACE", "full")
 	OS.set_environment("RUST_LOG", "full")
-
 	var call_result_scroll = output_text.get_v_scroll_bar()
 	var call_response_scroll = sub_output.get_v_scroll_bar()
 	call_response_scroll.scrolling.connect(_on_scrolling.bind(call_response_scroll,call_result_scroll))
@@ -209,17 +217,22 @@ func _on_torii_client_client_connected(success: bool) -> void:
 
 	if account.is_account_valid():
 		for selector in tests.keys():
-			var data:Array = tests[selector]
 					
+			var data:Array = tests[selector]
+			print(data)
 			if data.is_empty():
+				print("aaa")
 				account.execute_raw(current_contract, selector)
 				continue
 				
 			for calldata in data:
+				print("asaaa")
 				account.execute_raw(current_contract, selector, [calldata])
 				await get_tree().process_frame
 				# TODO: Sequencer
 				await get_tree().create_timer(0.6).timeout # Workaround for missing events
+	else:
+		push_error("Account in not valid")
 				
 
 func _on_account_transaction_failed(error_message: Dictionary) -> void:

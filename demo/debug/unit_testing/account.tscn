@@ -13,7 +13,6 @@ entrypoints = Array[String](["validate_i64"])
 script = ExtResource("1_t46s5")
 event_message_sub = SubResource("MessageSubscription_t46s5")
 txn_sub = SubResource("TransactionSubscription_t46s5")
-use_slot = false
 
 [node name="Account" type="Account" parent="."]
 

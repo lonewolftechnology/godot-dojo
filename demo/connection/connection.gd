@@ -2,9 +2,16 @@ class_name DojoConnection
 extends Node
 
 signal connected
+# As of time of writing, September 1 2025
+# This are from our contract deployend on slot (https://github.com/dannroda/dojo-starter) Dojo v1.7.0-alpha.3
+# But it should work with official starter (https://github.com/dojoengine/dojo-starter), Dojo v1.6.2
+const WORLD_CONTRACT = "0x044508ff3a94c19844702f34dd64c5a933870116a42ac1105fd324335ca7b3f9"
+const ACTIONS_CONTRACT = "0x00123e4e8a65b4e1f7c6004d99764e89d065bb1ec479ad41b1c195a19d325a3f"
 
-const WORLD_CONTRACT = "0x073c2b317136214562b608523812f369a05efe67257842a17c4985ce6d390be7"
-const ACTIONS_CONTRACT = "0x038c3535090be3807d95354db3ae8dc0ceb19a0240739a3338cbc0d6c8ee47b4"
+#TODO: Make not neccesary to setup ToriiClient/ControllearAccount through editor, so can be easily updated with code.
+# The chain_id can be obtained using a burner Account
+const rpc_url = "https://api.cartridge.gg/x/godot-demo-rookie/katana"
+const torii_url = "https://api.cartridge.gg/x/godot-demo-rookie/torii"
 
 @export var query:DojoQuery
 @export var entity_sub:EntitySubscription

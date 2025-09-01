@@ -1,21 +1,12 @@
-# CHAIN ID WP_GODOT_DEMO_ROOKIE
-# KATANA https://api.cartridge.gg/x/godot-demo-rookie/katana
-# TORII https://api.cartridge.gg/x/godot-demo-rookie/torii
-# WORLD 0x073c2b317136214562b608523812f369a05efe67257842a17c4985ce6d390be7
-# Actions 0x05d64ed5dff420d1d1f1c36958b6c4b0983868e5d0072f3fc928859b95d72a24
-
-# hazel 0x3dc821653fa9ed84324821b26afd5775b128921b9436327211949947a888
-# dtodice 0x75c10973fc5fdfa2f7ff5875f10441e546d98f37f40b97a663f89bdaf81a0
-
 class_name DemoGame
 extends Node
-
-
+# Dojo v1.7.0-alpha.3
 enum Directions {
-	LEFT = 0,
-	RIGHT = 1,
-	UP = 2,
-	DOWN = 3,
+	NONE = 0,
+	LEFT = 1,
+	RIGHT = 2,
+	UP = 3,
+	DOWN = 4,
 }
 
 @export var connection : DojoConnection 
