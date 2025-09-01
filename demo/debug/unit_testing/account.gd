@@ -23,28 +23,31 @@ const account_address = "0x6677fe62ee39c7b07401f754138502bab7fac99d2d3c5d37df7d1
 const private_key = "0x3e3979c1ed728490308054fe357a9f49cf67f80f9721f44cc57235129e090f4"
 const public_key = "0x1e8965b7d0b20b91a62fe515dd991dc9fcb748acddf6b2cf18cec3bdd0f9f9a"
 
+#FP40
+const FRACTIONAL_BITS = 40
+
 # The key is the selector and the array contains the data to validate to
 #const to_validate = [20,1.5,2.6,9.5,1.2,1.6,-1.5]
 const to_validate = [-5,-1,-2,-4.5,-3,-8.6,-6,-200,-100,-60]
 #const to_validate = [255,256,260]
 const tests = {
-	"validate_fp_40": [1.9, -1.9, -2.6, 200000000, 654, 255, 256, 978, 56.74],
-	"validate_vec3": [
-		Vector3(7.71271926302993,3,7), 
-		[7.71271926302993, 3, 7]
-		],
-	"validate_i8": to_validate,
-	"validate_i16": to_validate,
-	"validate_i32": to_validate,
+	"validate_fp_40": [1.9,-1.9],
+	#"validate_vec3": [
+		#Vector3(7.71271926302993,3,7), 
+		#[7.71271926302993, 3, 7]
+		#],
+	#"validate_i8": to_validate,
+	#"validate_i16": to_validate,
+	#"validate_i32": to_validate,
 	"validate_i64": to_validate,
-	"validate_i128": to_validate,
-	"validate_u8": to_validate,
-	"validate_u16": to_validate,
-	"validate_u32": to_validate,
-	"validate_u64": to_validate,
-	"validate_u128": to_validate,
-	"validate_u256": to_validate,
-	"validate_bool": [true, false],
+	#"validate_i128": to_validate,
+	#"validate_u8": to_validate,
+	#"validate_u16": to_validate,
+	#"validate_u32": to_validate,
+	#"validate_u64": to_validate,
+	#"validate_u128": to_validate,
+	#"validate_u256": to_validate,
+	#"validate_bool": [true, false],
 	#"validate_felt252": [],
 	#"validate_class_hash": [],
 	#"validate_contract_address": [],
@@ -121,6 +124,8 @@ var world_address:String:
 func _ready() -> void:
 	OS.set_environment("RUST_BACKTRACE", "full")
 	OS.set_environment("RUST_LOG", "full")
+	var P = (((2^251) + (17 * (2^192))) + 1)
+	push_error(P)
 	var call_result_scroll = output_text.get_v_scroll_bar()
 	var call_response_scroll = sub_output.get_v_scroll_bar()
 	call_response_scroll.scrolling.connect(_on_scrolling.bind(call_response_scroll,call_result_scroll))
@@ -145,25 +150,30 @@ func _on_events_message(args:Dictionary) -> void:
 
 	if model in events:
 		var value = model_data[model]["val"]
-		match model:
-			"dojo_starter-ValidatedFP40":
-				value = get_original_fp_value_from_bytes(value.to_bytes())
-				var scale_factor = pow(2.0, 40)    
-				var fp = float(value) / scale_factor
-				if not round(fp) == 0.0:
-					value = fp
-			"dojo_starter-ValidatedI128":
+		var model_split = model.split("-")
+		var model_namespace = model_split[0]
+		assert(model_namespace == contract_namespace, "Namespace doesnt match")
+		var parsed_model = model_split[1]
+		match parsed_model:
+			"ValidatedFP40":
+				value = reconvert_validate_fp_40(value.to_bytes())
+			"ValidatedI128":
 				value = value.to_bytes()
-			"dojo_starter-ValidatedU128":
+			"ValidatedU128":
 				value = value.to_bytes()
-			"dojo_starter-ValidatedU256":
+			"ValidatedU256":
 				value = value.to_bytes()
-			"dojo_starter-ValidatedVec3":
+			"ValidatedVec3":
 				var converted = {}
 				for key in value.keys():
 					converted[key] = bigint_to_string(value[key])
 				value = converted
-		sub_output.call_deferred("append_text","[color=yellow]%s:[/color] %s\n" % [model, value])
+		if value is PackedByteArray:
+			value = packed_byte_array_to_i128_float(value)
+		var fp = fp_to_float(value, FRACTIONAL_BITS)
+		if not round(fp) == 0.0:
+			value = fp
+		sub_output.call_deferred("append_text","[color=yellow]%s:[/color] %s | %s \n" % [model, value, roundf(fp)])
 
 func bigint_to_string(value):
 	if value is I128: return value.to_bytes()
@@ -194,12 +204,16 @@ func packed_byte_array_to_i128_float(bytes: PackedByteArray) -> float:
 		return float(high) * pow(2.0, 64) + float(low)
 
 
-func get_original_fp_value_from_bytes(ret_bytes: PackedByteArray) -> int:
+func reconvert_validate_fp_40(ret_bytes: PackedByteArray) -> int:
 	var ret_fp = packed_byte_array_to_i128_float(ret_bytes)
 	var original_fp_value_float = ret_fp / PI
 	var original_fp_value_int = round(original_fp_value_float)
 	
 	return original_fp_value_int
+
+func fp_to_float(fp_value, bits: int) -> float:
+	var scale_factor = pow(2.0, bits)
+	return float(fp_value) / scale_factor
 
 func _on_transaction(args:Dictionary) -> void:
 	push_warning("CALLBACK TXN MESSAGE", args)
@@ -219,14 +233,11 @@ func _on_torii_client_client_connected(success: bool) -> void:
 		for selector in tests.keys():
 					
 			var data:Array = tests[selector]
-			print(data)
 			if data.is_empty():
-				print("aaa")
 				account.execute_raw(current_contract, selector)
 				continue
 				
 			for calldata in data:
-				print("asaaa")
 				account.execute_raw(current_contract, selector, [calldata])
 				await get_tree().process_frame
 				# TODO: Sequencer
