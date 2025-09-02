@@ -30,7 +30,7 @@ ControllerAccount::ControllerAccount()
 
 ControllerAccount::~ControllerAccount()
 {
-    // disconnect_controller();
+    disconnect_controller();
     session_account = nullptr;
     if (singleton != nullptr && singleton == this)
     {
@@ -59,7 +59,14 @@ DOJO::ControllerAccount* ControllerAccount::get_session_account() const
 void ControllerAccount::on_account_callback(DOJO::ControllerAccount* account)
 {
     Logger::success("Account Data received");
-    get_singleton()->set_session_account(account);
+    ControllerAccount* instance = get_singleton();
+    if (!instance)
+    {
+        Logger::warning("ControllerAccount singleton is null in on_account_callback. The application may be shutting down.");
+        return;
+    }
+
+    instance->set_session_account(account);
 
     DOJO::FieldElement player_address = DOJO::controller_address(account);
     DOJO::FieldElement player_chain_id = DOJO::controller_chain_id(account);
@@ -109,6 +116,8 @@ void ControllerAccount::create(const Ref<DojoPolicies>& policies_data)
         Logger::error("Invalid policies data");
         return;
     }
+
+    this->policies = policies_data;
 
     std::vector<DOJO::Policy> policies = policies_data->build();
     uintptr_t policies_len = policies.size();
