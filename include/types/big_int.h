@@ -17,11 +17,7 @@ using boost::multiprecision::int256_t;
 class U128 : public RefCounted {
     GDCLASS(U128, RefCounted);
 
-private:
     uint128_t value;
-
-protected:
-    static void _bind_methods();
 
 public:
     U128();
@@ -33,28 +29,30 @@ public:
     U128(const uint8_t p_bytes[16]);
 
     String to_string() const;
+    String _to_string() const { return to_string(); };
     PackedByteArray to_bytes() const;
     DOJO::FieldElement to_felt() const;
     PackedByteArray _to_felt_bytes() const;
+
+protected:
+    static void _bind_methods()
+    {
+        ClassDB::bind_method(D_METHOD("_init_from_string", "value"), &U128::_init_from_string);
+        ClassDB::bind_method(D_METHOD("_init_from_int", "value"), &U128::_init_from_int);
+        ClassDB::bind_method(D_METHOD("to_string"), &U128::to_string);
+        ClassDB::bind_method(D_METHOD("to_bytes"), &U128::to_bytes);
+        ClassDB::bind_method(D_METHOD("to_felt"), &U128::_to_felt_bytes);
+    }
 };
 
-inline void U128::_bind_methods() {
-    ClassDB::bind_method(D_METHOD("_init_from_string", "value"), &U128::_init_from_string);
-    ClassDB::bind_method(D_METHOD("_init_from_int", "value"), &U128::_init_from_int);
-    ClassDB::bind_method(D_METHOD("to_string"), &U128::to_string);
-    ClassDB::bind_method(D_METHOD("to_bytes"), &U128::to_bytes);
-    ClassDB::bind_method(D_METHOD("to_felt"), &U128::_to_felt_bytes);
-}
 
 // --- I128 ---
 class I128 : public RefCounted {
     GDCLASS(I128, RefCounted);
 
-private:
     int128_t value;
 
-protected:
-    static void _bind_methods();
+
 
 public:
     I128();
@@ -66,28 +64,25 @@ public:
     I128(const uint8_t p_bytes[16]);
 
     String to_string() const;
+    String _to_string() const { return to_string(); };
     PackedByteArray to_bytes() const;
     DOJO::FieldElement to_felt() const;
     PackedByteArray _to_felt_bytes() const;
-};
-
-inline void I128::_bind_methods() {
+protected:
+    static void _bind_methods(){
     ClassDB::bind_method(D_METHOD("_init_from_string", "value"), &I128::_init_from_string);
     ClassDB::bind_method(D_METHOD("_init_from_int", "value"), &I128::_init_from_int);
     ClassDB::bind_method(D_METHOD("to_string"), &I128::to_string);
     ClassDB::bind_method(D_METHOD("to_bytes"), &I128::to_bytes);
     ClassDB::bind_method(D_METHOD("to_felt"), &I128::_to_felt_bytes);
-}
+}};
 
 // --- U256 ---
-class U256 : public RefCounted {
+class U256 : public RefCounted
+{
     GDCLASS(U256, RefCounted);
 
-private:
     uint256_t value;
-
-protected:
-    static void _bind_methods();
 
 public:
     U256();
@@ -99,17 +94,19 @@ public:
     U256(const DOJO::U256& p_value);
 
     String to_string() const;
+    String _to_string() const { return to_string(); };
     PackedByteArray to_bytes() const;
     DOJO::FieldElement to_felt() const;
     PackedByteArray _to_felt_bytes() const;
-};
 
-inline void U256::_bind_methods() {
-    ClassDB::bind_method(D_METHOD("_init_from_string", "value"), &U256::_init_from_string);
-    ClassDB::bind_method(D_METHOD("_init_from_int", "value"), &U256::_init_from_int);
-    ClassDB::bind_method(D_METHOD("to_string"), &U256::to_string);
-    ClassDB::bind_method(D_METHOD("to_bytes"), &U256::to_bytes);
-    ClassDB::bind_method(D_METHOD("to_felt"), &U256::_to_felt_bytes);
-}
+protected:
+    static void _bind_methods() {
+        ClassDB::bind_method(D_METHOD("_init_from_string", "value"), &U256::_init_from_string);
+        ClassDB::bind_method(D_METHOD("_init_from_int", "value"), &U256::_init_from_int);
+        ClassDB::bind_method(D_METHOD("to_string"), &U256::to_string);
+        ClassDB::bind_method(D_METHOD("to_bytes"), &U256::to_bytes);
+        ClassDB::bind_method(D_METHOD("to_felt"), &U256::_to_felt_bytes);
+    }
+};
 
 #endif // BIG_INT_H
