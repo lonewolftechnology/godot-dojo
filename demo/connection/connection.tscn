@@ -1,4 +1,4 @@
-[gd_scene load_steps=8 format=3 uid="uid://b75yggsnay1mo"]
+[gd_scene load_steps=7 format=3 uid="uid://b75yggsnay1mo"]
 
 [ext_resource type="Script" uid="uid://bx5rlh0opi80k" path="res://connection/connection.gd" id="1_c7jwa"]
 [ext_resource type="DojoPolicies" uid="uid://tfmm84euv0h4" path="res://resources/policies.tres" id="2_erpqw"]

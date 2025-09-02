@@ -101,8 +101,9 @@ public:
 
 protected:
     static void _bind_methods() {
-        ClassDB::bind_method(D_METHOD("_init_from_string", "value"), &U256::_init_from_string);
-        ClassDB::bind_method(D_METHOD("_init_from_int", "value"), &U256::_init_from_int);
+        ClassDB::bind_method(D_METHOD("_init"), &U256::_init);
+        ClassDB::bind_method(D_METHOD("init_from_string", "value"), &U256::_init_from_string);
+        ClassDB::bind_method(D_METHOD("init_from_int", "value"), &U256::_init_from_int);
         ClassDB::bind_method(D_METHOD("to_string"), &U256::to_string);
         ClassDB::bind_method(D_METHOD("to_bytes"), &U256::to_bytes);
         ClassDB::bind_method(D_METHOD("to_felt"), &U256::_to_felt_bytes);
