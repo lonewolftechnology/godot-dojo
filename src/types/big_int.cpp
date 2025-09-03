@@ -109,6 +109,8 @@ U128::U128(const uint8_t p_bytes[16])
     boost::multiprecision::import_bits(value, bytes.begin(), bytes.end());
 }
 
+U128::U128(const uint128_t& p_value) : value(p_value) {}
+
 String U128::to_string() const
 {
     std::string s = value.str();
@@ -152,6 +154,8 @@ I128::I128(const uint8_t p_bytes[16])
     std::reverse(bytes.begin(), bytes.end()); // to big-endian for boost
     boost::multiprecision::import_bits(value, bytes.begin(), bytes.end());
 }
+
+I128::I128(const int128_t& p_value) : value(p_value) {}
 
 String I128::to_string() const
 {
@@ -205,7 +209,21 @@ String U256::to_string() const
 
 PackedByteArray U256::to_bytes() const { return value_to_bytes<uint256_t, 32>(value); }
 
-DOJO::FieldElement U256::to_felt() const { return value_to_felt<uint256_t>(value); }
+Ref<U128> U256::get_low() const
+{
+    return memnew(U128(value.convert_to<uint128_t>()));
+}
+
+Ref<U128> U256::get_high() const
+{
+    return memnew(U128((value >> 128).convert_to<uint128_t>()));
+}
+
+DOJO::FieldElement U256::to_felt() const
+{
+    Logger::warning("U256::to_felt() is deprecated and likely incorrect for calldata. A u256 is represented by two felts (low, high). This function truncates to the low part. Use get_low() and get_high() instead.");
+    return value_to_felt<uint128_t>(value.convert_to<uint128_t>());
+}
 
 PackedByteArray U256::_to_felt_bytes() const {
     DOJO::FieldElement felt = to_felt();

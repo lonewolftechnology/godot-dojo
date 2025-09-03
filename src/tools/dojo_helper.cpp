@@ -105,8 +105,6 @@ Variant DojoHelpers::double_to_variant_fp(const double& value, const int& precis
     PackedByteArray arr;
 	int bytes = (val_int == 0) ? 0 : (msb(val_int) / 8) + 1;
     arr.resize(bytes);
-	// Serialize as little-endian
-    for (int i = 0; i < bytes; i++) {
     // Serialize as little-endian
     for (int i = 0; i < bytes; i++)
     {
