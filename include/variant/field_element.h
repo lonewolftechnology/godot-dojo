@@ -36,6 +36,7 @@ public:
 
     PackedByteArray as_packed_array() const;
     String to_string() const;
+    Variant _to_string() const { return as_packed_array(); };
     String parse_cairo();
     static std::vector<DOJO::FieldElement> create_array(TypedArray<String> array);
     String bytearray_deserialize(const uintptr_t& data_len);

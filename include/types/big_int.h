@@ -30,7 +30,7 @@ public:
     U128(const uint128_t& p_value);
 
     String to_string() const;
-    String _to_string() const { return to_string(); };
+    Variant _to_string() const { return to_bytes(); };
     PackedByteArray to_bytes() const;
     DOJO::FieldElement to_felt() const;
     PackedByteArray _to_felt_bytes() const;
@@ -64,7 +64,7 @@ public:
     I128(const int128_t& p_value);
 
     String to_string() const;
-    String _to_string() const { return to_string(); };
+    Variant _to_string() const { return to_bytes(); };
     PackedByteArray to_bytes() const;
     DOJO::FieldElement to_felt() const;
     PackedByteArray _to_felt_bytes() const;
@@ -95,7 +95,7 @@ public:
     U256(const DOJO::U256& p_value);
 
     String to_string() const;
-    String _to_string() const { return to_string(); };
+    Variant _to_string() const { return to_bytes(); };
     PackedByteArray to_bytes() const;
     Ref<U128> get_low() const;
     Ref<U128> get_high() const;
