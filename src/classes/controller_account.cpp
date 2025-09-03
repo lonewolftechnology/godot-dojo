@@ -238,7 +238,7 @@ String ControllerAccount::get_rpc_url()
 }
 
 // TODO: Ver Threads
-void ControllerAccount::execute_from_outside(const String& to, const String& selector, const Array& args = Array())
+void ControllerAccount::execute_from_outside(const String& to, const String& selector, const Variant& calldata = Array())
 {
     if (!is_controller_connected())
     {
@@ -246,6 +246,12 @@ void ControllerAccount::execute_from_outside(const String& to, const String& sel
         emit_signal("transaction_failed", "Controller not found");
         return;
     }
+    if (DojoHelpers::is_valid_calldata(calldata) == false)
+    {
+        return;
+    }
+    const Array& args = calldata;
+
     DojoCallData call_data = DojoHelpers::prepare_dojo_call_data(to, selector, args);
 
     Logger::debug_extra("ControllerAccount", "Populating Call");
@@ -277,7 +283,7 @@ void ControllerAccount::execute_from_outside(const String& to, const String& sel
     }
 }
 
-void ControllerAccount::execute_raw(const String& to, const String& selector, const Array& args = Array())
+void ControllerAccount::execute_raw(const String& to, const String& selector, const Variant& calldata = Array())
 {
     if (!is_controller_connected())
     {
@@ -285,6 +291,12 @@ void ControllerAccount::execute_raw(const String& to, const String& selector, co
         emit_signal("transaction_failed", "Controller not found");
         return;
     }
+    if (DojoHelpers::is_valid_calldata(calldata) == false)
+    {
+        return;
+    }
+
+    const Array& args = calldata;
     DojoCallData call_data = DojoHelpers::prepare_dojo_call_data(to, selector, args);
 
     Logger::debug_extra("ControllerAccount", "Populating Call");

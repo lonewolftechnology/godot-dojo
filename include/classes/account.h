@@ -44,7 +44,7 @@ public:
 
     bool is_account_valid() const;
 
-    void execute_raw(const String& to, const String& selector, const Array& args = Array());
+    void execute_raw(const String& to, const String& selector, const Variant& calldata);
 
 
 protected:

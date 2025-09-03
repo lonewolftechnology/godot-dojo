@@ -90,6 +90,7 @@ public:
 
     static Ref<FieldElement> string_to_field_element(const String& str);
     static DojoCallData prepare_dojo_call_data(const String& to, const String& selector, const Array& args);
+    static bool is_valid_calldata(const Variant& calldata);
 
 
 protected:

@@ -20,10 +20,11 @@ const cpp_int DojoHelpers::STARK_PRIME = (cpp_int(1) << 251) + (cpp_int(17) * (c
 
 cpp_int DojoHelpers::to_starknet_negative_felt(cpp_int val)
 {
-	if (val < 0) {
-		val += STARK_PRIME;
-	}
-	return val;
+    if (val < 0)
+    {
+        val += STARK_PRIME;
+    }
+    return val;
 }
 
 DojoHelpers::DojoHelpers()
@@ -67,7 +68,8 @@ double DojoHelpers::variant_to_double_fp(const Variant& value, const int& precis
             // take the bytes from the array here and construct the big integer
             // Assumes little-endian PackedByteArray
             PackedByteArray bytes = value;
-            for (int i = bytes.size() - 1; i >= 0; i--) {
+            for (int i = bytes.size() - 1; i >= 0; i--)
+            {
                 int_val <<= 8;
                 int_val |= bytes[i];
             }
@@ -91,11 +93,12 @@ Variant DojoHelpers::double_to_variant_fp(const double& value, const int& precis
 
     cpp_int val_int(val_100);
 
-	// If it fits in int64, let the INT handler in prepare_dojo_call_data deal with it.
-	// This handles small positive and negative numbers.
-	if (val_int >= std::numeric_limits<int64_t>::min() && val_int <= std::numeric_limits<int64_t>::max()) {
-		return { static_cast<int64_t>(val_int) };
-	}
+    // If it fits in int64, let the INT handler in prepare_dojo_call_data deal with it.
+    // This handles small positive and negative numbers.
+    if (val_int >= std::numeric_limits<int64_t>::min() && val_int <= std::numeric_limits<int64_t>::max())
+    {
+        return {static_cast<int64_t>(val_int)};
+    }
 
 	val_int = to_starknet_negative_felt(val_int);
 
@@ -104,6 +107,9 @@ Variant DojoHelpers::double_to_variant_fp(const double& value, const int& precis
     arr.resize(bytes);
 	// Serialize as little-endian
     for (int i = 0; i < bytes; i++) {
+    // Serialize as little-endian
+    for (int i = 0; i < bytes; i++)
+    {
         arr[i] = static_cast<uint8_t>(val_int & 0xff);
         val_int >>= 8;
 	}
@@ -640,6 +646,16 @@ DojoCallData DojoHelpers::prepare_dojo_call_data(const String& to, const String&
 
     call_data.is_valid = true;
     return call_data;
+}
+
+bool DojoHelpers::is_valid_calldata(const Variant& calldata)
+{
+    if (calldata.get_type() != Variant::Type::ARRAY)
+    {
+        Logger::error("Error: Invalid Array.");
+        return false;
+    }
+    return true;
 }
 
 String DojoHelpers::bytes_to_i128_string(const PackedByteArray& bytes)

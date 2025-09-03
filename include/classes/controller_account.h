@@ -61,8 +61,8 @@ public:
     String get_rpc_url();
     void set_rpc_url(const String& p_rpc_url){ rpc_url = p_rpc_url;};
 
-    void execute_from_outside(const String& to, const String& selector, const Array& args);
-    void execute_raw(const String& to, const String& selector, const Array& args);
+    void execute_from_outside(const String& to, const String& selector, const Variant& args);
+    void execute_raw(const String& to, const String& selector, const Variant& args);
 
     Dictionary get_account_info() const;
 
