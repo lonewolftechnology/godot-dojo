@@ -166,13 +166,17 @@ bool Account::is_account_valid() const
     return account != nullptr;
 }
 
-void Account::execute_raw(const String& to, const String& selector, const Array& args)
+void Account::execute_raw(const String& to, const String& selector, const Variant& calldata)
 {
     if (!is_account_valid())
     {
         return;
     }
-
+    if (DojoHelpers::is_valid_calldata(calldata) == false)
+    {
+        return;
+    }
+    const Array& args = calldata;
     DojoCallData call_data = DojoHelpers::prepare_dojo_call_data(to, selector, args);
 
     if (!call_data.is_valid) {
