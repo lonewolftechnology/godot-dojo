@@ -86,6 +86,37 @@ DOJO::FieldElement value_to_felt(const T& value)
     return felt;
 }
 
+// Template helper to initialize any big integer class from a Variant.
+// This removes code duplication from the _init methods and factory methods.
+template <typename T>
+void _initialize_from_variant(T* instance, const Variant& p_value)
+{
+    // Initialize to a known, safe state first.
+    instance->set_value(0);
+
+    switch (p_value.get_type())
+    {
+        case Variant::NIL:
+            // This handles .new() called with no arguments.
+            break;
+        case Variant::STRING:
+            instance->_init_from_string(p_value);
+            break;
+        case Variant::INT:
+            instance->_init_from_int(p_value);
+            break;
+        case Variant::FLOAT:
+            instance->_init_from_float(p_value, ProjectSettings::get_singleton()->get("dojo/config/fixed_point/default"));
+            break;
+        default:
+        {
+            String class_name = instance->get_class();
+            Logger::error("Error: Invalid type for " + class_name + ".new() or .from_variant(). Must be int, float, String, or empty.");
+            break;
+        }
+    }
+}
+
 // U128 Implementation
 U128::U128()
 {
@@ -98,15 +129,7 @@ U128::~U128()
 void U128::_init(const Variant& p_value)
 {
     // Default constructor for `U128.new()`
-    // Initializes value to 0.
-    value = 0;
-    if (p_value.get_type() != Variant::NIL)
-    {
-        String class_name = get_class();
-        Logger::warning(
-            class_name + ".new() with parameters is deprecated. Use " + class_name +
-            ".from_string() or .from_int() instead.");
-    }
+    _initialize_from_variant(this, p_value);
 }
 
 void U128::_init_from_string(const String& p_value)
@@ -150,17 +173,10 @@ PackedByteArray U128::to_bytes() const { return value_to_bytes<uint128_t, 16>(va
 
 DOJO::FieldElement U128::to_felt() const { return value_to_felt<uint128_t>(value); }
 
-Ref<U128> U128::from_string(const String& p_value)
+Ref<U128> U128::from_variant(const Variant& p_value)
 {
     Ref<U128> instance = memnew(U128);
-    instance->_init_from_string(p_value);
-    return instance;
-}
-
-Ref<U128> U128::from_int(int64_t p_value)
-{
-    Ref<U128> instance = memnew(U128);
-    instance->_init_from_int(p_value);
+    _initialize_from_variant(instance.ptr(), p_value);
     return instance;
 }
 
@@ -185,15 +201,7 @@ I128::~I128()
 void I128::_init(const Variant& p_value)
 {
     // Default constructor for `I128.new()`
-    // Initializes value to 0.
-    value = 0;
-    if (p_value.get_type() != Variant::NIL)
-    {
-        String class_name = get_class();
-        Logger::warning(
-            class_name + ".new() with parameters is deprecated. Use " + class_name +
-            ".from_string() or .from_int() instead.");
-    }
+    _initialize_from_variant(this, p_value);
 }
 
 void I128::_init_from_string(const String& p_value)
@@ -237,17 +245,10 @@ PackedByteArray I128::to_bytes() const { return value_to_bytes<int128_t, 16>(val
 
 DOJO::FieldElement I128::to_felt() const { return value_to_felt<int128_t>(value); }
 
-Ref<I128> I128::from_string(const String& p_value)
+Ref<I128> I128::from_variant(const Variant& p_value)
 {
     Ref<I128> instance = memnew(I128);
-    instance->_init_from_string(p_value);
-    return instance;
-}
-
-Ref<I128> I128::from_int(int64_t p_value)
-{
-    Ref<I128> instance = memnew(I128);
-    instance->_init_from_int(p_value);
+    _initialize_from_variant(instance.ptr(), p_value);
     return instance;
 }
 
@@ -272,15 +273,7 @@ U256::~U256()
 void U256::_init(const Variant& p_value)
 {
     // Default constructor for `U256.new()`
-    // Initializes value to 0.
-    value = 0;
-    if (p_value.get_type() != Variant::NIL)
-    {
-        String class_name = get_class();
-        Logger::warning(
-            class_name + ".new() with parameters is deprecated. Use " + class_name +
-            ".from_string() or .from_int() instead.");
-    }
+    _initialize_from_variant(this, p_value);
 }
 
 void U256::_init_from_string(const String& p_value)
@@ -335,17 +328,10 @@ DOJO::FieldElement U256::to_felt() const
     return value_to_felt<uint128_t>(value.convert_to<uint128_t>());
 }
 
-Ref<U256> U256::from_string(const String& p_value)
+Ref<U256> U256::from_variant(const Variant& p_value)
 {
     Ref<U256> instance = memnew(U256);
-    instance->_init_from_string(p_value);
-    return instance;
-}
-
-Ref<U256> U256::from_int(int64_t p_value)
-{
-    Ref<U256> instance = memnew(U256);
-    instance->_init_from_int(p_value);
+    _initialize_from_variant(instance.ptr(), p_value);
     return instance;
 }
 
