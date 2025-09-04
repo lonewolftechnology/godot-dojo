@@ -122,8 +122,7 @@ public:
     DOJO::FieldElement to_felt() const;
     PackedByteArray _to_felt_bytes() const; // Uses the deprecated to_felt
 
-    static Ref<U256> from_string(const String& p_value);
-    static Ref<U256> from_int(int64_t p_value);
+    static Ref<U256> from_variant(const Variant& p_value);
 
 protected:
     static void _bind_methods()
