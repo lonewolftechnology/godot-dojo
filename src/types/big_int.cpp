@@ -76,7 +76,6 @@ DOJO::FieldElement value_to_felt(const T& value)
         memcpy(temp_buffer + (32 - bytes_vec.size()), bytes_vec.data(), bytes_vec.size());
     }
 
-    std::reverse(std::begin(temp_buffer), std::end(temp_buffer));
     memcpy(felt.data, temp_buffer, 32);
 
     return felt;
