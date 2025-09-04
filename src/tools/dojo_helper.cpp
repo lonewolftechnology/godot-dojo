@@ -4,6 +4,9 @@
 #include "godot_cpp/classes/project_settings.hpp"
 #include "tools/logger.h"
 #include <boost/multiprecision/cpp_dec_float.hpp>
+#include <types/big_int.h>
+#include <deque>
+#include "variant/field_element.h"
 
 DojoHelpers* DojoHelpers::singleton = nullptr;
 using boost::multiprecision::cpp_int;
@@ -100,18 +103,18 @@ Variant DojoHelpers::double_to_variant_fp(const double& value, const int& precis
         return {static_cast<int64_t>(val_int)};
     }
 
-	val_int = to_starknet_negative_felt(val_int);
+    val_int = to_starknet_negative_felt(val_int);
 
     PackedByteArray arr;
-	int bytes = (val_int == 0) ? 0 : (msb(val_int) / 8) + 1;
+    int bytes = (val_int == 0) ? 0 : (msb(val_int) / 8) + 1;
     arr.resize(bytes);
     // Serialize as little-endian
     for (int i = 0; i < bytes; i++)
     {
         arr[i] = static_cast<uint8_t>(val_int & 0xff);
         val_int >>= 8;
-	}
-	return { arr };
+    }
+    return {arr};
 }
 
 int64_t DojoHelpers::float_to_fixed(const double& value, const int& precision)
@@ -439,209 +442,142 @@ Ref<FieldElement> DojoHelpers::string_to_field_element(const String& str)
 DojoCallData DojoHelpers::prepare_dojo_call_data(const String& to, const String& selector, const Array& args)
 {
     DojoCallData call_data;
+    call_data.is_valid = false; // Default to invalid
 
     call_data.to = FieldElement::from_string(to);
     call_data.selector_str = selector.utf8().get_data();
 
-    uint8_t calldata_len = args.size();
-
-    if (calldata_len > 0)
+    if (args.size() > 0)
     {
-        Logger::debug_extra("DojoHelpers", "Parsing DojoCallData");
+        Logger::debug_extra("DojoHelpers", "Preparing DojoCallData (Iterative)");
 
-        Array final_args = {};
-
-        for (int i = 0; i < calldata_len; i++)
-        {
-            const Variant& arg = args[i];
-            Logger::custom("Calldata", Variant::get_type_name(arg.get_type()), arg.stringify());
-
-            switch (arg.get_type())
-            {
-            case Variant::Type::ARRAY:
-                {
-                    Array original_array = arg;
-                    Array result;
-                    for (int j = 0; j < original_array.size(); j++)
-                    {
-                        const Variant& array_element = original_array[j];
-                        if (array_element.get_type() == Variant::Type::FLOAT)
-                        {
-                            result.push_back(double_to_variant_fp(
-                                array_element,
-                                get_setting("dojo/config/fixed_point/default")
-                            ));
-                        }
-                        else
-                        {
-                            result.push_back(array_element);
-                        }
-                    }
-                    final_args.append_array(result);
-                    break;
-                }
-            case Variant::BOOL:
-            case Variant::INT:
-                {
-                    final_args.push_back(arg);
-                    break;
-                }
-            case Variant::Type::FLOAT:
-                {
-                    final_args.push_back(
-                        double_to_variant_fp(
-                            arg,
-                            get_setting("dojo/config/fixed_point/default")
-                        )
-                    );
-                    break;
-                }
-            case Variant::Type::PACKED_BYTE_ARRAY:
-                {
-                    final_args.push_back(arg);
-                    break;
-                }
-            case Variant::Type::VECTOR2:
-                {
-                    Vector2 vec = arg;
-                    final_args.push_back(double_to_variant_fp(
-                        vec.x,
-                        get_setting("dojo/config/fixed_point/default")
-                    ));
-                    final_args.push_back(double_to_variant_fp(
-                        vec.y,
-                        get_setting("dojo/config/fixed_point/default")
-                    ));
-                    break;
-                }
-            case Variant::Type::VECTOR2I:
-                {
-                    Vector2 vec = arg;
-                    final_args.push_back(static_cast<int64_t>(vec.x));
-                    final_args.push_back(static_cast<int64_t>(vec.y));
-                    break;
-                }
-            case Variant::Type::VECTOR3:
-                {
-                    Vector3 vec = arg;
-                    final_args.push_back(double_to_variant_fp(
-                        vec.x,
-                        get_setting("dojo/config/fixed_point/default")
-                    ));
-                    final_args.push_back(double_to_variant_fp(
-                        vec.y,
-                        get_setting("dojo/config/fixed_point/default")
-                    ));
-                    final_args.push_back(double_to_variant_fp(
-                        vec.z,
-                        get_setting("dojo/config/fixed_point/default")
-                    ));
-                    break;
-                }
-            case Variant::Type::VECTOR3I:
-                {
-                    Vector3 vec = arg;
-                    final_args.push_back(static_cast<int64_t>(vec.x));
-                    final_args.push_back(static_cast<int64_t>(vec.y));
-                    final_args.push_back(static_cast<int64_t>(vec.z));
-                    break;
-                }
-            default:
-                {
-                    Logger::warning(
-                        "CalldataVariant",
-                        "Unsupported type",
-                        Variant::get_type_name(arg.get_type()),
-                        arg.stringify()
-                    );
-                    break;
-                }
-            }
+        std::deque<Variant> worklist;
+        for (int i = 0; i < args.size(); ++i) {
+            worklist.push_back(args[i]);
         }
-        Logger::custom("CALLDATA", calldata_len);
-        calldata_len = final_args.size();
-        Logger::debug_extra("CALLDATA", calldata_len, Variant(final_args).stringify());
-        call_data.calldata_felts.reserve(calldata_len);
-        for (int i = 0; i < calldata_len; i++)
+
+        while (!worklist.empty())
         {
-            const Variant& arg = final_args[i];
+            Variant arg = worklist.front();
+            worklist.pop_front();
+            String class_name = "";
+            if (arg.get_type() == Variant::Type::OBJECT)
+            {
+                class_name = static_cast<Ref<RefCounted>>(arg)->get_class();
+            }
+            else
+            {
+                class_name = Variant::get_type_name(arg.get_type());
+            }
+            Logger::debug_extra("Calldata", "Processing: " + class_name, arg.stringify());
+
             switch (arg.get_type())
             {
-            case Variant::Type::BOOL:
-                {
+                case Variant::Type::ARRAY: {
+                    Array inner_array = arg;
+                    for (int i = inner_array.size() - 1; i >= 0; --i) {
+                        worklist.push_front(inner_array[i]);
+                    }
+                    continue;
+                }
+                case Variant::Type::FLOAT: {
+                    worklist.push_front(double_to_variant_fp(arg, get_setting("dojo/config/fixed_point/default")));
+                    continue;
+                }
+                case Variant::Type::VECTOR2: {
+                    Vector2 vec = arg;
+                    worklist.push_front(vec.y);
+                    worklist.push_front(vec.x);
+                    continue;
+                }
+                case Variant::Type::VECTOR2I: {
+                    Vector2i vec = arg;
+                    worklist.push_front(static_cast<int64_t>(vec.y));
+                    worklist.push_front(static_cast<int64_t>(vec.x));
+                    continue;
+                }
+                case Variant::Type::VECTOR3: {
+                    Vector3 vec = arg;
+                    worklist.push_front(vec.z);
+                    worklist.push_front(vec.y);
+                    worklist.push_front(vec.x);
+                    continue;
+                }
+                case Variant::Type::VECTOR3I: {
+                    Vector3i vec = arg;
+                    worklist.push_front(static_cast<int64_t>(vec.z));
+                    worklist.push_front(static_cast<int64_t>(vec.y));
+                    worklist.push_front(static_cast<int64_t>(vec.x));
+                    continue;
+                }
+                case Variant::Type::BOOL:
                     call_data.calldata_felts.push_back(FieldElement::from_enum(arg));
                     break;
-                }
-            case Variant::Type::INT:
-                {
+                case Variant::Type::INT: {
                     int64_t int_val = arg;
-                    if (int_val < 0)
-                    {
+                    if (int_val < 0) {
                         cpp_int felt_val = to_starknet_negative_felt(int_val);
                         std::stringstream ss;
                         ss << "0x" << std::hex << felt_val;
-                        
                         call_data.calldata_felts.push_back(FieldElement::from_string(ss.str().c_str()));
-                    }
-                    else
-                    {
+                    } else {
                         call_data.calldata_felts.push_back(FieldElement::from_int(arg));
                     }
                     break;
                 }
-            case Variant::Type::PACKED_BYTE_ARRAY:
-                {
+                case Variant::Type::PACKED_BYTE_ARRAY: {
                     const PackedByteArray v_array = static_cast<PackedByteArray>(arg);
-                    if (v_array.size() == 32) // u256 / felt252
-                    {
-                        Logger::debug_extra("Calldata", "PackedByteArray u256");
-
+                    if (v_array.size() == 32) { // u256 / felt252
                         DOJO::FieldElement felt;
                         memcpy(&felt, v_array.ptr(), 32);
                         call_data.calldata_felts.push_back(felt);
-                    }
-                    else if (v_array.size() == 16) // u128 / i128
-                    {
-                        Logger::debug_extra("Calldata", "PackedByteArray u128 / i128");
+                    } else if (v_array.size() == 16) { // u128 / i128
                         DOJO::FieldElement felt;
-                        memset(&felt, 0, sizeof(DOJO::FieldElement)); // Complete bytes
+                        memset(&felt, 0, sizeof(DOJO::FieldElement));
                         memcpy(&felt, v_array.ptr(), 16);
                         call_data.calldata_felts.push_back(felt);
-                    }
-                    else
-                    {
-                        String error_msg = "Unsupported PackedByteArray size: " + String::num_int64(v_array.size()) +
-                            ". Expected 16 (for u128) or 32 (for u256/felt252).";
+                    } else {
+                        String error_msg = "Unsupported PackedByteArray size: " + String::num_int64(v_array.size()) + ". Expected 16 or 32.";
                         Logger::error("Calldata", error_msg);
                         return call_data; // is_valid is false
                     }
                     break;
                 }
-            case Variant::Type::STRING:
-                {
-                    if (static_cast<String>(arg).begins_with("0x"))
-                    {
+                case Variant::Type::STRING:
+                    if (static_cast<String>(arg).begins_with("0x")) {
                         call_data.calldata_felts.push_back(FieldElement::from_string(arg));
-                    }
-                    else
-                    {
+                    } else {
                         call_data.calldata_felts.push_back(FieldElement::cairo_short_string_to_felt(arg));
                     }
                     break;
-                }
-            default:
-                {
-                    Logger::warning(
-                        "CalldataFelt",
-                        "Unsupported type",
-                        Variant::get_type_name(arg.get_type())
-                    );
+                case Variant::Type::OBJECT: {
+                    Ref<RefCounted> obj = arg;
+                    if (obj.is_valid()) {
+                        if (obj->is_class("U256")) {
+                            Ref<U256> u256 = obj;
+                            // For Cairo calldata, the order is [low, high].
+                            // We push high first, then low, so low is processed first.
+                            worklist.push_front(u256->get_high());
+                            worklist.push_front(u256->get_low());
+                            continue;
+                        }
+                        if (obj->is_class("U128")) {
+                            Ref<U128> u128 = obj;
+                            // Convert to a 32-byte felt representation and let the PACKED_BYTE_ARRAY case handle it.
+                            worklist.push_front(u128->_to_felt_bytes());
+                            continue;
+                        }
+                    }
+                    Logger::warning("prepare_dojo_call_data: Encountered an unexpected OBJECT type in calldata. It will be ignored. Class: " + class_name);
                     break;
                 }
+                default:
+                    Logger::warning("prepare_dojo_call_data: Unsupported variant type in calldata: " + Variant::get_type_name(arg.get_type()));
+                    break;
             }
         }
     }
-
+    Logger::debug_extra("Calldata", call_data.calldata_felts.size(), "felts");
     call_data.is_valid = true;
     return call_data;
 }
