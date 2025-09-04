@@ -81,7 +81,6 @@ DOJO::FieldElement value_to_felt(const T& value)
     return felt;
 }
 
-
 // U128 Implementation
 U128::U128()
 {
@@ -91,7 +90,19 @@ U128::~U128()
 {
 }
 
-void U128::_init() { value = 0; }
+void U128::_init(const Variant& p_value)
+{
+    // Default constructor for `U128.new()`
+    // Initializes value to 0.
+    value = 0;
+    if (p_value.get_type() != Variant::NIL)
+    {
+        String class_name = get_class();
+        Logger::warning(
+            class_name + ".new() with parameters is deprecated. Use " + class_name +
+            ".from_string() or .from_int() instead.");
+    }
+}
 
 void U128::_init_from_string(const String& p_value)
 {
@@ -108,7 +119,9 @@ U128::U128(const uint8_t p_bytes[16])
     boost::multiprecision::import_bits(value, bytes.begin(), bytes.end());
 }
 
-U128::U128(const uint128_t& p_value) : value(p_value) {}
+U128::U128(const uint128_t& p_value) : value(p_value)
+{
+}
 
 String U128::to_string() const
 {
@@ -120,7 +133,22 @@ PackedByteArray U128::to_bytes() const { return value_to_bytes<uint128_t, 16>(va
 
 DOJO::FieldElement U128::to_felt() const { return value_to_felt<uint128_t>(value); }
 
-PackedByteArray U128::_to_felt_bytes() const {
+Ref<U128> U128::from_string(const String& p_value)
+{
+    Ref<U128> instance = memnew(U128);
+    instance->_init_from_string(p_value);
+    return instance;
+}
+
+Ref<U128> U128::from_int(int64_t p_value)
+{
+    Ref<U128> instance = memnew(U128);
+    instance->_init_from_int(p_value);
+    return instance;
+}
+
+PackedByteArray U128::_to_felt_bytes() const
+{
     DOJO::FieldElement felt = to_felt();
     PackedByteArray bytes;
     bytes.resize(32);
@@ -137,7 +165,19 @@ I128::~I128()
 {
 }
 
-void I128::_init() { value = 0; }
+void I128::_init(const Variant& p_value)
+{
+    // Default constructor for `I128.new()`
+    // Initializes value to 0.
+    value = 0;
+    if (p_value.get_type() != Variant::NIL)
+    {
+        String class_name = get_class();
+        Logger::warning(
+            class_name + ".new() with parameters is deprecated. Use " + class_name +
+            ".from_string() or .from_int() instead.");
+    }
+}
 
 void I128::_init_from_string(const String& p_value)
 {
@@ -154,7 +194,9 @@ I128::I128(const uint8_t p_bytes[16])
     boost::multiprecision::import_bits(value, bytes.begin(), bytes.end());
 }
 
-I128::I128(const int128_t& p_value) : value(p_value) {}
+I128::I128(const int128_t& p_value) : value(p_value)
+{
+}
 
 String I128::to_string() const
 {
@@ -166,7 +208,22 @@ PackedByteArray I128::to_bytes() const { return value_to_bytes<int128_t, 16>(val
 
 DOJO::FieldElement I128::to_felt() const { return value_to_felt<int128_t>(value); }
 
-PackedByteArray I128::_to_felt_bytes() const {
+Ref<I128> I128::from_string(const String& p_value)
+{
+    Ref<I128> instance = memnew(I128);
+    instance->_init_from_string(p_value);
+    return instance;
+}
+
+Ref<I128> I128::from_int(int64_t p_value)
+{
+    Ref<I128> instance = memnew(I128);
+    instance->_init_from_int(p_value);
+    return instance;
+}
+
+PackedByteArray I128::_to_felt_bytes() const
+{
     DOJO::FieldElement felt = to_felt();
     PackedByteArray bytes;
     bytes.resize(32);
@@ -183,7 +240,19 @@ U256::~U256()
 {
 }
 
-void U256::_init() { value = 0; }
+void U256::_init(const Variant& p_value)
+{
+    // Default constructor for `U256.new()`
+    // Initializes value to 0.
+    value = 0;
+    if (p_value.get_type() != Variant::NIL)
+    {
+        String class_name = get_class();
+        Logger::warning(
+            class_name + ".new() with parameters is deprecated. Use " + class_name +
+            ".from_string() or .from_int() instead.");
+    }
+}
 
 void U256::_init_from_string(const String& p_value)
 {
@@ -220,11 +289,27 @@ Ref<U128> U256::get_high() const
 
 DOJO::FieldElement U256::to_felt() const
 {
-    Logger::warning("U256::to_felt() is deprecated and likely incorrect for calldata. A u256 is represented by two felts (low, high). This function truncates to the low part. Use get_low() and get_high() instead.");
+    Logger::warning(
+        "U256::to_felt() is deprecated and likely incorrect for calldata. A u256 is represented by two felts (low, high). This function truncates to the low part. Use get_low() and get_high() instead.");
     return value_to_felt<uint128_t>(value.convert_to<uint128_t>());
 }
 
-PackedByteArray U256::_to_felt_bytes() const {
+Ref<U256> U256::from_string(const String& p_value)
+{
+    Ref<U256> instance = memnew(U256);
+    instance->_init_from_string(p_value);
+    return instance;
+}
+
+Ref<U256> U256::from_int(int64_t p_value)
+{
+    Ref<U256> instance = memnew(U256);
+    instance->_init_from_int(p_value);
+    return instance;
+}
+
+PackedByteArray U256::_to_felt_bytes() const
+{
     DOJO::FieldElement felt = to_felt();
     PackedByteArray bytes;
     bytes.resize(32);
