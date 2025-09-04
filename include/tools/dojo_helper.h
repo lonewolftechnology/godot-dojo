@@ -26,13 +26,13 @@ struct DojoCallData {
 class DojoHelpers : public Object
 {
     GDCLASS(DojoHelpers, Object)
-    static const cpp_int STARK_PRIME;
-    static cpp_int to_starknet_negative_felt(cpp_int val);
 
 public:
     DojoHelpers();
     ~DojoHelpers();
 
+    static const cpp_int STARK_PRIME;
+    static cpp_int to_starknet_negative_felt(cpp_int val);
     static constexpr uint64_t U32_OFFSET = 2147483648ULL; // 2^31
 
     static uint32_t signed_to_u32_offset(int32_t signed_value) {
