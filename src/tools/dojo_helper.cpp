@@ -567,6 +567,12 @@ DojoCallData DojoHelpers::prepare_dojo_call_data(const String& to, const String&
                             worklist.push_front(u128->_to_felt_bytes());
                             continue;
                         }
+                        if (obj->is_class("I128")) {
+                            Ref<I128> i128 = obj;
+                            // Convert to a 32-byte felt representation and let the PACKED_BYTE_ARRAY case handle it.
+                            worklist.push_front(i128->_to_felt_bytes());
+                            continue;
+                        }
                     }
                     Logger::warning("prepare_dojo_call_data: Encountered an unexpected OBJECT type in calldata. It will be ignored. Class: " + class_name);
                     break;
