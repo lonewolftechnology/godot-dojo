@@ -11,7 +11,6 @@ using namespace godot;
 using boost::multiprecision::uint128_t;
 using boost::multiprecision::int128_t;
 using boost::multiprecision::uint256_t;
-using boost::multiprecision::int256_t;
 
 // --- U128 ---
 class U128 : public RefCounted
