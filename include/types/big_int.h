@@ -27,6 +27,7 @@ public:
     void _init(const Variant& p_value = Variant());
     void _init_from_string(const String& p_value);
     void _init_from_int(int64_t p_value);
+    void _init_from_float(double p_value, int p_precision);
     U128(const uint8_t p_bytes[16]);
     U128(const uint128_t& p_value);
 
@@ -68,6 +69,7 @@ public:
     void _init(const Variant& p_value = Variant());
     void _init_from_string(const String& p_value);
     void _init_from_int(int64_t p_value);
+    void _init_from_float(double p_value, int p_precision);
     I128(const uint8_t p_bytes[16]);
     I128(const int128_t& p_value);
 
@@ -108,6 +110,7 @@ public:
     void _init(const Variant& p_value = Variant());
     void _init_from_string(const String& p_value);
     void _init_from_int(int64_t p_value);
+    void _init_from_float(double p_value, int p_precision);
     U256(const DOJO::U256& p_value);
 
     String to_string() const;

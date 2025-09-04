@@ -2,6 +2,11 @@
 #include "tools/logger.h"
 #include <algorithm> // For std::reverse
 #include <type_traits> // For std::is_signed
+#include <godot_cpp/classes/project_settings.hpp>
+#include <boost/multiprecision/cpp_dec_float.hpp>
+
+using boost::multiprecision::cpp_int;
+typedef boost::multiprecision::number<boost::multiprecision::cpp_dec_float<100>> cpp_dec_float_100;
 
 // Common template for to_bytes to reduce duplication
 template <typename T, size_t N>
@@ -112,6 +117,18 @@ void U128::_init_from_string(const String& p_value)
 
 void U128::_init_from_int(int64_t p_value) { value = p_value; }
 
+void U128::_init_from_float(double p_value, int p_precision)
+{
+    cpp_int shift = 1;
+    shift <<= p_precision;
+    cpp_dec_float_100 val_100 = p_value;
+    val_100 *= cpp_dec_float_100(shift);
+    cpp_int val_int(val_100);
+
+    // Re-use string initialization
+    value = uint128_t(val_int.str().c_str());
+}
+
 U128::U128(const uint8_t p_bytes[16])
 {
     std::vector<uint8_t> bytes(p_bytes, p_bytes + 16);
@@ -187,6 +204,18 @@ void I128::_init_from_string(const String& p_value)
 
 void I128::_init_from_int(int64_t p_value) { value = p_value; }
 
+void I128::_init_from_float(double p_value, int p_precision)
+{
+    cpp_int shift = 1;
+    shift <<= p_precision;
+    cpp_dec_float_100 val_100 = p_value;
+    val_100 *= cpp_dec_float_100(shift);
+    cpp_int val_int(val_100);
+
+    // Re-use string initialization
+    value = int128_t(val_int.str().c_str());
+}
+
 I128::I128(const uint8_t p_bytes[16])
 {
     std::vector<uint8_t> bytes(p_bytes, p_bytes + 16);
@@ -261,6 +290,18 @@ void U256::_init_from_string(const String& p_value)
 }
 
 void U256::_init_from_int(int64_t p_value) { value = p_value; }
+
+void U256::_init_from_float(double p_value, int p_precision)
+{
+    cpp_int shift = 1;
+    shift <<= p_precision;
+    cpp_dec_float_100 val_100 = p_value;
+    val_100 *= cpp_dec_float_100(shift);
+    cpp_int val_int(val_100);
+
+    // Re-use string initialization
+    value = uint256_t(val_int.str().c_str());
+}
 
 U256::U256(const DOJO::U256& p_value)
 {
