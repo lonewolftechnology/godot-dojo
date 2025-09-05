@@ -24,7 +24,9 @@ const private_key = "0x3e3979c1ed728490308054fe357a9f49cf67f80f9721f44cc57235129
 const public_key = "0x1e8965b7d0b20b91a62fe515dd991dc9fcb748acddf6b2cf18cec3bdd0f9f9a"
 
 #FP40
-const FRACTIONAL_BITS = 40
+var FRACTIONAL_BITS:
+	get:
+		return ProjectSettings.get_setting("dojo/config/fixed_point/default", 40)
 
 # The key is the selector and the array contains the data to validate to
 #const to_validate = [20,1.5,2.6,9.5,1.2,1.6,-1.5]
@@ -195,8 +197,11 @@ func packed_byte_array_to_i128_float(bytes: PackedByteArray) -> float:
 	
 	var high: int = high_bytes.decode_u64(0)
 	var low: int = low_bytes.decode_u64(0)
+	var low: int = little_endian_bytes.decode_u64(0)
+	var high: int = little_endian_bytes.decode_u64(8)
 	
 	if (high & (1 << 63)) != 0:
+	if (high & (1 << 63)) != 0: # Check the sign bit
 		var two_pow_128 = pow(2.0, 128)
 		var unsigned_val = float(high) * pow(2.0, 64) + float(low)
 		return unsigned_val - two_pow_128
@@ -230,12 +235,20 @@ func _on_torii_client_client_connected(success: bool) -> void:
 	account.set_block_id()
 
 	if account.is_account_valid():
+		
 		for selector in tests.keys():
 					
 			var data:Array = tests[selector]
 			if data.is_empty():
 				account.execute_raw(current_contract, selector)
 				continue
+				
+			if selector == "validate_u256":
+				data = data.map(func(e): return U256.from_variant(e))
+			if selector == "validate_u128":
+				data = data.map(func(e): return U128.from_variant(e))
+			if selector == "validate_i128":
+				data = data.map(func(e): return I128.from_variant(e))
 				
 			for calldata in data:
 				account.execute_raw(current_contract, selector, [calldata])
