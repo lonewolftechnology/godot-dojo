@@ -3,6 +3,7 @@
 #include <algorithm> // For std::reverse
 #include <type_traits> // For std::is_signed
 #include <godot_cpp/classes/project_settings.hpp>
+#include <tools/dojo_helper.h>
 #include <boost/multiprecision/cpp_dec_float.hpp>
 
 using boost::multiprecision::cpp_int;
@@ -20,7 +21,7 @@ PackedByteArray value_to_bytes(const T& value)
     uint8_t* write_ptr = bytes.ptrw();
 
     uint8_t padding = 0x00;
-    if constexpr (std::is_signed<T>::value)
+    if constexpr (std::is_signed_v<T>)
     {
         if (value < 0)
         {
@@ -54,11 +55,11 @@ DOJO::FieldElement value_to_felt(const T& value)
 {
     std::vector<uint8_t> bytes_vec;
     boost::multiprecision::export_bits(value, std::back_inserter(bytes_vec), 8);
-
-    DOJO::FieldElement felt;
+ 
+    DOJO::FieldElement felt = {};
 
     uint8_t padding = 0x00;
-    if constexpr (std::is_signed<T>::value)
+    if constexpr (std::is_signed_v<T>)
     {
         if (value < 0)
         {
@@ -66,22 +67,16 @@ DOJO::FieldElement value_to_felt(const T& value)
         }
     }
     memset(felt.data, padding, 32);
-
-    // export_bits is big-endian, we need little-endian for contracts
-    uint8_t temp_buffer[32];
-    memset(temp_buffer, padding, 32);
-
-    if (bytes_vec.size() > 32)
+ 
+    const size_t num_bytes = bytes_vec.size();
+    if (num_bytes > 32)
     {
-        // This handles cases where boost might give more bytes than expected for negative numbers
-        memcpy(temp_buffer, bytes_vec.data() + (bytes_vec.size() - 32), 32);
+        memcpy(felt.data, bytes_vec.data() + (num_bytes - 32), 32);
     }
     else
     {
-        memcpy(temp_buffer + (32 - bytes_vec.size()), bytes_vec.data(), bytes_vec.size());
+        memcpy(felt.data + (32 - num_bytes), bytes_vec.data(), num_bytes);
     }
-
-    memcpy(felt.data, temp_buffer, 32);
 
     return felt;
 }
@@ -96,22 +91,24 @@ void _initialize_from_variant(T* instance, const Variant& p_value)
 
     switch (p_value.get_type())
     {
-        case Variant::NIL:
-            // This handles .new() called with no arguments.
-            break;
-        case Variant::STRING:
-            instance->_init_from_string(p_value);
-            break;
-        case Variant::INT:
-            instance->_init_from_int(p_value);
-            break;
-        case Variant::FLOAT:
-            instance->_init_from_float(p_value, ProjectSettings::get_singleton()->get("dojo/config/fixed_point/default"));
-            break;
-        default:
+    case Variant::NIL:
+        // This handles .new() called with no arguments.
+        break;
+    case Variant::STRING:
+        instance->_init_from_string(p_value);
+        break;
+    case Variant::INT:
+        instance->_init_from_int(p_value);
+        break;
+    case Variant::FLOAT:
+        instance->_init_from_float(p_value, ProjectSettings::get_singleton()->get("dojo/config/fixed_point/default"));
+        break;
+    default:
         {
             String class_name = instance->get_class();
-            Logger::error("Error: Invalid type for " + class_name + ".new() or .from_variant(). Must be int, float, String, or empty.");
+            Logger::error(
+                "Error: Invalid type for " + class_name +
+                ".new() or .from_variant(). Must be int, float, String, or empty.");
             break;
         }
     }
@@ -243,7 +240,15 @@ String I128::to_string() const
 
 PackedByteArray I128::to_bytes() const { return value_to_bytes<int128_t, 16>(value); }
 
-DOJO::FieldElement I128::to_felt() const { return value_to_felt<int128_t>(value); }
+DOJO::FieldElement I128::to_felt() const
+{
+    cpp_int val(value);
+    if (val < 0)
+    {
+        val += DojoHelpers::STARK_PRIME;
+    }
+    return value_to_felt<uint256_t>(val.convert_to<uint256_t>());
+}
 
 Ref<I128> I128::from_variant(const Variant& p_value)
 {
