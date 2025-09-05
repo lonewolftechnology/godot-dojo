@@ -245,6 +245,12 @@ protected:
         BIND_ENUM_CONSTANT(DOJO::ComparisonOperator::Lte);
         BIND_ENUM_CONSTANT(DOJO::ComparisonOperator::In);
         BIND_ENUM_CONSTANT(DOJO::ComparisonOperator::NotIn);
+        BIND_ENUM_CONSTANT(DOJO::ComparisonOperator::Contains);
+        BIND_ENUM_CONSTANT(DOJO::ComparisonOperator::ContainsAll);
+        BIND_ENUM_CONSTANT(DOJO::ComparisonOperator::ContainsAny);
+        BIND_ENUM_CONSTANT(DOJO::ComparisonOperator::ArrayLengthEq);
+        BIND_ENUM_CONSTANT(DOJO::ComparisonOperator::ArrayLengthGt);
+        BIND_ENUM_CONSTANT(DOJO::ComparisonOperator::ArrayLengthLt);
 
         BIND_ENUM_CONSTANT(DOJO::MemberValue_Tag::PrimitiveValue);
         BIND_ENUM_CONSTANT(DOJO::MemberValue_Tag::String);
@@ -325,7 +331,7 @@ protected:
             case DOJO::Clause_Tag::CMember:
                 p_list->push_back(PropertyInfo(Variant::STRING, "model"));
                 p_list->push_back(PropertyInfo(Variant::STRING, "member"));
-                p_list->push_back(PropertyInfo(Variant::INT, "comparison_operator", PROPERTY_HINT_ENUM, "Eq,Neq,Gt,Gte,Lt,Lte,In,NotIn"));
+                p_list->push_back(PropertyInfo(Variant::INT, "comparison_operator", PROPERTY_HINT_ENUM, "Eq,Neq,Gt,Gte,Lt,Lte,In,NotIn,Contains,ContainsAll,ContainsAny,ArrayLengthEq,ArrayLengthGt,ArrayLengthLt"));
                 p_list->push_back(PropertyInfo(Variant::INT, "member_tag", PROPERTY_HINT_ENUM, "PrimitiveValue,String,List"));
                 if (member_tag == DOJO::MemberValue_Tag::PrimitiveValue || member_tag == DOJO::MemberValue_Tag::List) {
                     p_list->push_back(PropertyInfo(Variant::INT, "primitive_tag", PROPERTY_HINT_ENUM, "I8,I16,I32,I64,I128,U8,U16,U32,U64,U128,U256,Bool,Felt252,ClassHash,ContractAddress,EthAddress"));

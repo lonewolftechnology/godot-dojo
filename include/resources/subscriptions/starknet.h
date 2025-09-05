@@ -7,7 +7,6 @@
 
 #include "resources/dojo_subscription.h"
 #include "ref_counted/options/option_field_element.h"
-#include <vector>
 
 using namespace godot;
 
@@ -15,15 +14,8 @@ class StarknetSubscription : public DojoSubscription
 {
     GDCLASS(StarknetSubscription, DojoSubscription);
 
-public:
-    enum PatternMatching {
-        FixedLen,
-        VariableLen,
-    };
-
-private:
     Array keys; // Array of Ref<OptionFieldElement>
-    PatternMatching pattern_matching = FixedLen;
+    DOJO::PatternMatching pattern_matching = DOJO::PatternMatching::FixedLen;
     TypedArray<String> models;
 
     // Native data storage
@@ -57,7 +49,7 @@ private:
         }
 
         native_clause_storage.keys = {native_keys.data(), native_keys.size()};
-        native_clause_storage.pattern_matching = static_cast<DOJO::PatternMatching>(pattern_matching);
+        native_clause_storage.pattern_matching = pattern_matching;
         native_clause_storage.models = {native_models_c_str.data(), native_models_c_str.size()};
     }
 
@@ -71,8 +63,8 @@ public:
         keys = p_keys;
     }
 
-    PatternMatching get_pattern_matching() const { return pattern_matching; }
-    void set_pattern_matching(PatternMatching p_pm) { pattern_matching = p_pm; }
+    DOJO::PatternMatching get_pattern_matching() const { return pattern_matching; }
+    void set_pattern_matching(DOJO::PatternMatching p_pm) { pattern_matching = p_pm; }
 
     TypedArray<String> get_models() const { return models; }
     void set_models(const TypedArray<String>& p_models) {
@@ -99,11 +91,10 @@ protected:
         ClassDB::bind_method(D_METHOD("set_models", "p_models"), &StarknetSubscription::set_models);
         ADD_PROPERTY(PropertyInfo(Variant::PACKED_STRING_ARRAY, "models"), "set_models", "get_models");
 
-        BIND_ENUM_CONSTANT(FixedLen);
-        BIND_ENUM_CONSTANT(VariableLen);
+        BIND_ENUM_CONSTANT(DOJO::PatternMatching::FixedLen);
+        BIND_ENUM_CONSTANT(DOJO::PatternMatching::VariableLen);
     }
 };
 
-VARIANT_ENUM_CAST(StarknetSubscription::PatternMatching);
 
 #endif //STARKNET_H
