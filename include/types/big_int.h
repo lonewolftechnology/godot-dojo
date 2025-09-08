@@ -32,6 +32,7 @@ public:
     void set_value(const uint128_t& p_value) { value = p_value; }
 
     String to_string() const;
+    double to_float(int p_precision = -1) const;
     Variant _to_string() const { return to_bytes(); };
     PackedByteArray to_bytes() const;
     DOJO::FieldElement to_felt() const;
@@ -45,6 +46,7 @@ protected:
         ClassDB::bind_method(D_METHOD("init_from_string", "value"), &U128::_init_from_string);
         ClassDB::bind_method(D_METHOD("init_from_int", "value"), &U128::_init_from_int);
         ClassDB::bind_method(D_METHOD("to_string"), &U128::to_string);
+        ClassDB::bind_method(D_METHOD("to_float", "precision"), &U128::to_float, DEFVAL(-1));
         ClassDB::bind_method(D_METHOD("to_bytes"), &U128::to_bytes);
         ClassDB::bind_method(D_METHOD("to_felt"), &U128::_to_felt_bytes);
 
@@ -73,6 +75,7 @@ public:
     void set_value(const int128_t& p_value) { value = p_value; }
 
     String to_string() const;
+    double to_float(int p_precision = -1) const;
     Variant _to_string() const { return to_bytes(); };
     PackedByteArray to_bytes() const;
     DOJO::FieldElement to_felt() const;
@@ -86,6 +89,7 @@ protected:
         ClassDB::bind_method(D_METHOD("init_from_string", "value"), &I128::_init_from_string);
         ClassDB::bind_method(D_METHOD("init_from_int", "value"), &I128::_init_from_int);
         ClassDB::bind_method(D_METHOD("to_string"), &I128::to_string);
+        ClassDB::bind_method(D_METHOD("to_float", "precision"), &I128::to_float, DEFVAL(-1));
         ClassDB::bind_method(D_METHOD("to_bytes"), &I128::to_bytes);
         ClassDB::bind_method(D_METHOD("to_felt"), &I128::_to_felt_bytes);
 
@@ -112,6 +116,7 @@ public:
     void set_value(const uint256_t& p_value) { value = p_value; }
 
     String to_string() const;
+    double to_float(int p_precision = -1) const;
     Variant _to_string() const { return to_bytes(); };
     PackedByteArray to_bytes() const;
     Ref<U128> get_low() const;
@@ -129,6 +134,7 @@ protected:
         ClassDB::bind_method(D_METHOD("init_from_string", "value"), &U256::_init_from_string);
         ClassDB::bind_method(D_METHOD("init_from_int", "value"), &U256::_init_from_int);
         ClassDB::bind_method(D_METHOD("to_string"), &U256::to_string);
+        ClassDB::bind_method(D_METHOD("to_float", "precision"), &U256::to_float, DEFVAL(-1));
         ClassDB::bind_method(D_METHOD("to_bytes"), &U256::to_bytes);
         ClassDB::bind_method(D_METHOD("get_low"), &U256::get_low);
         ClassDB::bind_method(D_METHOD("get_high"), &U256::get_high);

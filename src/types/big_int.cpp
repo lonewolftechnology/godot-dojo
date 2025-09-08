@@ -166,6 +166,17 @@ String U128::to_string() const
     return String(s.c_str());
 }
 
+double U128::to_float(int p_precision) const
+{
+    if (p_precision < 0) {
+        p_precision = ProjectSettings::get_singleton()->get("dojo/config/fixed_point/default");
+    }
+    cpp_int divisor = 1;
+    divisor <<= p_precision;
+    cpp_dec_float_100 float_val = cpp_dec_float_100(value) / cpp_dec_float_100(divisor);
+    return static_cast<double>(float_val);
+}
+
 PackedByteArray U128::to_bytes() const { return value_to_bytes<uint128_t, 16>(value); }
 
 DOJO::FieldElement U128::to_felt() const { return value_to_felt<uint128_t>(value); }
@@ -236,6 +247,17 @@ String I128::to_string() const
 {
     std::string s = value.str();
     return String(s.c_str());
+}
+
+double I128::to_float(int p_precision) const
+{
+    if (p_precision < 0) {
+        p_precision = ProjectSettings::get_singleton()->get("dojo/config/fixed_point/default");
+    }
+    cpp_int divisor = 1;
+    divisor <<= p_precision;
+    cpp_dec_float_100 float_val = cpp_dec_float_100(value) / cpp_dec_float_100(divisor);
+    return static_cast<double>(float_val);
 }
 
 PackedByteArray I128::to_bytes() const { return value_to_bytes<int128_t, 16>(value); }
@@ -312,6 +334,17 @@ String U256::to_string() const
 {
     std::string s = value.str();
     return String(s.c_str());
+}
+
+double U256::to_float(int p_precision) const
+{
+    if (p_precision < 0) {
+        p_precision = ProjectSettings::get_singleton()->get("dojo/config/fixed_point/default");
+    }
+    cpp_int divisor = 1;
+    divisor <<= p_precision;
+    cpp_dec_float_100 float_val = cpp_dec_float_100(value) / cpp_dec_float_100(divisor);
+    return static_cast<double>(float_val);
 }
 
 PackedByteArray U256::to_bytes() const { return value_to_bytes<uint256_t, 32>(value); }
