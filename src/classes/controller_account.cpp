@@ -125,6 +125,13 @@ void ControllerAccount::create(const Ref<DojoPolicies>& policies_data)
     DOJO::FieldElement katana = FieldElement::cairo_short_string_to_felt(chain_id.utf8().get_data());
     Logger::custom_color("azure", "katana", FieldElement::get_as_string(&katana));
 
+#ifdef ANDROID_ENABLED
+    Logger::error("ControllerAccount: Session management is not supported on Android due to external library limitations.");
+    emit_signal("controller_disconnected");
+    // Early return to prevent calling incompatible FFI functions.
+    return;
+#else
+
     DOJO::ResultControllerAccount resControllerAccount =
         DOJO::controller_account(policies.data(), policies_len, katana);
 
@@ -143,6 +150,7 @@ void ControllerAccount::create(const Ref<DojoPolicies>& policies_data)
             policies_len,
             on_account_callback);
     }
+#endif
 }
 
 void ControllerAccount::disconnect_controller()
@@ -153,6 +161,7 @@ void ControllerAccount::disconnect_controller()
         uintptr_t policies_len = policy.size();
         DOJO::FieldElement chain_id = DOJO::controller_chain_id(session_account);
 
+#ifndef ANDROID_ENABLED
         DOJO::Resultbool resClear = DOJO::controller_clear(policy.data(), policies_len, chain_id);
         if (resClear.tag == DOJO::Errbool)
         {
@@ -160,6 +169,14 @@ void ControllerAccount::disconnect_controller()
             return;
         }
         Logger::success("Controller cleared");
+        } else {
+            Logger::success("Controller cleared");
+        }
+#else
+        Logger::warning("ControllerAccount: Remote session clearing is not supported on Android. Disconnecting locally.");
+#endif
+        // WARNING: This will leak memory on all platforms. The 'dojo.c' library allocates the session_account
+        // but does not provide a function to free it.
         session_account = nullptr;
         is_connected = false;
         emit_signal("controller_disconnected");
