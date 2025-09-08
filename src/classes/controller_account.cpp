@@ -166,9 +166,6 @@ void ControllerAccount::disconnect_controller()
         if (resClear.tag == DOJO::Errbool)
         {
             Logger::error("Failed to clear Controller", resClear.err.message);
-            return;
-        }
-        Logger::success("Controller cleared");
         } else {
             Logger::success("Controller cleared");
         }
@@ -180,7 +177,7 @@ void ControllerAccount::disconnect_controller()
         session_account = nullptr;
         is_connected = false;
         emit_signal("controller_disconnected");
-        Logger::info("ControllerAccount desconectado");
+        Logger::info("ControllerAccount disconnected");
     }
 }
 
