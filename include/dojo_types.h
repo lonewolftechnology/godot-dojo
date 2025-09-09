@@ -3,7 +3,7 @@
 //
 #ifndef DOJO_TYPES_H
 #define DOJO_TYPES_H
-#include "dojo.h" // 1.7.0-alpha.5
+#include "dojo.h" // 1.7.0-alpha.6
 
 #define DOJO dojo_bindings
 #define GET_DOJO_ERROR(result) ((result).err.message)
@@ -32,6 +32,8 @@ struct Account;
 struct BlockId;
 struct Call;
 struct CArrayClause;
+struct CArrayContract;
+struct CArrayContractType;
 struct CArrayCOptionFieldElement;
 struct CArrayController;
 struct CArrayc_char;
@@ -49,6 +51,8 @@ struct CArrayTransaction;
 struct CArrayTransactionCall;
 struct CArrayTy;
 struct CArrayU256;
+struct Contract;
+struct ContractQuery;
 struct Clause;
 struct CompositeClause;
 struct Controller;
@@ -68,7 +72,6 @@ struct Error;
 struct Event;
 struct FieldElement;
 struct FixedSizeArray;
-struct IndexerUpdate;
 struct KeysClause;
 struct Member;
 struct MemberClause;
@@ -89,6 +92,7 @@ struct Provider;
 struct Query;
 struct ResultAccount;
 struct Resultbool;
+struct ResultCArrayContract;
 struct ResultCArrayFieldElement;
 struct Resultc_char;
 struct ResultControllerAccount;
@@ -129,6 +133,7 @@ enum BlockId_Tag;
 enum BlockTag;
 enum CallType;
 enum Clause_Tag;
+enum ContractType;
 enum ComparisonOperator;
 enum LogicalOperator;
 enum MemberValue_Tag;
@@ -148,6 +153,7 @@ enum COptionu64_Tag;
 enum COptionU256_Tag;
 enum ResultAccount_Tag;
 enum Resultbool_Tag;
+enum ResultCArrayContract_Tag;
 enum ResultCArrayFieldElement_Tag;
 enum Resultc_char_Tag;
 enum ResultControllerAccount_Tag;
