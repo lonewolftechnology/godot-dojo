@@ -101,7 +101,7 @@ void _initialize_from_variant(T* instance, const Variant& p_value)
         instance->_init_from_int(p_value);
         break;
     case Variant::FLOAT:
-        instance->_init_from_float(p_value, ProjectSettings::get_singleton()->get("dojo/config/fixed_point/default"));
+        instance->_init_from_float(p_value, ProjectSettings::get_singleton()->get_setting("dojo/config/fixed_point/default", 40));
         break;
     default:
         {
@@ -145,14 +145,12 @@ void U128::_init_from_float(double p_value, int p_precision)
     val_100 *= cpp_dec_float_100(shift);
     cpp_int val_int(val_100);
 
-    // Re-use string initialization
-    value = uint128_t(val_int.str().c_str());
+    value = val_int.convert_to<uint128_t>();
 }
 
 U128::U128(const uint8_t p_bytes[16])
 {
     std::vector<uint8_t> bytes(p_bytes, p_bytes + 16);
-    std::reverse(bytes.begin(), bytes.end()); // to big-endian for boost
     boost::multiprecision::import_bits(value, bytes.begin(), bytes.end());
 }
 
@@ -169,7 +167,7 @@ String U128::to_string() const
 double U128::to_float(int p_precision) const
 {
     if (p_precision < 0) {
-        p_precision = ProjectSettings::get_singleton()->get("dojo/config/fixed_point/default");
+        p_precision = ProjectSettings::get_singleton()->get_setting("dojo/config/fixed_point/default", 40);
     }
     cpp_int divisor = 1;
     divisor <<= p_precision;
@@ -228,14 +226,12 @@ void I128::_init_from_float(double p_value, int p_precision)
     val_100 *= cpp_dec_float_100(shift);
     cpp_int val_int(val_100);
 
-    // Re-use string initialization
-    value = int128_t(val_int.str().c_str());
+    value = val_int.convert_to<int128_t>();
 }
 
 I128::I128(const uint8_t p_bytes[16])
 {
     std::vector<uint8_t> bytes(p_bytes, p_bytes + 16);
-    std::reverse(bytes.begin(), bytes.end()); // to big-endian for boost
     boost::multiprecision::import_bits(value, bytes.begin(), bytes.end());
 }
 
@@ -252,7 +248,7 @@ String I128::to_string() const
 double I128::to_float(int p_precision) const
 {
     if (p_precision < 0) {
-        p_precision = ProjectSettings::get_singleton()->get("dojo/config/fixed_point/default");
+        p_precision = ProjectSettings::get_singleton()->get_setting("dojo/config/fixed_point/default", 40);
     }
     cpp_int divisor = 1;
     divisor <<= p_precision;
@@ -319,14 +315,12 @@ void U256::_init_from_float(double p_value, int p_precision)
     val_100 *= cpp_dec_float_100(shift);
     cpp_int val_int(val_100);
 
-    // Re-use string initialization
-    value = uint256_t(val_int.str().c_str());
+    value = val_int.convert_to<uint256_t>();
 }
 
 U256::U256(const DOJO::U256& p_value)
 {
     std::vector<uint8_t> bytes(p_value.data, p_value.data + 32);
-    std::reverse(bytes.begin(), bytes.end()); // to big-endian for boost
     boost::multiprecision::import_bits(value, bytes.begin(), bytes.end());
 }
 
@@ -339,7 +333,7 @@ String U256::to_string() const
 double U256::to_float(int p_precision) const
 {
     if (p_precision < 0) {
-        p_precision = ProjectSettings::get_singleton()->get("dojo/config/fixed_point/default");
+        p_precision = ProjectSettings::get_singleton()->get_setting("dojo/config/fixed_point/default", 40);
     }
     cpp_int divisor = 1;
     divisor <<= p_precision;
