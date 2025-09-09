@@ -23,7 +23,7 @@ public:
         TOKEN_BALANCE,
         TRANSACTION,
         STARKNET,
-        INDEXER,
+        CONTRACT,
         NIL
     };
 
@@ -94,7 +94,7 @@ protected:
                          Variant::INT,
                          "type",
                          PROPERTY_HINT_ENUM,
-                         "Event,Message,Entity,Token,TokenBalance,Transaction,Starknet,Indexer,Nil",
+                         "Event,Message,Entity,Token,TokenBalance,Transaction,Starknet,Contract,Nil",
                          PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_READ_ONLY
                      ),
                      "", // No setter
@@ -108,7 +108,7 @@ protected:
         BIND_ENUM_CONSTANT(TOKEN_BALANCE);
         BIND_ENUM_CONSTANT(TRANSACTION);
         BIND_ENUM_CONSTANT(STARKNET);
-        BIND_ENUM_CONSTANT(INDEXER);
+        BIND_ENUM_CONSTANT(CONTRACT);
         BIND_ENUM_CONSTANT(NIL);
     }
 };

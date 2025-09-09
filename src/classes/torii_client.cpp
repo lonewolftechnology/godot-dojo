@@ -13,6 +13,7 @@
 #include "resources/queries/dojo_token_query.h"
 #include "resources/queries/dojo_token_balance_query.h"
 #include "resources/queries/dojo_controller_query.h"
+#include "resources/queries/dojo_contract_query.h"
 
 ToriiClient* ToriiClient::singleton = nullptr;
 
@@ -749,28 +750,34 @@ DOJO::Pagination ToriiClient::create_pagination_from_dict(const Dictionary& pagi
 
 // Static subscription callbacks
 
-void entity_state_update_callback_wrapper(DOJO::FieldElement entity_id, DOJO::CArrayStruct models)
+void entity_state_update_callback_wrapper(DOJO::Entity entity)
 {
     Logger::info("entity_state_update_callback_wrapper");
     ToriiClient* singleton = ToriiClient::get_singleton();
     if (singleton && singleton->on_entity_state_update_callback.is_valid())
     {
         Dictionary entity_data;
-        entity_data["id"] = FieldElement::get_as_string(&entity_id);
-        entity_data["models"] = DojoArray(models).get_value();
+        entity_data["hashed_keys"] = FieldElement::get_as_string(&entity.hashed_keys);
+        entity_data["models"] = DojoArray(entity.models).get_value();
+        entity_data["created_at"] = static_cast<int64_t>(entity.created_at);
+        entity_data["updated_at"] = static_cast<int64_t>(entity.updated_at);
+        entity_data["executed_at"] = static_cast<int64_t>(entity.executed_at);
         (void)singleton->on_entity_state_update_callback.call(entity_data);
     }
 }
 
-void event_message_update_callback_wrapper(DOJO::FieldElement entity_id, DOJO::CArrayStruct models)
+void event_message_update_callback_wrapper(DOJO::Entity entity)
 {
     Logger::info("event_message_update_callback_wrapper");
     ToriiClient* singleton = ToriiClient::get_singleton();
     if (singleton && singleton->on_event_message_update_callback.is_valid())
     {
         Dictionary message_data;
-        message_data["id"] = FieldElement::get_as_string(&entity_id);
-        message_data["models"] = DojoArray(models).get_value();
+        message_data["hashed_keys"] = FieldElement::get_as_string(&entity.hashed_keys);
+        message_data["models"] = DojoArray(entity.models).get_value();
+        message_data["created_at"] = static_cast<int64_t>(entity.created_at);
+        message_data["updated_at"] = static_cast<int64_t>(entity.updated_at);
+        message_data["executed_at"] = static_cast<int64_t>(entity.executed_at);
         (void)singleton->on_event_message_update_callback.call(message_data);
     }
 }
@@ -856,18 +863,35 @@ void token_update_callback_wrapper(DOJO::Token token)
     }
 }
 
-void indexer_update_callback_wrapper(DOJO::IndexerUpdate indexer_update)
+void contract_update_callback_wrapper(DOJO::Contract contract_update)
 {
-    Logger::info("indexer_update_callback_wrapper");
+    Logger::info("contract_update_callback_wrapper");
     ToriiClient* singleton = ToriiClient::get_singleton();
-    if (singleton && singleton->on_indexer_update_callback.is_valid())
+    if (singleton && singleton->on_contract_update_callback.is_valid())
     {
         Dictionary update_dict;
-        update_dict["head"] = indexer_update.head;
-        update_dict["tps"] = indexer_update.tps;
-        update_dict["last_block_timestamp"] = indexer_update.last_block_timestamp;
-        update_dict["contract_address"] = FieldElement::get_as_string(&indexer_update.contract_address);
-        (void)singleton->on_indexer_update_callback.call(update_dict);
+        update_dict["contract_address"] = FieldElement::get_as_string(&contract_update.contract_address);
+        update_dict["contract_type"] = static_cast<int>(contract_update.contract_type);
+        if (contract_update.head.tag == DOJO::Someu64)
+        {
+            update_dict["head"] = static_cast<int64_t>(contract_update.head.some);
+        }
+        if (contract_update.tps.tag == DOJO::Someu64)
+        {
+            update_dict["tps"] = static_cast<int64_t>(contract_update.tps.some);
+        }
+        if (contract_update.last_block_timestamp.tag == DOJO::Someu64)
+        {
+            update_dict["last_block_timestamp"] = static_cast<int64_t>(contract_update.last_block_timestamp.some);
+        }
+        if (contract_update.last_pending_block_tx.tag == DOJO::SomeFieldElement)
+        {
+            update_dict["last_pending_block_tx"] = FieldElement::get_as_string(&contract_update.last_pending_block_tx.some);
+        }
+        update_dict["updated_at"] = static_cast<int64_t>(contract_update.updated_at);
+        update_dict["created_at"] = static_cast<int64_t>(contract_update.created_at);
+
+        (void)singleton->on_contract_update_callback.call(update_dict);
     }
 }
 
@@ -1071,7 +1095,7 @@ void ToriiClient::on_token_update(const Callable& callback, const Ref<TokenSubsc
     }
 }
 
-void ToriiClient::on_indexer_update(const Callable& callback, const Ref<IndexerSubscription>& subscription)
+void ToriiClient::on_contract_update(const Callable& callback, const Ref<ContractSubscription>& subscription)
 {
     if (!is_client_connected())
     {
@@ -1080,27 +1104,27 @@ void ToriiClient::on_indexer_update(const Callable& callback, const Ref<IndexerS
     }
     if (!subscription.is_valid())
     {
-        Logger::error("Invalid indexer subscription resource");
+        Logger::error("Invalid contract subscription resource");
         return;
     }
 
-    on_indexer_update_callback = callback;
+    on_contract_update_callback = callback;
     subscription->set_callback(callback);
 
-    DOJO::ResultSubscription result = DOJO::on_indexer_update(client, subscription->get_native_contract_address(),
-                                                              indexer_update_callback_wrapper);
+    DOJO::ResultSubscription result = DOJO::on_contract_update(client, subscription->get_native_contract_address(),
+                                                              contract_update_callback_wrapper);
 
     if (result.tag == DOJO::ErrSubscription)
     {
-        String error_msg = "Failed to subscribe to indexer updates: " + String(GET_DOJO_ERROR(result));
+        String error_msg = "Failed to subscribe to contract updates: " + String(GET_DOJO_ERROR(result));
         Logger::error(error_msg);
         emit_signal("subscription_error", error_msg);
-        on_indexer_update_callback = Callable();
+        on_contract_update_callback = Callable();
     }
     else
     {
-        Logger::success("Subscribed to indexer updates");
-        emit_signal("subscription_created", "indexer_update");
+        Logger::success("Subscribed to contract updates");
+        emit_signal("subscription_created", "contract_update");
         subscription->set_subscription(result.ok);
         subscriptions.append(subscription);
     }
@@ -1159,8 +1183,8 @@ void ToriiClient::update_subscription(const Ref<DojoSubscription>& subscription,
     case SubType::EVENT:
         update_event_message_subscription(subscription, callback);
         break;
-    case SubType::INDEXER:
-        update_indexer_subscription(subscription, callback);
+    case SubType::CONTRACT:
+        update_contract_subscription(subscription, callback);
         break;
     case SubType::TOKEN:
         update_token_subscription(subscription, callback);
@@ -1231,9 +1255,9 @@ void ToriiClient::update_token_subscription(const Ref<TokenSubscription>& subscr
     Logger::warning("update_token_subscription not implemented on dojo.c side");
 }
 
-void ToriiClient::update_indexer_subscription(const Ref<IndexerSubscription>& subscription, const Callable& callback)
+void ToriiClient::update_contract_subscription(const Ref<ContractSubscription>& subscription, const Callable& callback)
 {
-    Logger::warning("update_indexer_subscription not implemented on dojo.c side");
+    Logger::warning("update_contract_subscription not implemented on dojo.c side");
 }
 
 void ToriiClient::update_token_balance_subscription(const Ref<TokenBalanceSubscription>& subscription,
