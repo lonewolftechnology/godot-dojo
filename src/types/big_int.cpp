@@ -55,7 +55,7 @@ DOJO::FieldElement value_to_felt(const T& value)
 {
     std::vector<uint8_t> bytes_vec;
     boost::multiprecision::export_bits(value, std::back_inserter(bytes_vec), 8);
- 
+
     DOJO::FieldElement felt = {};
 
     uint8_t padding = 0x00;
@@ -67,7 +67,7 @@ DOJO::FieldElement value_to_felt(const T& value)
         }
     }
     memset(felt.data, padding, 32);
- 
+
     const size_t num_bytes = bytes_vec.size();
     if (num_bytes > 32)
     {
@@ -101,7 +101,8 @@ void _initialize_from_variant(T* instance, const Variant& p_value)
         instance->_init_from_int(p_value);
         break;
     case Variant::FLOAT:
-        instance->_init_from_float(p_value, ProjectSettings::get_singleton()->get_setting("dojo/config/fixed_point/default", 40));
+        instance->_init_from_float(
+            p_value, ProjectSettings::get_singleton()->get_setting("dojo/config/fixed_point/default", 40));
         break;
     default:
         {
@@ -135,23 +136,32 @@ void U128::_init_from_string(const String& p_value)
     value = uint128_t(p_value.utf8().get_data());
 }
 
-void U128::_init_from_int(int64_t p_value) { value = p_value; }
+void U128::_init_from_int(int64_t p_value)
+{
+    // Initialize as a fixed-point number by reusing the float logic.
+    _init_from_float(p_value, ProjectSettings::get_singleton()->get_setting("dojo/config/fixed_point/default", 40));
+}
 
 void U128::_init_from_float(double p_value, int p_precision)
 {
-    cpp_int shift = 1;
-    shift <<= p_precision;
-    cpp_dec_float_100 val_100 = p_value;
-    val_100 *= cpp_dec_float_100(shift);
-    cpp_int val_int(val_100);
-
-    value = val_int.convert_to<uint128_t>();
+    cpp_dec_float_100 float_val(p_value);
+    cpp_int multiplier = 1;
+    multiplier <<= p_precision;
+    cpp_int fixed_point_val = static_cast<cpp_int>(float_val * cpp_dec_float_100(multiplier));
+    value = DojoHelpers::to_starknet_negative_felt(fixed_point_val).convert_to<uint128_t>();
 }
 
 U128::U128(const uint8_t p_bytes[16])
 {
     std::vector<uint8_t> bytes(p_bytes, p_bytes + 16);
     boost::multiprecision::import_bits(value, bytes.begin(), bytes.end());
+    if ((value >> 127) & 1)
+    {
+        cpp_int val(value);
+        val -= (cpp_int(1) << 128) + 1;
+        signed_value = val.convert_to<int128_t>();
+        is_signed = true;
+    }
 }
 
 U128::U128(const uint128_t& p_value) : value(p_value)
@@ -160,18 +170,29 @@ U128::U128(const uint128_t& p_value) : value(p_value)
 
 String U128::to_string() const
 {
-    std::string s = value.str();
-    return String(s.c_str());
+    if (is_signed)
+    {
+        return String(signed_value.str().c_str());
+    }
+    return String(value.str().c_str());
 }
 
 double U128::to_float(int p_precision) const
 {
-    if (p_precision < 0) {
+    if (p_precision < 0)
+    {
         p_precision = ProjectSettings::get_singleton()->get_setting("dojo/config/fixed_point/default", 40);
     }
+
+    cpp_int val(value);
+    if (is_signed)
+    {
+        val = signed_value;
+    }
+
     cpp_int divisor = 1;
     divisor <<= p_precision;
-    cpp_dec_float_100 float_val = cpp_dec_float_100(value) / cpp_dec_float_100(divisor);
+    cpp_dec_float_100 float_val = cpp_dec_float_100(val) / cpp_dec_float_100(divisor);
     return static_cast<double>(float_val);
 }
 
@@ -216,23 +237,31 @@ void I128::_init_from_string(const String& p_value)
     value = int128_t(p_value.utf8().get_data());
 }
 
-void I128::_init_from_int(int64_t p_value) { value = p_value; }
+void I128::_init_from_int(int64_t p_value)
+{
+    // Initialize as a fixed-point number by reusing the float logic.
+    _init_from_float(p_value, ProjectSettings::get_singleton()->get_setting("dojo/config/fixed_point/default", 40));
+}
 
 void I128::_init_from_float(double p_value, int p_precision)
 {
-    cpp_int shift = 1;
-    shift <<= p_precision;
-    cpp_dec_float_100 val_100 = p_value;
-    val_100 *= cpp_dec_float_100(shift);
-    cpp_int val_int(val_100);
-
-    value = val_int.convert_to<int128_t>();
+    cpp_dec_float_100 float_val(p_value);
+    cpp_int multiplier = 1;
+    multiplier <<= p_precision;
+    cpp_int fixed_point_val = static_cast<cpp_int>(float_val * cpp_dec_float_100(multiplier));
+    value = fixed_point_val.convert_to<int128_t>();
 }
 
 I128::I128(const uint8_t p_bytes[16])
 {
     std::vector<uint8_t> bytes(p_bytes, p_bytes + 16);
     boost::multiprecision::import_bits(value, bytes.begin(), bytes.end());
+    if (value > 0 && (value >> 127) & 1)
+    {
+        cpp_int val(value);
+        val -= (cpp_int(1) << 128);
+        value = val.convert_to<int128_t>();
+    }
 }
 
 I128::I128(const int128_t& p_value) : value(p_value)
@@ -241,13 +270,13 @@ I128::I128(const int128_t& p_value) : value(p_value)
 
 String I128::to_string() const
 {
-    std::string s = value.str();
-    return String(s.c_str());
+    return String(value.str().c_str());
 }
 
 double I128::to_float(int p_precision) const
 {
-    if (p_precision < 0) {
+    if (p_precision < 0)
+    {
         p_precision = ProjectSettings::get_singleton()->get_setting("dojo/config/fixed_point/default", 40);
     }
     cpp_int divisor = 1;
@@ -261,11 +290,8 @@ PackedByteArray I128::to_bytes() const { return value_to_bytes<int128_t, 16>(val
 DOJO::FieldElement I128::to_felt() const
 {
     cpp_int val(value);
-    if (val < 0)
-    {
-        val += DojoHelpers::STARK_PRIME;
-    }
-    return value_to_felt<uint256_t>(val.convert_to<uint256_t>());
+    val = DojoHelpers::to_starknet_negative_felt(val);
+    return value_to_felt<cpp_int>(val);
 }
 
 Ref<I128> I128::from_variant(const Variant& p_value)
@@ -305,17 +331,19 @@ void U256::_init_from_string(const String& p_value)
     value = uint256_t(p_value.utf8().get_data());
 }
 
-void U256::_init_from_int(int64_t p_value) { value = p_value; }
+void U256::_init_from_int(int64_t p_value)
+{
+    // Initialize as a fixed-point number by reusing the float logic.
+    _init_from_float(p_value, ProjectSettings::get_singleton()->get_setting("dojo/config/fixed_point/default", 40));
+}
 
 void U256::_init_from_float(double p_value, int p_precision)
 {
-    cpp_int shift = 1;
-    shift <<= p_precision;
-    cpp_dec_float_100 val_100 = p_value;
-    val_100 *= cpp_dec_float_100(shift);
-    cpp_int val_int(val_100);
-
-    value = val_int.convert_to<uint256_t>();
+    cpp_dec_float_100 float_val(p_value);
+    cpp_int multiplier = 1;
+    multiplier <<= p_precision;
+    cpp_int fixed_point_val = static_cast<cpp_int>(float_val * cpp_dec_float_100(multiplier));
+    value = DojoHelpers::to_starknet_negative_felt(fixed_point_val).convert_to<uint256_t>();
 }
 
 U256::U256(const DOJO::U256& p_value)
@@ -326,18 +354,30 @@ U256::U256(const DOJO::U256& p_value)
 
 String U256::to_string() const
 {
-    std::string s = value.str();
-    return String(s.c_str());
+    cpp_int val(value);
+    if (val > DojoHelpers::STARK_PRIME / 2)
+    {
+        val -= DojoHelpers::STARK_PRIME;
+    }
+    return String(val.str().c_str());
 }
 
 double U256::to_float(int p_precision) const
 {
-    if (p_precision < 0) {
+    if (p_precision < 0)
+    {
         p_precision = ProjectSettings::get_singleton()->get_setting("dojo/config/fixed_point/default", 40);
     }
+
+    cpp_int val(value);
+    if (val > DojoHelpers::STARK_PRIME / 2)
+    {
+        val -= DojoHelpers::STARK_PRIME;
+    }
+
     cpp_int divisor = 1;
     divisor <<= p_precision;
-    cpp_dec_float_100 float_val = cpp_dec_float_100(value) / cpp_dec_float_100(divisor);
+    cpp_dec_float_100 float_val = cpp_dec_float_100(val) / cpp_dec_float_100(divisor);
     return static_cast<double>(float_val);
 }
 

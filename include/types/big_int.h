@@ -18,10 +18,13 @@ class U128 : public RefCounted
     GDCLASS(U128, RefCounted);
 
     uint128_t value;
+    int128_t signed_value;
 
 public:
     U128();
     ~U128();
+
+    bool is_signed = false;
 
     void _init(const Variant& p_value = Variant());
     void _init_from_string(const String& p_value);
