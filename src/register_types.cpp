@@ -8,6 +8,9 @@
 #include <gdextension_interface.h>
 #include <godot_cpp/core/defs.hpp>
 #include <godot_cpp/godot.hpp>
+#ifdef WEB_ENABLED
+#include <tools/dojo_bridge.h>
+#endif
 
 #include "classes/torii_client.h"
 #include "classes/controller_account.h"
@@ -60,6 +63,10 @@ void initialize_dojoc_module(ModuleInitializationLevel p_level)
     if (p_level == MODULE_INITIALIZATION_LEVEL_SCENE)
     {
         // Tools
+        #ifdef WEB_ENABLED
+        GDREGISTER_CLASS(DojoBridge);
+        #endif
+
         GDREGISTER_CLASS(DojoHelpers);
         // DojoTypes
         GDREGISTER_CLASS(DojoTy);
@@ -107,7 +114,8 @@ void initialize_dojoc_module(ModuleInitializationLevel p_level)
         GDREGISTER_CLASS(StarknetSubscription);
     }
 
-    if (p_level == MODULE_INITIALIZATION_LEVEL_EDITOR) {
+    if (p_level == MODULE_INITIALIZATION_LEVEL_EDITOR)
+    {
         // TODO: Android? Web? necesario un export plugin?
         GDREGISTER_CLASS(DojoExportPlugin);
     }

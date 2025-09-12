@@ -27,6 +27,13 @@
 #include "resources/subscriptions/indexer.h"
 #include "resources/subscriptions/token_balance.h"
 
+#ifdef WEB_ENABLED
+#include "godot_cpp/classes/os.hpp"
+#include "tools/dojo_bridge.h"
+#include "godot_cpp/classes/java_script_bridge.hpp"
+#include "godot_cpp/classes/java_script_object.hpp"
+#endif
+
 
 using namespace godot;
 
@@ -62,10 +69,10 @@ public:
     FieldElement get_world() const;
     void set_world(const FieldElement& n_world);
 
-    Dictionary get_world_metadata() const;
+    Dictionary get_world_metadata();
     bool refresh_metadata();
 
-    TypedArray<Dictionary> get_entities(const Ref<DojoQuery>& query) const;
+    TypedArray<Dictionary> get_entities(const Ref<DojoQuery>& query);
 
     TypedArray<Dictionary> get_controllers(Ref<DojoControllerQuery> query);
     Dictionary get_controller_info(const String& controller_address);
@@ -122,12 +129,27 @@ public:
     Array get_models() const { return models; }
     void set_models(const Array& p_models) { models = p_models; }
 
+private:
+
+#ifdef WEB_ENABLED
+    static void _on_client_created(const Variant& result);
+    void _on_get_entities_completed(const Variant& result);
+    void _on_get_world_metadata_completed(const Variant& result);
+    void _on_entity_state_update_emitted(const Variant& entity_data);
+
+#endif
+
 protected:
     String torii_url;
     String world_address;
     Callable logger_callback;
-
     DOJO::FieldElement* world;
+
+    // Web specific properties
+#ifdef WEB_ENABLED
+    bool is_web_client_initialized = false;
+#endif
+
 
     static void _bind_methods()
     {
@@ -214,6 +236,8 @@ protected:
         ADD_SIGNAL(MethodInfo("message_published", PropertyInfo(Variant::STRING, "message_hash")));
         ADD_SIGNAL(MethodInfo("transaction_confirmed", PropertyInfo(Variant::STRING, "transaction_hash")));
         ADD_SIGNAL(MethodInfo("token_balance_updated", PropertyInfo(Variant::DICTIONARY, "balance_data")));
+        // Signals for async web calls
+        ADD_SIGNAL(MethodInfo("entities_received", PropertyInfo(Variant::ARRAY, "entities", PROPERTY_HINT_ARRAY_TYPE, "Dictionary")));
 
         ClassDB::bind_method(D_METHOD("get_torii_url"), &ToriiClient::get_torii_url);
         ClassDB::bind_method(D_METHOD("set_torii_url", "torii_url"), &ToriiClient::set_torii_url);
@@ -234,6 +258,14 @@ protected:
         ClassDB::bind_method(D_METHOD("get_models"), &ToriiClient::get_models);
         ClassDB::bind_method(D_METHOD("set_models", "models"), &ToriiClient::set_models);
         ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "models"), "set_models", "get_models");
+#ifdef WEB_ENABLED
+        // Private callbacks
+        ClassDB::bind_method(D_METHOD("_on_get_entities_completed", "result"), &ToriiClient::_on_get_entities_completed);
+        ClassDB::bind_method(D_METHOD("_on_get_world_metadata_completed", "result"), &ToriiClient::_on_get_world_metadata_completed);
+        ClassDB::bind_method(D_METHOD("_on_entity_state_update_emitted", "entity_data"), &ToriiClient::_on_entity_state_update_emitted);
+        ClassDB::bind_static_method("ToriiClient",D_METHOD("_on_client_created", "result"), &ToriiClient::_on_client_created);
+#endif
+
     }
 };
 

@@ -41,8 +41,6 @@ ToriiClient* ToriiClient::get_singleton()
 
 bool ToriiClient::create_client()
 {
-    disconnect_client(true);
-
     if (world_address.is_empty())
     {
         Logger::error("Missing world address");
@@ -56,6 +54,28 @@ bool ToriiClient::create_client()
         emit_signal("client_connected", false);
         return false;
     }
+
+#ifdef WEB_ENABLED
+    if (is_web_client_initialized) {
+        Logger::info("Web client already initialized.");
+        emit_signal("client_connected", true);
+        return true;
+    }
+
+    Dictionary opts;
+    opts["toriiUrl"] = torii_url;
+    opts["worldAddress"] = world_address;
+
+    Logger::debug_extra("ToriiClient","Creating Torii client...");
+
+    Callable callback = Callable(this, "_on_client_created");
+    Array args;
+    args.push_back(opts);
+    DojoBridge::call_async("toriiclient_new", args, callback);
+    return true; // The actual connection status will be updated in the callback.
+#else
+    disconnect_client(true);
+
     FieldElement world_felt(world_address, 32);
     set_world(world_felt);
 
@@ -86,10 +106,18 @@ bool ToriiClient::create_client()
     Logger::success("Torii client created successfully");
     emit_signal("client_connected", true);
     return true;
+#endif
 }
 
 void ToriiClient::disconnect_client(bool send_signal = true)
 {
+#ifdef WEB_ENABLED
+    is_web_client_initialized = false;
+    is_connected = false;
+    if (send_signal) {
+        emit_signal("client_disconnected");
+    }
+#else
     if (client != nullptr)
     {
         cancel_all_subscriptions();
@@ -103,11 +131,16 @@ void ToriiClient::disconnect_client(bool send_signal = true)
         }
         Logger::info("Torii client disconnected");
     }
+#endif
 }
 
 bool ToriiClient::is_client_connected() const
 {
+#ifdef WEB_ENABLED
+    return is_connected;
+#else
     return is_connected && client != nullptr;
+#endif
 }
 
 bool ToriiClient::is_callable_valid() const
@@ -133,8 +166,17 @@ void ToriiClient::set_world(const FieldElement& n_world)
     world = n_world.get_felt();
 }
 
-Dictionary ToriiClient::get_world_metadata() const
+Dictionary ToriiClient::get_world_metadata()
 {
+#ifdef WEB_ENABLED
+    if (!is_client_connected()) {
+        Logger::error("Web client not connected");
+        return Logger::error_dict("Web client not connected");
+    }
+    Callable callback = Callable(this, "_on_get_world_metadata_completed");
+    DojoBridge::call_async("client_metadata", Array(), callback);
+    return Dictionary(); // Return empty, result will be in a signal.
+#else
     if (!is_client_connected())
     {
         Logger::error("Client not connected");
@@ -158,6 +200,7 @@ Dictionary ToriiClient::get_world_metadata() const
 
     Logger::success("Metadata obtained");
     return result;
+#endif
 }
 
 bool ToriiClient::refresh_metadata()
@@ -171,8 +214,29 @@ bool ToriiClient::refresh_metadata()
     return false;
 }
 
-TypedArray<Dictionary> ToriiClient::get_entities(const Ref<DojoQuery>& query) const
+TypedArray<Dictionary> ToriiClient::get_entities(const Ref<DojoQuery>& query)
 {
+#ifdef WEB_ENABLED
+    Logger::info("Getting entities (Web)...");
+    if (!is_client_connected()) {
+        Logger::error("Web client not connected");
+        return {};
+    }
+    if (!query.is_valid()) {
+        Logger::error("Invalid DojoQuery object.");
+        return {};
+    }
+    Callable callback = Callable(this, "_on_get_entities_completed");
+
+    Dictionary q;
+    q["limit"] = query->get_limit();
+    q["clause"] = query->get_clause();
+
+    Array args;
+    args.push_back(q);
+    DojoBridge::call_async("client_entities", args, callback);
+    return {}; // Return empty, result will be in a signal.
+#else
     Logger::info("Getting entities...");
     if (!is_client_connected())
     {
@@ -201,6 +265,7 @@ TypedArray<Dictionary> ToriiClient::get_entities(const Ref<DojoQuery>& query) co
 
     Logger::success("Entities obtained: ", String::num_int64(result.size()));
     return result;
+#endif
 }
 
 TypedArray<Dictionary> ToriiClient::get_controllers(Ref<DojoControllerQuery> query)
@@ -897,6 +962,23 @@ void token_balance_update_callback_wrapper(DOJO::TokenBalance token_balance)
 
 void ToriiClient::on_entity_state_update(const Callable& callback, const Ref<EntitySubscription>& subscription)
 {
+#ifdef WEB_ENABLED
+    if (!is_client_connected()) {
+        Logger::error("Web client not connected");
+        return;
+    }
+    // For web, the callback will be a method in this class that then calls the user's callback.
+    on_entity_state_update_callback = callback;
+    Callable internal_callback = Callable(this, "_on_entity_state_update_emitted");
+
+    Dictionary s;
+    s["clause"] = subscription->get_clause();
+
+    Array args;
+    args.push_back(s);
+    DojoBridge::call_async("client_on_entity_state_update", args, internal_callback);
+    Logger::success("Subscribed to entity state updates (Web)");
+#else
     if (!is_client_connected())
     {
         Logger::error("Client not connected");
@@ -928,6 +1010,7 @@ void ToriiClient::on_entity_state_update(const Callable& callback, const Ref<Ent
         subscription->set_subscription(result.ok);
         subscriptions.append(subscription);
     }
+#endif
 }
 
 void ToriiClient::on_event_message_update(const Callable& callback, const Ref<MessageSubscription>& subscription)
@@ -1195,6 +1278,60 @@ void ToriiClient::update_entity_subscription(const Ref<EntitySubscription>& subs
         subscription->update_callback(callback);
     }
 }
+#ifdef WEB_ENABLED
+// Web-specific callbacks
+void ToriiClient::_on_get_entities_completed(const Variant& result) {
+    if (result.get_type() == Variant::Type::NIL) {
+        Logger::error("Failed to get entities from web bridge.");
+        emit_signal("entities_received", Array());
+        return;
+    }
+
+    Logger::success("Entities received from web bridge.");
+    emit_signal("entities_received", result);
+}
+
+void ToriiClient::_on_get_world_metadata_completed(const Variant& result) {
+    if (result.get_type() == Variant::Type::NIL) {
+        Logger::error("Failed to get metadata from web bridge.");
+        emit_signal("metadata_updated", Dictionary());
+        return;
+    }
+
+    Logger::success("Metadata received from web bridge.");
+    emit_signal("metadata_updated", result);
+}
+
+void ToriiClient::_on_entity_state_update_emitted(const Variant& entity_data) {
+    // This is called by the JS bridge on each update. Now, call the user's callback.
+    if (on_entity_state_update_callback.is_valid()) {
+        on_entity_state_update_callback.call(entity_data);
+    }
+}
+void ToriiClient::_on_client_created(const Variant& result) {
+    Logger::debug_extra("ToriiClient", "_on_client_created callback executed.");
+
+    ToriiClient* instance = get_singleton();
+    if (!instance) {
+        Logger::error("ToriiClient singleton not found in callback.");
+        return;
+    }
+
+    bool success = result.get_type() != Variant::Type::NIL;
+
+    if (success) {
+        instance->is_web_client_initialized = true;
+        instance->is_connected = true;
+        Logger::success("Web client created successfully.");
+    } else {
+        instance->is_web_client_initialized = false;
+        instance->is_connected = false;
+        Logger::error("Failed to create web client. Result was null.");
+    }
+
+    instance->emit_signal("client_connected", success);
+}
+#endif
 
 void ToriiClient::update_event_message_subscription(const Ref<MessageSubscription>& subscription,
                                                     const Callable& callback)

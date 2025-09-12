@@ -1,31 +1,86 @@
 <!DOCTYPE html>
 <html>
 <head>
-	<title>My Template</title>
-	<meta charset="UTF-8">
+    <title>My Template</title>
+    <meta charset="UTF-8">
 </head>
 <body>
 <canvas id="canvas"></canvas>
 <script src="$GODOT_URL"></script>
 <script type="module">
-	// Temporary forced, until we have a proper build system
-	import createDojoModule from './dojo_c_debug.js';
+    // Temporary forced, until we have a proper build system
+    import createDojoModule from './dojo_c_debug.js';
 
-	const moduleArgs = {};
+    const moduleArgs = {};
 
-	console.log("Initializing Dojo WASM module...");
+    console.log("Initializing Dojo WASM module...");
 
-	createDojoModule(moduleArgs).then(instance => {
-		console.log("Dojo WASM module initialized successfully.");
+    createDojoModule(moduleArgs).then(instance => {
+        console.log("Dojo WASM module initialized successfully.");
 
-		window.dojoInstance = instance;
-		console.log("Dojo instance: ", instance);
+        window.dojoInstance = instance;
+        console.log("Dojo instance: ", instance);
 
-		const engine = new Engine($GODOT_CONFIG);
-		engine.startGame();
-	}).catch(err => {
-		console.error("Error initializing Dojo WASM: ", err);
-	});
+        /**
+         * Generic async bridge to call Dojo functions from Godot.
+         * @param {string} functionName - The name of the function in `window.dojoInstance`.
+         * @param {Array | any} godotArgs - Arguments for the dojo function. Can be a single value or an array of values.
+         * @param {Callable | null} godotCallback - A Godot Callable object passed from C++.
+         */
+        window.callDojoAsync = async function (functionName, godotArgs, godotCallback) {
+            // Ensure godotCallback is either a function or null.
+            // A non-valid Callable from Godot arrives as `null`.
+            if (typeof godotCallback !== 'function') {
+                godotCallback = null;
+            }
+
+            const args = Array.isArray(godotArgs) ? godotArgs : [godotArgs];
+
+            console.log(`Calling Dojo function: ${functionName}`, "with args:", args);
+
+            if (!window.dojoInstance || typeof window.dojoInstance[functionName] !== 'function') {
+                console.error(`Dojo function "${functionName}" not found.`);
+                if (godotCallback) godotCallback(null);
+                return;
+            }
+
+            // Process arguments to handle JSON-stringified objects
+            const processedArgs = args.map(arg => {
+                if (typeof arg === 'string' && arg.startsWith('json:')) {
+                    try {
+                        // Parse the JSON string, removing the "json:" prefix.
+                        return JSON.parse(arg.substring(5));
+                    } catch (e) {
+                        console.error("Failed to parse JSON argument:", arg, e);
+                        // Return null if parsing fails, to prevent further errors.
+                        return null;
+                    }
+                }
+                return arg;
+            });
+
+            window.dojoInstance[functionName](...processedArgs)
+                .then(result => {
+                    if (godotCallback) {
+                        const godotResult = result === undefined ? null : result;
+                        console.log("Calling Godot callback with result:", godotResult);
+                        godotCallback(godotResult);
+                    }
+                })
+                .catch(err => {
+                    console.error(`Error calling Dojo function "${functionName}":`, err);
+                    // Call the callback with null on error to unblock the C++ side and release the callback.
+                    if (godotCallback) {
+                        godotCallback(null);
+                    }
+                });
+        };
+
+        const engine = new Engine($GODOT_CONFIG);
+        engine.startGame();
+    }).catch(err => {
+        console.error("Error initializing Dojo WASM: ", err);
+    });
 </script>
 </body>
 </html>
