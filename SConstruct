@@ -38,6 +38,7 @@ if GetOption('clean'):
     try:
         subprocess.run(["cargo", "clean"], cwd="external/dojo.c", check=True)
         shutil.rmtree("demo/addons/godot-dojo", ignore_errors=True)
+        shutil.rmtree("demo/dist", ignore_errors=True)
         subprocess.run(["scons", "-C", "external/godot-cpp", "--clean"], check=False)
     except:
         pass
@@ -46,6 +47,12 @@ if GetOption('clean'):
 
 # Setup
 os.makedirs("demo/addons/godot-dojo", exist_ok=True)
+
+# For web builds, we must force SIDE_MODULE=1 and other linker flags
+# for the GDExtension library itself to be compiled as a dynamic library.
+if 'platform=web' in sys.argv or (os.environ.get("SCONS_PLATFORM") == "web"):
+    ARGUMENTS["LINKFLAGS"] = "-sSIDE_MODULE=1 -sASYNCIFY -Wl,--export-dynamic"
+
 env = SConscript("external/godot-cpp/SConstruct")
 platform, arch, target = env["platform"], env["arch"], env.get("target", "template_debug")
 
@@ -105,41 +112,45 @@ if target == "template_release":
 
 # Environment variables for WebAssembly
 if env["platform"] == "web":
-    cmd.insert(1, "+nightly")
-    cmd.extend(["-Z", "build-std=std,panic_abort"])
     env_vars = os.environ.copy()
-
+    # Add features needed for wasm, but avoid relocation-model=pic which can cause issues with wasm-bindgen
     rustflags = "-C target-feature=+atomics,+bulk-memory,+mutable-globals"
-    rustflags += " -C relocation-model=pic"
-    rustflags += " --print=native-static-libs"
-    # rustflags += " -C panic=abort"
-    # rustflags += " -C opt-level=z"
-
     env_vars["RUSTFLAGS"] = rustflags
-
     subprocess.run(cmd, check=True, cwd="external/dojo.c", env=env_vars)
+
+    # After building, run wasm-bindgen to generate the JS bindings and final wasm
+    print(f"{Y}Running wasm-bindgen...{X}")
+    build_mode = "release" if target == "template_release" else "debug"
+    wasm_input_path = f"external/dojo.c/target/{rust_target}/{build_mode}/dojo_c.wasm"
+    out_dir = "demo/addons/godot-dojo/"
+    os.makedirs(out_dir, exist_ok=True)
+    out_name = f"dojo_c_{build_mode}"
+
+    bindgen_cmd = [
+        "wasm-bindgen", wasm_input_path,
+        "--out-dir", out_dir,
+        "--out-name", out_name,
+        "--target", "web",
+        "--no-typescript"
+    ]
+    try:
+        subprocess.run(bindgen_cmd, check=True)
+        print(f"{G}{check} wasm-bindgen finished. Output in {out_dir}{X}")
+    except subprocess.CalledProcessError as e:
+        print(f"{R}{cross} wasm-bindgen failed. This might be due to incompatible Rust flags or wasm-bindgen version.{X}")
+        print(f"{R}Error: {e}{X}")
+        Exit(1)
 else:
     env_vars = os.environ.copy()
     # Explicitly set RUSTUP_TOOLCHAIN to ensure the correct toolchain is used
-    if platform == "macos" and arch == "x86_64":
+    if platform == "macos":
         # Set macOS deployment target to 14.0 to ensure compatibility
         print(f"{Y}Setting macOS deployment target to 14.0...{X}")
         env_vars["MACOSX_DEPLOYMENT_TARGET"] = "14.0"
 
         # Add deployment target to RUSTFLAGS
         rustflags = env_vars.get("RUSTFLAGS", "")
-        if rustflags:
-            rustflags += " "
-        rustflags += "-C link-arg=-mmacosx-version-min=14.0"
-        env_vars["RUSTFLAGS"] = rustflags
-    elif platform == "macos" and arch == "arm64":
-        # Also set for arm64 builds
-        print(f"{Y}Setting macOS deployment target to 14.0...{X}")
-        env_vars["MACOSX_DEPLOYMENT_TARGET"] = "14.0"
-
-        # Add deployment target to RUSTFLAGS
-        rustflags = env_vars.get("RUSTFLAGS", "")
-        if rustflags:
+        if rustflags: # Add a space if RUSTFLAGS is not empty
             rustflags += " "
         rustflags += "-C link-arg=-mmacosx-version-min=14.0"
         env_vars["RUSTFLAGS"] = rustflags
@@ -177,32 +188,32 @@ build_mode = "release" if target == "template_release" else "debug"
 rust_lib_dir = f"external/dojo.c/target/{rust_target}/{build_mode}"
 
 if platform == "windows":
-    rust_lib = ""
-    target_dll_name = f"dojo_c.dll"
-    target_dll_path = f"demo/addons/godot-dojo/{target_dll_name}"
-
     if use_mingw:
-        rust_lib = f"{rust_lib_dir}/dojo_c.dll"
-
+        # For MinGW, we link against the static .a library
+        rust_lib = f"{rust_lib_dir}/libdojo_c.a"
     elif is_host_windows:
-        rust_lib = f"{rust_lib_dir}/dojo_c.dll.lib"
+        # For MSVC, we link against the static .lib library
+        rust_lib = f"{rust_lib_dir}/dojo_c.lib"
         env.Append(LINKFLAGS=['/NODEFAULTLIB:MSVCRT'])
-
-    if os.path.exists(rust_lib):
-        dll_dest = f"{rust_lib_dir}/{target_dll_name}"
-        shutil.copy2(dll_dest, target_dll_path)
-        print(f"{G}{clipboard} Copied {dll_dest} -> {target_dll_path}{X}")
-        # rust_lib = target_dll_path
-    env.Append(LIBS=[File(rust_lib)])
-
-elif platform in ["linux", "macos", "web", "android"]:
+    else:
+        rust_lib = "" # Should not happen
+    env.Append(LIBS=[File(rust_lib)]) if rust_lib else None
+elif platform == "web":
+    # For web, we are using wasm-bindgen to generate a separate module.
+    # We do not link the Rust library into the main GDExtension wasm.
+    # We need to explicitly tell Emscripten to create a side module. This flag
+    # must be present during both compilation and linking. The `-v` flag is
+    # added for verbose output to debug which flags are being used.
+    flags = ["-sSIDE_MODULE=1"]
+    env.Append(CCFLAGS=flags)
+elif platform in ["linux", "macos", "android"]:
     rust_lib = f"{rust_lib_dir}/libdojo_c.a"
     env.Append(LIBS=[File(rust_lib)])
 else:
     print(f"{R}{cross} Rust library not found for platform {platform}{X}")
     Exit(1)
 
-if not os.path.exists(rust_lib):
+if platform != "web" and not os.path.exists(rust_lib):
     print(f"{R}{cross} Rust library not found: {rust_lib}{X}")
     Exit(1)
 
@@ -231,10 +242,45 @@ with open("demo/addons/godot-dojo/godot-dojo.gdextension", 'w') as f:
     f.write(gdext)
 
 
+def copy_web_artifacts(target, source, env):
+    print(f"{Y}{clipboard} Preparing web export files...{X}")
+    build_mode = "release" if env.get("target", "template_debug") == "template_release" else "debug"
+
+    addon_dir = "demo/addons/godot-dojo"
+    out_name = f"dojo_c_{build_mode}"
+
+    js_path = f"{addon_dir}/{out_name}.js"
+    wasm_bg_path = f"{addon_dir}/{out_name}_bg.wasm"
+    wasm_final_path = f"{addon_dir}/{out_name}.wasm"
+
+    # 1. Rename the wasm file (e.g., dojo_c_release_bg.wasm -> dojo_c_release.wasm)
+    print(f"{Y}Renaming {os.path.basename(wasm_bg_path)} to {os.path.basename(wasm_final_path)}...{X}")
+    shutil.move(wasm_bg_path, wasm_final_path)
+
+    # 2. Patch the JS file to load the renamed wasm file
+    print(f"{Y}Patching {os.path.basename(js_path)} to load the new wasm file...{X}")
+    with open(js_path, 'r+') as f:
+        content = f.read()
+        # Replace the old wasm filename with the new one
+        content = content.replace(f"'{out_name}_bg.wasm'", f"'{out_name}.wasm'")
+        f.seek(0)
+        f.write(content)
+        f.truncate()
+
+    print(f"{G}{check} Web artifacts prepared in {addon_dir}{X}")
+
+    # Copy the custom HTML template to the addon directory
+    template_html_src = "web/godot-template.html"
+    shutil.copy(template_html_src, f"{addon_dir}/godot-template.html")
+    print(f"{G}{check} Custom HTML template copied to {addon_dir}{X}")
+
+    print(f"{Y}{clipboard} Web export files are ready. Please configure the export preset in Godot manually.{X}")
+
 def build_complete_callback(target, source, env):
     print(f"{G}{party} Build complete!{X}")
+    if env["platform"] == "web":
+        copy_web_artifacts(target, source, env)
     return None
-
 
 env.AddPostAction(library, build_complete_callback)
 

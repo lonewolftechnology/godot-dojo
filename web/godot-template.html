@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>My Template</title>
+	<meta charset="UTF-8">
+</head>
+<body>
+<canvas id="canvas"></canvas>
+<script src="$GODOT_URL"></script>
+<script type="module">
+	// Temporary forced, until we have a proper build system
+	import createDojoModule from './dojo_c_debug.js';
+
+	const moduleArgs = {};
+
+	console.log("Initializing Dojo WASM module...");
+
+	createDojoModule(moduleArgs).then(instance => {
+		console.log("Dojo WASM module initialized successfully.");
+
+		window.dojoInstance = instance;
+		console.log("Dojo instance: ", instance);
+
+		const engine = new Engine($GODOT_CONFIG);
+		engine.startGame();
+	}).catch(err => {
+		console.error("Error initializing Dojo WASM: ", err);
+	});
+</script>
+</body>
+</html>
