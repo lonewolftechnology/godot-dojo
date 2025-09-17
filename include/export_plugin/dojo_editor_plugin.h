@@ -1,0 +1,8 @@
+//
+// Created by hazel on 12/9/25.
+//
+
+#ifndef GODOT_DOJO_DOJO_EDITOR_PLUGIN_H
+#define GODOT_DOJO_DOJO_EDITOR_PLUGIN_H
+
+#endif //GODOT_DOJO_DOJO_EDITOR_PLUGIN_H

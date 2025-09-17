@@ -7,10 +7,17 @@ set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 set(CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake" ${CMAKE_MODULE_PATH})
 
+option(BUILD_WEB "Enable Web (WASM/WEB_ENABLED) build" OFF)
+
 file(GLOB_RECURSE SOURCES CONFIGURE_DEPENDS src/*.cpp src/*.c)
 file(GLOB_RECURSE HEADERS CONFIGURE_DEPENDS include/*.hpp include/*.h)
 
 add_library(godot-dojo SHARED ${SOURCES} ${HEADERS})
+
+if(BUILD_WEB)
+    message(STATUS "Web build enabled, defining WEB_ENABLED preprocessor macro.")
+    target_compile_definitions(godot-dojo PRIVATE WEB_ENABLED)
+endif()
 
 # Godot-cpp
 include(FetchContent)
