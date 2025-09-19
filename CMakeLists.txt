@@ -74,10 +74,10 @@ set_target_properties(godot-dojo PROPERTIES
 )
 
 # Limpieza y copias post build
-file(REMOVE_RECURSE ${CMAKE_CURRENT_SOURCE_DIR}/demo/bin/)
-file(MAKE_DIRECTORY ${CMAKE_SOURCE_DIR}/demo/bin)
+file(REMOVE_RECURSE ${CMAKE_CURRENT_SOURCE_DIR}/demo/addons/godot-dojo/)
+file(MAKE_DIRECTORY ${CMAKE_SOURCE_DIR}/demo/addons/godot-dojo)
 
 add_custom_command(TARGET godot-dojo POST_BUILD
-        COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:godot-dojo> ${CMAKE_SOURCE_DIR}/demo/bin/
-        COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_CURRENT_BINARY_DIR}/godot-dojo.gdextension ${CMAKE_SOURCE_DIR}/demo/bin/
+        COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:godot-dojo> ${CMAKE_SOURCE_DIR}/demo/addons/godot-dojo/
+        COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_CURRENT_BINARY_DIR}/godot-dojo.gdextension ${CMAKE_SOURCE_DIR}/demo/addons/godot-dojo/
 )
