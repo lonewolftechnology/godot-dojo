@@ -28,7 +28,7 @@ public:
     DojoC();
     ~DojoC();
     static void init_config(bool reset = false);
-    static bool set_setting(const String& setting, const Variant& value, const bool& force = false);
+    static void set_setting(const String& setting, const Variant& value, const bool& force = false);
 
     //void _process(double delta) override;
 };
