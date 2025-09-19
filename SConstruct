@@ -272,7 +272,16 @@ def copy_web_artifacts(target, source, env):
     shutil.copy(template_html_src, f"{addon_dir}/godot-template.html")
     print(f"{G}{check} Custom HTML template copied to {addon_dir}{X}")
 
-    print(f"{Y}{clipboard} Web export files are ready. Please configure the export preset in Godot manually.{X}")
+    print(f"")
+    print(f"{Y}********************************************************************************{X}")
+    print(f"{Y}** {clipboard} ACTION REQUIRED: Configure Godot Web Export                        **{X}")
+    print(f"{Y}********************************************************************************{X}")
+    print(f"{B}To complete the web export, you MUST configure the Godot export preset:{X}")
+    print(f"{B}1. Go to {G}Project -> Export...{X} and select the {G}Web{X} preset.{X}")
+    print(f"{B}2. In the options, find {G}Shell -> Custom HTML Shell{X}.{X}")
+    print(f"{B}3. Select the file: {G}res://addons/godot-dojo/godot-template.html{X}{X}")
+    print(f"{Y}********************************************************************************{X}")
+
 
 def build_complete_callback(target, source, env):
     print(f"{G}{party} Build complete!{X}")
