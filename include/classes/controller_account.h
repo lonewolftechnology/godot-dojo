@@ -35,6 +35,7 @@ class ControllerAccount : public Node
     String rpc_url;
 
     static void on_account_callback(DOJO::ControllerAccount* account);
+    mutable String chain_id;
 
 public:
     ControllerAccount();
@@ -74,7 +75,6 @@ public:
 
 protected:
 
-    String chain_id;
     static void _bind_methods()
     {
         // ClassDB::bind_method(D_METHOD("create", "rpc_url"),&ControllerAccount::create);

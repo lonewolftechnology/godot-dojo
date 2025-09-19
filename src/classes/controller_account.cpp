@@ -12,6 +12,8 @@
 
 #include "classes/torii_client.h"
 #include <vector>
+#include <classes/account.h>
+
 #include "tools/dojo_helper.h"
 
 ControllerAccount* ControllerAccount::singleton = nullptr;
@@ -19,11 +21,11 @@ ControllerAccount* ControllerAccount::singleton = nullptr;
 
 ControllerAccount::ControllerAccount()
 {
-
     singleton = this;
     session_account = nullptr;
     is_connected = false;
     provider = nullptr;
+    chain_id = "";
     rpc_url = "";
     Logger::debug_extra("ControllerAccount", "CONSTRUCTOR CALLED");
 }
@@ -62,7 +64,8 @@ void ControllerAccount::on_account_callback(DOJO::ControllerAccount* account)
     ControllerAccount* instance = get_singleton();
     if (!instance)
     {
-        Logger::warning("ControllerAccount singleton is null in on_account_callback. The application may be shutting down.");
+        Logger::warning(
+            "ControllerAccount singleton is null in on_account_callback. The application may be shutting down.");
         return;
     }
 
@@ -90,6 +93,7 @@ void ControllerAccount::init_provider()
         Logger::error("RPC URL not set");
         return;
     }
+
     Logger::debug_extra("Provider", rpc_url);
     DOJO::ResultProvider resControllerProvider = DOJO::provider_new(rpc_url.utf8().get_data());
     if (resControllerProvider.tag == DOJO::ErrProvider)
@@ -105,6 +109,13 @@ void ControllerAccount::init_provider()
 
 void ControllerAccount::create(const Ref<DojoPolicies>& policies_data)
 {
+#ifdef ANDROID_ENABLED
+    Logger::error(
+        "ControllerAccount: Session management is not supported on Android due to external library limitations.");
+    emit_signal("controller_disconnected");
+    // Early return to prevent calling incompatible FFI functions.
+    return;
+#else
     Logger::info("RPC URL: ", rpc_url);
     if (provider == nullptr)
     {
@@ -121,19 +132,13 @@ void ControllerAccount::create(const Ref<DojoPolicies>& policies_data)
 
     std::vector<DOJO::Policy> policies = policies_data->build();
     uintptr_t policies_len = policies.size();
-
-    DOJO::FieldElement katana = FieldElement::cairo_short_string_to_felt(chain_id.utf8().get_data());
-    Logger::custom_color("azure", "katana", FieldElement::get_as_string(&katana));
-
-#ifdef ANDROID_ENABLED
-    Logger::error("ControllerAccount: Session management is not supported on Android due to external library limitations.");
-    emit_signal("controller_disconnected");
-    // Early return to prevent calling incompatible FFI functions.
-    return;
-#else
+    String _chain = get_chain_id();
+    Logger::debug_extra("ControllerAccount", "Chain ID: ", _chain);
+    FieldElement katana = {_chain};
+    Logger::custom_color("azure", "katana", katana.to_string());
 
     DOJO::ResultControllerAccount resControllerAccount =
-        DOJO::controller_account(policies.data(), policies_len, katana);
+        DOJO::controller_account(policies.data(), policies_len, katana.get_felt_no_ptr());
 
     if (resControllerAccount.tag == DOJO::OkControllerAccount)
     {
@@ -166,11 +171,14 @@ void ControllerAccount::disconnect_controller()
         if (resClear.tag == DOJO::Errbool)
         {
             Logger::error("Failed to clear Controller", resClear.err.message);
-        } else {
+        }
+        else
+        {
             Logger::success("Controller cleared");
         }
 #else
-        Logger::warning("ControllerAccount: Remote session clearing is not supported on Android. Disconnecting locally.");
+        Logger::warning(
+            "ControllerAccount: Remote session clearing is not supported on Android. Disconnecting locally.");
 #endif
         // WARNING: This will leak memory on all platforms. The 'dojo.c' library allocates the session_account
         // but does not provide a function to free it.
@@ -207,24 +215,25 @@ String ControllerAccount::get_address() const
 
 String ControllerAccount::get_chain_id() const
 {
-    if (!is_controller_connected())
+    if (chain_id.is_empty() || !is_controller_connected())
     {
-        if (!Engine::get_singleton()->is_editor_hint())
-        {
-            Logger::debug_extra("ControllerAccount", "Controller not connected, using provided chain id");
-        }
-        return chain_id;
-    }
-    DOJO::FieldElement felt = DOJO::controller_chain_id(session_account);
-    String controller_chain_id = FieldElement::get_as_string(&felt);
+        Logger::debug_extra("ControllerAccount", "Getting chain id from provider by creating an Account");
+        Account burner_account = {};
+        String _rpc_url = ProjectSettings::get_singleton()->get("dojo/config/katana_url");
+        String _address = ProjectSettings::get_singleton()->get("dojo/config/account/address");
+        String _private_key = ProjectSettings::get_singleton()->get("dojo/config/account/private_key");
+        // if (provider != nullptr)
+        // {
+        //     burner_account.set_provider(provider);
+        // }
+        burner_account.create(_rpc_url, _address, _private_key);
+        // if (provider != nullptr)
+        // {
+        //     burner_account.set_provider(nullptr); // To avoid freeing the provider from ControllerAccoount
+        // }
 
-    DOJO::FieldElement chain_id_felt = FieldElement::cairo_short_string_to_felt(chain_id);
-    String katana_chain_id = FieldElement::get_as_string(&chain_id_felt);
-
-    if (controller_chain_id != katana_chain_id)
-    {
-        Logger::warning("Chain ID mismatch ", controller_chain_id, " | ", katana_chain_id);
-        return controller_chain_id;
+        chain_id = burner_account.get_chain_id();
+        burner_account.queue_free();
     }
     return chain_id;
 }
@@ -235,7 +244,7 @@ void ControllerAccount::check_rpc_url()
     if (rpc_url.is_empty())
     {
         Logger::debug_extra("ControllerAccount", "RPC URL not set, checking project settings");
-        String setting = ProjectSettings::get_singleton()->get("dojo/config/katana/rpc_url");
+        String setting = ProjectSettings::get_singleton()->get("dojo/config/katana_url");
         if (setting.is_empty())
         {
             Logger::error("RPC URL not set");
@@ -252,7 +261,8 @@ String ControllerAccount::get_rpc_url()
 }
 
 // TODO: Ver Threads
-void ControllerAccount::execute_from_outside(const String& to, const String& selector, const Variant& calldata = Array())
+void ControllerAccount::execute_from_outside(const String& to, const String& selector,
+                                             const Variant& calldata = Array())
 {
     if (!is_controller_connected())
     {
