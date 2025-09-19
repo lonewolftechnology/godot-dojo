@@ -23,31 +23,32 @@ FieldElement::FieldElement(const String& hex_str, size_t max_bytes)
     // Calculate actual string length without prefix
     size_t hex_length = hex_str.length() - start_idx;
 
-    // Handle odd number of characters by assuming leading zero
-    bool is_odd = hex_length % 2 != 0;
-    size_t num_bytes = (hex_length + is_odd) / 2;
+    // Each hex char is 4 bits, so 2 chars form a byte.
+    size_t num_bytes = (hex_length + 1) / 2;
 
     // Ensure we don't overflow the output buffer
     if (num_bytes > max_bytes)
     {
+        Logger::error("Input hex string is too long for the output buffer.");
         return;
-        //        throw std::runtime_error("Input hex string too long for output buffer");
     }
 
-    size_t out_idx = 0;
+    // Calculate the starting position in the output buffer for right-alignment (big-endian)
+    size_t out_start_idx = max_bytes - num_bytes;
 
-    // Handle first nibble separately if we have odd number of characters
-    if (is_odd)
-    {
-        String nibble = hex_str.substr(static_cast<int64_t>(start_idx), 1);
-        felt->data[out_idx++] = static_cast<uint8_t>(nibble.hex_to_int());
+    // If the hex string has an odd number of characters, treat the first char as a single nibble.
+    size_t in_idx = start_idx;
+    if (hex_length % 2 != 0) {
+        String nibble_str = hex_str.substr(static_cast<int64_t>(in_idx), 1);
+        felt->data[out_start_idx] = static_cast<uint8_t>(nibble_str.hex_to_int());
+        in_idx++;
+        out_start_idx++;
     }
 
-    // Process two hex digits at a time
-    for (size_t i = is_odd ? 1 : 0; i < hex_length; i += 2)
-    {
-        String byte_str = hex_str.substr(static_cast<int64_t>(start_idx + i), 2);
-        felt->data[out_idx++] = static_cast<uint8_t>(byte_str.hex_to_int());
+    for (size_t i = out_start_idx; i < max_bytes; ++i) {
+        String byte_str = hex_str.substr(static_cast<int64_t>(in_idx), 2);
+        felt->data[i] = static_cast<uint8_t>(byte_str.hex_to_int());
+        in_idx += 2;
     }
 }
 
