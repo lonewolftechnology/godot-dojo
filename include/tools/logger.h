@@ -87,6 +87,9 @@ public:
 #ifdef DEBUG_ENABLED
         String message = logger_internal::concat_all(args...);
         String formatted = "[color=" + color + "][b][" + type + "][/b][/color] " + message;
+#ifdef WEB_ENABLED
+        formatted = formatted.insert(0, "[color=green][b][WEB][/b][/color]");
+#endif
         UtilityFunctions::print_rich(formatted);
 #endif
     }
@@ -127,6 +130,9 @@ public:
 #ifdef DEBUG_ENABLED
         String message = logger_internal::concat_all(args...);
         String formatted = "[color=green][b][" + type + "][/b][/color] " + message;
+#ifdef WEB_ENABLED
+        formatted = formatted.insert(0, "[color=green][b][WEB][/b][/color]");
+#endif
         UtilityFunctions::print_rich(formatted);
 #endif
     }
@@ -137,6 +143,9 @@ public:
 #ifdef DEBUG_ENABLED
         String message = logger_internal::concat_all(args...);
         String formatted = "[color=cyan][b][" + type + "][/b][/color] " + message;
+#ifdef WEB_ENABLED
+        formatted = formatted.insert(0, "[color=green][b][WEB][/b][/color]");
+#endif
         UtilityFunctions::print_rich(formatted);
 #endif
     }
