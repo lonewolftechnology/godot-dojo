@@ -7,6 +7,7 @@
 #include "godot_cpp/classes/java_script_bridge.hpp"
 
 
+
 using namespace godot;
 
 class DojoBridge : public RefCounted{
@@ -21,11 +22,14 @@ public:
     // Calls an async function on the dojoInstance in JS
     // and returns the result via a callback.
     static void call_async(const String &function_name, const Variant &args, const Callable &callback);
+    static Variant process_js_arg(const Variant& arg);
+    static void call_async(const Ref<JavaScriptObject>& target, const String &function_name, const Variant &args, const Callable &callback);
+    
+    // Method to be called from JS to release the callback
+    static void release_callback(uint64_t callback_id);
+
 protected:
-    static void _bind_methods()
-    {
-        ClassDB::bind_static_method("DojoBridge", D_METHOD("call_async"), &DojoBridge::call_async);
-    }
+    static void _bind_methods(){}
 };
 
 #endif // DOJO_BRIDGE_H
