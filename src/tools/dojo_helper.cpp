@@ -42,7 +42,7 @@ DojoHelpers::~DojoHelpers()
 
 String DojoHelpers::get_katana_url()
 {
-    return get_setting("dojo/config/katana/rpc_url");
+    return get_setting("dojo/config/katana_url");
 }
 
 Variant DojoHelpers::get_setting(const String& setting)
