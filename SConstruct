@@ -108,13 +108,19 @@ if target == "template_release":
 
 # Environment variables for WebAssembly
 if env["platform"] == "web":
-    env_vars = os.environ.copy()
-    # Add features needed for wasm, but avoid relocation-model=pic which can cause issues with wasm-bindgen
-    rustflags = "-C target-feature=+atomics,+bulk-memory,+mutable-globals"
-    env_vars["RUSTFLAGS"] = rustflags
-    subprocess.run(cmd, check=True, cwd="external/dojo.c", env=env_vars)
+    # For the web build, we need to do two things:
+    # 1. Build the dojo.c library with wasm-bindgen to create the JS interface.
+    #    This build must NOT use `-C relocation-model=pic`.
+    # 2. Build the dojo.c library as an rlib with `-C relocation-model=pic`
+    #    so scons can link it into the final GDExtension .wasm file.
 
-    # After building, run wasm-bindgen to generate the JS bindings and final wasm
+    # Step 1: Build for wasm-bindgen
+    print(f"{Y}Building dojo.c for wasm-bindgen...{X}")
+    bindgen_env = os.environ.copy()
+    bindgen_env["RUSTFLAGS"] = "-C target-feature=+atomics,+bulk-memory,+mutable-globals"
+    subprocess.run(cmd, check=True, cwd="external/dojo.c", env=bindgen_env)
+
+    # Step 2: Run wasm-bindgen
     print(f"{Y}Running wasm-bindgen...{X}")
     build_mode = "release" if target == "template_release" else "debug"
     wasm_input_path = f"external/dojo.c/target/{rust_target}/{build_mode}/dojo_c.wasm"
