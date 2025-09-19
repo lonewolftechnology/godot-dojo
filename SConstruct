@@ -48,11 +48,7 @@ if GetOption('clean'):
 # Setup
 os.makedirs("demo/addons/godot-dojo", exist_ok=True)
 
-# For web builds, we must force SIDE_MODULE=1 and other linker flags
-# for the GDExtension library itself to be compiled as a dynamic library.
-if 'platform=web' in sys.argv or (os.environ.get("SCONS_PLATFORM") == "web"):
-    ARGUMENTS["LINKFLAGS"] = "-sSIDE_MODULE=1 -sASYNCIFY -Wl,--export-dynamic"
-
+# Initialize the godot-cpp build environment
 env = SConscript("external/godot-cpp/SConstruct")
 platform, arch, target = env["platform"], env["arch"], env.get("target", "template_debug")
 
@@ -199,13 +195,9 @@ if platform == "windows":
         rust_lib = "" # Should not happen
     env.Append(LIBS=[File(rust_lib)]) if rust_lib else None
 elif platform == "web":
-    # For web, we are using wasm-bindgen to generate a separate module.
-    # We do not link the Rust library into the main GDExtension wasm.
-    # We need to explicitly tell Emscripten to create a side module. This flag
-    # must be present during both compilation and linking. The `-v` flag is
-    # added for verbose output to debug which flags are being used.
-    flags = ["-sSIDE_MODULE=1"]
-    env.Append(CCFLAGS=flags)
+    print(f"{Y}{clipboard} Web export doesn't link to anything.{X}")
+#     rust_lib = f"{rust_lib_dir}/libdojo_c.rlib"
+#     env.Append(LIBS=[File(rust_lib)])
 elif platform in ["linux", "macos", "android"]:
     rust_lib = f"{rust_lib_dir}/libdojo_c.a"
     env.Append(LIBS=[File(rust_lib)])
