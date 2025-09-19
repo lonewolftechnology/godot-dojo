@@ -6,6 +6,34 @@ import shutil
 import platform as host_platform
 import sys
 
+# --- IDE helper imports for SCons (no effect during actual scons run) ---
+# CLion/PyCharm may flag unresolved references because SCons injects these
+# into the global namespace at runtime. Import them when available and
+# provide safe fallbacks otherwise so IDEs stop warning.
+try:
+    from SCons.Script import GetOption, Return, Exit, File, SConscript  # type: ignore
+except Exception:
+    def GetOption(name: str):
+        return None
+    def Return():
+        pass
+    def Exit(code: int = 0):
+        raise SystemExit(code)
+    def File(path: str):
+        return path
+    def SConscript(path: str):
+        # Minimal shim to satisfy IDEs; never used during real scons runs
+        class _Env(dict):
+            def Append(self, **kwargs):
+                pass
+            def AddPostAction(self, *args, **kwargs):
+                pass
+            def Default(self, *args, **kwargs):
+                pass
+            def SharedLibrary(self, *args, **kwargs):
+                return args[0] if args else None
+        return _Env()
+
 # Colors
 G, B, R, Y, X = '\033[92m', '\033[94m', '\033[91m', '\033[1;33m', '\033[0m'
 
