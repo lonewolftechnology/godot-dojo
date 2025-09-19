@@ -33,7 +33,8 @@ var FRACTIONAL_BITS:
 #const to_validate = [-5,-1,-2,-4.5,-3,-8.6,-6,-200,-100,-60]
 const to_validate = [1.9,-1.9]
 const tests = {
-	"validate_fp_40": [1.9,-1.9],
+	#"spawn": [],
+	"validate_fp_40": to_validate,
 	#"validate_vec3": [
 		#Vector3(7.71271926302993,3,7), 
 		#[7.71271926302993, 3, 7]
@@ -47,8 +48,6 @@ const tests = {
 	#"validate_u16": to_validate,
 	#"validate_u32": to_validate,
 	#"validate_u64": to_validate,
-	#"validate_u128": to_validate,
-	#"validate_u256": to_validate,
 	"validate_u128": to_validate,
 	"validate_u256": to_validate,
 	#"validate_bool": [true, false],
