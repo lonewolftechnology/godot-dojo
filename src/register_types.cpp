@@ -3,11 +3,13 @@
 //
 #include "register_types.h"
 
+#include <godot_cpp/classes/editor_plugin.hpp>
+
 #include "dojo_c_gdextension.h"
 
-#include <gdextension_interface.h>
-#include <godot_cpp/core/defs.hpp>
-#include <godot_cpp/godot.hpp>
+#include "gdextension_interface.h"
+#include "godot_cpp/core/defs.hpp"
+#include "godot_cpp/godot.hpp"
 #ifdef WEB_ENABLED
 #include <tools/dojo_bridge.h>
 #endif
@@ -55,6 +57,7 @@
 #include "ref_counted/options/option_array_field_element.h"
 
 #include "export_plugin/dojo_export.h"
+#include "export_plugin/dojo_editor_plugin.h"
 
 using namespace godot;
 
@@ -116,8 +119,10 @@ void initialize_dojoc_module(ModuleInitializationLevel p_level)
 
     if (p_level == MODULE_INITIALIZATION_LEVEL_EDITOR)
     {
-        // TODO: Android? Web? necesario un export plugin?
-        GDREGISTER_CLASS(DojoExportPlugin);
+        // EditorExportPlugin classes are automatically discovered by the editor
+        // once they are registered with ClassDB. No manual registration is needed.
+        GDREGISTER_CLASS(DojoEditorPlugin);
+        GDREGISTER_CLASS(DojoExportPlugin)
     }
 }
 

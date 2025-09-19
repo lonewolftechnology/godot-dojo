@@ -1,141 +1,65 @@
 #include "export_plugin/dojo_export.h"
 
-#include "tools/logger.h"
-#include "godot_cpp/classes/engine.hpp"
+#include <godot_cpp/classes/editor_export_platform_web.hpp>
+#include <godot_cpp/classes/editor_file_system.hpp>
+#include <godot_cpp/classes/editor_interface.hpp>
 
-void DojoExportPlugin::_bind_methods() {
-    // No necesitamos bind methods para este caso
-}
+#include "godot_cpp/classes/project_settings.hpp"
+#include "tools/logger.h"
 
 DojoExportPlugin::DojoExportPlugin() {
-    Logger::info("📦 DojoExportPlugin inicializado");
-    export_path = "";
-
+    // Constructor
+    Logger::info("DojoExport: Initializing...");
+    dojo_files_added = false;
 }
 
 DojoExportPlugin::~DojoExportPlugin() {
-    Logger::info("📦 DojoExportPlugin destruido");
+    // Destructor
+    Logger::info("DojoExport: Destroying...");
 }
 
-String DojoExportPlugin::_get_name() const {
-    return "Godot Dojo Windows Plugin";
-}
-
-void DojoExportPlugin::_export_begin(const PackedStringArray &features, bool is_debug, const String &path, int flags) {
-    export_path = path.get_base_dir();
-
-    Logger::info("🚀 Iniciando exportación desde consola/editor:");
-    Logger::info("🖥️  Modo headless detectado:", Variant(Engine::get_singleton()->is_editor_hint()));
-    Logger::info("📁 Path:", path);
-    Logger::info("🏗️  Export dir:", export_path);
-
-    // Logger::info("Features:", features);
-    Logger::info("Debug:", Variant(is_debug));
-    Logger::info("Path:", path);
-    Logger::info("Export dir:", export_path);
-    
-    // Copiar archivos específicos según la plataforma
-    if (features.has("linux")) {
-        copy_files_from_folder("addons/dojo/libs/linux", "");
-        copy_file_to_export("addons/dojo/config/dojo_config.json", "dojo_config.json");
-    } else if (features.has("windows")) {
-        copy_files_from_folder("addons/dojo/libs/windows", "");
-        copy_file_to_export("addons/dojo/config/dojo_config.json", "dojo_config.json");
-    } else if (features.has("macos")) {
-        copy_files_from_folder("addons/dojo/libs/macos", "");
-        copy_file_to_export("addons/dojo/config/dojo_config.json", "dojo_config.json");
+void DojoExportPlugin::_export_begin(const PackedStringArray &features, bool is_debug, const String &path, uint32_t flags) {
+    if (!features.has("web")) {
+        Logger::debug_extra("DojoExport", "Not a web export, skipping.");
+        return;
     }
+
+    String build_mode = is_debug ? "debug" : "release";
+    Logger::debug_extra("DojoExport", "Web export detected. Build mode: " + build_mode);
+
+    Logger::debug_extra("DojoExport", "adding Dojo files...");
+
+    String js_file = "dojo_c_" + build_mode + ".js";
+    String wasm_file = "dojo_c_" + build_mode + ".wasm";
+
+    _copy_file_to_export(js_file, path);
+    _copy_file_to_export(wasm_file, path);
+
 }
 
 void DojoExportPlugin::_export_file(const String &path, const String &type, const PackedStringArray &features) {
-    // Aquí puedes interceptar archivos específicos si necesitas modificarlos
-    // Por ejemplo, si quieres copiar archivos .dll específicos:
-    
-    if (path.ends_with(".dll") && path.begins_with("addons/dojo/")) {
-        Logger::info("📦 Procesando archivo DLL: ", path);
-        // El archivo se incluirá automáticamente en la exportación
-    }
 }
 
-void DojoExportPlugin::_export_end() {
-    Logger::info("✅ Exportación completada");
-}
+void DojoExportPlugin::_copy_file_to_export(const String &p_file_name, const String &p_export_path) {
+    String addon_dir = "res://addons/godot-dojo/";
+    String file_path = addon_dir + p_file_name;
 
-bool DojoExportPlugin::copy_file_to_export(const String &source_path, const String &dest_relative_path) {
-    if (export_path.is_empty()) {
-        Logger::info("❌ Error: export_path no está definido");
-        return false;
-    }
-    
-    // Verificar que el archivo fuente existe
-    Ref<FileAccess> source_file = FileAccess::open(source_path, FileAccess::READ);
-    if (source_file.is_null()) {
-        Logger::info("❌ No se puede leer el archivo fuente: ", source_path);
-        return false;
-    }
-    
-    // Leer contenido del archivo
-    PackedByteArray file_data = source_file->get_buffer(source_file->get_length());
-    source_file->close();
-    
-    // Crear ruta de destino
-    String dest_path = export_path.path_join(dest_relative_path);
-    
-    // Asegurar que el directorio existe
-    String dest_dir = dest_path.get_base_dir();
-    if (!ensure_directory_exists(dest_dir)) {
-        return false;
-    }
-    
-    // Escribir archivo en destino
-    Ref<FileAccess> dest_file = FileAccess::open(dest_path, FileAccess::WRITE);
-    if (dest_file.is_null()) {
-        Logger::info("❌ No se puede escribir el archivo destino: ", dest_path);
-        return false;
-    }
-    
-    dest_file->store_buffer(file_data);
-    dest_file->close();
-    
-    Logger::info("✅ Archivo copiado: ", source_path, " -> ", dest_path);
-    return true;
-}
+    if (FileAccess::file_exists(file_path)) {
+        // For web exports, p_export_path is the .zip file. We need the directory.
+        String export_dir = p_export_path.get_base_dir();
+        String dest_path = export_dir.path_join(p_file_name);
 
-bool DojoExportPlugin::ensure_directory_exists(const String &dir_path) {
-    Ref<DirAccess> dir = DirAccess::open(".");
-    if (dir.is_null()) {
-        Logger::info("❌ Error accediendo al sistema de archivos");
-        return false;
-    }
-    
-    Error err = dir->make_dir_recursive(dir_path);
-    if (err != OK && err != ERR_ALREADY_EXISTS) {
-        Logger::info("❌ Error creando directorio: ", dir_path);
-        return false;
-    }
-    
-    return true;
-}
-
-void DojoExportPlugin::copy_files_from_folder(const String &source_folder, const String &dest_folder) {
-    Ref<DirAccess> dir = DirAccess::open(source_folder);
-    if (dir.is_null()) {
-        Logger::info("❌ No se puede acceder a la carpeta: ", source_folder);
-        return;
-    }
-    
-    dir->list_dir_begin();
-    String file_name = dir->get_next();
-    
-    while (!file_name.is_empty()) {
-        if (!dir->current_is_dir()) {
-            String source_file_path = source_folder.path_join(file_name);
-            String dest_file_path = dest_folder.is_empty() ? file_name : dest_folder.path_join(file_name);
-            
-            copy_file_to_export(source_file_path, dest_file_path);
+        Error err = DirAccess::copy_absolute(file_path, dest_path);
+        if (err == OK) {
+            Logger::debug_extra("DojoExport", "Successfully copied " + file_path + " to " + dest_path);
+        } else {
+            Logger::error("DojoExport: Failed to copy " + file_path + " to " + dest_path + ". Error code: " + itos(err));
         }
-        file_name = dir->get_next();
+    } else {
+        Logger::error("DojoExport: File not found with FileAccess::file_exists: " + file_path);
     }
-    
-    dir->list_dir_end();
+}
+
+bool DojoExportPlugin::_supports_platform(const Ref<EditorExportPlatform> &p_platform) const {
+    return p_platform.is_valid() && p_platform->get_os_name() == "Web";
 }

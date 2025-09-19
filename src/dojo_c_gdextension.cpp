@@ -3,6 +3,8 @@
 //
 #include "dojo_c_gdextension.h"
 
+#include <export_plugin/dojo_editor_plugin.h>
+
 #include "godot_cpp/classes/project_settings.hpp"
 
 #include "godot_cpp/classes/engine.hpp"
@@ -28,11 +30,16 @@ DojoC::DojoC()
     singleton = this;
     enabled = true;
     init_config();
+    if (Engine::get_singleton()->is_editor_hint())
+    {
+        plugin = new DojoEditorPlugin();
+    }
 }
 
 DojoC::~DojoC()
 {
     singleton = nullptr;
+    plugin->queue_free();
 }
 
 void DojoC::init_config(bool reset)

@@ -5,6 +5,8 @@
 #ifndef DOJO_C_GDEXTENSION_H
 #define DOJO_C_GDEXTENSION_H
 
+#include <godot_cpp/classes/editor_plugin.hpp>
+
 #include "godot_cpp/classes/object.hpp"
 
 using namespace godot;
@@ -12,6 +14,7 @@ using namespace godot;
 class DojoC : public Object
 {
     GDCLASS(DojoC, Object);
+    EditorPlugin* plugin;
 
 protected:
     static void _bind_methods();
