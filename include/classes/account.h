@@ -38,12 +38,15 @@ public:
     void deploy_burner(Account* master_account, const String& signing_key);
 
     String get_address() const;
+    DOJO::FieldElement get_chain_id_felt() const;
     String get_chain_id(const bool& parse = false) const;
-    void set_block_id(const String& block_id = String());
     String get_nonce() const;
 
-    bool is_account_valid() const;
+    void set_block_id(const String& block_id = String());
+    void set_provider(DOJO::Provider* p_provider){ provider = p_provider;};
 
+
+    bool is_account_valid() const;
     void execute_raw(const String& to, const String& selector, const Variant& calldata);
 
 

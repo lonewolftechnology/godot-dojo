@@ -101,6 +101,16 @@ String Account::get_address() const
     return FieldElement::get_as_string(&address);
 }
 
+DOJO::FieldElement Account::get_chain_id_felt() const
+{
+    if (!is_account_valid())
+    {
+        return {};
+    }
+    DOJO::FieldElement chain_id = DOJO::account_chain_id(account);
+    return chain_id;
+}
+
 String Account::get_chain_id(const bool& parse) const
 {
     if (!is_account_valid())
