@@ -8,79 +8,146 @@
 <canvas id="canvas"></canvas>
 <script src="$GODOT_URL"></script>
 <script type="module">
-    // Temporary forced, until we have a proper build system
-    import createDojoModule from './dojo_c_debug.js';
+    import init, * as dojo from './dojo_c_debug.js';
 
-    const moduleArgs = {};
+    function waitForGodot() {
+        return new Promise(resolve => {
+            (function check() {
+                // Usamos `Engine` como nos indicaste, que es correcto para Godot 4.0.
+                if (window.Engine) return resolve();
+                setTimeout(check, 100); // Revisa cada 100ms
+            })();
+        });
+    }
 
-    console.log("Initializing Dojo WASM module...");
+    async function main() {
+        try {
+            console.log("Initializing Dojo WASM module...");
+            await init();
+            console.log("Dojo WASM module initialized successfully.");
 
-    createDojoModule(moduleArgs).then(instance => {
-        console.log("Dojo WASM module initialized successfully.");
+            window.dojoInstance = dojo;
+            window.toriiClient = null; // Initialize torii client global
+            console.log("Dojo instance: ", dojo);
 
-        window.dojoInstance = instance;
-        console.log("Dojo instance: ", instance);
+            /**
+             * Generic async bridge to call Dojo functions from Godot.
+             * The last argument is expected to be the Godot callback.
+             * All arguments before the last one are passed to the dojo function.
+             * e.g., callDojoAsync(functionName, arg1, arg2, ..., godotCallback)
+             */
+            window.callDojoAsync = async function (functionName, ...args) {
+                const isToriiCall = functionName.startsWith('toriiclient_');
+                console.log(`[JS] Calling Dojo function: ${functionName}, Torii: ${isToriiCall}`);
+                console.log(`[JS] Args:`, args);
 
-        /**
-         * Generic async bridge to call Dojo functions from Godot.
-         * @param {string} functionName - The name of the function in `window.dojoInstance`.
-         * @param {Array | any} godotArgs - Arguments for the dojo function. Can be a single value or an array of values.
-         * @param {Callable | null} godotCallback - A Godot Callable object passed from C++.
-         */
-        window.callDojoAsync = async function (functionName, godotArgs, godotCallback) {
-            // Ensure godotCallback is either a function or null.
-            // A non-valid Callable from Godot arrives as `null`.
-            if (typeof godotCallback !== 'function') {
-                godotCallback = null;
-            }
+                let funcName = functionName;
+                let target;
 
-            const args = Array.isArray(godotArgs) ? godotArgs : [godotArgs];
-
-            console.log(`Calling Dojo function: ${functionName}`, "with args:", args);
-
-            if (!window.dojoInstance || typeof window.dojoInstance[functionName] !== 'function') {
-                console.error(`Dojo function "${functionName}" not found.`);
-                if (godotCallback) godotCallback(null);
-                return;
-            }
-
-            // Process arguments to handle JSON-stringified objects
-            const processedArgs = args.map(arg => {
-                if (typeof arg === 'string' && arg.startsWith('json:')) {
-                    try {
-                        // Parse the JSON string, removing the "json:" prefix.
-                        return JSON.parse(arg.substring(5));
-                    } catch (e) {
-                        console.error("Failed to parse JSON argument:", arg, e);
-                        // Return null if parsing fails, to prevent further errors.
-                        return null;
+                if (isToriiCall) {
+                    if (functionName === 'toriiclient_new') {
+                        // 'toriiclient_new' is special, it's on the main dojo instance.
+                        target = window.dojoInstance;
+                    } else {
+                        // Other torii functions are on the torii client instance.
+                        target = window.toriiClient;
+                        funcName = functionName.substring(12); // "toriiclient_".length
                     }
+                } else {
+                    target = window.dojoInstance;
                 }
-                return arg;
-            });
+                console.log(`[JS] Function: ${funcName}, Target:`, target);
 
-            window.dojoInstance[functionName](...processedArgs)
-                .then(result => {
+                const godotCallback = args.pop(); // The real callback is always the last argument in the remaining list.
+
+                // Process arguments to handle JSON-stringified objects
+                const processedArgs = args.map(arg => {
+                    if (typeof arg === 'string' && arg.startsWith('json:')) {
+                        try {
+                            // Parse the JSON string, removing the "json:" prefix.
+                            let json = JSON.parse(arg.substring(5));
+                            for (const [key, value] of Object.entries(json)) {
+                                if (value === "<Object#null>") {
+                                    console.log(`[JS] NULLING ${key}:`, value);
+                                    json = undefined;
+                                }
+                            }
+                            return json;
+                        } catch (e) {
+                            console.error("Failed to parse JSON argument:", arg, e);
+                            // Return null if parsing fails, to prevent further errors.
+                            return null;
+                        }
+                    }
+                    return arg;
+                });
+
+                try {
+                    let result;
+
+                    // Special handling for creating a new ToriiClient instance.
+                    if (functionName === 'toriiclient_new') {
+                        console.log(`[WEB] Instantiating new ToriiClient with args:`, processedArgs);
+                        // As per the new API, `dojoInstance` exposes a `ToriiClient` class.
+                        // We instantiate it directly. The constructor is synchronous.
+                        result = await new dojo.ToriiClient(...processedArgs);
+                        window.toriiClient = result;
+                    } else {
+                        console.log(`[WEB] Calling Dojo function: ${funcName}`, "on target:", target, "with args:", processedArgs);
+
+                        if (!target) {
+                            throw new Error(`Target object for function "${funcName}" is not valid.`);
+                        }
+                        if (typeof target[funcName] !== 'function') {
+                            throw new Error(`Dojo function "${funcName}" not found on target.`);
+                        }
+
+                        // For all other functions, call them on the appropriate target.
+                        result = await target[funcName](...processedArgs);
+                    }
+
                     if (godotCallback) {
                         const godotResult = result === undefined ? null : result;
-                        console.log("Calling Godot callback with result:", godotResult);
-                        godotCallback(godotResult);
+                        console.log(`Calling Godot callback for "${funcName}" with result:`, godotResult);
+                        try {
+                            godotCallback(godotResult);
+                        } finally {
+                            // After calling the callback, release it from the C++ side to allow GC.
+                            // We must use the instance_id for safe lookup.
+                            if (godotCallback && typeof godotCallback.get_instance_id === 'function' && window.DojoBridge && typeof window.DojoBridge.release_callback === 'function') {
+                                const callbackId = godotCallback.get_instance_id();
+                                window.DojoBridge.release_callback(callbackId);
+                            }
+                        }
                     }
-                })
-                .catch(err => {
-                    console.error(`Error calling Dojo function "${functionName}":`, err);
-                    // Call the callback with null on error to unblock the C++ side and release the callback.
+                } catch (err) {
+                    console.error(`Error calling Dojo function "${funcName}":`, err);
+                    // Call the callback with null on error to unblock the C++ side.
                     if (godotCallback) {
-                        godotCallback(null);
+                        try {
+                            godotCallback(null);
+                        } finally {
+                            if (godotCallback && typeof godotCallback.get_instance_id === 'function' && window.DojoBridge && typeof window.DojoBridge.release_callback === 'function') {
+                                const callbackId = godotCallback.get_instance_id();
+                                window.DojoBridge.release_callback(callbackId);
+                            }
+                        }
                     }
-                });
-        };
+                }
+            };
 
-        const engine = new Engine($GODOT_CONFIG);
-        engine.startGame();
-    }).catch(err => {
-        console.error("Error initializing Dojo WASM: ", err);
-    });
+            console.log("Waiting for Godot engine to be ready...");
+            await waitForGodot();
+            console.log("Godot engine is ready. Starting game...");
+
+            const engine = new Engine();
+            engine.startGame($GODOT_CONFIG);
+        } catch (err) {
+            console.error("Error initializing application: ", err);
+        }
+    }
+
+    main();
 </script>
 </body>
 </html>
