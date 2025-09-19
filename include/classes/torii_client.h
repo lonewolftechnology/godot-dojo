@@ -132,10 +132,11 @@ public:
 private:
 
 #ifdef WEB_ENABLED
-    static void _on_client_created(const Variant& result);
+    void _on_client_created(const Variant& result);
     void _on_get_entities_completed(const Variant& result);
     void _on_get_world_metadata_completed(const Variant& result);
     void _on_entity_state_update_emitted(const Variant& entity_data);
+    void _on_event_message_update_emitted(const Variant& message_data);
 
 #endif
 
@@ -148,6 +149,7 @@ protected:
     // Web specific properties
 #ifdef WEB_ENABLED
     bool is_web_client_initialized = false;
+    // Ref<JavaScriptObject> web_client;
 #endif
 
 
@@ -263,7 +265,7 @@ protected:
         ClassDB::bind_method(D_METHOD("_on_get_entities_completed", "result"), &ToriiClient::_on_get_entities_completed);
         ClassDB::bind_method(D_METHOD("_on_get_world_metadata_completed", "result"), &ToriiClient::_on_get_world_metadata_completed);
         ClassDB::bind_method(D_METHOD("_on_entity_state_update_emitted", "entity_data"), &ToriiClient::_on_entity_state_update_emitted);
-        ClassDB::bind_static_method("ToriiClient",D_METHOD("_on_client_created", "result"), &ToriiClient::_on_client_created);
+        ClassDB::bind_method(D_METHOD("_on_client_created", "result"), &ToriiClient::_on_client_created);
 #endif
 
     }
