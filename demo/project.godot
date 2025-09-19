@@ -11,8 +11,8 @@ config_version=5
 [application]
 
 config/name="Dojo C GDextension Example"
-run/main_scene="uid://cn1gdwiythfn2"
-config/features=PackedStringArray("4.4", "Forward Plus")
+run/main_scene="uid://cx3d2471dm0va"
+config/features=PackedStringArray("4.5", "Forward Plus")
 run/max_fps=60
 config/icon="res://icon.svg"
 
@@ -25,8 +25,17 @@ window/stretch/aspect="expand"
 
 [dojo]
 
-config/katana/rpc_url="https://api.cartridge.gg/x/godot-demo-rookie/katana"
 config/fixed_point/default=40
+config/katana_url="https://api.cartridge.gg/x/godot-demo-rookie/katana"
+config/torii_url="https://api.cartridge.gg/x/godot-demo-rookie/torii"
+config/account/address="0x6677fe62ee39c7b07401f754138502bab7fac99d2d3c5d37df7d1c6fab10819"
+config/account/public_key="0x3e3979c1ed728490308054fe357a9f49cf67f80f9721f44cc57235129e090f4"
+config/account/private_key="0x1e8965b7d0b20b91a62fe515dd991dc9fcb748acddf6b2cf18cec3bdd0f9f9a"
+config/contract_address="0x00123e4e8a65b4e1f7c6004d99764e89d065bb1ec479ad41b1c195a19d325a3f"
+config/fixed_point/64=40
+config/fixed_point/128=60
+config/fixed_point/256=123
+config/policies=Array[Object]([null])
 
 [input]
 

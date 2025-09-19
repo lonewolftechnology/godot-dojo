@@ -30,8 +30,8 @@ var FRACTIONAL_BITS:
 
 # The key is the selector and the array contains the data to validate to
 #const to_validate = [20,1.5,2.6,9.5,1.2,1.6,-1.5]
-const to_validate = [-5,-1,-2,-4.5,-3,-8.6,-6,-200,-100,-60]
-#const to_validate = [255,256,260]
+#const to_validate = [-5,-1,-2,-4.5,-3,-8.6,-6,-200,-100,-60]
+const to_validate = [1.9,-1.9]
 const tests = {
 	"validate_fp_40": [1.9,-1.9],
 	#"validate_vec3": [
@@ -42,13 +42,15 @@ const tests = {
 	#"validate_i16": to_validate,
 	#"validate_i32": to_validate,
 	"validate_i64": to_validate,
-	#"validate_i128": to_validate,
+	"validate_i128": to_validate,
 	#"validate_u8": to_validate,
 	#"validate_u16": to_validate,
 	#"validate_u32": to_validate,
 	#"validate_u64": to_validate,
 	#"validate_u128": to_validate,
 	#"validate_u256": to_validate,
+	"validate_u128": to_validate,
+	"validate_u256": to_validate,
 	#"validate_bool": [true, false],
 	#"validate_felt252": [],
 	#"validate_class_hash": [],
@@ -126,8 +128,6 @@ var world_address:String:
 func _ready() -> void:
 	OS.set_environment("RUST_BACKTRACE", "full")
 	OS.set_environment("RUST_LOG", "full")
-	var P = (((2^251) + (17 * (2^192))) + 1)
-	push_error(P)
 	var call_result_scroll = output_text.get_v_scroll_bar()
 	var call_response_scroll = sub_output.get_v_scroll_bar()
 	call_response_scroll.scrolling.connect(_on_scrolling.bind(call_response_scroll,call_result_scroll))
@@ -138,7 +138,7 @@ func _ready() -> void:
 	print_rich("[color=yellow]Using %s[/color]" % env)
 	
 	torii_client.torii_url = torii_url
-
+	
 	torii_client.create_client()
 	#print(torii_client.get_world_metadata())
 
@@ -197,11 +197,7 @@ func packed_byte_array_to_i128_float(bytes: PackedByteArray) -> float:
 	
 	var high: int = high_bytes.decode_u64(0)
 	var low: int = low_bytes.decode_u64(0)
-	var low: int = little_endian_bytes.decode_u64(0)
-	var high: int = little_endian_bytes.decode_u64(8)
-	
-	if (high & (1 << 63)) != 0:
-	if (high & (1 << 63)) != 0: # Check the sign bit
+	if (high & (1 << 63)) != 0: 
 		var two_pow_128 = pow(2.0, 128)
 		var unsigned_val = float(high) * pow(2.0, 64) + float(low)
 		return unsigned_val - two_pow_128
@@ -273,12 +269,13 @@ func _on_account_transaction_failed(error_message: Dictionary) -> void:
 
 func _on_account_transaction_executed(success_message: Dictionary) -> void:
 	var output = "[color=cyan]Selector: [/color]%s[color=yellow] Calldata: [/color] %s \n" % [success_message["selector"], success_message["calldata"]]
-	var value = success_message["calldata"][0]
+	var value:Array = success_message["calldata"]
 	output_text.append_text(output)
 	var selector:String = success_message["selector"]
 	selector = selector.replace("validate", "validated")
 	var event = "%s-%s" % [contract_namespace, selector.to_pascal_case()]
-	#sub_output.append_text("[color=yellow]%s[/color]\n" % event)
+	#if not value.is_empty():
+		#sub_output.append_text("[color=yellow]%s[/color]\n" % event)
 	
 func _on_scrolling(active:VScrollBar, mirror:VScrollBar):
 	mirror.value = active.value
