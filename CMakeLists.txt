@@ -28,14 +28,17 @@ add_library(godot::cpp ALIAS godot-cpp)
 target_include_directories(godot-cpp INTERFACE
         ${CMAKE_CURRENT_SOURCE_DIR}/external/godot-cpp/include
         ${CMAKE_CURRENT_SOURCE_DIR}/external/godot-cpp/gen/include
+        ${CMAKE_CURRENT_SOURCE_DIR}/external/godot-cpp/gdextension
 )
 
 # Dojo.c (use submodule directly; avoid FetchContent/_deps)
 set(dojo_c_SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/external/dojo.c)
-# Place Rust build artifacts under the current CMake build dir instead of _deps.
+# Place Rust build artifacts under the current CMake build dir to let CMake/Ninja manage rules.
 set(dojo_c_BINARY_DIR ${CMAKE_CURRENT_BINARY_DIR}/dojo_c)
 
 find_package(Rust REQUIRED)
+# Ensure the binary directory exists at configure time to satisfy interface include dirs
+file(MAKE_DIRECTORY ${dojo_c_BINARY_DIR})
 add_rust_library(TARGET dojo_c SOURCE_DIRECTORY ${dojo_c_SOURCE_DIR} BINARY_DIRECTORY ${dojo_c_BINARY_DIR})
 
 add_custom_target(patch_dojo_header
