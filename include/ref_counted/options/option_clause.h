@@ -182,6 +182,11 @@ public:
         return option;
     }
 
+    Dictionary to_json() const override {
+        // TODO: Implement the actual serialization to Dictionary
+        return Dictionary();
+    }
+
     DOJO::Clause get_native_clause() const {
         return get_native_option().some;
     }
@@ -311,6 +316,9 @@ protected:
         ClassDB::bind_method(D_METHOD("set_logical_operator", "p_op"), &OptionClause::set_logical_operator);
         ClassDB::bind_method(D_METHOD("get_clauses"), &OptionClause::get_clauses);
         ClassDB::bind_method(D_METHOD("set_clauses", "p_clauses"), &OptionClause::set_clauses);
+
+        // Overridden from DojoOption
+        ClassDB::bind_method(D_METHOD("to_json"), &OptionClause::to_json);
     }
 
     void _get_property_list(List<PropertyInfo>* p_list) const {
