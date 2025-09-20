@@ -49,6 +49,45 @@ public:
 
     bool is_empty() const { return policies.is_empty(); }
 
+    void add_policy(const Variant& p_policy)
+    {
+        if (p_policy.get_type() == Variant::DICTIONARY)
+        {
+            Ref<DojoPolicy> new_policy = DojoPolicy::from_dictionary(p_policy);
+            if (new_policy.is_valid())
+            {
+                policies.push_back(new_policy);
+                emit_changed();
+            }
+            else
+            {
+                Logger::error("DojoPolicies: Failed to create DojoPolicy from the provided Dictionary.");
+            }
+        }
+        else if (p_policy.get_type() == Variant::OBJECT)
+        {
+            // Safely cast the object from the variant to ensure it's the correct type.
+            Ref<RefCounted> obj = p_policy;
+
+            if (obj.is_valid() && obj->is_class(DojoPolicy::get_class_static()))
+            {
+                // The cast was successful, it's a valid DojoPolicy.
+                // We can add the original variant, which will be correctly handled by TypedArray.
+                policies.push_back(p_policy);
+                emit_changed();
+            }
+            else
+            {
+                // The object was either null or not a DojoPolicy.
+                Logger::error("DojoPolicies: The provided Object is not a valid DojoPolicy resource.");
+            }
+        }
+        else if (p_policy.get_type() != Variant::NIL)
+        {
+            Logger::error("DojoPolicies: add_policy expects a Dictionary or a DojoPolicy resource.");
+        }
+    }
+
     std::vector<DOJO::Policy> build() const
     {
         if (dojo_contract.is_empty() || policies.is_empty())
@@ -76,7 +115,50 @@ public:
         return result;
     }
 
+    Dictionary to_dictionary() const {
+        Dictionary dict;
+        dict["name"] = name;
+        dict["contract"] = dojo_contract;
+
+        Array policies_array;
+        for (int i = 0; i < policies.size(); ++i) {
+            Ref<DojoPolicy> policy = policies[i];
+            if (policy.is_valid()) {
+                policies_array.push_back(policy->to_dictionary());
+            }
+        }
+        dict["policies"] = policies_array;
+
+        return dict;
+    }
+
+    static Ref<DojoPolicies> from_dictionary(const Dictionary& dict) {
+        Ref<DojoPolicies> policies_res;
+        policies_res.instantiate();
+        policies_res->_from_dictionary(dict);
+        return policies_res;
+    }
+
 protected:
+    void _from_dictionary(const Dictionary& dict) {
+        if (dict.has("name")) {
+            set_name(dict["name"]);
+        }
+        if (dict.has("contract")) {
+            set_dojo_contract(dict["contract"]);
+        }
+
+        if (dict.has("policies") && dict["policies"].get_type() == Variant::ARRAY) {
+            Array policies_array = dict["policies"];
+            TypedArray<DojoPolicy> new_policies;
+            for (int i = 0; i < policies_array.size(); ++i) {
+                Ref<DojoPolicy> new_policy = DojoPolicy::from_dictionary(policies_array[i]);
+                new_policies.push_back(new_policy);
+            }
+            set_policies(new_policies);
+        }
+    }
+
     String name;
     String dojo_contract;
     TypedArray<DojoPolicy> policies;
@@ -95,7 +177,13 @@ protected:
         ClassDB::bind_method(D_METHOD("get_policies"), &DojoPolicies::get_policies);
         ADD_PROPERTY(
             PropertyInfo(Variant::ARRAY, "policies", PROPERTY_HINT_TYPE_STRING, String::num(Variant::OBJECT) + "/" +
-                String::num(PROPERTY_HINT_RESOURCE_TYPE) + ":DojoPolicy"), "set_policies", "get_policies");
+                         String::num(PROPERTY_HINT_RESOURCE_TYPE) + ":DojoPolicy"), "set_policies", "get_policies");
+
+        ClassDB::bind_method(D_METHOD("to_dictionary"), &DojoPolicies::to_dictionary);
+        ClassDB::bind_static_method(get_class_static(), D_METHOD("from_dictionary", "dictionary"),
+                                    &DojoPolicies::from_dictionary);
+
+        ClassDB::bind_method(D_METHOD("add_policy", "policy"), &DojoPolicies::add_policy);
     };
 };
 #endif //DOJO_POLICIES_H

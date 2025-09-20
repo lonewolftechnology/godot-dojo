@@ -46,7 +46,31 @@ public:
         return description_buffer.get_data();
     }
 
+    Dictionary to_dictionary() const {
+        Dictionary dict;
+        dict["method"] = method;
+        dict["description"] = description;
+        return dict;
+    }
+
+    static Ref<DojoPolicy> from_dictionary(const Dictionary& dict) {
+        Ref<DojoPolicy> policy;
+        policy.instantiate();
+        policy->_from_dictionary(dict);
+        return policy;
+    }
+
+
 protected:
+    void _from_dictionary(const Dictionary& dict) {
+        if (dict.has("method")) {
+            set_method(dict["method"]);
+        }
+        if (dict.has("description")) {
+            set_description(dict["description"]);
+        }
+    }
+
     String target;
     String method;
     String description;
@@ -59,6 +83,10 @@ protected:
         ClassDB::bind_method(D_METHOD("get_method"), &DojoPolicy::get_method);
         ClassDB::bind_method(D_METHOD("set_description", "description"), &DojoPolicy::set_description);
         ClassDB::bind_method(D_METHOD("get_description"), &DojoPolicy::get_description);
+        ClassDB::bind_method(D_METHOD("to_dictionary"), &DojoPolicy::to_dictionary);
+        ClassDB::bind_static_method(get_class_static(), D_METHOD("from_dictionary", "dictionary"),
+                                    &DojoPolicy::from_dictionary);
+
         ADD_PROPERTY(PropertyInfo(Variant::STRING, "method"), "set_method", "get_method");
         ADD_PROPERTY(PropertyInfo(Variant::STRING, "description"), "set_description", "get_description");
     };

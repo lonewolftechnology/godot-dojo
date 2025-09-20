@@ -4,6 +4,7 @@
 #include "dojo_c_gdextension.h"
 
 #include <export_plugin/dojo_editor_plugin.h>
+#include <resources/dojo_policy.h>
 
 #include "godot_cpp/classes/project_settings.hpp"
 
@@ -11,7 +12,7 @@
 #include "godot_cpp/core/class_db.hpp"
 #include "tools/logger.h"
 #include "dojo_types.h"
-
+#include "godot_cpp/core/version.hpp"
 DojoC* DojoC::singleton = nullptr;
 
 void DojoC::_bind_methods()
@@ -29,17 +30,14 @@ DojoC::DojoC()
 {
     singleton = this;
     enabled = true;
-    init_config();
-    if (Engine::get_singleton()->is_editor_hint())
-    {
-        plugin = new DojoEditorPlugin();
-    }
+    // init_config();
+
 }
 
 DojoC::~DojoC()
 {
     singleton = nullptr;
-    plugin->queue_free();
+
 }
 
 void DojoC::init_config(bool reset)
@@ -59,13 +57,19 @@ void DojoC::init_config(bool reset)
 
         set_setting("dojo/config/contract_address", "0x0", reset);
 
-        set_setting("dojo/config/policies", "", reset);
-        // ifdef de versiones
+        set_setting("dojo/config/policies", Array(), reset);
         Dictionary policies_info = {};
         policies_info["name"] = "dojo/config/policies";
         policies_info["type"] = Variant::ARRAY;
         policies_info["hint"] = PROPERTY_HINT_ARRAY_TYPE;
-        policies_info["hint_string"] = "Policy";
+
+        // Format: [VariantType]/[Hint]:[ClassName]
+        // policies_info["hint_string"] = vformat("%d/%d:%s", Variant::OBJECT, PROPERTY_HINT_RESOURCE_TYPE, DojoPolicy::get_class_static());
+#if GODOT_VERSION_MAJOR > 4 || (GODOT_VERSION_MAJOR == 4 && GODOT_VERSION_MINOR >= 4)
+        policies_info["hint_string"] = vformat("%d:%d:%d:%d", Variant::DICTIONARY, PROPERTY_HINT_TYPE_STRING, Variant::STRING_NAME, Variant::STRING);
+#else
+        policies_info["hint_string"] = "Dictionary";
+#endif
 
         ProjectSettings::get_singleton()->add_property_info(policies_info);
 
@@ -94,5 +98,4 @@ void DojoC::set_setting(const String& setting, const Variant& value, const bool&
         Logger::info("Inited config", setting, "with value", value);
     }
     settings->save();
-
 }
