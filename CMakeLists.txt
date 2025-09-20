@@ -19,21 +19,21 @@ if(BUILD_WEB)
     target_compile_definitions(godot-dojo PRIVATE WEB_ENABLED)
 endif()
 
-# Godot-cpp
-include(FetchContent)
-FetchContent_Declare(
-        godot-cpp
-        SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/external/godot-cpp
-)
-FetchContent_MakeAvailable(godot-cpp)
-list(APPEND CMAKE_MODULE_PATH "${godot-cpp_SOURCE_DIR}/cmake")
+# Godot-cpp (use submodule headers directly to avoid building under _deps)
+# Define a header-only interface target that points to the submodule directories.
+add_library(godot-cpp INTERFACE)
+add_library(godot::cpp ALIAS godot-cpp)
 
-# Dojo.c
-FetchContent_Declare(
-        dojo_c
-        SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/external/dojo.c
+# Public include directories for godot-cpp headers and generated headers in the submodule.
+target_include_directories(godot-cpp INTERFACE
+        ${CMAKE_CURRENT_SOURCE_DIR}/external/godot-cpp/include
+        ${CMAKE_CURRENT_SOURCE_DIR}/external/godot-cpp/gen/include
 )
-FetchContent_MakeAvailable(dojo_c)
+
+# Dojo.c (use submodule directly; avoid FetchContent/_deps)
+set(dojo_c_SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/external/dojo.c)
+# Place Rust build artifacts under the current CMake build dir instead of _deps.
+set(dojo_c_BINARY_DIR ${CMAKE_CURRENT_BINARY_DIR}/dojo_c)
 
 find_package(Rust REQUIRED)
 add_rust_library(TARGET dojo_c SOURCE_DIRECTORY ${dojo_c_SOURCE_DIR} BINARY_DIRECTORY ${dojo_c_BINARY_DIR})
