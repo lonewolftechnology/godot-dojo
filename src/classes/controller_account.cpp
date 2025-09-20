@@ -21,6 +21,10 @@ ControllerAccount* ControllerAccount::singleton = nullptr;
 
 ControllerAccount::ControllerAccount()
 {
+    if (Engine::get_singleton()->is_editor_hint() == false)
+    {
+        return;
+    }
     singleton = this;
     session_account = nullptr;
     is_connected = false;
@@ -32,6 +36,10 @@ ControllerAccount::ControllerAccount()
 
 ControllerAccount::~ControllerAccount()
 {
+    if (Engine::get_singleton()->is_editor_hint() == false)
+    {
+        return;
+    }
     disconnect_controller();
     session_account = nullptr;
     if (singleton != nullptr && singleton == this)

@@ -28,7 +28,6 @@ const torii_url = "https://api.cartridge.gg/x/godot-demo-rookie/torii"
 @onready var _entities_status: DojoStatusIndicator = %EntityUpdatesStatus
 
 func _ready() -> void:
-	var dojoc = DojoC.new()
 	OS.set_environment("RUST_BACKTRACE", "full")
 	OS.set_environment("RUST_LOG", "debug")
 
@@ -57,6 +56,7 @@ func _on_controller_account_controller_connected(success: bool) -> void:
 
 
 func _on_controller_account_controller_disconnected() -> void:
+	if not _controller_account_status: return
 	_controller_account_status.set_status(false)
 
 func _on_controller_account_provider_status_updated(success: bool) -> void:

@@ -1,8 +1,12 @@
-[gd_scene load_steps=4 format=3 uid="uid://cx3d2471dm0va"]
+[gd_scene load_steps=6 format=3 uid="uid://cx3d2471dm0va"]
 
 [ext_resource type="Script" uid="uid://tglr6c87m0ic" path="res://debug/unit_testing/account.gd" id="1_t46s5"]
+[ext_resource type="Script" uid="uid://ddffsx4elm2xp" path="res://debug/unit_testing/output_tab.gd" id="2_ow3x2"]
+
+[sub_resource type="OptionClause" id="OptionClause_t46s5"]
 
 [sub_resource type="MessageSubscription" id="MessageSubscription_t46s5"]
+clause = SubResource("OptionClause_t46s5")
 
 [sub_resource type="TransactionSubscription" id="TransactionSubscription_t46s5"]
 filter_enabled = true
@@ -21,6 +25,7 @@ txn_sub = SubResource("TransactionSubscription_t46s5")
 [node name="CanvasLayer" type="CanvasLayer" parent="."]
 
 [node name="HSplitContainer" type="HSplitContainer" parent="CanvasLayer"]
+visible = false
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
@@ -67,6 +72,46 @@ scroll_following = true
 autowrap_mode = 0
 context_menu_enabled = true
 selection_enabled = true
+
+[node name="PanelContainer" type="PanelContainer" parent="CanvasLayer"]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="MarginContainer" type="MarginContainer" parent="CanvasLayer/PanelContainer"]
+layout_mode = 2
+theme_override_constants/margin_left = 8
+theme_override_constants/margin_top = 8
+theme_override_constants/margin_right = 8
+theme_override_constants/margin_bottom = 8
+
+[node name="OutputGrid" type="HBoxContainer" parent="CanvasLayer/PanelContainer/MarginContainer"]
+layout_mode = 2
+
+[node name="OutputTab" type="VBoxContainer" parent="CanvasLayer/PanelContainer/MarginContainer/OutputGrid"]
+layout_mode = 2
+size_flags_horizontal = 3
+script = ExtResource("2_ow3x2")
+
+[node name="Title" type="Label" parent="CanvasLayer/PanelContainer/MarginContainer/OutputGrid/OutputTab"]
+layout_mode = 2
+text = "OUTPUT_TITLE"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="ScrollContainer" type="ScrollContainer" parent="CanvasLayer/PanelContainer/MarginContainer/OutputGrid/OutputTab"]
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="OutputText" type="RichTextLabel" parent="CanvasLayer/PanelContainer/MarginContainer/OutputGrid/OutputTab/ScrollContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+bbcode_enabled = true
+scroll_following = true
+autowrap_mode = 0
 
 [connection signal="transaction_executed" from="Account" to="." method="_on_account_transaction_executed"]
 [connection signal="transaction_failed" from="Account" to="." method="_on_account_transaction_failed"]

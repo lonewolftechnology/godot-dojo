@@ -14,12 +14,8 @@ static Dictionary& get_active_callbacks()
 {
     static Dictionary callbacks;
 #if GODOT_VERSION_MAJOR > 4 || (GODOT_VERSION_MAJOR == 4 && GODOT_VERSION_MINOR >= 3)
-    // Hacemos esto con un flag estático para asegurarnos de que solo se llama una vez.
-    static bool typed_dictionary_initialized = false;
-    if (!typed_dictionary_initialized) {
-        callbacks.make_typed(Variant::INT, Variant::ARRAY);
-        typed_dictionary_initialized = true;
-    }
+    callbacks = Dictionary(Dictionary(), Variant::STRING, "String", String(), Variant::STRING, "String", String());
+
 #endif
     return callbacks;
 }

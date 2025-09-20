@@ -18,6 +18,10 @@ ToriiClient* ToriiClient::singleton = nullptr;
 
 ToriiClient::ToriiClient()
 {
+    if (Engine::get_singleton()->is_editor_hint() == false)
+    {
+        return;
+    }
     singleton = this;
     client = nullptr;
     is_connected = false;
@@ -28,6 +32,10 @@ ToriiClient::ToriiClient()
 
 ToriiClient::~ToriiClient()
 {
+    if (Engine::get_singleton()->is_editor_hint() == false)
+    {
+        return;
+    }
     disconnect_client(false);
     singleton = nullptr;
     Logger::debug_extra("ToriiClient", "DESTRUCTOR CALLED");
