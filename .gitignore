@@ -78,8 +78,8 @@ fabric.properties
 
 demo/bin/*
 demo/addons/godot-dojo
-!demo/bin/dojoc_gdextension.gdextension
-
+demo/build
+web/dojo_c_debug.js
 # ============================================================================
 # BUILD SYSTEM & CACHE
 # ============================================================================

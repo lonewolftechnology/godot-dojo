@@ -262,7 +262,55 @@ with open("plugin_template.gdextension.in", 'r') as f:
 
 gdext = template.replace("${PROJECT_NAME}", "godot-dojo")
 gdext = gdext.replace("${ENTRY_POINT}", "dojoc_library_init")
-gdext = gdext.replace("${GODOT_MIN_REQUIREMENT}", "4.2")
+
+# Determine Godot minimum requirement from the godot-cpp submodule's tag/branch.
+# We extract the first two numeric components (e.g., 4.2 from 4.2.2 or godot-4.3-stable).
+import re
+
+def _detect_godot_min_requirement():
+    repo_path = os.path.join(os.getcwd(), "external", "godot-cpp")
+    version_source = None
+    try:
+        # Prefer the latest reachable tag.
+        tag = subprocess.check_output([
+            "git", "-C", repo_path, "describe", "--tags", "--abbrev=0"
+        ], stderr=subprocess.DEVNULL, text=True).strip()
+        version_source = tag
+    except Exception:
+        try:
+            # Fallback to branch name if no tag is found.
+            branch = subprocess.check_output([
+                "git", "-C", repo_path, "symbolic-ref", "-q", "--short", "HEAD"
+            ], stderr=subprocess.DEVNULL, text=True).strip()
+            version_source = branch
+        except Exception:
+            pass
+
+    # As a last resort, try reading the .gitmodules declared branch.
+    if not version_source:
+        try:
+            with open(os.path.join(os.getcwd(), ".gitmodules"), "r") as gm:
+                gm_text = gm.read()
+                # Look for the external/godot-cpp section and capture a version-like pattern.
+                # Example: branch = godot-4.3-stable
+                m = re.search(r"\[submodule \"external/godot-cpp\"\][\s\S]*?branch\s*=\s*([^\n\r]+)", gm_text)
+                if m:
+                    version_source = m.group(1).strip()
+        except Exception:
+            pass
+
+    if version_source:
+        m = re.search(r"(\d+)\.(\d+)", version_source)
+        if m:
+            return f"{m.group(1)}.{m.group(2)}"
+
+    # Default fallback if detection fails.
+    return "4.2"
+
+_godot_min = _detect_godot_min_requirement()
+print(f"Using GODOT_MIN_REQUIREMENT={_godot_min} derived from godot-cpp git ref.")
+
+gdext = gdext.replace("${GODOT_MIN_REQUIREMENT}", _godot_min)
 
 with open("demo/addons/godot-dojo/godot-dojo.gdextension", 'w') as f:
     f.write(gdext)

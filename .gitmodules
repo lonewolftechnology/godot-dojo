@@ -6,5 +6,5 @@
 [submodule "external/godot-cpp"]
 	path = external/godot-cpp
 	url = https://github.com/godotengine/godot-cpp
-	branch = godot-4.2.2-stable
+	branch = godot-4.4.1-stable
 
