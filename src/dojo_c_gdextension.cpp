@@ -30,7 +30,7 @@ DojoC::DojoC()
 {
     singleton = this;
     enabled = true;
-    // init_config();
+    init_config();
 
 }
 
@@ -57,7 +57,8 @@ void DojoC::init_config(bool reset)
 
         set_setting("dojo/config/contract_address", "0x0", reset);
 
-        set_setting("dojo/config/policies", Array(), reset);
+        set_setting("dojo/config/policies", TypedArray<Dictionary>(), reset);
+
         Dictionary policies_info = {};
         policies_info["name"] = "dojo/config/policies";
         policies_info["type"] = Variant::ARRAY;
@@ -66,7 +67,7 @@ void DojoC::init_config(bool reset)
         // Format: [VariantType]/[Hint]:[ClassName]
         // policies_info["hint_string"] = vformat("%d/%d:%s", Variant::OBJECT, PROPERTY_HINT_RESOURCE_TYPE, DojoPolicy::get_class_static());
 #if GODOT_VERSION_MAJOR > 4 || (GODOT_VERSION_MAJOR == 4 && GODOT_VERSION_MINOR >= 4)
-        policies_info["hint_string"] = vformat("%d:%d:%d:%d", Variant::DICTIONARY, PROPERTY_HINT_TYPE_STRING, Variant::STRING_NAME, Variant::STRING);
+        policies_info["hint_string"] = vformat("%d/%d:%s", Variant::DICTIONARY, PROPERTY_HINT_DICTIONARY_TYPE, "String;String");
 #else
         policies_info["hint_string"] = "Dictionary";
 #endif
