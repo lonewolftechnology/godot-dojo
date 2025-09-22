@@ -74,6 +74,7 @@ context_menu_enabled = true
 selection_enabled = true
 
 [node name="PanelContainer" type="PanelContainer" parent="CanvasLayer"]
+visible = false
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
