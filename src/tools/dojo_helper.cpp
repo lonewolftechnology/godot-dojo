@@ -531,14 +531,25 @@ DojoCallData DojoHelpers::prepare_dojo_call_data(const String& to, const String&
                     break;
                 case Variant::Type::INT: {
                     int64_t int_val = arg;
+                    cpp_int felt_val;
                     if (int_val < 0) {
-                        cpp_int felt_val = to_starknet_negative_felt(int_val);
-                        std::stringstream ss;
-                        ss << "0x" << std::hex << felt_val;
-                        call_data.calldata_felts.push_back(FieldElement::from_string(ss.str().c_str()));
+                        felt_val = to_starknet_negative_felt(int_val);
                     } else {
-                        call_data.calldata_felts.push_back(FieldElement::from_int(arg));
+                        felt_val = int_val;
                     }
+
+                    std::vector<uint8_t> bytes;
+                    export_bits(felt_val, std::back_inserter(bytes), 8);
+
+                    DOJO::FieldElement felt = {};
+                    size_t num_bytes = bytes.size();
+                    if (num_bytes <= 32) {
+                        memcpy(felt.data + (32 - num_bytes), bytes.data(), num_bytes);
+                    } else {
+                        Logger::error("Calldata", "Integer value is too large for a field element.");
+                        return call_data;
+                    }
+                    call_data.calldata_felts.push_back(felt);
                     break;
                 }
                 case Variant::Type::PACKED_BYTE_ARRAY: {
