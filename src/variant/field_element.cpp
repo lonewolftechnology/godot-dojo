@@ -62,7 +62,12 @@ FieldElement::FieldElement(int enum_value)
 FieldElement::FieldElement(DOJO::FieldElement* existing_felt)
 {
     felt = new DOJO::FieldElement();
-    *felt = *existing_felt;
+    if (existing_felt) {
+        *felt = *existing_felt;
+    } else {
+        memset(felt->data, 0, 32);
+        Logger::warning("FieldElement created from a null pointer. Initializing to zero.");
+    }
 }
 
 FieldElement::FieldElement(DOJO::FieldElement existing_felt)
@@ -215,6 +220,11 @@ String FieldElement::bytearray_deserialize(const uintptr_t& data_len = 32)
 
 String FieldElement::get_as_string(DOJO::FieldElement* _felt)
 {
+    if (!_felt) {
+        Logger::error("get_as_string called with a null pointer.");
+        return "0x0";
+    }
+
     String ret = "0x";
     for (unsigned char i : _felt->data)
     {
