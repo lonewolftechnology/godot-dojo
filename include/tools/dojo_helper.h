@@ -100,6 +100,7 @@ protected:
     {
         ClassDB::bind_static_method("DojoHelpers", D_METHOD("get_katana_url"), &DojoHelpers::get_katana_url);
         ClassDB::bind_static_method("DojoHelpers", D_METHOD("get_setting", "setting"), &DojoHelpers::get_setting);
+        ClassDB::bind_static_method("DojoHelpers", D_METHOD("get_default_policies"), &DojoHelpers::get_default_policies);
 
         ClassDB::bind_static_method("DojoHelpers", D_METHOD("signed_to_u32_offset", "signed_value"), &DojoHelpers::signed_to_u32_offset);
         ClassDB::bind_static_method("DojoHelpers", D_METHOD("u32_to_signed_offset", "u32_value"), &DojoHelpers::u32_to_signed_offset);
