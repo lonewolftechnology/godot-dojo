@@ -20,7 +20,7 @@ ToriiClient* ToriiClient::singleton = nullptr;
 
 ToriiClient::ToriiClient()
 {
-    if (Engine::get_singleton()->is_editor_hint() == false)
+    if (Engine::get_singleton()->is_editor_hint())
     {
         return;
     }
@@ -34,7 +34,7 @@ ToriiClient::ToriiClient()
 
 ToriiClient::~ToriiClient()
 {
-    if (Engine::get_singleton()->is_editor_hint() == false)
+    if (Engine::get_singleton()->is_editor_hint())
     {
         return;
     }
