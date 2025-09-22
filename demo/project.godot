@@ -35,7 +35,7 @@ config/contract_address="0x00123e4e8a65b4e1f7c6004d99764e89d065bb1ec479ad41b1c19
 config/fixed_point/64=40
 config/fixed_point/128=60
 config/fixed_point/256=123
-config/policies=Array[Object]([null])
+config/policies=Array[Dictionary]([{}])
 
 [input]
 
