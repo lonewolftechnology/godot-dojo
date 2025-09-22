@@ -142,11 +142,11 @@ void ControllerAccount::create(const Ref<DojoPolicies>& policies_data)
     uintptr_t policies_len = policies.size();
     String _chain = get_chain_id();
     Logger::debug_extra("ControllerAccount", "Chain ID: ", _chain);
-    FieldElement katana = {_chain};
-    Logger::custom_color("azure", "katana", katana.to_string());
+    Ref<FieldElement> katana = memnew(FieldElement(_chain));
+    Logger::custom_color("azure", "katana", katana->to_string());
 
     DOJO::ResultControllerAccount resControllerAccount =
-        DOJO::controller_account(policies.data(), policies_len, katana.get_felt_no_ptr());
+        DOJO::controller_account(policies.data(), policies_len, katana->get_felt_no_ptr());
 
     if (resControllerAccount.tag == DOJO::OkControllerAccount)
     {

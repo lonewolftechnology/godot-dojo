@@ -830,8 +830,12 @@ void event_message_update_callback_wrapper(DOJO::FieldElement entity_id, DOJO::C
     if (singleton && singleton->on_event_message_update_callback.is_valid())
     {
         Dictionary message_data;
+        Logger::debug_extra("Event Mesage", "Parsing Data");
         message_data["id"] = FieldElement::get_as_string(&entity_id);
+        Logger::debug_extra("Event Mesage", "Parsing Models");
         message_data["models"] = DojoArray::CArrayStructToVariant(models);
+        Logger::debug_extra("Event Mesage", "Calling Callback");
+        Logger::debug_extra("Event Message", message_data["models"].operator String());
         (void)singleton->on_event_message_update_callback.call_deferred(message_data);
     }
 }
@@ -939,12 +943,16 @@ void token_balance_update_callback_wrapper(DOJO::TokenBalance token_balance)
     if (singleton && singleton->on_token_balance_update_callback.is_valid())
     {
         Dictionary balance_dict;
-        balance_dict["balance"] = memnew(U256(token_balance.balance));
+        {
+            Ref<U256> balance_ref = memnew(U256(token_balance.balance));
+            balance_dict["balance"] = balance_ref;
+        }
         balance_dict["account_address"] = FieldElement::get_as_string(&token_balance.account_address);
         balance_dict["contract_address"] = FieldElement::get_as_string(&token_balance.contract_address);
         if (token_balance.token_id.tag == DOJO::SomeU256)
         {
-            balance_dict["token_id"] = memnew(U256(token_balance.token_id.some));
+            Ref<U256> token_id_ref = memnew(U256(token_balance.token_id.some));
+            balance_dict["token_id"] = token_id_ref;
         }
         else
         {

@@ -22,6 +22,7 @@ Variant DojoPrimitive::VariantFromPrimitive(dojo_bindings::Primitive primitive)
         return {primitive.i64};
     case DOJO::Primitive_Tag::I128:
         {
+        Logger::info("I128");
             Ref<I128> val = memnew(I128(primitive.i128));
             return val;
         }
@@ -35,11 +36,13 @@ Variant DojoPrimitive::VariantFromPrimitive(dojo_bindings::Primitive primitive)
         return {primitive.u64};
     case DOJO::Primitive_Tag::U128:
         {
+        Logger::info("U128");
             Ref<U128> val = memnew(U128(primitive.u128));
             return val;
         }
     case DOJO::Primitive_Tag::U256_:
         {
+        Logger::info("U256");
             Ref<U256> val = memnew(U256(primitive.u256));
             return val;
         }
