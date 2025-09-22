@@ -24,7 +24,7 @@
 #include "resources/subscriptions/starknet.h"
 #include "resources/subscriptions/transaction.h"
 #include "resources/subscriptions/token.h"
-#include "resources/subscriptions/contract.h"
+#include "resources/subscriptions/indexer.h"
 #include "resources/subscriptions/token_balance.h"
 
 #ifdef WEB_ENABLED
@@ -53,7 +53,7 @@ public:
     Callable on_starknet_event_callback;
     Callable on_transaction_callback;
     Callable on_token_update_callback;
-    Callable on_contract_update_callback;
+    Callable on_indexer_update_callback;
     Callable on_token_balance_update_callback;
 
     ToriiClient();
@@ -87,7 +87,7 @@ public:
     void on_starknet_event(const Callable& callback, const Ref<StarknetSubscription>& subscription);
     void on_transaction(const Callable& callback, const Ref<TransactionSubscription>& subscription);
     void on_token_update(const Callable& callback, const Ref<TokenSubscription>& subscription);
-    void on_contract_update(const Callable& callback, const Ref<ContractSubscription>& subscription);
+    void on_indexer_update(const Callable& callback, const Ref<IndexerSubscription>& subscription);
     void on_token_balance_update(const Callable& callback, const Ref<TokenBalanceSubscription>& subscription);
 
     void update_subscription(const Ref<DojoSubscription>& subscription, const Callable& callback = Callable());
@@ -96,7 +96,7 @@ public:
     void update_starknet_event_subscription(const Ref<StarknetSubscription>& subscription, const Callable& callback = Callable());
     void update_transaction_subscription(const Ref<TransactionSubscription>& subscription, const Callable& callback = Callable());
     void update_token_subscription(const Ref<TokenSubscription>& subscription, const Callable& callback = Callable());
-    void update_contract_subscription(const Ref<ContractSubscription>& subscription, const Callable& callback = Callable());
+    void update_indexer_subscription(const Ref<IndexerSubscription>& subscription, const Callable& callback = Callable());
     void update_token_balance_subscription(const Ref<TokenBalanceSubscription>& subscription, const Callable& callback = Callable());
 
     void cancel_all_subscriptions();
@@ -187,8 +187,8 @@ protected:
         ClassDB::bind_method(D_METHOD("on_token_update", "callback", "subscription"),
                              &ToriiClient::on_token_update);
 
-        ClassDB::bind_method(D_METHOD("on_contract_update", "callback", "subscription"),
-                             &ToriiClient::on_contract_update);
+        ClassDB::bind_method(D_METHOD("on_indexer_update", "callback", "subscription"),
+                             &ToriiClient::on_indexer_update);
 
         ClassDB::bind_method(D_METHOD("on_token_balance_update", "callback", "subscription"),
                              &ToriiClient::on_token_balance_update);
@@ -212,8 +212,8 @@ protected:
         ClassDB::bind_method(D_METHOD("update_token_subscription", "subscription", "callback"),
                              &ToriiClient::update_token_subscription, DEFVAL(Callable()));
 
-        ClassDB::bind_method(D_METHOD("update_contract_subscription", "subscription", "callback"),
-                             &ToriiClient::update_contract_subscription, DEFVAL(Callable()));
+        ClassDB::bind_method(D_METHOD("update_indexer_subscription", "subscription", "callback"),
+                             &ToriiClient::update_indexer_subscription, DEFVAL(Callable()));
 
         ClassDB::bind_method(D_METHOD("update_token_balance_subscription", "subscription", "callback"),
                              &ToriiClient::update_token_balance_subscription, DEFVAL(Callable()));
