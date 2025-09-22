@@ -203,9 +203,6 @@ env.Append(CPPPATH=["src/", "include/", "external/dojo.c", "external/boost/inclu
 
 if platform == "linux":
     env.Append(LINKFLAGS=['-ldbus-1'])
-    env.Append(
-        CXXFLAGS=["-std=c++17"]
-    )
 elif platform == "macos":
     # Set macOS deployment target for C++ compilation
     print(f"{Y}Setting macOS deployment target for C++ compilation to 14.0...{X}")
