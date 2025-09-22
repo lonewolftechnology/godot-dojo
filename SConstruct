@@ -202,7 +202,12 @@ prefix = env.subst('$SHLIBPREFIX')
 env.Append(CPPPATH=["src/", "include/", "external/dojo.c", "external/boost/include"])
 
 if platform == "linux":
-    env.Append(LINKFLAGS=['-ldbus-1'])
+    # Use pkg-config to add proper include/lib flags for dbus-1 and ensure correct link order
+    try:
+        env.ParseConfig('pkg-config --cflags --libs dbus-1')
+    except Exception:
+        # Fallback: at least attempt to link dbus-1 if pkg-config is unavailable
+        env.Append(LIBS=['dbus-1'])
 elif platform == "macos":
     # Set macOS deployment target for C++ compilation
     print(f"{Y}Setting macOS deployment target for C++ compilation to 14.0...{X}")

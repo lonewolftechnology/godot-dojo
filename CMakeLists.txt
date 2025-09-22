@@ -41,16 +41,6 @@ find_package(Rust REQUIRED)
 file(MAKE_DIRECTORY ${dojo_c_BINARY_DIR})
 add_rust_library(TARGET dojo_c SOURCE_DIRECTORY ${dojo_c_SOURCE_DIR} BINARY_DIRECTORY ${dojo_c_BINARY_DIR})
 
-add_custom_target(patch_dojo_header
-        COMMAND ${CMAKE_COMMAND} -E echo "=== Parchando dojo.hpp ==="
-        COMMAND ${CMAKE_COMMAND} -DDOJO_HEADER_FILE=${dojo_c_SOURCE_DIR}/dojo.hpp -P "${CMAKE_SOURCE_DIR}/cmake/PatchDojoHpp.cmake"
-        COMMENT "Parcheando dojo.hpp"
-        VERBATIM
-)
-
-add_dependencies(patch_dojo_header dojo_c)
-add_dependencies(godot-dojo patch_dojo_header)
-
 configure_file(plugin_template.gdextension.in godot-dojo.gdextension)
 
 target_include_directories(godot-dojo PRIVATE include src)
@@ -58,8 +48,29 @@ target_include_directories(godot-dojo PUBLIC
         ${CMAKE_CURRENT_SOURCE_DIR}/external/boost/include
 )
 
+# Link core libraries
+# Find and link libdbus-1 properly via pkg-config on Linux
+include(CheckIncludeFile)
+find_package(PkgConfig)
+if(PKG_CONFIG_FOUND)
+    pkg_check_modules(DBUS dbus-1)
+    if(DBUS_FOUND)
+        message(STATUS "Found dbus-1 via pkg-config: ${DBUS_VERSION}")
+        target_include_directories(godot-dojo PRIVATE ${DBUS_INCLUDE_DIRS})
+        target_link_directories(godot-dojo PRIVATE ${DBUS_LIBRARY_DIRS})
+        target_link_libraries(godot-dojo PRIVATE ${DBUS_LIBRARIES})
+    else()
+        message(WARNING "libdbus-1 not found via pkg-config; relying on transitive linkage may fail on Linux.")
+    endif()
+else()
+    message(WARNING "pkg-config not found; cannot auto-detect libdbus-1")
+endif()
+
+# Always link to our C++/Rust parts
 target_link_libraries(godot-dojo PRIVATE godot::cpp dojo_c)
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -static-libgcc -static-libstdc++ -ldbus-1")
+
+# Avoid forcing -ldbus-1 or static stdlib via global CXX flags; manage via target_link_libraries instead.
+#set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -static-libgcc -static-libstdc++ -ldbus-1")
 
 # Arquitectura y nombres de salida
 if (NOT DEFINED BITS)
