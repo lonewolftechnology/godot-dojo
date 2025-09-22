@@ -184,10 +184,7 @@ func bigint_to_string(value):
 
 
 func packed_byte_array_to_i128_float(bytes: PackedByteArray) -> float:
-	if bytes.size() != 16:
-		printerr("Error: PackedByteArray debe tener 16 bytes para representar un i128.")
-		return 0.0
-		
+
 	var high_bytes: PackedByteArray = bytes.slice(0, 8)
 	var low_bytes: PackedByteArray = bytes.slice(8, 16)
 	
