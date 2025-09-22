@@ -163,7 +163,7 @@ void ToriiClient::callable_call(const char* msg) const
 {
     if (is_callable_valid())
     {
-        (void)logger_callback.call(String(msg));
+        (void)logger_callback.call_deferred(String(msg));
     }
 }
 
@@ -846,7 +846,7 @@ void starknet_event_callback_wrapper(DOJO::Event event)
         event_data["keys"] = DojoArray::CArrayFieldElementToVariant(event.keys);
         event_data["data"] = DojoArray::CArrayFieldElementToVariant(event.data);
         event_data["transaction_hash"] = FieldElement::get_as_string(&event.transaction_hash);
-        (void)singleton->on_starknet_event_callback.call(event_data);
+        (void)singleton->on_starknet_event_callback.call_deferred(event_data);
     }
 }
 
@@ -913,7 +913,7 @@ void token_update_callback_wrapper(DOJO::Token token)
         {
             token_dict["metadata"] = Variant();
         }
-        (void)singleton->on_token_update_callback.call(token_dict);
+        (void)singleton->on_token_update_callback.call_deferred(token_dict);
     }
 }
 
@@ -928,7 +928,7 @@ void indexer_update_callback_wrapper(DOJO::IndexerUpdate indexer_update)
         update_dict["tps"] = indexer_update.tps;
         update_dict["last_block_timestamp"] = indexer_update.last_block_timestamp;
         update_dict["contract_address"] = FieldElement::get_as_string(&indexer_update.contract_address);
-        (void)singleton->on_indexer_update_callback.call(update_dict);
+        (void)singleton->on_indexer_update_callback.call_deferred(update_dict);
     }
 }
 
@@ -950,7 +950,7 @@ void token_balance_update_callback_wrapper(DOJO::TokenBalance token_balance)
         {
             balance_dict["token_id"] = Variant();
         }
-        (void)singleton->on_token_balance_update_callback.call(balance_dict);
+        (void)singleton->on_token_balance_update_callback.call_deferred(balance_dict);
     }
 }
 
