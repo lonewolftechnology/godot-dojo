@@ -21,7 +21,7 @@ ControllerAccount* ControllerAccount::singleton = nullptr;
 
 ControllerAccount::ControllerAccount()
 {
-    if (Engine::get_singleton()->is_editor_hint() == false)
+    if (Engine::get_singleton()->is_editor_hint())
     {
         return;
     }
@@ -36,7 +36,7 @@ ControllerAccount::ControllerAccount()
 
 ControllerAccount::~ControllerAccount()
 {
-    if (Engine::get_singleton()->is_editor_hint() == false)
+    if (Engine::get_singleton()->is_editor_hint())
     {
         return;
     }
@@ -223,6 +223,10 @@ String ControllerAccount::get_address() const
 
 String ControllerAccount::get_chain_id() const
 {
+    if (Engine::get_singleton()->is_editor_hint())
+    {
+        return chain_id;
+    }
     if (chain_id.is_empty() || !is_controller_connected())
     {
         Logger::debug_extra("ControllerAccount", "Getting chain id from provider by creating an Account");
