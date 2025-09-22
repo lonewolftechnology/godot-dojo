@@ -53,7 +53,17 @@ Variant DojoHelpers::get_setting(const String& setting)
 Ref<DojoPolicies> DojoHelpers::get_default_policies()
 {
     // Temp, DojoPolicies resource will be deprecated
-    return DojoPolicies::from_dictionary(get_setting("dojo/config/policies"));
+    Variant default_policies = DojoPolicies::from_dictionary(get_setting("dojo/config/policies"));
+    if (default_policies.get_type() == Variant::ARRAY)
+    {
+        String contract_address = get_setting("dojo/config/contract_address");
+        Ref<DojoPolicies> policies = {};
+        policies.instantiate();
+        policies->set_dojo_contract(contract_address);
+        policies->set_policies(default_policies);
+        return policies;
+    }
+    return {};
 }
 
 // these use boost::multiprecision
