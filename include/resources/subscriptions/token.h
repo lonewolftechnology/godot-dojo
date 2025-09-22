@@ -34,7 +34,7 @@ public:
         native_contract_addresses.reserve(p_addresses.size());
         for (int i = 0; i < p_addresses.size(); ++i) {
             String address_str = p_addresses[i];
-            native_contract_addresses.push_back(FieldElement(address_str, 32).get_felt_no_ptr());
+            native_contract_addresses.push_back(FieldElement::from_string(address_str, 32));
         }
     }
 

@@ -83,7 +83,7 @@ public:
         native_transaction_hashes.reserve(p_hashes.size());
         for(int i = 0; i < p_hashes.size(); ++i) {
             String hash_str = p_hashes[i];
-            native_transaction_hashes.push_back(FieldElement(hash_str, 32).get_felt_no_ptr());
+            native_transaction_hashes.push_back(FieldElement::from_string(hash_str, 32));
         }
     }
 
@@ -94,7 +94,7 @@ public:
         native_caller_addresses.reserve(p_addresses.size());
         for(int i = 0; i < p_addresses.size(); ++i) {
             String address_str = p_addresses[i];
-            native_caller_addresses.push_back(FieldElement(address_str, 32).get_felt_no_ptr());
+            native_caller_addresses.push_back(FieldElement::from_string(address_str, 32));
         }
     }
 
@@ -105,7 +105,7 @@ public:
         native_contract_addresses.reserve(p_addresses.size());
         for(int i = 0; i < p_addresses.size(); ++i) {
             String address_str = p_addresses[i];
-            native_contract_addresses.push_back(FieldElement(address_str, 32).get_felt_no_ptr());
+            native_contract_addresses.push_back(FieldElement::from_string(address_str, 32));
         }
     }
 
@@ -132,7 +132,7 @@ public:
         native_model_selectors.reserve(p_selectors.size());
         for(int i = 0; i < p_selectors.size(); ++i) {
             String selector_str = p_selectors[i];
-            native_model_selectors.push_back(FieldElement(selector_str, 32).get_felt_no_ptr());
+            native_model_selectors.push_back(FieldElement::from_string(selector_str, 32));
         }
     }
 
