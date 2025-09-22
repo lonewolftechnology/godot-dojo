@@ -47,13 +47,6 @@ void DojoC::init_config(bool reset)
         Logger::debug_extra("DojoC", "is running in editor mode");
         set_setting("dojo/config/katana_url", "http://localhost:5050", reset);
         set_setting("dojo/config/torii_url", "http://localhost:8080", reset);
-        // The account default setting is a random one from KATANA
-        set_setting("dojo/config/account/address", "0x6677fe62ee39c7b07401f754138502bab7fac99d2d3c5d37df7d1c6fab10819",
-                    reset);
-        set_setting("dojo/config/account/public_key",
-                    "0x3e3979c1ed728490308054fe357a9f49cf67f80f9721f44cc57235129e090f4", reset);
-        set_setting("dojo/config/account/private_key",
-                    "0x1e8965b7d0b20b91a62fe515dd991dc9fcb748acddf6b2cf18cec3bdd0f9f9a", reset);
 
         set_setting("dojo/config/contract_address", "0x0", reset);
 
@@ -63,12 +56,20 @@ void DojoC::init_config(bool reset)
         policies_info["type"] = Variant::ARRAY;
         policies_info["hint"] = PROPERTY_HINT_ARRAY_TYPE;
 
+        // The account default setting is a random one from KATANA
+        set_setting("dojo/config/account/address", "0x6677fe62ee39c7b07401f754138502bab7fac99d2d3c5d37df7d1c6fab10819",
+                    reset);
+        set_setting("dojo/config/account/public_key",
+                    "0x3e3979c1ed728490308054fe357a9f49cf67f80f9721f44cc57235129e090f4", reset);
+        set_setting("dojo/config/account/private_key",
+                    "0x1e8965b7d0b20b91a62fe515dd991dc9fcb748acddf6b2cf18cec3bdd0f9f9a", reset);
+
         // Format: [VariantType]/[Hint]:[ClassName]
         // policies_info["hint_string"] = vformat("%d/%d:%s", Variant::OBJECT, PROPERTY_HINT_RESOURCE_TYPE, DojoPolicy::get_class_static());
 #if GODOT_VERSION_MAJOR > 4 || (GODOT_VERSION_MAJOR == 4 && GODOT_VERSION_MINOR >= 4)
         policies_info["hint_string"] = vformat("%d:%d:%d:%d", Variant::DICTIONARY, PROPERTY_HINT_TYPE_STRING, Variant::STRING_NAME, Variant::STRING);
 #else
-        policies_info["hint_string"] = "Dictionary";
+        policies_info["hint_string"] = "Policy";
 #endif
 
         ProjectSettings::get_singleton()->add_property_info(policies_info);
