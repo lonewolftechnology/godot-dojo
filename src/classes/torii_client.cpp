@@ -13,6 +13,8 @@
 #include "resources/queries/dojo_token_query.h"
 #include "resources/queries/dojo_token_balance_query.h"
 #include "resources/queries/dojo_controller_query.h"
+#include "tools/dojo_helper.h"
+#include "types/big_int.h"
 
 ToriiClient* ToriiClient::singleton = nullptr;
 
@@ -368,7 +370,8 @@ TypedArray<Dictionary> ToriiClient::get_tokens(const Ref<DojoTokenQuery>& query)
         Dictionary token_dict;
         if (token.token_id.tag == DOJO::SomeU256)
         {
-            token_dict["token_id"] = String::num_uint64(token.token_id.some.data[0]);
+            Ref<U256> token_id = memnew(U256(token.token_id.some));
+            token_dict["token_id"] = token_id;
         }
         else
         {
@@ -433,13 +436,15 @@ TypedArray<Dictionary> ToriiClient::get_token_balances(const Ref<DojoTokenBalanc
         Dictionary balance_dict;
         if (balance.token_id.tag == DOJO::SomeU256)
         {
-            balance_dict["token_id"] = String::num_uint64(balance.token_id.some.data[0]);
+            Ref<U256> token_id = memnew(U256(balance.token_id.some));
+            balance_dict["token_id"] = token_id;
         }
         else
         {
             balance_dict["token_id"] = Variant();
         }
-        balance_dict["balance"] = String::num_uint64(balance.balance.data[0]);
+        Ref<U256> bal = memnew(U256(balance.balance));
+        balance_dict["balance"] = bal;
         balance_dict["account_address"] = FieldElement::get_as_string(&balance.account_address);
         balance_dict["contract_address"] = FieldElement::get_as_string(&balance.contract_address);
 
@@ -557,7 +562,8 @@ Dictionary ToriiClient::get_token_info(const String& token_address) const
     token_dict["contract_address"] = FieldElement::get_as_string(&token.contract_address);
     if (token.token_id.tag == DOJO::SomeU256)
     {
-        token_dict["token_id"] = String::num_uint64(token.token_id.some.data[0]);
+        Ref<U256> token_id = memnew(U256(token.token_id.some));
+        token_dict["token_id"] = token_id;
     }
     else
     {
@@ -840,8 +846,8 @@ void starknet_event_callback_wrapper(DOJO::Event event)
     if (singleton && singleton->on_starknet_event_callback.is_valid())
     {
         Dictionary event_data;
-        event_data["keys"] = DojoArray(event.keys).get_value();
-        event_data["data"] = DojoArray(event.data).get_value();
+        event_data["keys"] = DojoArray::CArrayFieldElementToVariant(event.keys);
+        event_data["data"] = DojoArray::CArrayFieldElementToVariant(event.data);
         event_data["transaction_hash"] = FieldElement::get_as_string(&event.transaction_hash);
         (void)singleton->on_starknet_event_callback.call(event_data);
     }
@@ -893,7 +899,7 @@ void token_update_callback_wrapper(DOJO::Token token)
         token_dict["contract_address"] = FieldElement::get_as_string(&token.contract_address);
         if (token.token_id.tag == DOJO::SomeU256)
         {
-            token_dict["token_id"] = String::num_uint64(token.token_id.some.data[0]);
+            token_dict["token_id"] = DojoHelpers::u256_to_string_boost(token.token_id.some);
         }
         else
         {
@@ -936,12 +942,12 @@ void token_balance_update_callback_wrapper(DOJO::TokenBalance token_balance)
     if (singleton && singleton->on_token_balance_update_callback.is_valid())
     {
         Dictionary balance_dict;
-        balance_dict["balance"] = String::num_uint64(token_balance.balance.data[0]);
+        balance_dict["balance"] = memnew(U256(token_balance.balance));
         balance_dict["account_address"] = FieldElement::get_as_string(&token_balance.account_address);
         balance_dict["contract_address"] = FieldElement::get_as_string(&token_balance.contract_address);
         if (token_balance.token_id.tag == DOJO::SomeU256)
         {
-            balance_dict["token_id"] = String::num_uint64(token_balance.token_id.some.data[0]);
+            balance_dict["token_id"] = memnew(U256(token_balance.token_id.some));
         }
         else
         {
