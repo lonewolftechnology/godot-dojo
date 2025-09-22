@@ -133,10 +133,13 @@ void ControllerAccount::create(const Ref<DojoPolicies>& policies_data)
     if (policies_data->is_empty())
     {
         Logger::error("Invalid policies data");
-        return;
+        this->policies = DojoHelpers::get_default_policies();
+    }
+    else
+    {
+        this->policies = policies_data;
     }
 
-    this->policies = policies_data;
 
     std::vector<DOJO::Policy> policies = policies_data->build();
     uintptr_t policies_len = policies.size();

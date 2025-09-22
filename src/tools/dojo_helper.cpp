@@ -50,6 +50,12 @@ Variant DojoHelpers::get_setting(const String& setting)
     return ProjectSettings::get_singleton()->get(setting);
 }
 
+Ref<DojoPolicies> DojoHelpers::get_default_policies()
+{
+    // Temp, DojoPolicies resource will be deprecated
+    return DojoPolicies::from_dictionary(get_setting("dojo/config/policies"));
+}
+
 // these use boost::multiprecision
 double DojoHelpers::variant_to_double_fp(const Variant& value, const int& precision)
 {

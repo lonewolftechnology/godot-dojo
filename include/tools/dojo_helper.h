@@ -10,6 +10,7 @@
 #include "godot_cpp/core/class_db.hpp"
 #include "variant/field_element.h"
 #include <boost/multiprecision/cpp_int.hpp>
+#include "resources/dojo_policies.h"
 using namespace godot;
 using boost::multiprecision::cpp_int;
 
@@ -46,6 +47,7 @@ public:
     static DojoHelpers* get_singleton() { return singleton; };
     static String get_katana_url();
     static Variant get_setting(const String& setting);
+    static Ref<DojoPolicies> get_default_policies();
 
     static int64_t float_to_fixed(const double& value, const int& precision = 24);
     static double fixed_to_float(const int& value, const int& precision = 24);

@@ -30,7 +30,7 @@ DojoC::DojoC()
 {
     singleton = this;
     enabled = true;
-    // init_config();
+    init_config();
 
 }
 
@@ -57,7 +57,7 @@ void DojoC::init_config(bool reset)
 
         set_setting("dojo/config/contract_address", "0x0", reset);
 
-        set_setting("dojo/config/policies", Array(), reset);
+        set_setting("dojo/config/policies", TypedArray<Dictionary>(), reset);
         Dictionary policies_info = {};
         policies_info["name"] = "dojo/config/policies";
         policies_info["type"] = Variant::ARRAY;
