@@ -5,12 +5,12 @@
 #ifndef OPTION_CLAUSE_H
 #define OPTION_CLAUSE_H
 
-#include "godot_cpp/classes/ref_counted.hpp"
 #include "godot_cpp/core/class_db.hpp"
 #include "godot_cpp/variant/string_name.hpp"
 #include "dojo_types.h"
 #include "option_field_element.h"
 #include "tools/dojo_helper.h"
+#include "variant/ty/primitive.h"
 
 using namespace godot;
 
@@ -108,6 +108,133 @@ public:
         member_tag = DOJO::MemberValue_Tag::PrimitiveValue;
         primitive_tag = DOJO::Primitive_Tag::U256_;
         logical_operator = DOJO::LogicalOperator::And;
+    }
+
+    // Build this OptionClause from a native DOJO::Clause
+    void load_from_native(const DOJO::Clause& p_clause) {
+        // Reset defaults
+        hashed_keys = TypedArray<String>();
+        keys = Array();
+        models = TypedArray<String>();
+        model = String();
+        member = String();
+        value = Variant();
+        clauses = Array();
+
+        tag = p_clause.tag;
+        switch (p_clause.tag) {
+            case DOJO::Clause_Tag::HashedKeys: {
+                // Convert FieldElement[32] -> decimal string
+                TypedArray<String> out;
+                for (uintptr_t i = 0; i < p_clause.hashed_keys.data_len; ++i) {
+                    DOJO::U256 u{};
+                    memcpy(u.data, p_clause.hashed_keys.data[i].data, 32);
+                    out.push_back(DojoHelpers::u256_to_string_boost(u));
+                }
+                hashed_keys = out;
+                break;
+            }
+            case DOJO::Clause_Tag::Keys: {
+                Array out_keys;
+                for (uintptr_t i = 0; i < p_clause.keys.keys.data_len; ++i) {
+                    const DOJO::COptionFieldElement &k = p_clause.keys.keys.data[i];
+                    Ref<OptionFieldElement> opt = memnew(OptionFieldElement());
+                    if (k.tag == DOJO::COptionFieldElement_Tag::SomeFieldElement) {
+                        DOJO::U256 u{};
+                        memcpy(u.data, k.some.data, 32);
+                        opt->set_value(DojoHelpers::u256_to_string_boost(u));
+                    } else {
+                        opt->set_value(Variant());
+                    }
+                    out_keys.push_back(opt);
+                }
+                keys = out_keys;
+                pattern_matching = p_clause.keys.pattern_matching;
+                TypedArray<String> out_models;
+                for (uintptr_t i = 0; i < p_clause.keys.models.data_len; ++i) {
+                    out_models.push_back(String(p_clause.keys.models.data[i]));
+                }
+                models = out_models;
+                break;
+            }
+            case DOJO::Clause_Tag::CMember: {
+                model = String(p_clause.c_member.model);
+                member = String(p_clause.c_member.member);
+                comparison_operator = p_clause.c_member.operator_;
+                // Extract value
+                auto mv = p_clause.c_member.value;
+                member_tag = mv.tag;
+                switch (mv.tag) {
+                    case DOJO::MemberValue_Tag::PrimitiveValue: {
+                        primitive_tag = mv.primitive_value.tag;
+                        if (primitive_tag == DOJO::Primitive_Tag::Felt252 ||
+                            primitive_tag == DOJO::Primitive_Tag::ClassHash ||
+                            primitive_tag == DOJO::Primitive_Tag::ContractAddress ||
+                            primitive_tag == DOJO::Primitive_Tag::EthAddress) {
+                            value = DojoPrimitive::FieldElementFromPrimitive(mv.primitive_value);
+                        } else {
+                            value = DojoPrimitive::VariantFromPrimitive(mv.primitive_value);
+                        }
+                        break;
+                    }
+                    case DOJO::MemberValue_Tag::String: {
+                        primitive_tag = DOJO::Primitive_Tag::U256_; // keep default; not used for String
+                        value = String(mv.string);
+                        break;
+                    }
+                    case DOJO::MemberValue_Tag::List: {
+                        // Convert list of MemberValue (assumed primitives)
+                        Array arr;
+                        if (mv.list.data_len > 0) {
+                            // infer primitive tag from first element if primitive
+                            const DOJO::MemberValue &first = mv.list.data[0];
+                            if (first.tag == DOJO::MemberValue_Tag::PrimitiveValue) {
+                                primitive_tag = first.primitive_value.tag;
+                            }
+                        }
+                        for (uintptr_t i = 0; i < mv.list.data_len; ++i) {
+                            const DOJO::MemberValue &elem = mv.list.data[i];
+                            if (elem.tag == DOJO::MemberValue_Tag::PrimitiveValue) {
+                                if (elem.primitive_value.tag == DOJO::Primitive_Tag::Felt252 ||
+                                    elem.primitive_value.tag == DOJO::Primitive_Tag::ClassHash ||
+                                    elem.primitive_value.tag == DOJO::Primitive_Tag::ContractAddress ||
+                                    elem.primitive_value.tag == DOJO::Primitive_Tag::EthAddress) {
+                                    arr.push_back(DojoPrimitive::FieldElementFromPrimitive(elem.primitive_value));
+                                } else {
+                                    arr.push_back(DojoPrimitive::VariantFromPrimitive(elem.primitive_value));
+                                }
+                            }
+                        }
+                        value = arr;
+                        break;
+                    }
+                }
+                break;
+            }
+            case DOJO::Clause_Tag::Composite: {
+                logical_operator = p_clause.composite.operator_;
+                Array out_clauses;
+                for (uintptr_t i = 0; i < p_clause.composite.clauses.data_len; ++i) {
+                    Ref<OptionClause> sub = OptionClause::from_native(p_clause.composite.clauses.data[i]);
+                    out_clauses.push_back(sub);
+                }
+                clauses = out_clauses;
+                break;
+            }
+        }
+    }
+
+    static Ref<OptionClause> from_native(const DOJO::Clause& p_clause) {
+        Ref<OptionClause> ref = memnew(OptionClause());
+        ref->load_from_native(p_clause);
+        return ref;
+    }
+
+    static Ref<OptionClause> from_native_option(const DOJO::COptionClause& p_opt) {
+        if (p_opt.tag == DOJO::COptionClause_Tag::SomeClause) {
+            return from_native(p_opt.some);
+        }
+        return Ref<OptionClause>();
     }
 
     DOJO::COptionClause get_native_option() const {
