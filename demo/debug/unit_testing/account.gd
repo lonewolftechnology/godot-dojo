@@ -11,11 +11,11 @@ const slot_torii_url = "https://api.cartridge.gg/x/godot-demo-rookie/torii"
 
 const contract_namespace = "dojo_starter"
 
-const slot_contract_address = "0x00123e4e8a65b4e1f7c6004d99764e89d065bb1ec479ad41b1c195a19d325a3f"
+const slot_contract_address = "0x01d18853e41a1607c1bd80c2e80c34db3a59999a038b54a2424fae4ac71278da"
 const local_contract_address = "0x0509fe72ac9512081b7dcbfc673b18ea3a323b164e45008fa774376031f88521"
 const starter_contract = "0x06b71e9a3aa5198aa78f7d8c407024d863e1d1263e735081c824deea349d3852" #Plain Starter
 
-const slot_world_address = "0x044508ff3a94c19844702f34dd64c5a933870116a42ac1105fd324335ca7b3f9"
+const slot_world_address = "0x03a7e28319f3617da4135893c711c79a1306adcd87cca4fbd0ceda50ae397683"
 const local_world_address = "0x073c2b317136214562b608523812f369a05efe67257842a17c4985ce6d390be7"
 
 # First account of contract
