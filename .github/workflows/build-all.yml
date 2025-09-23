@@ -83,7 +83,7 @@ jobs:
       - name: Get dojo.c version
         id: get_dojoc_version
         run: |
-          DOJOC_VERSION=$(cd external/dojo.c && git describe --tags --abbrev=0)
+          DOJOC_VERSION=$(cd external/dojo.c && (git describe --tags --abbrev=0 2>/dev/null || git rev-parse --short HEAD))
           echo "DOJOC_VERSION=$DOJOC_VERSION" >> $GITHUB_OUTPUT
 
       - name: Create release
