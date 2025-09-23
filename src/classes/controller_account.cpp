@@ -16,6 +16,11 @@
 
 #include "tools/dojo_helper.h"
 
+#ifdef ANDROID_ENABLED
+#include "godot_cpp/classes/display_server.hpp"
+#include "godot_cpp/classes/java_class_wrapper.hpp"
+#endif
+
 ControllerAccount* ControllerAccount::singleton = nullptr;
 
 
@@ -117,13 +122,6 @@ void ControllerAccount::init_provider()
 
 void ControllerAccount::create(const Ref<DojoPolicies>& policies_data)
 {
-#ifdef ANDROID_ENABLED
-    Logger::error(
-        "ControllerAccount: Session management is not supported on Android due to external library limitations.");
-    emit_signal("controller_disconnected");
-    // Early return to prevent calling incompatible FFI functions.
-    return;
-#else
     Logger::info("RPC URL: ", rpc_url);
     if (provider == nullptr)
     {
@@ -147,6 +145,31 @@ void ControllerAccount::create(const Ref<DojoPolicies>& policies_data)
     Logger::debug_extra("ControllerAccount", "Chain ID: ", _chain);
     FieldElement katana = {_chain};
     Logger::custom_color("azure", "katana", katana.to_string());
+#ifdef ANDROID_ENABLED
+    String auth_url = DOJO::controller_connect_android(
+        rpc_url.utf8().get_data(),
+        policies.data(),
+        policies_len,
+        on_account_callback
+    );
+    Logger::info("CONTROLLER ANDROID AUTH URL", auth_url);
+
+    if (auth_url.is_empty())
+    {
+        Logger::error("Failed to get connection URL for Android.");
+        return;
+    }
+
+    Engine* engine = Engine::get_singleton();
+    StringName bridge_name = "GodotDojoBridge";
+    if (engine->has_singleton(bridge_name))
+    {
+        Object* dojo_bridge = engine->get_singleton(bridge_name);
+        dojo_bridge->call("openCustomTab", auth_url);
+    } else {
+        Logger::error("GodotDojoBridge singleton not found. Make sure it's configured in your Android build.");
+    }
+#else
 
     DOJO::ResultControllerAccount resControllerAccount =
         DOJO::controller_account(policies.data(), policies_len, katana.get_felt_no_ptr());
