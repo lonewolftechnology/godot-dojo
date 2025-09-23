@@ -19,6 +19,16 @@ if(BUILD_WEB)
     target_compile_definitions(godot-dojo PRIVATE WEB_ENABLED)
 endif()
 
+if(ANDROID_ENABLED)
+    message(STATUS "Web build enabled, defining ANDROID_ENABLED preprocessor macro.")
+    target_compile_definitions(godot-dojo PRIVATE ANDROID_ENABLED)
+endif()
+
+if(DEBUG_ENABLED)
+    message(STATUS "Web build enabled, defining DEBUG_ENABLED preprocessor macro.")
+    target_compile_definitions(godot-dojo PRIVATE DEBUG_ENABLED)
+endif()
+
 # Godot-cpp (use submodule headers directly to avoid building under _deps)
 # Define a header-only interface target that points to the submodule directories.
 add_library(godot-cpp INTERFACE)

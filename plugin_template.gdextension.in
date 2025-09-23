@@ -29,6 +29,9 @@ android.release.x86_64 = "res://addons/godot-dojo/lib${PROJECT_NAME}.android.tem
 android.debug.arm64 = "res://addons/godot-dojo/lib${PROJECT_NAME}.android.template_debug.arm64.so"
 android.release.arm64 = "res://addons/godot-dojo/lib${PROJECT_NAME}.android.template_release.arm64.so"
 
+[plugins]
+android.plugins = "res://addons/godot-dojo/GodotDojoBridge.gdap"
+
 web.debug.wasm32 = "res://addons/godot-dojo/${PROJECT_NAME}.web.template_debug.wasm32.wasm"
 web.release.wasm32 = "res://addons/godot-dojo/${PROJECT_NAME}.web.template_release.wasm32.wasm"
 

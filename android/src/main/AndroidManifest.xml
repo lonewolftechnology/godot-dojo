@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+This manifest will be merged with the main application's manifest during the Android build process.
+-->
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    package="org.godotengine.godot.godotdojobridge">
+
+    <application>
+        <!--
+        The Godot Android build system will automatically find and merge this intent-filter
+        into the main GodotApp activity.
+        -->
+        <activity android:name="com.godot.game.GodotApp">
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <!-- This is the deep link that will reopen your app after auth -->
+                <data android:scheme="godotdojo" android:host="auth-callback" />
+            </intent-filter>
+        </activity>
+    </application>
+</manifest>
