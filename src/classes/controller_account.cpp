@@ -141,7 +141,7 @@ void ControllerAccount::create(const Ref<DojoPolicies>& policies_data)
 
     std::vector<DOJO::Policy> policies = policies_data->build();
     uintptr_t policies_len = policies.size();
-    String _chain = get_chain_id();
+    String _chain = get_chain_id(false);
     Logger::debug_extra("ControllerAccount", "Chain ID: ", _chain);
     FieldElement katana = {_chain};
     Logger::custom_color("azure", "katana", katana.to_string());
@@ -247,8 +247,9 @@ String ControllerAccount::get_address() const
     return FieldElement::get_as_string(&felt);
 }
 
-String ControllerAccount::get_chain_id() const
+String ControllerAccount::get_chain_id(const bool& parse) const
 {
+    if (Engine::get_singleton()->is_editor_hint()) return chain_id;
     if (chain_id.is_empty() || !is_controller_connected())
     {
         Logger::debug_extra("ControllerAccount", "Getting chain id from provider by creating an Account");
@@ -266,10 +267,16 @@ String ControllerAccount::get_chain_id() const
         //     burner_account.set_provider(nullptr); // To avoid freeing the provider from ControllerAccoount
         // }
 
-        chain_id = burner_account.get_chain_id();
+        chain_id = burner_account.get_chain_id(true);
+        chain_id_hex = burner_account.get_chain_id(false);
+        Logger::debug_extra("CHAINID", chain_id, burner_account.get_chain_id());
         burner_account.queue_free();
     }
-    return chain_id;
+    if (parse)
+    {
+        return chain_id;
+    }
+    return chain_id_hex;
 }
 
 void ControllerAccount::check_rpc_url()
@@ -399,7 +406,7 @@ Dictionary ControllerAccount::get_account_info() const
     info["connected"] = true;
     info["username"] = get_username();
     info["address"] = get_address();
-    info["chain_id"] = get_chain_id();
+    info["chain_id"] = get_chain_id(true);
 
     return info;
 }

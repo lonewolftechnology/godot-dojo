@@ -36,6 +36,7 @@ class ControllerAccount : public Node
 
     static void on_account_callback(DOJO::ControllerAccount* account);
     mutable String chain_id;
+    mutable String chain_id_hex;
 
 public:
     ControllerAccount();
@@ -55,7 +56,7 @@ public:
     String get_username() const;
     String get_address() const;
 
-    String get_chain_id() const;
+    String get_chain_id(const bool& parse = true) const;
     void set_chain_id(const String& p_chain_id) { chain_id = p_chain_id; }
 
     void check_rpc_url();
@@ -107,7 +108,7 @@ protected:
         ADD_PROPERTY(PropertyInfo(Variant::STRING, "rpc_url"), "set_rpc_url", "get_rpc_url");
 
         ClassDB::bind_method(D_METHOD("set_chain_id", "chain_id"), &ControllerAccount::set_chain_id);
-        ClassDB::bind_method(D_METHOD("get_chain_id"), &ControllerAccount::get_chain_id);
+        ClassDB::bind_method(D_METHOD("get_chain_id", "parse"), &ControllerAccount::get_chain_id, DEFVAL(true));
         ADD_PROPERTY(PropertyInfo(Variant::STRING, "chain_id"), "set_chain_id", "get_chain_id");
 
         ClassDB::bind_method(D_METHOD("set_policies", "policies"), &ControllerAccount::set_policies);
