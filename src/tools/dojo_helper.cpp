@@ -42,12 +42,12 @@ DojoHelpers::~DojoHelpers()
 
 String DojoHelpers::get_katana_url()
 {
-    return get_setting("dojo/config/katana_url");
+    return get_setting("dojo/config/katana_url", "");
 }
 
-Variant DojoHelpers::get_setting(const String& setting)
+Variant DojoHelpers::get_setting(const String& setting, const Variant& default_value)
 {
-    return ProjectSettings::get_singleton()->get(setting);
+    return ProjectSettings::get_singleton()->get_setting(setting, default_value);
 }
 
 Ref<DojoPolicies> DojoHelpers::get_default_policies()
@@ -145,32 +145,32 @@ double DojoHelpers::fixed_to_float(const int& value, const int& precision)
 
 int64_t DojoHelpers::float_to_fixed_64(const float& value)
 {
-    return float_to_fixed(value, get_setting("dojo/config/fixed_point/64"));
+    return float_to_fixed(value, get_setting("dojo/config/fixed_point/64", 40));
 }
 
 double DojoHelpers::fixed_to_float_64(const int& value)
 {
-    return fixed_to_float(value, get_setting("dojo/config/fixed_point/64"));
+    return fixed_to_float(value, get_setting("dojo/config/fixed_point/64", 40));
 }
 
 int64_t DojoHelpers::float_to_fixed_128(const float& value)
 {
-    return float_to_fixed(value, get_setting("dojo/config/fixed_point/128"));
+    return float_to_fixed(value, get_setting("dojo/config/fixed_point/128", 60));
 }
 
 double DojoHelpers::fixed_to_float_128(const int& value)
 {
-    return fixed_to_float(value, get_setting("dojo/config/fixed_point/128"));
+    return fixed_to_float(value, get_setting("dojo/config/fixed_point/128", 60));
 }
 
 int64_t DojoHelpers::float_to_fixed_256(const float& value)
 {
-    return float_to_fixed(value, get_setting("dojo/config/fixed_point/256"));
+    return float_to_fixed(value, get_setting("dojo/config/fixed_point/256", 123));
 }
 
 double DojoHelpers::fixed_to_float_256(const int& value)
 {
-    return fixed_to_float(value, get_setting("dojo/config/fixed_point/256"));
+    return fixed_to_float(value, get_setting("dojo/config/fixed_point/256", 123));
 }
 
 String DojoHelpers::u256_to_string_boost(const DOJO::U256& u256)
@@ -468,7 +468,8 @@ DojoCallData DojoHelpers::prepare_dojo_call_data(const String& to, const String&
         Logger::debug_extra("DojoHelpers", "Preparing DojoCallData (Iterative)");
 
         std::deque<Variant> worklist;
-        for (int i = 0; i < args.size(); ++i) {
+        for (int i = 0; i < args.size(); ++i)
+        {
             worklist.push_back(args[i]);
         }
 
@@ -489,52 +490,63 @@ DojoCallData DojoHelpers::prepare_dojo_call_data(const String& to, const String&
 
             switch (arg.get_type())
             {
-                case Variant::Type::ARRAY: {
+            case Variant::Type::ARRAY:
+                {
                     Array inner_array = arg;
-                    for (int i = inner_array.size() - 1; i >= 0; --i) {
+                    for (int i = inner_array.size() - 1; i >= 0; --i)
+                    {
                         worklist.push_front(inner_array[i]);
                     }
                     continue;
                 }
-                case Variant::Type::FLOAT: {
-                    worklist.push_front(double_to_variant_fp(arg, get_setting("dojo/config/fixed_point/default")));
+            case Variant::Type::FLOAT:
+                {
+                    worklist.push_front(double_to_variant_fp(arg, get_setting("dojo/config/fixed_point/default", 40)));
                     continue;
                 }
-                case Variant::Type::VECTOR2: {
+            case Variant::Type::VECTOR2:
+                {
                     Vector2 vec = arg;
                     worklist.push_front(vec.y);
                     worklist.push_front(vec.x);
                     continue;
                 }
-                case Variant::Type::VECTOR2I: {
+            case Variant::Type::VECTOR2I:
+                {
                     Vector2i vec = arg;
                     worklist.push_front(static_cast<int64_t>(vec.y));
                     worklist.push_front(static_cast<int64_t>(vec.x));
                     continue;
                 }
-                case Variant::Type::VECTOR3: {
+            case Variant::Type::VECTOR3:
+                {
                     Vector3 vec = arg;
                     worklist.push_front(vec.z);
                     worklist.push_front(vec.y);
                     worklist.push_front(vec.x);
                     continue;
                 }
-                case Variant::Type::VECTOR3I: {
+            case Variant::Type::VECTOR3I:
+                {
                     Vector3i vec = arg;
                     worklist.push_front(static_cast<int64_t>(vec.z));
                     worklist.push_front(static_cast<int64_t>(vec.y));
                     worklist.push_front(static_cast<int64_t>(vec.x));
                     continue;
                 }
-                case Variant::Type::BOOL:
-                    call_data.calldata_felts.push_back(FieldElement::from_enum(arg));
-                    break;
-                case Variant::Type::INT: {
+            case Variant::Type::BOOL:
+                call_data.calldata_felts.push_back(FieldElement::from_enum(arg));
+                break;
+            case Variant::Type::INT:
+                {
                     int64_t int_val = arg;
                     cpp_int felt_val;
-                    if (int_val < 0) {
+                    if (int_val < 0)
+                    {
                         felt_val = to_starknet_negative_felt(int_val);
-                    } else {
+                    }
+                    else
+                    {
                         felt_val = int_val;
                     }
 
@@ -543,44 +555,62 @@ DojoCallData DojoHelpers::prepare_dojo_call_data(const String& to, const String&
 
                     DOJO::FieldElement felt = {};
                     size_t num_bytes = bytes.size();
-                    if (num_bytes <= 32) {
+                    if (num_bytes <= 32)
+                    {
                         memcpy(felt.data + (32 - num_bytes), bytes.data(), num_bytes);
-                    } else {
+                    }
+                    else
+                    {
                         Logger::error("Calldata", "Integer value is too large for a field element.");
                         return call_data;
                     }
                     call_data.calldata_felts.push_back(felt);
                     break;
                 }
-                case Variant::Type::PACKED_BYTE_ARRAY: {
+            case Variant::Type::PACKED_BYTE_ARRAY:
+                {
                     const PackedByteArray v_array = static_cast<PackedByteArray>(arg);
-                    if (v_array.size() == 32) { // u256 / felt252
+                    if (v_array.size() == 32)
+                    {
+                        // u256 / felt252
                         DOJO::FieldElement felt;
                         memcpy(&felt, v_array.ptr(), 32);
                         call_data.calldata_felts.push_back(felt);
-                    } else if (v_array.size() == 16) { // u128 / i128
+                    }
+                    else if (v_array.size() == 16)
+                    {
+                        // u128 / i128
                         DOJO::FieldElement felt;
                         memset(&felt, 0, sizeof(DOJO::FieldElement));
                         memcpy(&felt, v_array.ptr(), 16);
                         call_data.calldata_felts.push_back(felt);
-                    } else {
-                        String error_msg = "Unsupported PackedByteArray size: " + String::num_int64(v_array.size()) + ". Expected 16 or 32.";
+                    }
+                    else
+                    {
+                        String error_msg = "Unsupported PackedByteArray size: " + String::num_int64(v_array.size()) +
+                            ". Expected 16 or 32.";
                         Logger::error("Calldata", error_msg);
                         return call_data; // is_valid is false
                     }
                     break;
                 }
-                case Variant::Type::STRING:
-                    if (static_cast<String>(arg).begins_with("0x")) {
-                        call_data.calldata_felts.push_back(FieldElement::from_string(arg));
-                    } else {
-                        call_data.calldata_felts.push_back(FieldElement::cairo_short_string_to_felt(arg));
-                    }
-                    break;
-                case Variant::Type::OBJECT: {
+            case Variant::Type::STRING:
+                if (static_cast<String>(arg).begins_with("0x"))
+                {
+                    call_data.calldata_felts.push_back(FieldElement::from_string(arg));
+                }
+                else
+                {
+                    call_data.calldata_felts.push_back(FieldElement::cairo_short_string_to_felt(arg));
+                }
+                break;
+            case Variant::Type::OBJECT:
+                {
                     Ref<RefCounted> obj = arg;
-                    if (obj.is_valid()) {
-                        if (obj->is_class("U256")) {
+                    if (obj.is_valid())
+                    {
+                        if (obj->is_class("U256"))
+                        {
                             Ref<U256> u256 = obj;
                             // For Cairo calldata, the order is [low, high].
                             // We push high first, then low, so low is processed first.
@@ -588,25 +618,31 @@ DojoCallData DojoHelpers::prepare_dojo_call_data(const String& to, const String&
                             worklist.push_front(u256->get_low());
                             continue;
                         }
-                        if (obj->is_class("U128")) {
+                        if (obj->is_class("U128"))
+                        {
                             Ref<U128> u128 = obj;
                             // Convert to a 32-byte felt representation and let the PACKED_BYTE_ARRAY case handle it.
                             worklist.push_front(u128->_to_felt_bytes());
                             continue;
                         }
-                        if (obj->is_class("I128")) {
+                        if (obj->is_class("I128"))
+                        {
                             Ref<I128> i128 = obj;
                             // Convert to a 32-byte felt representation and let the PACKED_BYTE_ARRAY case handle it.
                             worklist.push_front(i128->_to_felt_bytes());
                             continue;
                         }
                     }
-                    Logger::warning("prepare_dojo_call_data: Encountered an unexpected OBJECT type in calldata. It will be ignored. Class: " + class_name);
+                    Logger::warning(
+                        "prepare_dojo_call_data: Encountered an unexpected OBJECT type in calldata. It will be ignored. Class: "
+                        + class_name);
                     break;
                 }
-                default:
-                    Logger::warning("prepare_dojo_call_data: Unsupported variant type in calldata: " + Variant::get_type_name(arg.get_type()));
-                    break;
+            default:
+                Logger::warning(
+                    "prepare_dojo_call_data: Unsupported variant type in calldata: " + Variant::get_type_name(
+                        arg.get_type()));
+                break;
             }
         }
     }
