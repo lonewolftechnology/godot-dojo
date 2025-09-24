@@ -5,5 +5,5 @@
 
 [resource]
 name = "actions"
-contract = "0x00123e4e8a65b4e1f7c6004d99764e89d065bb1ec479ad41b1c195a19d325a3f"
+contract = "0x01d18853e41a1607c1bd80c2e80c34db3a59999a038b54a2424fae4ac71278da"
 policies = Array[DojoPolicy]([ExtResource("1_aiqrk"), ExtResource("2_1hqg0")])
