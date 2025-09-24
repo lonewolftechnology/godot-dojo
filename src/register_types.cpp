@@ -10,7 +10,6 @@
 #include "gdextension_interface.h"
 #include "godot_cpp/core/defs.hpp"
 #include "godot_cpp/godot.hpp"
-#include "resources/queries/dojo_contract_query.h"
 #ifdef WEB_ENABLED
 #include <tools/dojo_bridge.h>
 #endif
@@ -32,12 +31,15 @@
 #include "resources/dojo_policy.h"
 #include "resources/dojo_query_base.h"
 #include "resources/dojo_subscription.h"
+
 #include "resources/queries/dojo_query.h"
 #include "resources/queries/dojo_token_query.h"
 #include "resources/queries/dojo_controller_query.h"
 #include "resources/queries/dojo_transaction_query.h"
 #include "resources/queries/dojo_token_balance_query.h"
 #include "resources/queries/dojo_transaction_filter.h"
+#include "resources/queries/dojo_contract_query.h"
+
 #include "resources/subscriptions/entity.h"
 #include "resources/subscriptions/event.h"
 #include "resources/subscriptions/message.h"
@@ -45,6 +47,7 @@
 #include "resources/subscriptions/token.h"
 #include "resources/subscriptions/token_balance.h"
 #include "resources/subscriptions/transaction.h"
+#include "resources/subscriptions/contract.h"
 
 #include "ref_counted/dojo_option.h"
 #include "ref_counted/options/option_u32.h"
