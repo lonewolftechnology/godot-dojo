@@ -46,7 +46,7 @@ public:
 
     static DojoHelpers* get_singleton() { return singleton; };
     static String get_katana_url();
-    static Variant get_setting(const String& setting);
+    static Variant get_setting(const String& setting, const Variant& default_value = nullptr);
     static Ref<DojoPolicies> get_default_policies();
 
     static int64_t float_to_fixed(const double& value, const int& precision = 24);
