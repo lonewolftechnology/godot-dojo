@@ -25,6 +25,7 @@ public:
 
     static Variant VariantFromPrimitive(DOJO::Primitive primitive);
     static String FieldElementFromPrimitive(DOJO::Primitive primitive);
+    String TagToString(dojo_bindings::Primitive_Tag tag);
     DojoPrimitive();
     DojoPrimitive(const DOJO::Primitive& primitive);
 

@@ -72,6 +72,31 @@ String DojoPrimitive::FieldElementFromPrimitive(DOJO::Primitive primitive)
     return FieldElement::get_as_string(&felt);
 }
 
+String DojoPrimitive::TagToString(DOJO::Primitive_Tag tag)
+{
+    switch (tag)
+    {
+    case DOJO::Primitive_Tag::I8: return "I8";
+    case DOJO::Primitive_Tag::I16: return "I16";
+    case DOJO::Primitive_Tag::I32: return "I32";
+    case DOJO::Primitive_Tag::I64: return "I64";
+    case DOJO::Primitive_Tag::I128: return "I128";
+    case DOJO::Primitive_Tag::U8: return "U8";
+    case DOJO::Primitive_Tag::U16: return "U16";
+    case DOJO::Primitive_Tag::U32: return "U32";
+    case DOJO::Primitive_Tag::U64: return "U64";
+    case DOJO::Primitive_Tag::U128: return "U128";
+    case DOJO::Primitive_Tag::U256_: return "U256";
+    case DOJO::Primitive_Tag::Bool: return "Bool";
+    case DOJO::Primitive_Tag::Felt252: return "Felt252";
+    case DOJO::Primitive_Tag::ClassHash: return "ClassHash";
+    case DOJO::Primitive_Tag::ContractAddress: return "ContractAddress";
+    case DOJO::Primitive_Tag::EthAddress: return "EthAddress";
+    default:
+        return "Unknown";
+    }
+}
+
 DojoPrimitive::DojoPrimitive()
 {
     Logger::debug("Primitive constructor called");
@@ -104,4 +129,5 @@ DojoPrimitive::DojoPrimitive(const DOJO::Primitive& primitive)
         break;
     }
     Logger::debug_extra("Primitive", value);
+    Logger::debug_extra("Primitive Tag", TagToString(primitive.tag));
 }
