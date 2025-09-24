@@ -286,6 +286,7 @@ build_mode = "release" if target == "template_release" else "debug"
 rust_lib_dir = f"external/dojo.c/target/{rust_target}/{build_mode}"
 
 if platform == "windows":
+
     if use_mingw:
         # For MinGW, we link against the static .a library
         rust_lib = f"{rust_lib_dir}/libdojo_c.a"
@@ -295,7 +296,10 @@ if platform == "windows":
         env.Append(LINKFLAGS=['/NODEFAULTLIB:MSVCRT'])
     else:
         rust_lib = ""  # Should not happen
-    env.Append(LIBS=[File(rust_lib)]) if rust_lib else None
+
+    # Link our library first, then the system libraries it depends on.
+    env.Append(LIBS=[File(rust_lib)])
+    env.Append(LIBS=['ws2_32', 'advapi32', 'ntdll'])
 elif platform == "web":
     print(f"{Y}{clipboard} Web export doesn't link to anything.{X}")
 #     rust_lib = f"{rust_lib_dir}/libdojo_c.rlib"
