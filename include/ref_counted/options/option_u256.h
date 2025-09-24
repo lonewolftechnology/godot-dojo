@@ -8,6 +8,7 @@
 #include "../dojo_option.h"
 #include "dojo_types.h"
 #include "tools/dojo_helper.h"
+#include "types/big_int.h"
 
 using namespace godot;
 
@@ -20,6 +21,14 @@ protected:
 public:
     OptionU256() : DojoOption() {}
     OptionU256(const String& value) : DojoOption(value) {}
+    OptionU256(const DOJO::COptionU256& native_option) : DojoOption() {
+        if (native_option.tag == DOJO::SomeU256) {
+            Ref<U256> _u256 = memnew(U256(native_option.some));
+            set_value(_u256);
+        } else {
+            set_value("");
+        }
+    }
 
     DOJO::COptionU256 get_native_option() const {
         DOJO::COptionU256 option = {};

@@ -22,7 +22,7 @@ public:
     DojoContractQuery() {}
     ~DojoContractQuery() {}
  
-    void* get_native_query() const override {
+    void* get_native_query() const {
         auto* query = new DOJO::ContractQuery();
  
         if (contract_addresses.size() > 0) {

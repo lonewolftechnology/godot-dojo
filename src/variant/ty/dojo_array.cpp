@@ -50,8 +50,8 @@ DojoArray::DojoArray(DOJO::CArrayFieldElement array) {
     value = CArrayFieldElementToVariant(array);
 }
 
-DojoArray::DojoArray(DOJO::CArrayTokenCollection array) {
-    value = CArrayTokenCollectionToVariant(array);
+DojoArray::DojoArray(DOJO::CArrayTokenContract array) {
+    value = CArrayTokenContractToVariant(array);
 }
 
 DojoArray::DojoArray(DOJO::CArrayCOptionFieldElement array) {
@@ -221,8 +221,9 @@ Variant DojoArray::CArrayFieldElementToVariant(DOJO::CArrayFieldElement array) {
     return result_array;
 }
 
-Variant DojoArray::CArrayTokenCollectionToVariant(DOJO::CArrayTokenCollection array) {
-    Logger::warning("CArrayTokenCollection not implemented");
+Variant DojoArray::CArrayTokenContractToVariant(DOJO::CArrayTokenContract array) {
+    // TODO:
+    Logger::warning("CArrayTokenContract not implemented");
     return Array();
 }
 

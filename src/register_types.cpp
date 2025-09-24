@@ -10,6 +10,7 @@
 #include "gdextension_interface.h"
 #include "godot_cpp/core/defs.hpp"
 #include "godot_cpp/godot.hpp"
+#include "resources/queries/dojo_contract_query.h"
 #ifdef WEB_ENABLED
 #include <tools/dojo_bridge.h>
 #endif
@@ -39,7 +40,6 @@
 #include "resources/queries/dojo_transaction_filter.h"
 #include "resources/subscriptions/entity.h"
 #include "resources/subscriptions/event.h"
-#include "resources/subscriptions/indexer.h"
 #include "resources/subscriptions/message.h"
 #include "resources/subscriptions/starknet.h"
 #include "resources/subscriptions/token.h"
@@ -105,13 +105,14 @@ void initialize_dojoc_module(ModuleInitializationLevel p_level)
         GDREGISTER_CLASS(DojoControllerQuery);
         GDREGISTER_CLASS(DojoTransactionQuery);
         GDREGISTER_CLASS(DojoTokenBalanceQuery);
+        GDREGISTER_CLASS(DojoContractQuery)
         GDREGISTER_CLASS(DojoSubscription);
         GDREGISTER_CLASS(DojoTransactionFilter);
         GDREGISTER_CLASS(EventSubscription);
         GDREGISTER_CLASS(MessageSubscription);
         GDREGISTER_CLASS(TokenSubscription);
         GDREGISTER_CLASS(TokenBalanceSubscription);
-        GDREGISTER_CLASS(IndexerSubscription);
+        GDREGISTER_CLASS(ContractSubscription);
         GDREGISTER_CLASS(EntitySubscription);
         GDREGISTER_CLASS(TransactionSubscription);
         GDREGISTER_CLASS(StarknetSubscription);

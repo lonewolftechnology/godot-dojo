@@ -14,6 +14,7 @@
 #include "godot_cpp/variant/callable.hpp"
 
 #include "dojo_types.h"
+#include "resources/queries/dojo_contract_query.h"
 #include "resources/queries/dojo_query.h"
 #include "resources/queries/dojo_token_query.h"
 #include "resources/queries/dojo_token_balance_query.h"
@@ -79,7 +80,7 @@ public:
 
     TypedArray<Dictionary> get_tokens(const Ref<DojoTokenQuery>& query) const;
     TypedArray<Dictionary> get_token_balances(const Ref<DojoTokenBalanceQuery>& query) const;
-    TypedArray<Dictionary> get_token_collections(const Ref<DojoTokenBalanceQuery>& query) const;
+    TypedArray<Dictionary> get_token_collections(const Ref<DojoContractQuery>& query) const;
     Dictionary get_token_info(const String& token_address) const;
 
     void on_entity_state_update(const Callable& callback, const Ref<EntitySubscription>& subscription);

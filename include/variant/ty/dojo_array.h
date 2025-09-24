@@ -75,7 +75,7 @@ public:
     DojoArray(DOJO::PageController array);
     DojoArray(DOJO::CArrayMemberValue array);
     DojoArray(DOJO::CArrayFieldElement array);
-    DojoArray(DOJO::CArrayTokenCollection array);
+    DojoArray(DOJO::CArrayTokenContract array);
     DojoArray(DOJO::CArrayCOptionFieldElement array);
     DojoArray(DOJO::CArrayModel array);
 
@@ -92,7 +92,7 @@ public:
     static Variant PageControllerToVariant(const DOJO::PageController& array);
     static Variant CArrayMemberValueToVariant(DOJO::CArrayMemberValue array);
     static Variant CArrayFieldElementToVariant(DOJO::CArrayFieldElement array);
-    static Variant CArrayTokenCollectionToVariant(DOJO::CArrayTokenCollection array);
+    static Variant CArrayTokenContractToVariant(DOJO::CArrayTokenContract array);
     static Variant CArrayCOptionFieldElementToVariant(DOJO::CArrayCOptionFieldElement array);
     static Variant CArrayModelToVariant(DOJO::CArrayModel array);
 

@@ -7,6 +7,7 @@
 
 #include "classes/torii_client.h"
 
+#include "ref_counted/options/option_u256.h"
 #include "tools/logger.h"
 #include "variant/ty/dojo_array.h"
 #include "resources/queries/dojo_query.h"
@@ -456,7 +457,7 @@ TypedArray<Dictionary> ToriiClient::get_token_balances(const Ref<DojoTokenBalanc
     return result_array;
 }
 
-TypedArray<Dictionary> ToriiClient::get_token_collections(const Ref<DojoTokenBalanceQuery>& query) const
+TypedArray<Dictionary> ToriiClient::get_token_collections(const Ref<DojoContractQuery>& query) const
 {
     Logger::info("Getting token collections...");
     if (!is_client_connected())
@@ -467,36 +468,37 @@ TypedArray<Dictionary> ToriiClient::get_token_collections(const Ref<DojoTokenBal
 
     if (!query.is_valid())
     {
-        Logger::error("Invalid DojoTokenBalanceQuery object.");
+        Logger::error("Invalid DojoContractQuery object.");
         return {};
     }
 
-    DOJO::TokenBalanceQuery* balance_query_ptr = static_cast<DOJO::TokenBalanceQuery*>(query->get_native_query());
+    DOJO::TokenContractQuery* balance_query_ptr = static_cast<DOJO::TokenContractQuery*>(query->get_native_query());
 
-    DOJO::ResultPageTokenCollection result = DOJO::client_token_collections(
+    DOJO::ResultPageTokenContract result = DOJO::client_token_contracts(
         client,
         *balance_query_ptr
     );
 
-    if (result.tag == DOJO::ErrPageTokenCollection)
+    if (result.tag == DOJO::ErrPageTokenContract)
     {
         Logger::error(String("Error getting token collections: ") + GET_DOJO_ERROR(result));
         return {};
     }
 
-    DOJO::PageTokenCollection collections = result.ok;
+    DOJO::PageTokenContract collections = result.ok;
     TypedArray<Dictionary> result_array;
 
     for (size_t i = 0; i < collections.items.data_len; i++)
     {
-        DOJO::TokenCollection collection = collections.items.data[i];
+        DOJO::TokenContract collection = collections.items.data[i];
         Dictionary collection_dict;
 
         collection_dict["contract_address"] = FieldElement::get_as_string(&collection.contract_address);
         collection_dict["name"] = String(collection.name);
         collection_dict["symbol"] = String(collection.symbol);
         collection_dict["decimals"] = collection.decimals;
-        collection_dict["count"] = collection.count;
+        collection_dict["metadata"] = collection.metadata;
+        collection_dict["total_supply"] = memnew(OptionU256(collection.total_supply));
 
         if (collection.metadata != nullptr)
         {
