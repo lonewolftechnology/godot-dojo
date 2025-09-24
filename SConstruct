@@ -209,17 +209,22 @@ else:
 
 # Apply dojo.h patch
 print(f"{Y}{clipboard} Workaround patch for dojo.c ...{X}")
+# Check if platform can patch, windows most likely can't...
+if not shutil.which("patch"):
+    print(f"{R}{cross} Error: The 'patch' command was not found in your system's PATH.{X}")
+    print(f"{Y}This is required to apply a necessary fix to a dependency.{X}")
+    print(f"{B}On Windows, the easiest way to get it is by installing 'Git for Windows':{X}")
+    print(f"{G}https://git-scm.com/download/win{X}")
+    print(f"{Y}Please install it and make sure its tools are added to your PATH, then try again.{X}")
+    Exit(1)
+
 patch_file = 'patches/fix_dojo_c_incomplete_type.patch'
 dojo_c_dir = 'external/dojo.c'
 target_to_patch = f'{dojo_c_dir}/dojo.h'
 
 print(f"{Y}Applying patch to {target_to_patch}...{X}")
 try:
-    subprocess.run(
-        ['patch', target_to_patch, os.path.abspath(patch_file)],
-        cwd=os.path.abspath('.'), # Run from project root
-        check=True
-    )
+    subprocess.run(['patch', '-p1', '-d', dojo_c_dir, '-i', os.path.abspath(patch_file)], check=True)
     print(f"{G}{check} Patch applied successfully.{X}")
 except Exception as e:
     print(f"{R}{cross} Failed to apply patch: {e}{X}")
