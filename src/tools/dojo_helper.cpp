@@ -52,18 +52,19 @@ Variant DojoHelpers::get_setting(const String& setting, const Variant& default_v
 
 Ref<DojoPolicies> DojoHelpers::get_default_policies()
 {
-    // Temp, DojoPolicies resource will be deprecated
-    Variant default_policies = DojoPolicies::from_dictionary(get_setting("dojo/config/policies"));
-    if (default_policies.get_type() == Variant::ARRAY)
-    {
-        String contract_address = get_setting("dojo/config/contract_address");
-        Ref<DojoPolicies> policies = {};
-        policies.instantiate();
-        policies->set_dojo_contract(contract_address);
-        policies->set_policies(default_policies);
-        return policies;
-    }
-    return {};
+#if GODOT_VERSION_MAJOR > 4 || (GODOT_VERSION_MAJOR == 4 && GODOT_VERSION_MINOR >= 4)
+
+    return DojoPolicies::from_dictionary(get_setting("dojo/config/policies", TypedArray<DojoPolicy>()));
+#else
+    // Temp, DojoPolicies resource will be deprecated... maybe
+    TypedArray<DojoPolicy> default_policies = get_setting("dojo/config/policies", TypedArray<DojoPolicy>());
+#endif
+    String contract_address = get_setting("dojo/config/contract_address", "0x0");
+    Ref<DojoPolicies> policies = {};
+    policies.instantiate();
+    policies->set_dojo_contract(contract_address);
+    policies->set_policies(default_policies);
+    return policies;
 }
 
 // these use boost::multiprecision
