@@ -228,25 +228,6 @@ bool ControllerAccount::is_controller_connected() const
     return is_connected && session_account != nullptr;
 }
 
-String ControllerAccount::get_username() const
-{
-    if (!is_controller_connected())
-    {
-        return "";
-    }
-    return {DOJO::controller_username(session_account)};
-}
-
-String ControllerAccount::get_address() const
-{
-    if (!is_controller_connected())
-    {
-        return "0x0";
-    }
-    DOJO::FieldElement felt = DOJO::controller_address(session_account);
-    return FieldElement::get_as_string(&felt);
-}
-
 String ControllerAccount::get_chain_id(const bool& parse) const
 {
     if (Engine::get_singleton()->is_editor_hint()) return chain_id;

@@ -53,8 +53,24 @@ public:
     void disconnect_controller();
     bool is_controller_connected() const;
 
-    String get_username() const;
-    String get_address() const;
+    String get_username() const
+    {
+        if (!is_controller_connected())
+        {
+            return "";
+        }
+        return {DOJO::controller_username(session_account)};
+    }
+
+    String get_address() const
+    {
+        if (!is_controller_connected())
+        {
+            return "0x0";
+        }
+        DOJO::FieldElement felt = DOJO::controller_address(session_account);
+        return FieldElement::get_as_string(&felt);
+    }
 
     String get_chain_id(const bool& parse = true) const;
     void set_chain_id(const String& p_chain_id) { chain_id = p_chain_id; }
