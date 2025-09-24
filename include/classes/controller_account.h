@@ -78,7 +78,7 @@ public:
 
     void check_rpc_url();
     String get_rpc_url();
-    void set_rpc_url(const String& p_rpc_url){ rpc_url = p_rpc_url;};
+    void set_rpc_url(const String& p_rpc_url) { rpc_url = p_rpc_url; };
 
     void execute_from_outside(const String& to, const String& selector, const Variant& args);
     void execute_raw(const String& to, const String& selector, const Variant& args);
@@ -87,9 +87,9 @@ public:
 
     void emit_connection_status(bool connected);
 
-    void set_policies(const Ref<DojoPolicies>& p_policies){policies = p_policies;};
+    void set_policies(const Ref<DojoPolicies>& p_policies) { policies = p_policies; };
 
-    Ref<DojoPolicies> get_policies() {return policies;};
+    Ref<DojoPolicies> get_policies() { return policies; };
 
 protected:
 
@@ -125,13 +125,13 @@ protected:
         ADD_PROPERTY(PropertyInfo(Variant::STRING, "rpc_url"), "set_rpc_url", "get_rpc_url");
 
         ClassDB::bind_method(D_METHOD("set_chain_id", "chain_id"), &ControllerAccount::set_chain_id);
-        ClassDB::bind_method(D_METHOD("get_chain_id", "parse"), &ControllerAccount::get_chain_id, DEFVAL(true));
+        ClassDB::bind_method(D_METHOD("get_chain_id"), &ControllerAccount::_get_chain_id);
         ADD_PROPERTY(PropertyInfo(Variant::STRING, "chain_id"), "set_chain_id", "get_chain_id");
 
         ClassDB::bind_method(D_METHOD("set_policies", "policies"), &ControllerAccount::set_policies);
         ClassDB::bind_method(D_METHOD("get_policies"), &ControllerAccount::get_policies);
-        ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "policies", PROPERTY_HINT_RESOURCE_TYPE, "DojoPolicies"), "set_policies", "get_policies");
-
+        ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "policies", PROPERTY_HINT_RESOURCE_TYPE, "DojoPolicies"),
+                     "set_policies", "get_policies");
     }
 
 };
