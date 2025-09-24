@@ -74,6 +74,7 @@ public:
 
     String get_chain_id(const bool& parse = true) const;
     void set_chain_id(const String& p_chain_id) { chain_id = p_chain_id; }
+    String _get_chain_id() const { return chain_id; }
 
     void check_rpc_url();
     String get_rpc_url();
@@ -107,7 +108,7 @@ protected:
         ClassDB::bind_method(D_METHOD("execute_from_outside", "to", "selector", "args"),
                              &ControllerAccount::execute_from_outside, DEFVAL(Array()));
         ClassDB::bind_method(D_METHOD("execute_raw", "to", "selector", "args"),
-                     &ControllerAccount::execute_raw, DEFVAL(Array()));
+                             &ControllerAccount::execute_raw, DEFVAL(Array()));
 
         ClassDB::bind_method(D_METHOD("get_account_info"), &ControllerAccount::get_account_info);
         // ClassDB::bind_method(D_METHOD("sign_message", "message"), &ControllerAccount::sign_message);
