@@ -15,23 +15,35 @@ try:
 except Exception:
     def GetOption(name: str):
         return None
+
+
     def Return():
         pass
+
+
     def Exit(code: int = 0):
         raise SystemExit(code)
+
+
     def File(path: str):
         return path
+
+
     def SConscript(path: str):
         # Minimal shim to satisfy IDEs; never used during real scons runs
         class _Env(dict):
             def Append(self, **kwargs):
                 pass
+
             def AddPostAction(self, *args, **kwargs):
                 pass
+
             def Default(self, *args, **kwargs):
                 pass
+
             def SharedLibrary(self, *args, **kwargs):
                 return args[0] if args else None
+
         return _Env()
 
 # Colors
@@ -167,7 +179,8 @@ if env["platform"] == "web":
         subprocess.run(bindgen_cmd, check=True)
         print(f"{G}{check} wasm-bindgen finished. Output in {out_dir}{X}")
     except subprocess.CalledProcessError as e:
-        print(f"{R}{cross} wasm-bindgen failed. This might be due to incompatible Rust flags or wasm-bindgen version.{X}")
+        print(
+            f"{R}{cross} wasm-bindgen failed. This might be due to incompatible Rust flags or wasm-bindgen version.{X}")
         print(f"{R}Error: {e}{X}")
         Exit(1)
 else:
@@ -180,7 +193,7 @@ else:
 
         # Add deployment target to RUSTFLAGS
         rustflags = env_vars.get("RUSTFLAGS", "")
-        if rustflags: # Add a space if RUSTFLAGS is not empty
+        if rustflags:  # Add a space if RUSTFLAGS is not empty
             rustflags += " "
         rustflags += "-C link-arg=-mmacosx-version-min=14.0"
         env_vars["RUSTFLAGS"] = rustflags
@@ -193,6 +206,31 @@ else:
         print(f"{Y}With RUSTFLAGS: {env_vars.get('RUSTFLAGS', 'not set')}{X}")
 
     subprocess.run(cmd, check=True, cwd="external/dojo.c", env=env_vars)
+
+# Apply dojo.h patch
+print(f"{Y}{clipboard} Workaround patch for dojo.c ...{X}")
+patch_file = 'patches/fix_dojo_c_incomplete_type.patch'
+dojo_c_dir = 'external/dojo.c'
+target_to_patch = f'{dojo_c_dir}/dojo.h'
+patch_flag_file = f'{dojo_c_dir}/.patched'
+
+print(f"{Y}Applying patch to {target_to_patch}...{X}")
+try:
+    # We specify the input file directly to avoid ambiguity.
+    subprocess.run(
+        ['patch', target_to_patch, os.path.abspath(patch_file)],
+        cwd=os.path.abspath('.'), # Run from project root
+        check=True
+    )
+    # Create a flag file to indicate the patch has been applied
+    with open(patch_flag_file, 'w') as f:
+        f.write('patched')
+    print(f"{G}{check} Patch applied successfully.{X}")
+except Exception as e:
+    print(f"{R}{cross} Failed to apply patch: {e}{X}")
+    Exit(1)
+
+
 
 # Configure library
 if platform != "android":
@@ -242,7 +280,6 @@ if platform == "android":
 
     print(f"{G}{check} Android plugin files copied to {addon_dir}{X}")
 
-
 # Link Rust libraries
 build_mode = "release" if target == "template_release" else "debug"
 rust_lib_dir = f"external/dojo.c/target/{rust_target}/{build_mode}"
@@ -256,7 +293,7 @@ if platform == "windows":
         rust_lib = f"{rust_lib_dir}/dojo_c.lib"
         env.Append(LINKFLAGS=['/NODEFAULTLIB:MSVCRT'])
     else:
-        rust_lib = "" # Should not happen
+        rust_lib = ""  # Should not happen
     env.Append(LIBS=[File(rust_lib)]) if rust_lib else None
 elif platform == "web":
     print(f"{Y}{clipboard} Web export doesn't link to anything.{X}")
@@ -301,6 +338,7 @@ gdext = gdext.replace("${ENTRY_POINT}", "dojoc_library_init")
 # We extract the first two numeric components (e.g., 4.2 from 4.2.2 or godot-4.3-stable).
 import re
 
+
 def _detect_godot_min_requirement():
     repo_path = os.path.join(os.getcwd(), "external", "godot-cpp")
     version_source = None
@@ -340,6 +378,7 @@ def _detect_godot_min_requirement():
 
     # Default fallback if detection fails.
     return "4.2"
+
 
 _godot_min = _detect_godot_min_requirement()
 print(f"Using GODOT_MIN_REQUIREMENT={_godot_min} derived from godot-cpp git ref.")
@@ -398,6 +437,7 @@ def build_complete_callback(target, source, env):
     if env["platform"] == "web":
         copy_web_artifacts(target, source, env)
     return None
+
 
 env.AddPostAction(library, build_complete_callback)
 

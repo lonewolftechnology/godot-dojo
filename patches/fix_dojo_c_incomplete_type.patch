@@ -1,0 +1,19 @@
+Subject: [PATCH] Workaround to fix Struct malformed
+---
+Index: dojo.h
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/dojo.h b/dojo.h
+--- a/dojo.h	(revision bc07950a1afb962186527acb112a9881b5eb0f67)
++++ b/dojo.h	(date 1758696170358)
+@@ -397,7 +397,7 @@
+       struct Primitive primitive;
+     };
+     struct {
+-      struct Struct struct_;
++      struct Struct *struct_;
+     };
+     struct {
+       struct Enum enum_;

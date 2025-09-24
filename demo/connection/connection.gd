@@ -5,8 +5,8 @@ signal connected
 # As of time of writing, September 1 2025
 # This are from our contract deployend on slot (https://github.com/dannroda/dojo-starter) Dojo v1.7.0-alpha.3
 # But it should work with official starter (https://github.com/dojoengine/dojo-starter), Dojo v1.6.2
-const WORLD_CONTRACT = "0x044508ff3a94c19844702f34dd64c5a933870116a42ac1105fd324335ca7b3f9"
-const ACTIONS_CONTRACT = "0x00123e4e8a65b4e1f7c6004d99764e89d065bb1ec479ad41b1c195a19d325a3f"
+const WORLD_CONTRACT = "0x03a7e28319f3617da4135893c711c79a1306adcd87cca4fbd0ceda50ae397683"
+const ACTIONS_CONTRACT = "0x01d18853e41a1607c1bd80c2e80c34db3a59999a038b54a2424fae4ac71278da"
 
 #TODO: Make not neccesary to setup ToriiClient/ControllearAccount through editor, so can be easily updated with code.
 # The chain_id can be obtained using a burner Account
