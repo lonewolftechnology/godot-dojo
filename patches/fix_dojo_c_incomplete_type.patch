@@ -1,4 +1,4 @@
-Subject: [PATCH] Workaround to fix Struct malformed
+Subject: [PATCH] better patch for dojo.h
 ---
 Index: dojo.h
 IDEA additional info:
@@ -7,13 +7,37 @@ Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
 ===================================================================
 diff --git a/dojo.h b/dojo.h
 --- a/dojo.h	(revision bc07950a1afb962186527acb112a9881b5eb0f67)
-+++ b/dojo.h	(date 1758696170358)
-@@ -397,7 +397,7 @@
-       struct Primitive primitive;
-     };
-     struct {
--      struct Struct struct_;
-+      struct Struct *struct_;
-     };
-     struct {
-       struct Enum enum_;
++++ b/dojo.h	(date 1758739214361)
+@@ -390,6 +390,15 @@
+   ByteArray,
+ } Ty_Tag;
+ 
++typedef struct CArrayMember {
++  struct Member *data;
++  uintptr_t data_len;
++} CArrayMember;
++typedef struct Struct {
++  const char *name;
++  struct CArrayMember children;
++} Struct;
++
+ typedef struct Ty {
+   Ty_Tag tag;
+   union {
+@@ -423,16 +432,6 @@
+   bool key;
+ } Member;
+ 
+-typedef struct CArrayMember {
+-  struct Member *data;
+-  uintptr_t data_len;
+-} CArrayMember;
+-
+-typedef struct Struct {
+-  const char *name;
+-  struct CArrayMember children;
+-} Struct;
+-
+ typedef struct CArrayStruct {
+   struct Struct *data;
+   uintptr_t data_len;
