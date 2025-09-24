@@ -165,7 +165,7 @@ void ToriiClient::callable_call(const char* msg) const
 {
     if (is_callable_valid())
     {
-        (void)logger_callback.call(String(msg));
+        singleton->call_deferred("logger_callback", String(msg));
     }
 }
 
@@ -828,7 +828,7 @@ void entity_state_update_callback_wrapper(DOJO::Entity entity)
         entity_data["created_at"] = static_cast<int64_t>(entity.created_at);
         entity_data["updated_at"] = static_cast<int64_t>(entity.updated_at);
         entity_data["executed_at"] = static_cast<int64_t>(entity.executed_at);
-        (void)singleton->on_entity_state_update_callback.call(entity_data);
+        singleton->on_entity_state_update_callback.call_deferred(entity_data);
     }
 }
 
@@ -844,7 +844,7 @@ void event_message_update_callback_wrapper(DOJO::Entity entity)
         message_data["created_at"] = static_cast<int64_t>(entity.created_at);
         message_data["updated_at"] = static_cast<int64_t>(entity.updated_at);
         message_data["executed_at"] = static_cast<int64_t>(entity.executed_at);
-        (void)singleton->on_event_message_update_callback.call(message_data);
+        singleton->on_event_message_update_callback.call_deferred(message_data);
     }
 }
 
@@ -858,7 +858,7 @@ void starknet_event_callback_wrapper(DOJO::Event event)
         event_data["keys"] = DojoArray::CArrayFieldElementToVariant(event.keys);
         event_data["data"] = DojoArray::CArrayFieldElementToVariant(event.data);
         event_data["transaction_hash"] = FieldElement::get_as_string(&event.transaction_hash);
-        (void)singleton->on_starknet_event_callback.call(event_data);
+        singleton->on_starknet_event_callback.call_deferred(event_data);
     }
 }
 
@@ -894,7 +894,7 @@ void transaction_callback_wrapper(DOJO::Transaction transaction)
         tx_dict["calls"] = calls_array;
 
         tx_dict["unique_models"] = DojoArray(transaction.unique_models).get_value();
-        (void)singleton->on_transaction_callback.call(tx_dict);
+        singleton->on_transaction_callback.call_deferred(tx_dict);
     }
 }
 
@@ -925,7 +925,7 @@ void token_update_callback_wrapper(DOJO::Token token)
         {
             token_dict["metadata"] = Variant();
         }
-        (void)singleton->on_token_update_callback.call(token_dict);
+        singleton->on_token_update_callback.call_deferred(token_dict);
     }
 }
 
@@ -957,7 +957,7 @@ void contract_update_callback_wrapper(DOJO::Contract contract_update)
         update_dict["updated_at"] = static_cast<int64_t>(contract_update.updated_at);
         update_dict["created_at"] = static_cast<int64_t>(contract_update.created_at);
 
-        (void)singleton->on_contract_update_callback.call(update_dict);
+        singleton->on_contract_update_callback.call_deferred(update_dict);
     }
 }
 
@@ -979,7 +979,7 @@ void token_balance_update_callback_wrapper(DOJO::TokenBalance token_balance)
         {
             balance_dict["token_id"] = Variant();
         }
-        (void)singleton->on_token_balance_update_callback.call(balance_dict);
+        singleton->on_token_balance_update_callback.call_deferred(balance_dict);
     }
 }
 
