@@ -26,7 +26,7 @@ ControllerAccount* ControllerAccount::singleton = nullptr;
 
 ControllerAccount::ControllerAccount()
 {
-    if (Engine::get_singleton()->is_editor_hint() == false)
+    if (Engine::get_singleton()->is_editor_hint())
     {
         return;
     }
@@ -41,7 +41,7 @@ ControllerAccount::ControllerAccount()
 
 ControllerAccount::~ControllerAccount()
 {
-    if (Engine::get_singleton()->is_editor_hint() == false)
+    if (Engine::get_singleton()->is_editor_hint())
     {
         return;
     }
