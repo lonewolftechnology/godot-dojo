@@ -59,7 +59,7 @@ void DojoTy::init_form_ty(const DOJO::Ty& ty)
     else if (ty.tag == Tag::Struct_)
     {
         type = Type::Struct_;
-        DojoStruct data = {*ty.struct_};
+        DojoStruct data = {ty.struct_};
         value = data.get_value();
         name = data.get_name();
     }
