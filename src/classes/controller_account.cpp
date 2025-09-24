@@ -137,10 +137,19 @@ void ControllerAccount::create(const Ref<DojoPolicies>& policies_data)
     {
         this->policies = policies_data;
     }
+    std::vector<DOJO::Policy> policies_vector;
+    if (policies_data.is_valid())
+    {
+        Logger::debug_extra("Policies", "Valid");
+        policies_vector = policies_data->build();
+    }
+    else
+    {
+        Logger::debug_extra("Policies", "InValid");
+        policies_vector = DojoHelpers::get_default_policies()->build();
+    }
 
-
-    std::vector<DOJO::Policy> policies = policies_data->build();
-    uintptr_t policies_len = policies.size();
+    uintptr_t policies_len = policies_vector.size();
     String _chain = get_chain_id(false);
     Logger::debug_extra("ControllerAccount", "Chain ID: ", _chain);
     FieldElement katana = {_chain};
@@ -172,7 +181,7 @@ void ControllerAccount::create(const Ref<DojoPolicies>& policies_data)
 #else
 
     DOJO::ResultControllerAccount resControllerAccount =
-        DOJO::controller_account(policies.data(), policies_len, katana.get_felt_no_ptr());
+        DOJO::controller_account(policies_vector.data(), policies_len, katana.get_felt_no_ptr());
 
     if (resControllerAccount.tag == DOJO::OkControllerAccount)
     {
@@ -185,7 +194,7 @@ void ControllerAccount::create(const Ref<DojoPolicies>& policies_data)
         Logger::info("Session account not connected, connecting...");
         DOJO::controller_connect(
             rpc_url.utf8().get_data(),
-            policies.data(),
+            policies_vector.data(),
             policies_len,
             on_account_callback);
     }
