@@ -32,9 +32,17 @@ public:
     };
     String get_dojo_contract() const { return dojo_contract; };
 
-    void set_policies(const TypedArray<DojoPolicy>& p_policies)
+    void set_policies(const Dictionary& p_policies)
     {
-        policies = p_policies;
+        for (int i; i < p_policies.size(); ++i)
+        {
+            Ref<DojoPolicy> _policy = {};
+            _policy.instantiate();
+            String _key = p_policies.keys()[i];
+            _policy->set_method(_key);
+            _policy->set_description(p_policies[_key]);
+            policies.push_back(_policy);
+        }
         emit_changed();
     };
     TypedArray<DojoPolicy> get_policies() { return policies; };
@@ -53,6 +61,7 @@ public:
     {
         if (p_policy.get_type() == Variant::DICTIONARY)
         {
+            // TODO: Refactor, from_dictionary is for fully policies, not for individual
             Ref<DojoPolicy> new_policy = DojoPolicy::from_dictionary(p_policy);
             if (new_policy.is_valid())
             {
@@ -115,15 +124,18 @@ public:
         return result;
     }
 
-    Dictionary to_dictionary() const {
+    Dictionary to_dictionary() const
+    {
         Dictionary dict;
         dict["name"] = name;
         dict["contract"] = dojo_contract;
 
         Array policies_array;
-        for (int i = 0; i < policies.size(); ++i) {
+        for (int i = 0; i < policies.size(); ++i)
+        {
             Ref<DojoPolicy> policy = policies[i];
-            if (policy.is_valid()) {
+            if (policy.is_valid())
+            {
                 policies_array.push_back(policy->to_dictionary());
             }
         }
@@ -132,7 +144,8 @@ public:
         return dict;
     }
 
-    static Ref<DojoPolicies> from_dictionary(const Dictionary& dict) {
+    static Ref<DojoPolicies> from_dictionary(const Dictionary& dict)
+    {
         Ref<DojoPolicies> policies_res;
         policies_res.instantiate();
         policies_res->_from_dictionary(dict);
@@ -140,22 +153,27 @@ public:
     }
 
 protected:
-    void _from_dictionary(const Dictionary& dict) {
-        if (dict.has("name")) {
+    void _from_dictionary(const Dictionary& dict)
+    {
+        if (dict.has("name"))
+        {
             set_name(dict["name"]);
         }
-        if (dict.has("contract")) {
+        if (dict.has("contract"))
+        {
             set_dojo_contract(dict["contract"]);
         }
 
-        if (dict.has("policies") && dict["policies"].get_type() == Variant::ARRAY) {
+        if (dict.has("policies") && dict["policies"].get_type() == Variant::ARRAY)
+        {
             Array policies_array = dict["policies"];
             TypedArray<DojoPolicy> new_policies;
-            for (int i = 0; i < policies_array.size(); ++i) {
+            for (int i = 0; i < policies_array.size(); ++i)
+            {
                 Ref<DojoPolicy> new_policy = DojoPolicy::from_dictionary(policies_array[i]);
                 new_policies.push_back(new_policy);
             }
-            set_policies(new_policies);
+            // set_policies(new_policies);
         }
     }
 
@@ -177,7 +195,7 @@ protected:
         ClassDB::bind_method(D_METHOD("get_policies"), &DojoPolicies::get_policies);
         ADD_PROPERTY(
             PropertyInfo(Variant::ARRAY, "policies", PROPERTY_HINT_TYPE_STRING, String::num(Variant::OBJECT) + "/" +
-                         String::num(PROPERTY_HINT_RESOURCE_TYPE) + ":DojoPolicy"), "set_policies", "get_policies");
+                String::num(PROPERTY_HINT_RESOURCE_TYPE) + ":DojoPolicy"), "set_policies", "get_policies");
 
         ClassDB::bind_method(D_METHOD("to_dictionary"), &DojoPolicies::to_dictionary);
         ClassDB::bind_static_method(get_class_static(), D_METHOD("from_dictionary", "dictionary"),

@@ -49,7 +49,7 @@ public:
 
     void setup();
     void init_provider();
-    void create(const Ref<DojoPolicies>& policies_data);
+    void create(const Ref<DojoPolicies>& policies_data = nullptr);
     void disconnect_controller();
     bool is_controller_connected() const;
 
@@ -97,7 +97,7 @@ protected:
     {
         // ClassDB::bind_method(D_METHOD("create", "rpc_url"),&ControllerAccount::create);
         ClassDB::bind_method(D_METHOD("init_provider"), &ControllerAccount::init_provider);
-        ClassDB::bind_method(D_METHOD("create", "policies_data"), &ControllerAccount::create);
+        ClassDB::bind_method(D_METHOD("create", "policies_data"), &ControllerAccount::create, DEFVAL(Variant()));
         ClassDB::bind_method(D_METHOD("setup"), &ControllerAccount::setup);
         ClassDB::bind_method(D_METHOD("disconnect_controller"), &ControllerAccount::disconnect_controller);
         ClassDB::bind_method(D_METHOD("is_controller_connected"), &ControllerAccount::is_controller_connected);

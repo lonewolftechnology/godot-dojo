@@ -46,11 +46,11 @@ void DojoC::init_config(bool reset)
         set_setting("dojo/config/torii_url", "http://localhost:8080", reset);
 
         set_setting("dojo/config/contract_address", "0x0", reset);
+        set_setting("dojo/config/world_address", "0x0", reset);
 
         Dictionary policies_info = {};
         policies_info["name"] = "dojo/config/policies";
-        policies_info["type"] = Variant::ARRAY;
-        policies_info["hint"] = PROPERTY_HINT_ARRAY_TYPE;
+        policies_info["type"] = Variant::DICTIONARY;
 
         // The account default setting is a random one from KATANA
         set_setting("dojo/config/account/address", "0x6677fe62ee39c7b07401f754138502bab7fac99d2d3c5d37df7d1c6fab10819",
@@ -61,17 +61,18 @@ void DojoC::init_config(bool reset)
                     "0x1e8965b7d0b20b91a62fe515dd991dc9fcb748acddf6b2cf18cec3bdd0f9f9a", reset);
 
         // Format: [VariantType]/[Hint]:[ClassName]
-#if GODOT_VERSION_MAJOR > 4 || (GODOT_VERSION_MAJOR == 4 && GODOT_VERSION_MINOR >= 4)
-        set_setting("dojo/config/policies", TypedArray<Dictionary>(), reset);
+        Dictionary godot_info = Engine::get_singleton()->get_version_info();
+            set_setting("dojo/config/policies", Dictionary(), reset);
 
-        policies_info["hint_string"] = vformat("%d:%d:%d:%d", Variant::DICTIONARY, PROPERTY_HINT_TYPE_STRING,
-                                               Variant::STRING_NAME, Variant::STRING);
-#else
-        set_setting("dojo/config/policies", TypedArray<DojoPolicy>(), reset);
+        if ((int)godot_info["major"] > 4 || ((int)godot_info["major"] == 4 && (int)godot_info["minor"] >= 4))
+        {
+            // PROPERTY_HINT_DICTIONARY_TYPE = 38 in Godot 4.4+
+            policies_info["hint"] = vformat("%d/%d", Variant::DICTIONARY, 38);
+            policies_info["hint_string"] = vformat("%s;%s", "String", "String");
+            // policies_info["hint_string"] = vformat("%d/%d:%s;%s", Variant::DICTIONARY, PROPERTY_HINT_TYPE_STRING,
+            //                                        "String", "String");
+        }
 
-        policies_info["hint_string"] = vformat("%d/%d:%s", Variant::OBJECT, PROPERTY_HINT_RESOURCE_TYPE,
-                                               DojoPolicy::get_class_static());
-#endif
 
         ProjectSettings::get_singleton()->add_property_info(policies_info);
 

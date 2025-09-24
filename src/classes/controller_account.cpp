@@ -93,7 +93,6 @@ void ControllerAccount::on_account_callback(DOJO::ControllerAccount* account)
 
 void ControllerAccount::setup()
 {
-    check_rpc_url();
     init_provider();
     create(policies);
 }
@@ -101,11 +100,7 @@ void ControllerAccount::setup()
 void ControllerAccount::init_provider()
 {
     // Provider
-    if (rpc_url.is_empty())
-    {
-        Logger::error("RPC URL not set");
-        return;
-    }
+    check_rpc_url();
 
     Logger::debug_extra("Provider", rpc_url);
     DOJO::ResultProvider resControllerProvider = DOJO::provider_new(rpc_url.utf8().get_data());
@@ -122,32 +117,25 @@ void ControllerAccount::init_provider()
 
 void ControllerAccount::create(const Ref<DojoPolicies>& policies_data)
 {
-    Logger::info("RPC URL: ", rpc_url);
-    if (provider == nullptr)
+    check_rpc_url();
+
+    if (policies_data == nullptr || policies_data->is_empty())
     {
-        Logger::error("Provider not initialized");
-        return;
-    }
-    if (policies_data->is_empty())
-    {
-        Logger::error("Invalid policies data");
-        this->policies = DojoHelpers::get_default_policies();
+        Logger::debug_extra("Policies", "Invalid policies data, trying from ProjectSettings");
+        Ref<DojoPolicies> settings_data = DojoHelpers::get_default_policies();
+        if (settings_data == nullptr || settings_data->is_empty() || !settings_data.is_valid())
+        {
+            Logger::error("Invalid Policies data");
+            return;
+        }
+        this->policies = settings_data;
     }
     else
     {
         this->policies = policies_data;
     }
-    std::vector<DOJO::Policy> policies_vector;
-    if (policies_data.is_valid())
-    {
-        Logger::debug_extra("Policies", "Valid");
-        policies_vector = policies_data->build();
-    }
-    else
-    {
-        Logger::debug_extra("Policies", "InValid");
-        policies_vector = DojoHelpers::get_default_policies()->build();
-    }
+
+    std::vector<DOJO::Policy> policies_vector = this->policies->build();
 
     uintptr_t policies_len = policies_vector.size();
     String _chain = get_chain_id(false);
@@ -175,7 +163,9 @@ void ControllerAccount::create(const Ref<DojoPolicies>& policies_data)
     {
         Object* dojo_bridge = engine->get_singleton(bridge_name);
         dojo_bridge->call("openCustomTab", auth_url);
-    } else {
+    }
+    else
+    {
         Logger::error("GodotDojoBridge singleton not found. Make sure it's configured in your Android build.");
     }
 #else
@@ -278,7 +268,7 @@ void ControllerAccount::check_rpc_url()
         String setting = ProjectSettings::get_singleton()->get("dojo/config/katana_url");
         if (setting.is_empty())
         {
-            Logger::error("RPC URL not set");
+            Logger::error("RPC URL not found");
             return;
         }
         rpc_url = setting;

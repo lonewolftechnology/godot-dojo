@@ -52,18 +52,29 @@ ToriiClient* ToriiClient::get_singleton()
 
 bool ToriiClient::create_client()
 {
-    if (world_address.is_empty())
+    if (world_address.is_empty() || world_address == "0x0")
     {
-        Logger::error("Missing world address");
-        emit_signal("client_connected", false);
-        return false;
+        Logger::debug_extra("ToriiClient","Missing world address, fetching ProjectSettings");
+        world_address = DojoHelpers::get_setting("dojo/config/world_address");
+        if (world_address.is_empty() || world_address == "0x0")
+        {
+            Logger::error("World Address not found");
+            emit_signal("client_connected", false);
+            return false;
+        }
+
     }
 
     if (torii_url.is_empty())
     {
-        Logger::error("Missing torii url");
-        emit_signal("client_connected", false);
-        return false;
+        Logger::debug_extra("ToriiClient","Missing Torii Url, fetching ProjectSettings");
+        torii_url = DojoHelpers::get_setting("dojo/config/torii_url");
+        if (torii_url.is_empty())
+        {
+            Logger::error("Torii Url not found");
+            emit_signal("client_connected", false);
+            return false;
+        }
     }
 
 #ifdef WEB_ENABLED

@@ -52,13 +52,9 @@ Variant DojoHelpers::get_setting(const String& setting, const Variant& default_v
 
 Ref<DojoPolicies> DojoHelpers::get_default_policies()
 {
-#if GODOT_VERSION_MAJOR > 4 || (GODOT_VERSION_MAJOR == 4 && GODOT_VERSION_MINOR >= 4)
 
-    return DojoPolicies::from_dictionary(get_setting("dojo/config/policies", TypedArray<DojoPolicy>()));
-#else
-    // Temp, DojoPolicies resource will be deprecated... maybe
-    TypedArray<DojoPolicy> default_policies = get_setting("dojo/config/policies", TypedArray<DojoPolicy>());
-#endif
+    Dictionary default_policies = get_setting("dojo/config/policies", TypedArray<DojoPolicy>());
+
     String contract_address = get_setting("dojo/config/contract_address", "0x0");
     Ref<DojoPolicies> policies = {};
     policies.instantiate();
