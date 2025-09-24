@@ -221,3 +221,6 @@ tramp
 dojo_methods.md
 notes.md
 commit_script.sh
+
+# Dojo.c changes/patches
+external/dojo.c/

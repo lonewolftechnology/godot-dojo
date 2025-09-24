@@ -212,19 +212,14 @@ print(f"{Y}{clipboard} Workaround patch for dojo.c ...{X}")
 patch_file = 'patches/fix_dojo_c_incomplete_type.patch'
 dojo_c_dir = 'external/dojo.c'
 target_to_patch = f'{dojo_c_dir}/dojo.h'
-patch_flag_file = f'{dojo_c_dir}/.patched'
 
 print(f"{Y}Applying patch to {target_to_patch}...{X}")
 try:
-    # We specify the input file directly to avoid ambiguity.
     subprocess.run(
         ['patch', target_to_patch, os.path.abspath(patch_file)],
         cwd=os.path.abspath('.'), # Run from project root
         check=True
     )
-    # Create a flag file to indicate the patch has been applied
-    with open(patch_flag_file, 'w') as f:
-        f.write('patched')
     print(f"{G}{check} Patch applied successfully.{X}")
 except Exception as e:
     print(f"{R}{cross} Failed to apply patch: {e}{X}")
