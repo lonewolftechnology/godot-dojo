@@ -73,8 +73,6 @@ func start() -> void:
 	connection.create_subscriptions(_on_events,_on_entities)
 	
 	await get_tree().create_timer(0.1).timeout
-	spawn()
-	
 	await get_tree().create_timer(0.1).timeout
 	
 	var parsed : Dictionary = get_entities()
@@ -84,10 +82,10 @@ func start() -> void:
 	
 	
 	#await get_tree().create_timer(0.1).timeout
-	_update_entities(parsed)
-	
-	
+	_update_entities(parsed)	
 	get_controllers(parsed.keys())
+	spawn()
+	
 
 
 func get_controllers(addrs:Array = []) -> void:
