@@ -108,7 +108,8 @@ targets = {
     ("macos", "x86_64"): "x86_64-apple-darwin",
     ("macos", "arm64"): "aarch64-apple-darwin",
     ("web", "wasm32"): "wasm32-unknown-unknown",
-    ("android", "arm64"): "aarch64-linux-android"
+    ("android", "arm64"): "aarch64-linux-android",
+    ("ios", "arm64"): "aarch64-apple-ios",
 }
 # Use CARGO_BUILD_TARGET from environment if set, otherwise use the target from the platform/arch
 rust_target = os.environ.get("CARGO_BUILD_TARGET", targets.get((platform, arch), "x86_64-unknown-linux-gnu"))
@@ -299,7 +300,7 @@ elif platform == "web":
     print(f"{Y}{clipboard} Web export doesn't link to anything.{X}")
 #     rust_lib = f"{rust_lib_dir}/libdojo_c.rlib"
 #     env.Append(LIBS=[File(rust_lib)])
-elif platform in ["linux", "macos", "android"]:
+elif platform in ["linux", "macos", "android", "ios"]:
     rust_lib = f"{rust_lib_dir}/libdojo_c.a"
     env.Append(LIBS=[File(rust_lib)])
 else:
@@ -317,6 +318,7 @@ suffix_map = {
     "linux": f".linux.{target}.{arch}.so",
     "windows": f".windows.{target}.{arch}.dll",
     "macos": f".macos.{target}.{arch}.dylib",
+    "ios": f".ios.{target}.{arch}.dylib",
     "web": f".web.{target}.wasm32.wasm"
 }
 
