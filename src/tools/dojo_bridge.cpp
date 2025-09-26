@@ -13,7 +13,7 @@ JavaScriptBridge* DojoBridge::js_bridge = nullptr;
 static Dictionary& get_active_callbacks()
 {
     static Dictionary callbacks;
-#if GODOT_VERSION_MAJOR > 4 || (GODOT_VERSION_MAJOR == 4 && GODOT_VERSION_MINOR >= 3)
+#if GODOT_VERSION_MAJOR > 4 || (GODOT_VERSION_MAJOR == 4 && GODOT_VERSION_MINOR >= 4)
     callbacks = Dictionary(Dictionary(), Variant::STRING, "String", String(), Variant::STRING, "String", String());
 
 #endif

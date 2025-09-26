@@ -47,6 +47,10 @@ String DojoHelpers::get_katana_url()
 
 Variant DojoHelpers::get_setting(const String& setting, const Variant& default_value)
 {
+    if (default_value.get_type() == Variant::NIL)
+    {
+        return ProjectSettings::get_singleton()->get_setting(setting);
+    }
     return ProjectSettings::get_singleton()->get_setting(setting, default_value);
 }
 
