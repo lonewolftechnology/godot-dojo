@@ -40,6 +40,7 @@ config/policies={
 "move": "Move in the world",
 "spawn": "Spawn in the world"
 }
+config/free_controller_on_exit=false
 
 [input]
 

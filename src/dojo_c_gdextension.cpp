@@ -41,6 +41,7 @@ void DojoC::init_config(bool reset)
     if (Engine::get_singleton()->is_editor_hint())
     {
         Logger::debug_extra("DojoC", "is running in editor mode");
+        set_setting("dojo/config/free_controller_on_exit", false, reset);
         set_setting("dojo/config/katana_url", "http://localhost:5050", reset);
         set_setting("dojo/config/torii_url", "http://localhost:8080", reset);
 

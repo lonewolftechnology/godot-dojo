@@ -45,8 +45,14 @@ ControllerAccount::~ControllerAccount()
     {
         return;
     }
-    disconnect_controller();
-    session_account = nullptr;
+    if (DojoHelpers::get_setting("dojo/config/free_controller_on_exit"))
+    {
+        disconnect_controller();
+    }
+    else
+    {
+        session_account = nullptr;
+    }
     if (singleton != nullptr && singleton == this)
     {
         singleton = nullptr;
@@ -99,14 +105,13 @@ void ControllerAccount::setup()
 
 void ControllerAccount::init_provider()
 {
-    // Provider
     check_rpc_url();
 
     Logger::debug_extra("Provider", rpc_url);
     DOJO::ResultProvider resControllerProvider = DOJO::provider_new(rpc_url.utf8().get_data());
     if (resControllerProvider.tag == DOJO::ErrProvider)
     {
-        UtilityFunctions::printerr("Error: ", GET_DOJO_ERROR(resControllerProvider));
+        Logger::error(GET_DOJO_ERROR(resControllerProvider));
         emit_signal("provider_status_updated", false);
         return;
     }
