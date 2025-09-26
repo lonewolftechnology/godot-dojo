@@ -92,7 +92,11 @@ os.makedirs("demo/addons/godot-dojo", exist_ok=True)
 env = SConscript("external/godot-cpp/SConstruct")
 platform, arch, target = env["platform"], env["arch"], env.get("target", "template_debug")
 
-print(f"{B}Building: {platform} ({arch}) - {target}{X}")
+build_info = f"{platform} ({arch}) - {target}"
+if env.get("precision") == "double":
+    build_info += " (double precision)"
+
+print(f"{B}Building: {build_info}{X}")
 
 # Compile Rust
 print(f"{Y}{package} Compiling dojo.c...{X}")
