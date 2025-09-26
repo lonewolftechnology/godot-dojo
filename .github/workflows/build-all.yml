@@ -86,11 +86,17 @@ jobs:
           DOJOC_VERSION=$(cd external/dojo.c && (git describe --tags --abbrev=0 2>/dev/null || git rev-parse --short HEAD))
           echo "DOJOC_VERSION=$DOJOC_VERSION" >> $GITHUB_OUTPUT
 
+      - name: Get godot-cpp version
+        id: get_godotcpp_version
+        run: |
+          GODOTCPP_VERSION=$(cd external/godot-cpp && (git describe --tags --abbrev=0 2>/dev/null || git rev-parse --short HEAD))
+          echo "GODOTCPP_VERSION=$GODOTCPP_VERSION" >> $GITHUB_OUTPUT
+
       - name: Create release
         id: create_release
         uses: softprops/action-gh-release@v2
         with:
-          name: "${{ github.ref_name }} - Dojo.c ${{ steps.get_dojoc_version.outputs.DOJOC_VERSION }}"
+          name: "${{ github.ref_name }} - Dojo.c ${{ steps.get_dojoc_version.outputs.DOJOC_VERSION }} | godot-cpp ${{ steps.get_godotcpp_version.outputs.GODOTCPP_VERSION }}"
           body: |
             ## Latest Changes
 
@@ -270,6 +276,92 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: bin-${{ matrix.precision }}-linux-x86_64-release
+          path: |
+            demo/addons/godot-dojo/*
+            demo/addons/godot-dojo/*.gdextension
+          if-no-files-found: error
+
+  build-linux-editor:
+    name: Build Linux-x86_64-${{ matrix.precision }}-editor
+    runs-on: ubuntu-latest
+    needs: create_release
+    if: always() && (needs.create_release.result == 'success' || !startsWith(github.ref, 'refs/tags/'))
+    strategy:
+      fail-fast: false
+      matrix:
+        precision: [standard, double]
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          submodules: true
+          fetch-depth: 0
+
+      - name: Install build dependencies
+        run: sudo apt-get update && sudo apt-get install -y build-essential pkg-config dbus libdbus-1-dev protobuf-compiler libprotobuf-dev
+
+      - name: Set up Rust stable
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          toolchain: stable
+
+      - name: Cache Rust dependencies
+        uses: actions/cache@v3
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            external/dojo.c/target
+          key: ${{ runner.os }}-cargo-${{ matrix.precision }}-linux-x86_64-editor-${{ hashFiles('**/Cargo.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-cargo-${{ matrix.precision }}-linux-x86_64-editor-
+            ${{ runner.os }}-cargo-${{ matrix.precision }}-linux-x86_64-
+            ${{ runner.os }}-cargo-${{ matrix.precision }}-linux-
+            ${{ runner.os }}-cargo-${{ matrix.precision }}-
+
+      - name: Install scons
+        run: pip install scons
+
+      - name: Cache SCons and godot-cpp build artifacts
+        uses: actions/cache@v3
+        with:
+          path: |
+            .sconsign.dblite
+            demo/addons/godot-dojo/
+            external/godot-cpp/bin/
+            external/godot-cpp/.sconsign.dblite
+            external/godot-cpp/gen/
+            external/godot-cpp/__pycache__/
+          key: ${{ runner.os }}-scons-${{ matrix.precision }}-linux-x86_64-editor-${{ hashFiles('**/*.cpp', '**/*.h', 'SConstruct', 'external/godot-cpp/**/*.cpp', 'external/godot-cpp/**/*.h') }}
+          restore-keys: |
+            ${{ runner.os }}-scons-${{ matrix.precision }}-linux-x86_64-editor-
+            ${{ runner.os }}-scons-${{ matrix.precision }}-linux-x86_64-
+            ${{ runner.os }}-scons-${{ matrix.precision }}-linux-
+
+      - name: Build editor
+        shell: bash
+        run: |
+          set -e
+          PLATFORM_ARG="platform=linux"
+          ARCH_ARG="arch=x86_64"
+          PRECISION_ARG=""
+          export CARGO_BUILD_TARGET=x86_64-unknown-linux-gnu
+
+          # Set precision argument if building double precision
+          if [ "${{ matrix.precision }}" = "double" ]; then
+            PRECISION_ARG="precision=double"
+          fi
+
+          mkdir -p demo/addons/godot-dojo
+
+          # Editor
+          scons $PLATFORM_ARG $ARCH_ARG target=editor $PRECISION_ARG -j2
+
+      - name: Upload binaries for this target
+        uses: actions/upload-artifact@v4
+        with:
+          name: bin-${{ matrix.precision }}-linux-x86_64-editor
           path: |
             demo/addons/godot-dojo/*
             demo/addons/godot-dojo/*.gdextension
@@ -469,6 +561,103 @@ jobs:
             demo/addons/godot-dojo/*.gdextension
           if-no-files-found: error
 
+  build-macos-x86_64-editor:
+    name: Build macOS-x86_64-${{ matrix.precision }}-editor
+    runs-on: macos-14
+    needs: create_release
+    if: always() && (needs.create_release.result == 'success' || !startsWith(github.ref, 'refs/tags/'))
+    strategy:
+      fail-fast: false
+      matrix:
+        precision: [standard, double]
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          submodules: true
+          fetch-depth: 0
+
+      - name: Install build dependencies
+        run: brew install protobuf
+
+      - name: Set up Rust stable
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          toolchain: stable
+
+      - name: Add target for macOS builds
+        run: rustup target add x86_64-apple-darwin
+
+      - name: Cache Rust dependencies
+        uses: actions/cache@v3
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            external/dojo.c/target
+          key: ${{ runner.os }}-cargo-${{ matrix.precision }}-macos-x86_64-editor-${{ hashFiles('**/Cargo.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-cargo-${{ matrix.precision }}-macos-x86_64-editor-
+            ${{ runner.os }}-cargo-${{ matrix.precision }}-macos-x86_64-
+            ${{ runner.os }}-cargo-${{ matrix.precision }}-macos-
+            ${{ runner.os }}-cargo-${{ matrix.precision }}-
+
+      - name: Install scons
+        run: pip install scons
+
+      - name: Cache SCons and godot-cpp build artifacts
+        uses: actions/cache@v3
+        with:
+          path: |
+            .sconsign.dblite
+            demo/addons/godot-dojo/
+            external/godot-cpp/bin/
+            external/godot-cpp/.sconsign.dblite
+            external/godot-cpp/gen/
+            external/godot-cpp/__pycache__/
+          key: ${{ runner.os }}-scons-${{ matrix.precision }}-macos-x86_64-editor-${{ hashFiles('**/*.cpp', '**/*.h', 'SConstruct', 'external/godot-cpp/**/*.cpp', 'external/godot-cpp/**/*.h') }}
+          restore-keys: |
+            ${{ runner.os }}-scons-${{ matrix.precision }}-macos-x86_64-editor-
+            ${{ runner.os }}-scons-${{ matrix.precision }}-macos-x86_64-
+            ${{ runner.os }}-scons-${{ matrix.precision }}-macos-
+
+      - name: Build editor
+        shell: bash
+        run: |
+          set -e
+          PLATFORM_ARG="platform=macos"
+          ARCH_ARG="arch=x86_64"
+          PRECISION_ARG=""
+          export CARGO_BUILD_TARGET=x86_64-apple-darwin
+
+          # Set macOS deployment target to 14.0 to ensure compatibility
+          export MACOSX_DEPLOYMENT_TARGET=14.0
+          # Add deployment target to RUSTFLAGS
+          export RUSTFLAGS="${RUSTFLAGS:+$RUSTFLAGS }-C link-arg=-mmacosx-version-min=14.0"
+          echo "Setting macOS deployment target to 14.0"
+          echo "MACOSX_DEPLOYMENT_TARGET=$MACOSX_DEPLOYMENT_TARGET"
+          echo "RUSTFLAGS=$RUSTFLAGS"
+
+          # Set precision argument if building double precision
+          if [ "${{ matrix.precision }}" = "double" ]; then
+            PRECISION_ARG="precision=double"
+          fi
+
+          mkdir -p demo/addons/godot-dojo
+
+          # Editor
+          scons $PLATFORM_ARG $ARCH_ARG target=editor $PRECISION_ARG -j2
+
+      - name: Upload binaries for this target
+        uses: actions/upload-artifact@v4
+        with:
+          name: bin-${{ matrix.precision }}-macos-x86_64-editor
+          path: |
+            demo/addons/godot-dojo/*
+            demo/addons/godot-dojo/*.gdextension
+          if-no-files-found: error
+
   build-macos-arm64-debug:
     name: Build macOS-arm64-${{ matrix.precision }}-debug
     runs-on: macos-14
@@ -663,6 +852,103 @@ jobs:
             demo/addons/godot-dojo/*.gdextension
           if-no-files-found: error
 
+  build-macos-arm64-editor:
+    name: Build macOS-arm64-${{ matrix.precision }}-editor
+    runs-on: macos-14
+    needs: create_release
+    if: always() && (needs.create_release.result == 'success' || !startsWith(github.ref, 'refs/tags/'))
+    strategy:
+      fail-fast: false
+      matrix:
+        precision: [standard, double]
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          submodules: true
+          fetch-depth: 0
+
+      - name: Install build dependencies
+        run: brew install protobuf
+
+      - name: Set up Rust stable
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          toolchain: stable
+
+      - name: Add target for macOS builds
+        run: rustup target add aarch64-apple-darwin
+
+      - name: Cache Rust dependencies
+        uses: actions/cache@v3
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            external/dojo.c/target
+          key: ${{ runner.os }}-cargo-${{ matrix.precision }}-macos-arm64-editor-${{ hashFiles('**/Cargo.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-cargo-${{ matrix.precision }}-macos-arm64-editor-
+            ${{ runner.os }}-cargo-${{ matrix.precision }}-macos-arm64-
+            ${{ runner.os }}-cargo-${{ matrix.precision }}-macos-
+            ${{ runner.os }}-cargo-${{ matrix.precision }}-
+
+      - name: Install scons
+        run: pip install scons
+
+      - name: Cache SCons and godot-cpp build artifacts
+        uses: actions/cache@v3
+        with:
+          path: |
+            .sconsign.dblite
+            demo/addons/godot-dojo/
+            external/godot-cpp/bin/
+            external/godot-cpp/.sconsign.dblite
+            external/godot-cpp/gen/
+            external/godot-cpp/__pycache__/
+          key: ${{ runner.os }}-scons-${{ matrix.precision }}-macos-arm64-editor-${{ hashFiles('**/*.cpp', '**/*.h', 'SConstruct', 'external/godot-cpp/**/*.cpp', 'external/godot-cpp/**/*.h') }}
+          restore-keys: |
+            ${{ runner.os }}-scons-${{ matrix.precision }}-macos-arm64-editor-
+            ${{ runner.os }}-scons-${{ matrix.precision }}-macos-arm64-
+            ${{ runner.os }}-scons-${{ matrix.precision }}-macos-
+
+      - name: Build editor
+        shell: bash
+        run: |
+          set -e
+          PLATFORM_ARG="platform=macos"
+          ARCH_ARG="arch=arm64"
+          PRECISION_ARG=""
+          export CARGO_BUILD_TARGET=aarch64-apple-darwin
+
+          # Set macOS deployment target to 14.0 to ensure compatibility
+          export MACOSX_DEPLOYMENT_TARGET=14.0
+          # Add deployment target to RUSTFLAGS
+          export RUSTFLAGS="${RUSTFLAGS:+$RUSTFLAGS }-C link-arg=-mmacosx-version-min=14.0"
+          echo "Setting macOS deployment target to 14.0"
+          echo "MACOSX_DEPLOYMENT_TARGET=$MACOSX_DEPLOYMENT_TARGET"
+          echo "RUSTFLAGS=$RUSTFLAGS"
+
+          # Set precision argument if building double precision
+          if [ "${{ matrix.precision }}" = "double" ]; then
+            PRECISION_ARG="precision=double"
+          fi
+
+          mkdir -p demo/addons/godot-dojo
+
+          # Editor
+          scons $PLATFORM_ARG $ARCH_ARG target=editor $PRECISION_ARG -j2
+
+      - name: Upload binaries for this target
+        uses: actions/upload-artifact@v4
+        with:
+          name: bin-${{ matrix.precision }}-macos-arm64-editor
+          path: |
+            demo/addons/godot-dojo/*
+            demo/addons/godot-dojo/*.gdextension
+          if-no-files-found: error
+
   build-windows-debug:
     name: Build Windows-x86_64-${{ matrix.precision }}-debug
     runs-on: windows-latest
@@ -835,10 +1121,96 @@ jobs:
             demo/addons/godot-dojo/*.gdextension
           if-no-files-found: error
 
+  build-windows-editor:
+    name: Build Windows-x86_64-${{ matrix.precision }}-editor
+    runs-on: windows-latest
+    needs: create_release
+    if: always() && (needs.create_release.result == 'success' || !startsWith(github.ref, 'refs/tags/'))
+    strategy:
+      fail-fast: false
+      matrix:
+        precision: [standard, double]
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          submodules: true
+          fetch-depth: 0
+
+      - name: Install build dependencies
+        run: choco install protoc
+
+      - name: Set up Rust stable
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          toolchain: stable
+
+      - name: Cache Rust dependencies
+        uses: actions/cache@v3
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            external/dojo.c/target
+          key: ${{ runner.os }}-cargo-${{ matrix.precision }}-windows-x86_64-editor-${{ hashFiles('**/Cargo.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-cargo-${{ matrix.precision }}-windows-x86_64-editor-
+            ${{ runner.os }}-cargo-${{ matrix.precision }}-windows-x86_64-
+            ${{ runner.os }}-cargo-${{ matrix.precision }}-windows-
+            ${{ runner.os }}-cargo-${{ matrix.precision }}-
+
+      - name: Install scons
+        run: pip install scons
+
+      - name: Cache SCons and godot-cpp build artifacts
+        uses: actions/cache@v3
+        with:
+          path: |
+            .sconsign.dblite
+            demo/addons/godot-dojo/
+            external/godot-cpp/bin/
+            external/godot-cpp/.sconsign.dblite
+            external/godot-cpp/gen/
+            external/godot-cpp/__pycache__/
+          key: ${{ runner.os }}-scons-${{ matrix.precision }}-windows-x86_64-editor-${{ hashFiles('**/*.cpp', '**/*.h', 'SConstruct', 'external/godot-cpp/**/*.cpp', 'external/godot-cpp/**/*.h') }}
+          restore-keys: |
+            ${{ runner.os }}-scons-${{ matrix.precision }}-windows-x86_64-editor-
+            ${{ runner.os }}-scons-${{ matrix.precision }}-windows-x86_64-
+            ${{ runner.os }}-scons-${{ matrix.precision }}-windows-
+
+      - name: Build editor
+        shell: bash
+        run: |
+          set -e
+          PLATFORM_ARG="platform=windows"
+          ARCH_ARG="arch=x86_64"
+          PRECISION_ARG=""
+          export CARGO_BUILD_TARGET=x86_64-pc-windows-msvc
+
+          # Set precision argument if building double precision
+          if [ "${{ matrix.precision }}" = "double" ]; then
+            PRECISION_ARG="precision=double"
+          fi
+
+          mkdir -p demo/addons/godot-dojo
+
+          # Editor
+          scons $PLATFORM_ARG $ARCH_ARG target=editor $PRECISION_ARG -j2
+
+      - name: Upload binaries for this target
+        uses: actions/upload-artifact@v4
+        with:
+          name: bin-${{ matrix.precision }}-windows-x86_64-editor
+          path: |
+            demo/addons/godot-dojo/*.dll
+            demo/addons/godot-dojo/*.gdextension
+          if-no-files-found: error
+
   package:
     name: Combine all binaries and create zip files
     runs-on: ubuntu-latest
-    needs: [create_release, build-linux-debug, build-linux-release, build-macos-x86_64-debug, build-macos-x86_64-release, build-macos-arm64-debug, build-macos-arm64-release, build-windows-debug, build-windows-release]
+    needs: [create_release, build-linux-debug, build-linux-release, build-linux-editor, build-macos-x86_64-debug, build-macos-x86_64-release, build-macos-x86_64-editor, build-macos-arm64-debug, build-macos-arm64-release, build-macos-arm64-editor, build-windows-debug, build-windows-release, build-windows-editor]
     if: startsWith(github.ref, 'refs/tags/') && needs.create_release.result == 'success'
 
     steps:
@@ -855,12 +1227,12 @@ jobs:
       - name: Prepare folders for binaries
         run: |
           # Standard precision binaries
-          mkdir -p godot-dojo-bin/addons/godot-dojo
-          find all_bins/bin-standard-*-debug all_bins/bin-standard-*-release -type f -exec cp {} godot-dojo-bin/addons/godot-dojo/ \;
+          mkdir -p godot-dojo-bin/addons/godot-dojo/bin
+          find all_bins/bin-standard-* -type f -exec cp {} godot-dojo-bin/addons/godot-dojo/bin/ \;
 
           # Double precision binaries
-          mkdir -p godot-dojo-double-bin/addons/godot-dojo
-          find all_bins/bin-double-*-debug all_bins/bin-double-*-release -type f -exec cp {} godot-dojo-double-bin/addons/godot-dojo/ \;
+          mkdir -p godot-dojo-double-bin/addons/godot-dojo/bin
+          find all_bins/bin-double-* -type f -exec cp {} godot-dojo-double-bin/addons/godot-dojo/bin/ \;
 
       - name: Package into zip files
         run: |
