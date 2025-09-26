@@ -8,6 +8,7 @@
 #include "dojo_c_gdextension.h"
 
 #include "gdextension_interface.h"
+#include "editor/dojo_editor_plugin.h"
 #include "godot_cpp/core/defs.hpp"
 #include "godot_cpp/godot.hpp"
 #ifdef WEB_ENABLED
@@ -67,9 +68,9 @@ void initialize_dojoc_module(ModuleInitializationLevel p_level)
     if (p_level == MODULE_INITIALIZATION_LEVEL_SCENE)
     {
         // Tools
-        #ifdef WEB_ENABLED
+#ifdef WEB_ENABLED
         GDREGISTER_CLASS(DojoBridge);
-        #endif
+#endif
 
         GDREGISTER_CLASS(DojoHelpers);
         // DojoTypes
@@ -83,7 +84,6 @@ void initialize_dojoc_module(ModuleInitializationLevel p_level)
         GDREGISTER_CLASS(I128);
         GDREGISTER_CLASS(U256);
         // Classes
-        GDREGISTER_CLASS(DojoC);
         GDREGISTER_CLASS(ToriiClient);
         GDREGISTER_CLASS(ControllerAccount);
         GDREGISTER_CLASS(Account);
@@ -117,21 +117,17 @@ void initialize_dojoc_module(ModuleInitializationLevel p_level)
         GDREGISTER_CLASS(EntitySubscription);
         GDREGISTER_CLASS(TransactionSubscription);
         GDREGISTER_CLASS(StarknetSubscription);
+        GDREGISTER_CLASS(DojoC);
     }
 
     if (p_level == MODULE_INITIALIZATION_LEVEL_EDITOR)
     {
-        // EditorExportPlugin classes are automatically discovered by the editor
-        // once they are registered with ClassDB. No manual registration is needed.
+        GDREGISTER_CLASS(DojoEditorPlugin);
     }
 }
 
 void uninitialize_dojoc_module(ModuleInitializationLevel p_level)
 {
-    if (p_level != MODULE_INITIALIZATION_LEVEL_SCENE)
-    {
-        return;
-    }
 }
 
 extern "C" {

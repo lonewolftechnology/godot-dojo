@@ -26,6 +26,10 @@ void DojoC::_bind_methods()
 
 DojoC::DojoC()
 {
+    if (Engine::get_singleton()->is_editor_hint())
+    {
+        Logger::debug_extra("DojoC", "built in editor mode");
+    }
     singleton = this;
     enabled = true;
     init_config();
@@ -34,13 +38,13 @@ DojoC::DojoC()
 DojoC::~DojoC()
 {
     singleton = nullptr;
+    enabled = false;
 }
 
 void DojoC::init_config(bool reset)
 {
     if (Engine::get_singleton()->is_editor_hint())
     {
-        Logger::debug_extra("DojoC", "is running in editor mode");
         set_setting("dojo/config/free_controller_on_exit", false, reset);
         set_setting("dojo/config/katana_url", "http://localhost:5050", reset);
         set_setting("dojo/config/torii_url", "http://localhost:8080", reset);
@@ -62,7 +66,7 @@ void DojoC::init_config(bool reset)
 
         // Format: [VariantType]/[Hint]:[ClassName]
         Dictionary godot_info = Engine::get_singleton()->get_version_info();
-            set_setting("dojo/config/policies", Dictionary(), reset);
+        set_setting("dojo/config/policies", Dictionary(), reset);
 
         if ((int)godot_info["major"] > 4 || ((int)godot_info["major"] == 4 && (int)godot_info["minor"] >= 4))
         {
