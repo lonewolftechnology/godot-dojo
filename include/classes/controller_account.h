@@ -15,14 +15,6 @@
 #include "resources/dojo_policies.h"
 using namespace godot;
 
-/**
- * @class ControllerAccount
- * @brief Wrapper para DOJO::ControllerAccount que gestiona cuentas de controlador en Dojo
- *
- * Esta clase proporciona una interfaz Godot para interactuar con cuentas de controlador
- * del ecosistema Dojo, incluyendo funcionalidades de autenticación, ejecución de transacciones
- * y gestión de sesiones.
- */
 class ControllerAccount : public Node
 {
     GDCLASS(ControllerAccount, Node)
