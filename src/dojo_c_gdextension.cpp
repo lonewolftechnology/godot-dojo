@@ -73,7 +73,7 @@ void DojoC::init_config(bool reset)
 
         // set_setting("dojo/config/chain_id", "KATANA", reset);
 
-        set_setting("dojo/config/fixed_point/default", 40, reset);
+        set_setting("dojo/config/fixed_point/default", 128, reset);
         set_setting("dojo/config/fixed_point/64", 40, reset);
         set_setting("dojo/config/fixed_point/128", 60, reset);
         set_setting("dojo/config/fixed_point/256", 123, reset);
