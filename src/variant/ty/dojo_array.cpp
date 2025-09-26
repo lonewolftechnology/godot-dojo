@@ -84,8 +84,6 @@ Variant DojoArray::CArrayTyToVariant(DOJO::CArrayTy array_ty)
     std::vector<DOJO::Ty> array_ty_vector(array_ty.data, array_ty.data + array_ty.data_len);
     Array result;
 
-    for (const auto& array_ty_element : array_ty_vector) {
-        DojoTy dojo_ty = {array_ty_element};
     for (const auto& array_ty_element : array_ty_vector)
     {
         Ref<DojoTy> dojo_ty = memnew(DojoTy(array_ty_element));
@@ -96,8 +94,22 @@ Variant DojoArray::CArrayTyToVariant(DOJO::CArrayTy array_ty)
     return result;
 }
 
+Variant DojoArray::CArrayTokenToVariant(DOJO::CArrayToken array)
+{
+    Array result = {};
+    std::vector<DOJO::Token> array_token_vector(array.data, array.data + array.data_len);
+    for (const auto& token : array_token_vector)
+    {
         Dictionary data;
-        data[dojo_ty.get_name()] = dojo_ty.get_value();
+        data["contract_address"] = FieldElement::get_as_string_no_ptr(token.contract_address);
+        Ref<OptionU256> token_id = memnew(OptionU256(token.token_id));
+        data["token_id"] = token_id->get_value();
+        data["name"] = token.name;
+        data["symbol"] = token.symbol;
+        data["decimals"] = token.decimals;
+        data["metadata"] = token.metadata;
+        Ref<OptionU256> total_supply = memnew(OptionU256(token.total_supply));
+        data["total_supply"] = total_supply->get_value();
         result.append(data);
     }
     return result;
@@ -272,10 +284,26 @@ Variant DojoArray::CArrayFieldElementToVariant(DOJO::CArrayFieldElement array)
     return result_array;
 }
 
-Variant DojoArray::CArrayTokenContractToVariant(DOJO::CArrayTokenContract array) {
-    // TODO:
-    Logger::warning("CArrayTokenContract not implemented");
-    return Array();
+Variant DojoArray::CArrayTokenContractToVariant(DOJO::CArrayTokenContract array)
+{
+    Array result;
+    std::vector<DOJO::TokenContract> elements(array.data, array.data + array.data_len);
+
+    for (const auto& element : elements)
+    {
+        Dictionary element_dict = {};
+
+        Ref<FieldElement> contract_address = memnew(FieldElement(element.contract_address));
+        element_dict["contract_address"] = contract_address->to_string();
+        element_dict["name"] = element.name;
+        element_dict["symbol"] = element.symbol;
+        element_dict["decimals"] = element.decimals;
+        element_dict["metadata"] = element.metadata;
+        element_dict["total_supply"] = memnew(OptionU256(element.total_supply));
+
+        result.append(element_dict);
+    }
+    return result;
 }
 
 Variant DojoArray::CArrayCOptionFieldElementToVariant(DOJO::CArrayCOptionFieldElement array)
