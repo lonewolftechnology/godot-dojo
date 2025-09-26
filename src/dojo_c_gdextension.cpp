@@ -13,16 +13,6 @@
 #include "godot_cpp/core/version.hpp"
 DojoC* DojoC::singleton = nullptr;
 
-void DojoC::_bind_methods()
-{
-    ClassDB::bind_method(D_METHOD("set_enabled", "p_enabled"), &DojoC::set_enabled);
-    ClassDB::bind_method(D_METHOD("get_enabled"), &DojoC::get_enabled);
-
-    ClassDB::bind_static_method("DojoC", D_METHOD("init_config", "reset"), &DojoC::init_config);
-    ClassDB::bind_static_method("DojoC", D_METHOD("init_setting", "setting", "value", "force"), &DojoC::set_setting);
-    // ClassDB::bind_method(D_METHOD("controller_connect"), &DojoC::controller_connect);
-    ADD_PROPERTY(PropertyInfo(Variant::BOOL, "is_enabled"), "set_enabled", "get_enabled");
-}
 
 DojoC::DojoC()
 {
