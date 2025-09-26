@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="DojoTransactionFilter" inherits="Resource" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://raw.githubusercontent.com/godotengine/godot/master/doc/class.xsd">
+	<brief_description>
+	</brief_description>
+	<description>
+	</description>
+	<tutorials>
+	</tutorials>
+	<members>
+		<member name="caller_addresses" type="String[]" setter="set_caller_addresses" getter="get_caller_addresses" default="[]">
+		</member>
+		<member name="contract_addresses" type="String[]" setter="set_contract_addresses" getter="get_contract_addresses" default="[]">
+		</member>
+		<member name="entrypoints" type="String[]" setter="set_entrypoints" getter="get_entrypoints" default="[]">
+		</member>
+		<member name="from_block" type="int" setter="set_from_block" getter="get_from_block" default="0">
+		</member>
+		<member name="model_selectors" type="String[]" setter="set_model_selectors" getter="get_model_selectors" default="[]">
+		</member>
+		<member name="to_block" type="int" setter="set_to_block" getter="get_to_block" default="0">
+		</member>
+		<member name="transaction_hashes" type="String[]" setter="set_transaction_hashes" getter="get_transaction_hashes" default="[]">
+		</member>
+	</members>
+</class>

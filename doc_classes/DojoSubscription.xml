@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="DojoSubscription" inherits="Resource" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://raw.githubusercontent.com/godotengine/godot/master/doc/class.xsd">
+	<brief_description>
+	</brief_description>
+	<description>
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="cancel">
+			<return type="void" />
+			<description>
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="callback" type="Callable" setter="set_callback" getter="get_callback" default="Callable()">
+		</member>
+		<member name="name" type="String" setter="set_name" getter="get_name" default="&quot;DojoSubscription&quot;">
+		</member>
+		<member name="type" type="int" setter="" getter="get_type" enum="DojoSubscription.Type" default="8">
+		</member>
+	</members>
+	<constants>
+		<constant name="EVENT" value="0" enum="Type">
+		</constant>
+		<constant name="MESSAGE" value="1" enum="Type">
+		</constant>
+		<constant name="ENTITY" value="2" enum="Type">
+		</constant>
+		<constant name="TOKEN" value="3" enum="Type">
+		</constant>
+		<constant name="TOKEN_BALANCE" value="4" enum="Type">
+		</constant>
+		<constant name="TRANSACTION" value="5" enum="Type">
+		</constant>
+		<constant name="STARKNET" value="6" enum="Type">
+		</constant>
+		<constant name="CONTRACT" value="7" enum="Type">
+		</constant>
+		<constant name="NIL" value="8" enum="Type">
+		</constant>
+	</constants>
+</class>

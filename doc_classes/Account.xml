@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="Account" inherits="Node" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://raw.githubusercontent.com/godotengine/godot/master/doc/class.xsd">
+	<brief_description>
+	</brief_description>
+	<description>
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="create">
+			<return type="void" />
+			<param index="0" name="rpc_url" type="String" />
+			<param index="1" name="address" type="String" />
+			<param index="2" name="private_key" type="String" />
+			<description>
+			</description>
+		</method>
+		<method name="deploy_burner">
+			<return type="void" />
+			<param index="0" name="master_account" type="Account" />
+			<param index="1" name="signing_key" type="String" />
+			<description>
+			</description>
+		</method>
+		<method name="execute_raw">
+			<return type="void" />
+			<param index="0" name="to" type="String" />
+			<param index="1" name="selector" type="String" />
+			<param index="2" name="calldata" type="Variant" default="[]" />
+			<description>
+			</description>
+		</method>
+		<method name="get_address" qualifiers="const">
+			<return type="String" />
+			<description>
+			</description>
+		</method>
+		<method name="get_chain_id" qualifiers="const">
+			<return type="String" />
+			<param index="0" name="parse" type="bool" default="false" />
+			<description>
+			</description>
+		</method>
+		<method name="get_nonce" qualifiers="const">
+			<return type="String" />
+			<description>
+			</description>
+		</method>
+		<method name="is_account_valid" qualifiers="const">
+			<return type="bool" />
+			<description>
+			</description>
+		</method>
+		<method name="set_block_id">
+			<return type="void" />
+			<param index="0" name="block_id" type="String" default="&quot;&quot;" />
+			<description>
+			</description>
+		</method>
+		<method name="start_provider">
+			<return type="void" />
+			<description>
+			</description>
+		</method>
+	</methods>
+	<signals>
+		<signal name="transaction_executed">
+			<param index="0" name="success_message" type="Dictionary" />
+			<description>
+			</description>
+		</signal>
+		<signal name="transaction_failed">
+			<param index="0" name="error_message" type="Dictionary" />
+			<description>
+			</description>
+		</signal>
+	</signals>
+</class>

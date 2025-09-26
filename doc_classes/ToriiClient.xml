@@ -1,0 +1,281 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="ToriiClient" inherits="Node" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://raw.githubusercontent.com/godotengine/godot/master/doc/class.xsd">
+	<brief_description>
+	</brief_description>
+	<description>
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="cancel_all_subscriptions">
+			<return type="void" />
+			<description>
+			</description>
+		</method>
+		<method name="create_client">
+			<return type="bool" />
+			<description>
+			</description>
+		</method>
+		<method name="disconnect_client">
+			<return type="void" />
+			<param index="0" name="send_signal" type="bool" />
+			<description>
+			</description>
+		</method>
+		<method name="get_client_info" qualifiers="const">
+			<return type="Dictionary" />
+			<description>
+			</description>
+		</method>
+		<method name="get_connection_status" qualifiers="const">
+			<return type="Dictionary" />
+			<description>
+			</description>
+		</method>
+		<method name="get_controller_info">
+			<return type="Dictionary" />
+			<param index="0" name="controller_address" type="String" />
+			<description>
+			</description>
+		</method>
+		<method name="get_controllers">
+			<return type="Dictionary[]" />
+			<param index="0" name="query" type="DojoControllerQuery" />
+			<description>
+			</description>
+		</method>
+		<method name="get_entities">
+			<return type="Dictionary[]" />
+			<param index="0" name="query" type="DojoQuery" />
+			<description>
+			</description>
+		</method>
+		<method name="get_token_balances" qualifiers="const">
+			<return type="Dictionary[]" />
+			<param index="0" name="query" type="DojoTokenBalanceQuery" />
+			<description>
+			</description>
+		</method>
+		<method name="get_token_collections" qualifiers="const">
+			<return type="Dictionary[]" />
+			<param index="0" name="query" type="DojoContractQuery" />
+			<description>
+			</description>
+		</method>
+		<method name="get_token_info" qualifiers="const">
+			<return type="Dictionary" />
+			<param index="0" name="token_address" type="String" />
+			<description>
+			</description>
+		</method>
+		<method name="get_tokens" qualifiers="const">
+			<return type="Dictionary[]" />
+			<param index="0" name="query" type="DojoTokenQuery" />
+			<description>
+			</description>
+		</method>
+		<method name="get_world_metadata">
+			<return type="Dictionary" />
+			<description>
+			</description>
+		</method>
+		<method name="is_client_connected" qualifiers="const">
+			<return type="bool" />
+			<description>
+			</description>
+		</method>
+		<method name="on_contract_update">
+			<return type="void" />
+			<param index="0" name="callback" type="Callable" />
+			<param index="1" name="subscription" type="ContractSubscription" />
+			<description>
+			</description>
+		</method>
+		<method name="on_entity_state_update">
+			<return type="void" />
+			<param index="0" name="callback" type="Callable" />
+			<param index="1" name="subscription" type="EntitySubscription" />
+			<description>
+			</description>
+		</method>
+		<method name="on_event_message_update">
+			<return type="void" />
+			<param index="0" name="callback" type="Callable" />
+			<param index="1" name="subscription" type="MessageSubscription" />
+			<description>
+			</description>
+		</method>
+		<method name="on_starknet_event">
+			<return type="void" />
+			<param index="0" name="callback" type="Callable" />
+			<param index="1" name="subscription" type="StarknetSubscription" />
+			<description>
+			</description>
+		</method>
+		<method name="on_token_balance_update">
+			<return type="void" />
+			<param index="0" name="callback" type="Callable" />
+			<param index="1" name="subscription" type="TokenBalanceSubscription" />
+			<description>
+			</description>
+		</method>
+		<method name="on_token_update">
+			<return type="void" />
+			<param index="0" name="callback" type="Callable" />
+			<param index="1" name="subscription" type="TokenSubscription" />
+			<description>
+			</description>
+		</method>
+		<method name="on_transaction">
+			<return type="void" />
+			<param index="0" name="callback" type="Callable" />
+			<param index="1" name="subscription" type="TransactionSubscription" />
+			<description>
+			</description>
+		</method>
+		<method name="publish_message">
+			<return type="bool" />
+			<param index="0" name="message_data" type="String" />
+			<param index="1" name="signature_felts" type="Array" />
+			<description>
+			</description>
+		</method>
+		<method name="publish_typed_message">
+			<return type="bool" />
+			<param index="0" name="typed_data" type="Dictionary" />
+			<param index="1" name="signature_felts" type="Array" />
+			<description>
+			</description>
+		</method>
+		<method name="refresh_metadata">
+			<return type="bool" />
+			<description>
+			</description>
+		</method>
+		<method name="update_contract_subscription">
+			<return type="void" />
+			<param index="0" name="subscription" type="ContractSubscription" />
+			<param index="1" name="callback" type="Callable" default="Callable()" />
+			<description>
+			</description>
+		</method>
+		<method name="update_entity_subscription">
+			<return type="void" />
+			<param index="0" name="subscription" type="EntitySubscription" />
+			<param index="1" name="callback" type="Callable" default="Callable()" />
+			<description>
+			</description>
+		</method>
+		<method name="update_event_message_subscription">
+			<return type="void" />
+			<param index="0" name="subscription" type="MessageSubscription" />
+			<param index="1" name="callback" type="Callable" default="Callable()" />
+			<description>
+			</description>
+		</method>
+		<method name="update_starknet_event_subscription">
+			<return type="void" />
+			<param index="0" name="subscription" type="StarknetSubscription" />
+			<param index="1" name="callback" type="Callable" default="Callable()" />
+			<description>
+			</description>
+		</method>
+		<method name="update_subscription">
+			<return type="void" />
+			<param index="0" name="subscription" type="DojoSubscription" />
+			<param index="1" name="callback" type="Callable" default="Callable()" />
+			<description>
+			</description>
+		</method>
+		<method name="update_token_balance_subscription">
+			<return type="void" />
+			<param index="0" name="subscription" type="TokenBalanceSubscription" />
+			<param index="1" name="callback" type="Callable" default="Callable()" />
+			<description>
+			</description>
+		</method>
+		<method name="update_token_subscription">
+			<return type="void" />
+			<param index="0" name="subscription" type="TokenSubscription" />
+			<param index="1" name="callback" type="Callable" default="Callable()" />
+			<description>
+			</description>
+		</method>
+		<method name="update_transaction_subscription">
+			<return type="void" />
+			<param index="0" name="subscription" type="TransactionSubscription" />
+			<param index="1" name="callback" type="Callable" default="Callable()" />
+			<description>
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="events" type="Array" setter="set_events" getter="get_events" default="[]">
+		</member>
+		<member name="logger_callback" type="Callable" setter="set_logger_callback" getter="get_logger_callback" default="Callable()">
+		</member>
+		<member name="models" type="Array" setter="set_models" getter="get_models" default="[]">
+		</member>
+		<member name="torii_url" type="String" setter="set_torii_url" getter="get_torii_url" default="&quot;&quot;">
+		</member>
+		<member name="world_address" type="String" setter="set_world_address" getter="get_world_address" default="&quot;&quot;">
+		</member>
+	</members>
+	<signals>
+		<signal name="client_connected">
+			<param index="0" name="success" type="bool" />
+			<description>
+			</description>
+		</signal>
+		<signal name="client_disconnected">
+			<description>
+			</description>
+		</signal>
+		<signal name="entities_received">
+			<param index="0" name="entities" type="Dictionary[]" />
+			<description>
+			</description>
+		</signal>
+		<signal name="entity_updated">
+			<param index="0" name="entity_data" type="Dictionary" />
+			<description>
+			</description>
+		</signal>
+		<signal name="event_received">
+			<param index="0" name="event_data" type="Dictionary" />
+			<description>
+			</description>
+		</signal>
+		<signal name="message_published">
+			<param index="0" name="message_hash" type="String" />
+			<description>
+			</description>
+		</signal>
+		<signal name="metadata_updated">
+			<param index="0" name="metadata" type="Dictionary" />
+			<description>
+			</description>
+		</signal>
+		<signal name="subscription_created">
+			<param index="0" name="subscription_name" type="String" />
+			<description>
+			</description>
+		</signal>
+		<signal name="subscription_error">
+			<param index="0" name="error_message" type="String" />
+			<description>
+			</description>
+		</signal>
+		<signal name="token_balance_updated">
+			<param index="0" name="balance_data" type="Dictionary" />
+			<description>
+			</description>
+		</signal>
+		<signal name="transaction_confirmed">
+			<param index="0" name="transaction_hash" type="String" />
+			<description>
+			</description>
+		</signal>
+	</signals>
+</class>

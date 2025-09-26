@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="DojoTokenBalanceQuery" inherits="DojoQueryBase" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://raw.githubusercontent.com/godotengine/godot/master/doc/class.xsd">
+	<brief_description>
+	</brief_description>
+	<description>
+	</description>
+	<tutorials>
+	</tutorials>
+	<members>
+		<member name="account_addresses" type="String[]" setter="set_account_addresses" getter="get_account_addresses" default="[]">
+		</member>
+		<member name="contract_addresses" type="String[]" setter="set_contract_addresses" getter="get_contract_addresses" default="[]">
+		</member>
+		<member name="token_ids" type="String[]" setter="set_token_ids" getter="get_token_ids" default="[]">
+		</member>
+	</members>
+</class>

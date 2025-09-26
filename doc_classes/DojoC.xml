@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="DojoC" inherits="Object" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://raw.githubusercontent.com/godotengine/godot/master/doc/class.xsd">
+	<brief_description>
+	</brief_description>
+	<description>
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="init_config" qualifiers="static">
+			<return type="void" />
+			<param index="0" name="reset" type="bool" />
+			<description>
+			</description>
+		</method>
+		<method name="init_setting" qualifiers="static">
+			<return type="void" />
+			<param index="0" name="setting" type="String" />
+			<param index="1" name="value" type="Variant" />
+			<param index="2" name="force" type="bool" />
+			<description>
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="is_enabled" type="bool" setter="set_enabled" getter="get_enabled" default="true">
+		</member>
+	</members>
+</class>

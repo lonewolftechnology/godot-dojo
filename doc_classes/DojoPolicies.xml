@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="DojoPolicies" inherits="Resource" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://raw.githubusercontent.com/godotengine/godot/master/doc/class.xsd">
+	<brief_description>
+	</brief_description>
+	<description>
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="add_policy">
+			<return type="void" />
+			<param index="0" name="policy" type="Variant" />
+			<description>
+			</description>
+		</method>
+		<method name="from_dictionary" qualifiers="static">
+			<return type="DojoPolicies" />
+			<param index="0" name="dictionary" type="Dictionary" />
+			<description>
+			</description>
+		</method>
+		<method name="to_dictionary" qualifiers="const">
+			<return type="Dictionary" />
+			<description>
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="contract" type="String" setter="set_dojo_contract" getter="get_dojo_contract" default="&quot;&quot;">
+		</member>
+		<member name="name" type="String" setter="set_name" getter="get_name" default="&quot;&quot;">
+		</member>
+		<member name="policies" type="DojoPolicy[]" setter="set_policies" getter="get_policies" default="[]">
+		</member>
+	</members>
+</class>

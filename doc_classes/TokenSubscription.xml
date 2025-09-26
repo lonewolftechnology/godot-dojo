@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="TokenSubscription" inherits="DojoSubscription" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://raw.githubusercontent.com/godotengine/godot/master/doc/class.xsd">
+	<brief_description>
+	</brief_description>
+	<description>
+	</description>
+	<tutorials>
+	</tutorials>
+	<members>
+		<member name="contract_addresses" type="String[]" setter="set_contract_addresses" getter="get_contract_addresses" default="[]">
+		</member>
+		<member name="name" type="String" setter="set_name" getter="get_name" overrides="DojoSubscription" default="&quot;TokenSubscription&quot;" />
+		<member name="token_ids" type="String[]" setter="set_token_ids" getter="get_token_ids" default="[]">
+		</member>
+		<member name="type" type="int" setter="" getter="get_type" overrides="DojoSubscription" enum="DojoSubscription.Type" default="3" />
+	</members>
+</class>

@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="DojoQueryBase" inherits="Resource" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://raw.githubusercontent.com/godotengine/godot/master/doc/class.xsd">
+	<brief_description>
+	</brief_description>
+	<description>
+	</description>
+	<tutorials>
+	</tutorials>
+	<members>
+		<member name="cursor" type="String" setter="set_cursor" getter="get_cursor" default="&quot;&quot;">
+		</member>
+		<member name="direction" type="int" setter="set_direction" getter="get_direction" enum="dojo_bindings.PaginationDirection" default="0">
+		</member>
+		<member name="limit" type="int" setter="set_limit" getter="get_limit" default="10">
+		</member>
+	</members>
+	<constants>
+		<constant name="DOJO::PaginationDirection::Forward" value="0" enum="PaginationDirection">
+		</constant>
+		<constant name="DOJO::PaginationDirection::Backward" value="1" enum="PaginationDirection">
+		</constant>
+	</constants>
+</class>
