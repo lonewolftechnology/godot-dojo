@@ -128,6 +128,6 @@ DojoPrimitive::DojoPrimitive(const DOJO::Primitive& primitive)
         is_felt = true;
         break;
     }
-    Logger::debug_extra("Primitive", value);
+    Logger::success_extra("Primitive", value);
     Logger::debug_extra("Primitive Tag", TagToString(primitive.tag));
 }

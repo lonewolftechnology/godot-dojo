@@ -38,14 +38,16 @@ FieldElement::FieldElement(const String& hex_str, size_t max_bytes)
 
     // If the hex string has an odd number of characters, treat the first char as a single nibble.
     size_t in_idx = start_idx;
-    if (hex_length % 2 != 0) {
+    if (hex_length % 2 != 0)
+    {
         String nibble_str = hex_str.substr(static_cast<int64_t>(in_idx), 1);
         felt->data[out_start_idx] = static_cast<uint8_t>(nibble_str.hex_to_int());
         in_idx++;
         out_start_idx++;
     }
 
-    for (size_t i = out_start_idx; i < max_bytes; ++i) {
+    for (size_t i = out_start_idx; i < max_bytes; ++i)
+    {
         String byte_str = hex_str.substr(static_cast<int64_t>(in_idx), 2);
         felt->data[i] = static_cast<uint8_t>(byte_str.hex_to_int());
         in_idx += 2;
@@ -62,7 +64,15 @@ FieldElement::FieldElement(int enum_value)
 FieldElement::FieldElement(DOJO::FieldElement* existing_felt)
 {
     felt = new DOJO::FieldElement();
-    *felt = *existing_felt;
+    if (existing_felt)
+    {
+        *felt = *existing_felt;
+    }
+    else
+    {
+        memset(felt->data, 0, 32);
+        Logger::warning("FieldElement created from a null pointer. Initializing with zeros.");
+    }
 }
 
 FieldElement::FieldElement(DOJO::FieldElement existing_felt)
@@ -195,7 +205,8 @@ DOJO::FieldElement FieldElement::from_int(int64_t value)
 
     // Place the 64-bit integer in the last 8 bytes of the 32-byte array,
     // in big-endian format.
-    for (int i = 0; i < 8; ++i) {
+    for (int i = 0; i < 8; ++i)
+    {
         field_element.data[31 - i] = (u_value >> (i * 8)) & 0xFF;
     }
     return field_element;
@@ -215,6 +226,11 @@ String FieldElement::bytearray_deserialize(const uintptr_t& data_len = 32)
 
 String FieldElement::get_as_string(DOJO::FieldElement* _felt)
 {
+    if (!_felt)
+    {
+        Logger::error("get_as_string called with a null pointer");
+        return "0x0";
+    }
     String ret = "0x";
     for (unsigned char i : _felt->data)
     {
@@ -226,6 +242,7 @@ String FieldElement::get_as_string(DOJO::FieldElement* _felt)
 
 String FieldElement::get_as_string_no_ptr(DOJO::FieldElement _felt)
 {
+
     String ret = "0x";
     for (unsigned char i : _felt.data)
     {

@@ -118,12 +118,12 @@ String Account::get_chain_id(const bool& parse) const
         return "";
     }
     DOJO::FieldElement chain_id = DOJO::account_chain_id(account);
-    FieldElement chain_id_felt(chain_id);
+    Ref<FieldElement> chain_id_felt = memnew(FieldElement(chain_id));
     if (parse)
     {
-        return chain_id_felt.parse_cairo();
+        return chain_id_felt->parse_cairo();
     }
-    return chain_id_felt.to_string();
+    return chain_id_felt->to_string();
 }
 
 void Account::set_block_id(const String& block_id)

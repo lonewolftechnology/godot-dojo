@@ -13,7 +13,7 @@ using namespace godot;
 class DojoQuery : public DojoQueryBase
 {
     GDCLASS(DojoQuery, DojoQueryBase);
-    Ref<OptionClause> clause = {};
+    Ref<OptionClause> clause;
     bool no_hashed_keys;
     TypedArray<String> models;
     bool historical;

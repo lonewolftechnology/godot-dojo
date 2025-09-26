@@ -122,6 +122,10 @@ void ControllerAccount::init_provider()
 
 void ControllerAccount::create(const Ref<DojoPolicies>& policies_data)
 {
+#ifdef ANDROID_ENABLED
+    Logger::error("Not implemented yet");
+    return;
+#else
     check_rpc_url();
 
     if (policies_data == nullptr || policies_data->is_empty())
@@ -145,15 +149,11 @@ void ControllerAccount::create(const Ref<DojoPolicies>& policies_data)
     uintptr_t policies_len = policies_vector.size();
     String _chain = get_chain_id(false);
     Logger::debug_extra("ControllerAccount", "Chain ID: ", _chain);
-    FieldElement katana = {_chain};
-    Logger::custom_color("azure", "katana", katana.to_string());
-#ifdef ANDROID_ENABLED
-    Logger::error("Not implemented yet");
-    return;
-#else
+    Ref<FieldElement> katana = memnew(FieldElement(_chain));
+    Logger::custom_color("azure", "katana", katana->to_string());
 
     DOJO::ResultControllerAccount resControllerAccount =
-        DOJO::controller_account(policies_vector.data(), policies_len, katana.get_felt_no_ptr());
+        DOJO::controller_account(policies_vector.data(), policies_len, katana->get_felt_no_ptr());
 
     if (resControllerAccount.tag == DOJO::OkControllerAccount)
     {
@@ -212,27 +212,19 @@ bool ControllerAccount::is_controller_connected() const
 String ControllerAccount::get_chain_id(const bool& parse) const
 {
     if (Engine::get_singleton()->is_editor_hint()) return chain_id;
+
     if (chain_id.is_empty() || !is_controller_connected())
     {
         Logger::debug_extra("ControllerAccount", "Getting chain id from provider by creating an Account");
-        Account burner_account = {};
+        Account* burner_account = memnew(Account);
         String _rpc_url = ProjectSettings::get_singleton()->get("dojo/config/katana_url");
         String _address = ProjectSettings::get_singleton()->get("dojo/config/account/address");
         String _private_key = ProjectSettings::get_singleton()->get("dojo/config/account/private_key");
-        // if (provider != nullptr)
-        // {
-        //     burner_account.set_provider(provider);
-        // }
-        burner_account.create(_rpc_url, _address, _private_key);
-        // if (provider != nullptr)
-        // {
-        //     burner_account.set_provider(nullptr); // To avoid freeing the provider from ControllerAccoount
-        // }
-
-        chain_id = burner_account.get_chain_id(true);
-        chain_id_hex = burner_account.get_chain_id(false);
-        Logger::debug_extra("CHAINID", chain_id, burner_account.get_chain_id());
-        burner_account.queue_free();
+        burner_account->create(_rpc_url, _address, _private_key);
+        chain_id = burner_account->get_chain_id(true);
+        chain_id_hex = burner_account->get_chain_id(false);
+        Logger::debug_extra("CHAINID", chain_id, burner_account->get_chain_id());
+        burner_account->queue_free();
     }
     if (parse)
     {

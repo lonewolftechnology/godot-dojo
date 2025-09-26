@@ -67,8 +67,8 @@ public:
     bool is_client_connected() const;
     bool is_callable_valid() const;
     void callable_call(const char* msg) const;
-    FieldElement get_world() const;
-    void set_world(const FieldElement& n_world);
+    String get_world() const;
+    void set_world(const dojo_bindings::FieldElement& n_world);
 
     Dictionary get_world_metadata();
     bool refresh_metadata();

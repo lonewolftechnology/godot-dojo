@@ -32,7 +32,7 @@ public:
             for (int i = 0; i < transaction_hashes.size(); ++i) {
                 Variant v = transaction_hashes[i];
                 String s = v;
-                data[i] = FieldElement(s).get_felt_no_ptr();
+                data[i] = FieldElement::from_string(s);
             }
             filter.transaction_hashes = {data, (uintptr_t)transaction_hashes.size()};
         } else {
@@ -44,7 +44,7 @@ public:
             for (int i = 0; i < caller_addresses.size(); ++i) {
                 Variant v = caller_addresses[i];
                 String s = v;
-                data[i] = FieldElement(s).get_felt_no_ptr();
+                data[i] = FieldElement::from_string(s);
             }
             filter.caller_addresses = {data, (uintptr_t)caller_addresses.size()};
         } else {
@@ -56,7 +56,7 @@ public:
             for (int i = 0; i < contract_addresses.size(); ++i) {
                 Variant v = contract_addresses[i];
                 String s = v;
-                data[i] = FieldElement(s).get_felt_no_ptr();
+                data[i] = FieldElement::from_string(s);
             }
             filter.contract_addresses = {data, (uintptr_t)contract_addresses.size()};
         } else {
@@ -82,7 +82,7 @@ public:
             for (int i = 0; i < model_selectors.size(); ++i) {
                 Variant v = model_selectors[i];
                 String s = v;
-                data[i] = FieldElement(s).get_felt_no_ptr();
+                data[i] = FieldElement::from_string(s);
             }
             filter.model_selectors = {data, (uintptr_t)model_selectors.size()};
         } else {

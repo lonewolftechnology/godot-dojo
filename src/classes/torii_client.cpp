@@ -30,7 +30,6 @@ ToriiClient::ToriiClient()
     client = nullptr;
     is_connected = false;
     world_address = "";
-    world = {};
     Logger::debug_extra("ToriiClient", "CONSTRUCTOR CALLED");
 }
 
@@ -99,7 +98,7 @@ bool ToriiClient::create_client()
 #else
     disconnect_client(true);
 
-    FieldElement world_felt(world_address, 32);
+    DOJO::FieldElement world_felt = FieldElement::from_string(world_address, 32);
     set_world(world_felt);
 
     Logger::info("Creating Torii client...");
@@ -108,7 +107,7 @@ bool ToriiClient::create_client()
 
     DOJO::ResultToriiClient resClient = DOJO::client_new(
         torii_url.utf8().get_data(),
-        world_felt.get_felt_no_ptr()
+        world_felt
     );
 
     if (resClient.tag == DOJO::ErrToriiClient)
@@ -180,15 +179,16 @@ void ToriiClient::callable_call(const char* msg) const
     }
 }
 
-FieldElement ToriiClient::get_world() const
+String ToriiClient::get_world() const
 {
-    return world;
+    return FieldElement::get_as_string(world);
 }
 
-void ToriiClient::set_world(const FieldElement& n_world)
+void ToriiClient::set_world(const DOJO::FieldElement& n_world)
 {
-    world = n_world.get_felt();
+    world = new DOJO::FieldElement(n_world);
 }
+
 
 Dictionary ToriiClient::get_world_metadata()
 {
@@ -217,9 +217,7 @@ Dictionary ToriiClient::get_world_metadata()
     DOJO::World metadata = GET_DOJO_OK(resMetadata);
     Dictionary result = {};
 
-    TypedArray<Dictionary> models_array = DojoArray(metadata.models).get_value();
-
-    result["models"] = models_array;
+    result["models"] = DojoArray::CArrayModelToVariant(metadata.models);
     result["world_address"] = world_address;
 
     Logger::success("Metadata obtained");
@@ -260,19 +258,20 @@ TypedArray<Dictionary> ToriiClient::get_entities(const Ref<DojoQuery>& query)
 
     DOJO::Query* native_query_ptr = static_cast<DOJO::Query*>(query->get_native_query());
 
-    DOJO::ResultPageEntity resPageEntities = DOJO::client_entities(client, *native_query_ptr);
+    DOJO::ResultPageEntity result_page_entity = DOJO::client_entities(client, *native_query_ptr);
 
-    if (resPageEntities.tag == DOJO::ErrPageEntity)
+    if (result_page_entity.tag == DOJO::ErrPageEntity)
     {
-        Logger::error(String("Failed to get entities: ") + GET_DOJO_ERROR(resPageEntities));
+        Logger::error(String("Failed to get entities: ") + GET_DOJO_ERROR(result_page_entity));
         return {};
     }
 
-    DOJO::PageEntity pageEntities = resPageEntities.ok;
-    TypedArray<Dictionary> result = DojoArray(pageEntities.items).get_value();
+    DOJO::PageEntity page_entities = result_page_entity.ok;
+    TypedArray<Dictionary> result = DojoArray::CArrayEntityToVariant(page_entities.items);
 
-    Logger::success("Entities obtained: ", String::num_int64(result.size()));
-    return result;
+    Logger::success_extra("ToriiClient", "Entities obtained: ", result.size());
+    // return result;
+    return Array();
 #endif
 }
 
@@ -314,8 +313,7 @@ TypedArray<Dictionary> ToriiClient::get_controllers(Ref<DojoControllerQuery> que
         return {};
     }
 
-    Ref<DojoArray> result_array = memnew(DojoArray(GET_DOJO_OK(res_controllers)));
-    return result_array->get_value();
+    return DojoArray::PageControllerToVariant(GET_DOJO_OK(res_controllers));
 }
 
 
@@ -408,7 +406,7 @@ TypedArray<Dictionary> ToriiClient::get_tokens(const Ref<DojoTokenQuery>& query)
         result_array.push_back(token_dict);
     }
 
-    Logger::success("Tokens obtained: ", String::num_int64(result_array.size()));
+    Logger::success("Tokens obtained: ", result_array.size());
     return result_array;
 }
 
@@ -464,7 +462,7 @@ TypedArray<Dictionary> ToriiClient::get_token_balances(const Ref<DojoTokenBalanc
         result_array.push_back(balance_dict);
     }
 
-    Logger::success("Token balances obtained: ", String::num_int64(result_array.size()));
+    Logger::success("Token balances obtained: ", result_array.size());
     return result_array;
 }
 
@@ -523,7 +521,7 @@ TypedArray<Dictionary> ToriiClient::get_token_collections(const Ref<DojoContract
         result_array.push_back(collection_dict);
     }
 
-    Logger::success("Token collections obtained: ", String::num_int64(result_array.size()));
+    Logger::success("Token collections obtained: ", result_array.size());
     return result_array;
 }
 
@@ -536,8 +534,8 @@ Dictionary ToriiClient::get_token_info(const String& token_address) const
         return Logger::error_dict("Client not connected");
     }
 
-    FieldElement token_felt(token_address, 32);
-    DOJO::FieldElement* contract_addresses = token_felt.get_felt();
+    Ref<FieldElement> token_felt = memnew(FieldElement(token_address, 32));
+    DOJO::FieldElement* contract_addresses = token_felt->get_felt();
     size_t contract_addresses_len = 1;
 
     DOJO::U256* token_ids = nullptr;
@@ -662,9 +660,9 @@ bool ToriiClient::publish_message(const String& message_data, const Array& signa
         return false;
     }
 
-    FieldElement msg_hash(GET_DOJO_OK(result));
-    Logger::success("Message published: ", msg_hash.to_string());
-    emit_signal("message_published", msg_hash.to_string());
+    Ref<FieldElement> msg_hash = memnew(FieldElement(GET_DOJO_OK(result)));
+    Logger::success("Message published: ", msg_hash->to_string());
+    emit_signal("message_published", msg_hash->to_string());
 
     return true;
 }
@@ -835,7 +833,7 @@ void entity_state_update_callback_wrapper(DOJO::Entity entity)
     {
         Dictionary entity_data;
         entity_data["hashed_keys"] = FieldElement::get_as_string(&entity.hashed_keys);
-        entity_data["models"] = DojoArray(entity.models).get_value();
+        entity_data["models"] = DojoArray::CArrayStructToVariant(entity.models);
         entity_data["created_at"] = static_cast<int64_t>(entity.created_at);
         entity_data["updated_at"] = static_cast<int64_t>(entity.updated_at);
         entity_data["executed_at"] = static_cast<int64_t>(entity.executed_at);
@@ -851,7 +849,7 @@ void event_message_update_callback_wrapper(DOJO::Entity entity)
     {
         Dictionary message_data;
         message_data["hashed_keys"] = FieldElement::get_as_string(&entity.hashed_keys);
-        message_data["models"] = DojoArray(entity.models).get_value();
+        message_data["models"] = DojoArray::CArrayStructToVariant(entity.models);
         message_data["created_at"] = static_cast<int64_t>(entity.created_at);
         message_data["updated_at"] = static_cast<int64_t>(entity.updated_at);
         message_data["executed_at"] = static_cast<int64_t>(entity.executed_at);
@@ -882,9 +880,9 @@ void transaction_callback_wrapper(DOJO::Transaction transaction)
         Dictionary tx_dict;
         tx_dict["transaction_hash"] = FieldElement::get_as_string(&transaction.transaction_hash);
         tx_dict["sender_address"] = FieldElement::get_as_string(&transaction.sender_address);
-        tx_dict["calldata"] = DojoArray(transaction.calldata).get_value();
+        tx_dict["calldata"] = DojoArray::CArrayFieldElementToVariant(transaction.calldata);
         tx_dict["max_fee"] = FieldElement::get_as_string(&transaction.max_fee);
-        tx_dict["signature"] = DojoArray(transaction.signature).get_value();
+        tx_dict["signature"] = DojoArray::CArrayFieldElementToVariant(transaction.signature);
         tx_dict["nonce"] = FieldElement::get_as_string(&transaction.nonce);
         tx_dict["block_number"] = static_cast<int64_t>(transaction.block_number);
         tx_dict["transaction_type"] = String(transaction.transaction_type);
@@ -897,14 +895,14 @@ void transaction_callback_wrapper(DOJO::Transaction transaction)
             Dictionary call_dict;
             call_dict["contract_address"] = FieldElement::get_as_string(&call.contract_address);
             call_dict["entrypoint"] = String(call.entrypoint);
-            call_dict["calldata"] = DojoArray(call.calldata).get_value();
+            call_dict["calldata"] = DojoArray::CArrayFieldElementToVariant(call.calldata);
             call_dict["call_type"] = static_cast<int>(call.call_type);
             call_dict["caller_address"] = FieldElement::get_as_string(&call.caller_address);
             calls_array.push_back(call_dict);
         }
         tx_dict["calls"] = calls_array;
 
-        tx_dict["unique_models"] = DojoArray(transaction.unique_models).get_value();
+        tx_dict["unique_models"] = DojoArray::CArrayFieldElementToVariant(transaction.unique_models);
         singleton->on_transaction_callback.call_deferred(tx_dict);
     }
 }
@@ -919,7 +917,7 @@ void token_update_callback_wrapper(DOJO::Token token)
         token_dict["contract_address"] = FieldElement::get_as_string(&token.contract_address);
         if (token.token_id.tag == DOJO::SomeU256)
         {
-            token_dict["token_id"] = DojoHelpers::u256_to_string_boost(token.token_id.some);
+            token_dict["token_id"] = memnew(U256(token.token_id.some));
         }
         else
         {

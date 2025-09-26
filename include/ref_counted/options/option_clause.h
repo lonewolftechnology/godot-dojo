@@ -5,12 +5,12 @@
 #ifndef OPTION_CLAUSE_H
 #define OPTION_CLAUSE_H
 
-#include "godot_cpp/classes/ref_counted.hpp"
 #include "godot_cpp/core/class_db.hpp"
 #include "godot_cpp/variant/string_name.hpp"
 #include "dojo_types.h"
 #include "option_field_element.h"
 #include "tools/dojo_helper.h"
+#include "variant/ty/primitive.h"
 
 using namespace godot;
 
@@ -41,28 +41,43 @@ class OptionClause : public DojoOption
     DOJO::LogicalOperator logical_operator;
     Array clauses; // Using generic Array to avoid TypedArray<Ref<T>> issues
 
-    static DOJO::Primitive to_native_primitive(const Variant& p_value, DOJO::Primitive_Tag p_tag) {
+    static DOJO::Primitive to_native_primitive(const Variant& p_value, DOJO::Primitive_Tag p_tag)
+    {
         DOJO::Primitive primitive = {};
         primitive.tag = p_tag;
         String str_val = p_value;
 
-        switch (p_tag) {
-            case DOJO::Primitive_Tag::I8: DojoHelpers::string_to_i8(str_val, &primitive.i8); break;
-            case DOJO::Primitive_Tag::I16: DojoHelpers::string_to_i16(str_val, &primitive.i16); break;
-            case DOJO::Primitive_Tag::I32: DojoHelpers::string_to_i32(str_val, &primitive.i32); break;
-            case DOJO::Primitive_Tag::I64: DojoHelpers::string_to_i64(str_val, &primitive.i64); break;
-            case DOJO::Primitive_Tag::I128: DojoHelpers::string_to_i128(str_val, primitive.i128); break;
-            case DOJO::Primitive_Tag::U8: primitive.u8 = static_cast<uint8_t>(str_val.to_int()); break;
-            case DOJO::Primitive_Tag::U16: primitive.u16 = static_cast<uint16_t>(str_val.to_int()); break;
-            case DOJO::Primitive_Tag::U32: primitive.u32 = static_cast<uint32_t>(str_val.to_int()); break;
-            case DOJO::Primitive_Tag::U64: primitive.u64 = str_val.to_int(); break;
-            case DOJO::Primitive_Tag::U128: DojoHelpers::string_to_u128(str_val, primitive.u128); break;
-            case DOJO::Primitive_Tag::U256_: primitive.u256 = DojoHelpers::string_to_u256(str_val); break;
-            case DOJO::Primitive_Tag::Bool: primitive.bool_ = static_cast<bool>(p_value); break;
-            case DOJO::Primitive_Tag::Felt252:
-            case DOJO::Primitive_Tag::ClassHash:
-            case DOJO::Primitive_Tag::ContractAddress:
-            case DOJO::Primitive_Tag::EthAddress: {
+        switch (p_tag)
+        {
+        case DOJO::Primitive_Tag::I8: DojoHelpers::string_to_i8(str_val, &primitive.i8);
+            break;
+        case DOJO::Primitive_Tag::I16: DojoHelpers::string_to_i16(str_val, &primitive.i16);
+            break;
+        case DOJO::Primitive_Tag::I32: DojoHelpers::string_to_i32(str_val, &primitive.i32);
+            break;
+        case DOJO::Primitive_Tag::I64: DojoHelpers::string_to_i64(str_val, &primitive.i64);
+            break;
+        case DOJO::Primitive_Tag::I128: DojoHelpers::string_to_i128(str_val, primitive.i128);
+            break;
+        case DOJO::Primitive_Tag::U8: primitive.u8 = static_cast<uint8_t>(str_val.to_int());
+            break;
+        case DOJO::Primitive_Tag::U16: primitive.u16 = static_cast<uint16_t>(str_val.to_int());
+            break;
+        case DOJO::Primitive_Tag::U32: primitive.u32 = static_cast<uint32_t>(str_val.to_int());
+            break;
+        case DOJO::Primitive_Tag::U64: primitive.u64 = str_val.to_int();
+            break;
+        case DOJO::Primitive_Tag::U128: DojoHelpers::string_to_u128(str_val, primitive.u128);
+            break;
+        case DOJO::Primitive_Tag::U256_: primitive.u256 = DojoHelpers::string_to_u256(str_val);
+            break;
+        case DOJO::Primitive_Tag::Bool: primitive.bool_ = static_cast<bool>(p_value);
+            break;
+        case DOJO::Primitive_Tag::Felt252:
+        case DOJO::Primitive_Tag::ClassHash:
+        case DOJO::Primitive_Tag::ContractAddress:
+        case DOJO::Primitive_Tag::EthAddress:
+            {
                 DOJO::U256 u256_val = DojoHelpers::string_to_u256(str_val);
                 memcpy(primitive.felt252.data, u256_val.data, 32);
                 break;
@@ -71,25 +86,31 @@ class OptionClause : public DojoOption
         return primitive;
     }
 
-    static DOJO::MemberValue to_native_member_value(const Variant& p_value, DOJO::MemberValue_Tag p_member_tag, DOJO::Primitive_Tag p_primitive_tag) {
+    static DOJO::MemberValue to_native_member_value(const Variant& p_value, DOJO::MemberValue_Tag p_member_tag,
+                                                    DOJO::Primitive_Tag p_primitive_tag)
+    {
         DOJO::MemberValue native_value = {};
         native_value.tag = p_member_tag;
 
-        switch (p_member_tag) {
-            case DOJO::MemberValue_Tag::PrimitiveValue:
-                native_value.primitive_value = to_native_primitive(p_value, p_primitive_tag);
-                break;
-            case DOJO::MemberValue_Tag::String: {
+        switch (p_member_tag)
+        {
+        case DOJO::MemberValue_Tag::PrimitiveValue:
+            native_value.primitive_value = to_native_primitive(p_value, p_primitive_tag);
+            break;
+        case DOJO::MemberValue_Tag::String:
+            {
                 String str = p_value;
                 char* c_str = new char[str.utf8().length() + 1];
                 strcpy(c_str, str.utf8().get_data());
                 native_value.string = c_str;
                 break;
             }
-            case DOJO::MemberValue_Tag::List: {
+        case DOJO::MemberValue_Tag::List:
+            {
                 Array arr = p_value;
                 auto* native_list = new DOJO::MemberValue[arr.size()];
-                for (int i = 0; i < arr.size(); ++i) {
+                for (int i = 0; i < arr.size(); ++i)
+                {
                     native_list[i].tag = DOJO::MemberValue_Tag::PrimitiveValue;
                     native_list[i].primitive_value = to_native_primitive(arr[i], p_primitive_tag);
                 }
@@ -101,7 +122,8 @@ class OptionClause : public DojoOption
     }
 
 public:
-    OptionClause() {
+    OptionClause()
+    {
         tag = DOJO::Clause_Tag::HashedKeys;
         pattern_matching = DOJO::PatternMatching::FixedLen;
         comparison_operator = DOJO::ComparisonOperator::Eq;
@@ -112,7 +134,8 @@ public:
 
     DOJO::COptionClause get_native_option() const {
         DOJO::COptionClause option = {};
-        if (!is_some()) {
+        if (!is_some())
+        {
             option.tag = DOJO::NoneClause;
             return option;
         }
@@ -120,10 +143,13 @@ public:
         option.tag = DOJO::SomeClause;
         option.some.tag = tag;
 
-        switch (tag) {
-            case DOJO::Clause_Tag::HashedKeys: {
+        switch (tag)
+        {
+        case DOJO::Clause_Tag::HashedKeys:
+            {
                 auto* native_hashed_keys = new DOJO::FieldElement[hashed_keys.size()];
-                for (int i = 0; i < hashed_keys.size(); ++i) {
+                for (int i = 0; i < hashed_keys.size(); ++i)
+                {
                     String key_str = hashed_keys[i];
                     DOJO::U256 u256_val = DojoHelpers::string_to_u256(key_str);
                     memcpy(native_hashed_keys[i].data, u256_val.data, 32);
@@ -131,21 +157,27 @@ public:
                 option.some.hashed_keys = {native_hashed_keys, (uintptr_t)hashed_keys.size()};
                 break;
             }
-            case DOJO::Clause_Tag::Keys: {
+        case DOJO::Clause_Tag::Keys:
+            {
                 auto* native_keys = new DOJO::COptionFieldElement[keys.size()];
-                for (int i = 0; i < keys.size(); ++i) {
+                for (int i = 0; i < keys.size(); ++i)
+                {
                     Ref<OptionFieldElement> key_ref = keys[i];
-                    if (key_ref.is_valid()) {
+                    if (key_ref.is_valid())
+                    {
                         native_keys[i] = key_ref->get_native_option();
-                    } else {
+                    }
+                    else
+                    {
                         native_keys[i].tag = DOJO::NoneFieldElement;
                     }
                 }
 
                 const char** models_data = new const char*[models.size()];
-                for (int i = 0; i < models.size(); ++i) {
+                for (int i = 0; i < models.size(); ++i)
+                {
                     String model_str = models[i];
-                    char *c_str = new char[model_str.utf8().length() + 1];
+                    char* c_str = new char[model_str.utf8().length() + 1];
                     strcpy(c_str, model_str.utf8().get_data());
                     models_data[i] = c_str;
                 }
@@ -157,18 +189,22 @@ public:
                 };
                 break;
             }
-            case DOJO::Clause_Tag::CMember: {
+        case DOJO::Clause_Tag::CMember:
+            {
                 option.some.c_member.model = model.utf8().get_data();
                 option.some.c_member.member = member.utf8().get_data();
                 option.some.c_member.operator_ = comparison_operator;
                 option.some.c_member.value = to_native_member_value(value, member_tag, primitive_tag);
                 break;
             }
-            case DOJO::Clause_Tag::Composite: {
+        case DOJO::Clause_Tag::Composite:
+            {
                 auto* native_clauses = new DOJO::Clause[clauses.size()];
-                for (int i = 0; i < clauses.size(); ++i) {
+                for (int i = 0; i < clauses.size(); ++i)
+                {
                     Ref<OptionClause> clause_ref = clauses[i];
-                    if (clause_ref.is_valid()) {
+                    if (clause_ref.is_valid())
+                    {
                         native_clauses[i] = clause_ref->get_native_clause();
                     }
                 }
@@ -182,18 +218,25 @@ public:
         return option;
     }
 
-    Dictionary to_json() const override {
+    Dictionary to_json() const override
+    {
         // TODO: Implement the actual serialization to Dictionary
         return Dictionary();
     }
 
-    DOJO::Clause get_native_clause() const {
+    DOJO::Clause get_native_clause() const
+    {
         return get_native_option().some;
     }
 
 
     DOJO::Clause_Tag get_tag() const { return tag; }
-    void set_tag(DOJO::Clause_Tag p_type) { tag = p_type; notify_property_list_changed(); }
+
+    void set_tag(DOJO::Clause_Tag p_type)
+    {
+        tag = p_type;
+        notify_property_list_changed();
+    }
 
     TypedArray<String> get_hashed_keys() const { return hashed_keys; }
     void set_hashed_keys(const TypedArray<String>& p_keys) { hashed_keys = p_keys; }
@@ -217,7 +260,12 @@ public:
     void set_comparison_operator(DOJO::ComparisonOperator p_op) { comparison_operator = p_op; }
 
     DOJO::MemberValue_Tag get_member_tag() const { return member_tag; }
-    void set_member_tag(DOJO::MemberValue_Tag p_tag) { member_tag = p_tag; notify_property_list_changed(); }
+
+    void set_member_tag(DOJO::MemberValue_Tag p_tag)
+    {
+        member_tag = p_tag;
+        notify_property_list_changed();
+    }
 
     DOJO::Primitive_Tag get_primitive_tag() const { return primitive_tag; }
     void set_primitive_tag(DOJO::Primitive_Tag p_tag) { primitive_tag = p_tag; }
@@ -232,7 +280,8 @@ public:
     void set_clauses(const Array& p_clauses) { clauses = p_clauses; }
 
 protected:
-    static void _bind_methods() {
+    static void _bind_methods()
+    {
         // Enums
         BIND_ENUM_CONSTANT(DOJO::Clause_Tag::HashedKeys);
         BIND_ENUM_CONSTANT(DOJO::Clause_Tag::Keys);
@@ -321,40 +370,48 @@ protected:
         ClassDB::bind_method(D_METHOD("to_json"), &OptionClause::to_json);
     }
 
-    void _get_property_list(List<PropertyInfo>* p_list) const {
+    void _get_property_list(List<PropertyInfo>* p_list) const
+    {
         // p_list->push_back(PropertyInfo(Variant::BOOL, "is_some"));
         // if (!is_some()) return;
 
         p_list->push_back(PropertyInfo(Variant::INT, "tag", PROPERTY_HINT_ENUM, "HashedKeys,Keys,Member,Composite"));
 
-        switch (tag) {
-            case DOJO::Clause_Tag::HashedKeys:
-                p_list->push_back(PropertyInfo(Variant::PACKED_STRING_ARRAY, "hashed_keys"));
-                break;
-            case DOJO::Clause_Tag::Keys:
-                p_list->push_back(PropertyInfo(Variant::ARRAY, "keys"));
-                p_list->push_back(PropertyInfo(Variant::INT, "pattern_matching", PROPERTY_HINT_ENUM, "FixedLen,VariableLen"));
-                p_list->push_back(PropertyInfo(Variant::PACKED_STRING_ARRAY, "models"));
-                break;
-            case DOJO::Clause_Tag::CMember:
-                p_list->push_back(PropertyInfo(Variant::STRING, "model"));
-                p_list->push_back(PropertyInfo(Variant::STRING, "member"));
-                p_list->push_back(PropertyInfo(Variant::INT, "comparison_operator", PROPERTY_HINT_ENUM, "Eq,Neq,Gt,Gte,Lt,Lte,In,NotIn,Contains,ContainsAll,ContainsAny,ArrayLengthEq,ArrayLengthGt,ArrayLengthLt"));
-                p_list->push_back(PropertyInfo(Variant::INT, "member_tag", PROPERTY_HINT_ENUM, "PrimitiveValue,String,List"));
-                if (member_tag == DOJO::MemberValue_Tag::PrimitiveValue || member_tag == DOJO::MemberValue_Tag::List) {
-                    p_list->push_back(PropertyInfo(Variant::INT, "primitive_tag", PROPERTY_HINT_ENUM, "I8,I16,I32,I64,I128,U8,U16,U32,U64,U128,U256,Bool,Felt252,ClassHash,ContractAddress,EthAddress"));
-                }
-                p_list->push_back(PropertyInfo(Variant::NIL, "value", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_NIL_IS_VARIANT));
-                break;
-            case DOJO::Clause_Tag::Composite:
-                p_list->push_back(PropertyInfo(Variant::INT, "logical_operator", PROPERTY_HINT_ENUM, "And,Or"));
-                p_list->push_back(PropertyInfo(Variant::ARRAY, "clauses"));
-                break;
+        switch (tag)
+        {
+        case DOJO::Clause_Tag::HashedKeys:
+            p_list->push_back(PropertyInfo(Variant::PACKED_STRING_ARRAY, "hashed_keys"));
+            break;
+        case DOJO::Clause_Tag::Keys:
+            p_list->push_back(PropertyInfo(Variant::ARRAY, "keys"));
+            p_list->push_back(
+                PropertyInfo(Variant::INT, "pattern_matching", PROPERTY_HINT_ENUM, "FixedLen,VariableLen"));
+            p_list->push_back(PropertyInfo(Variant::PACKED_STRING_ARRAY, "models"));
+            break;
+        case DOJO::Clause_Tag::CMember:
+            p_list->push_back(PropertyInfo(Variant::STRING, "model"));
+            p_list->push_back(PropertyInfo(Variant::STRING, "member"));
+            p_list->push_back(PropertyInfo(Variant::INT, "comparison_operator", PROPERTY_HINT_ENUM,
+                                           "Eq,Neq,Gt,Gte,Lt,Lte,In,NotIn,Contains,ContainsAll,ContainsAny,ArrayLengthEq,ArrayLengthGt,ArrayLengthLt"));
+            p_list->push_back(
+                PropertyInfo(Variant::INT, "member_tag", PROPERTY_HINT_ENUM, "PrimitiveValue,String,List"));
+            if (member_tag == DOJO::MemberValue_Tag::PrimitiveValue || member_tag == DOJO::MemberValue_Tag::List)
+            {
+                p_list->push_back(PropertyInfo(Variant::INT, "primitive_tag", PROPERTY_HINT_ENUM,
+                                               "I8,I16,I32,I64,I128,U8,U16,U32,U64,U128,U256,Bool,Felt252,ClassHash,ContractAddress,EthAddress"));
+            }
+            p_list->push_back(PropertyInfo(Variant::NIL, "value", PROPERTY_HINT_NONE, "",
+                                           PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_NIL_IS_VARIANT));
+            break;
+        case DOJO::Clause_Tag::Composite:
+            p_list->push_back(PropertyInfo(Variant::INT, "logical_operator", PROPERTY_HINT_ENUM, "And,Or"));
+            p_list->push_back(PropertyInfo(Variant::ARRAY, "clauses"));
+            break;
         }
     }
 
-    bool _set(const StringName& p_name, const Variant& p_value) {
-
+    bool _set(const StringName& p_name, const Variant& p_value)
+    {
         // if (!is_some()) return false;
 
         if (String(p_name) == "tag")
@@ -363,72 +420,181 @@ protected:
             return true;
         }
 
-        switch (tag) {
-            case DOJO::Clause_Tag::HashedKeys:
-                if (String(p_name) == "hashed_keys") { set_hashed_keys(p_value); return true; }
-                break;
-            case DOJO::Clause_Tag::Keys:
-                if (String(p_name) == "keys") { set_keys(p_value); return true; }
-                if (String(p_name) == "pattern_matching") { set_pattern_matching((DOJO::PatternMatching)(int)p_value); return true; }
-                if (String(p_name) == "models") { set_models(p_value); return true; }
-                break;
-            case DOJO::Clause_Tag::CMember:
-                if (String(p_name) == "model") { set_model(p_value); return true; }
-                if (String(p_name) == "member") { set_member(p_value); return true; }
-                if (String(p_name) == "comparison_operator") { set_comparison_operator((DOJO::ComparisonOperator)(int)p_value); return true; }
-                if (String(p_name) == "member_tag") { set_member_tag((DOJO::MemberValue_Tag)(int)p_value); return true; }
-                if (String(p_name) == "primitive_tag") { set_primitive_tag((DOJO::Primitive_Tag)(int)p_value); return true; }
-                if (String(p_name) == "value") { set_value(p_value); return true; }
-                break;
-            case DOJO::Clause_Tag::Composite:
-                if (String(p_name) == "logical_operator") { set_logical_operator((DOJO::LogicalOperator)(int)p_value); return true; }
-                if (String(p_name) == "clauses") { set_clauses(p_value); return true; }
-                break;
+        switch (tag)
+        {
+        case DOJO::Clause_Tag::HashedKeys:
+            if (String(p_name) == "hashed_keys")
+            {
+                set_hashed_keys(p_value);
+                return true;
+            }
+            break;
+        case DOJO::Clause_Tag::Keys:
+            if (String(p_name) == "keys")
+            {
+                set_keys(p_value);
+                return true;
+            }
+            if (String(p_name) == "pattern_matching")
+            {
+                set_pattern_matching((DOJO::PatternMatching)(int)p_value);
+                return true;
+            }
+            if (String(p_name) == "models")
+            {
+                set_models(p_value);
+                return true;
+            }
+            break;
+        case DOJO::Clause_Tag::CMember:
+            if (String(p_name) == "model")
+            {
+                set_model(p_value);
+                return true;
+            }
+            if (String(p_name) == "member")
+            {
+                set_member(p_value);
+                return true;
+            }
+            if (String(p_name) == "comparison_operator")
+            {
+                set_comparison_operator((DOJO::ComparisonOperator)(int)p_value);
+                return true;
+            }
+            if (String(p_name) == "member_tag")
+            {
+                set_member_tag((DOJO::MemberValue_Tag)(int)p_value);
+                return true;
+            }
+            if (String(p_name) == "primitive_tag")
+            {
+                set_primitive_tag((DOJO::Primitive_Tag)(int)p_value);
+                return true;
+            }
+            if (String(p_name) == "value")
+            {
+                set_value(p_value);
+                return true;
+            }
+            break;
+        case DOJO::Clause_Tag::Composite:
+            if (String(p_name) == "logical_operator")
+            {
+                set_logical_operator((DOJO::LogicalOperator)(int)p_value);
+                return true;
+            }
+            if (String(p_name) == "clauses")
+            {
+                set_clauses(p_value);
+                return true;
+            }
+            break;
         }
         return false;
     }
 
-    bool _get(const StringName& p_name, Variant& r_ret) const {
-        if (String(p_name) == "is_some") {
+    bool _get(const StringName& p_name, Variant& r_ret) const
+    {
+        if (String(p_name) == "is_some")
+        {
             r_ret = is_some();
             return true;
         }
 
         // if (!is_some()) return false;
 
-        if (String(p_name) == "tag") { r_ret = get_tag(); return true; }
+        if (String(p_name) == "tag")
+        {
+            r_ret = get_tag();
+            return true;
+        }
 
-        switch (tag) {
-            case DOJO::Clause_Tag::HashedKeys:
-                if (String(p_name) == "hashed_keys") { r_ret = get_hashed_keys(); return true; }
-                break;
-            case DOJO::Clause_Tag::Keys:
-                if (String(p_name) == "keys") { r_ret = get_keys(); return true; }
-                if (String(p_name) == "pattern_matching") { r_ret = get_pattern_matching(); return true; }
-                if (String(p_name) == "models") { r_ret = get_models(); return true; }
-                break;
-            case DOJO::Clause_Tag::CMember:
-                if (String(p_name) == "model") { r_ret = get_model(); return true; }
-                if (String(p_name) == "member") { r_ret = get_member(); return true; }
-                if (String(p_name) == "comparison_operator") { r_ret = get_comparison_operator(); return true; }
-                if (String(p_name) == "member_tag") { r_ret = get_member_tag(); return true; }
-                if (String(p_name) == "primitive_tag") { r_ret = get_primitive_tag(); return true; }
-                if (String(p_name) == "value") { r_ret = get_value(); return true; }
-                break;
-            case DOJO::Clause_Tag::Composite:
-                if (String(p_name) == "logical_operator") { r_ret = get_logical_operator(); return true; }
-                if (String(p_name) == "clauses") { r_ret = get_clauses(); return true; }
-                break;
+        switch (tag)
+        {
+        case DOJO::Clause_Tag::HashedKeys:
+            if (String(p_name) == "hashed_keys")
+            {
+                r_ret = get_hashed_keys();
+                return true;
+            }
+            break;
+        case DOJO::Clause_Tag::Keys:
+            if (String(p_name) == "keys")
+            {
+                r_ret = get_keys();
+                return true;
+            }
+            if (String(p_name) == "pattern_matching")
+            {
+                r_ret = get_pattern_matching();
+                return true;
+            }
+            if (String(p_name) == "models")
+            {
+                r_ret = get_models();
+                return true;
+            }
+            break;
+        case DOJO::Clause_Tag::CMember:
+            if (String(p_name) == "model")
+            {
+                r_ret = get_model();
+                return true;
+            }
+            if (String(p_name) == "member")
+            {
+                r_ret = get_member();
+                return true;
+            }
+            if (String(p_name) == "comparison_operator")
+            {
+                r_ret = get_comparison_operator();
+                return true;
+            }
+            if (String(p_name) == "member_tag")
+            {
+                r_ret = get_member_tag();
+                return true;
+            }
+            if (String(p_name) == "primitive_tag")
+            {
+                r_ret = get_primitive_tag();
+                return true;
+            }
+            if (String(p_name) == "value")
+            {
+                r_ret = get_value();
+                return true;
+            }
+            break;
+        case DOJO::Clause_Tag::Composite:
+            if (String(p_name) == "logical_operator")
+            {
+                r_ret = get_logical_operator();
+                return true;
+            }
+            if (String(p_name) == "clauses")
+            {
+                r_ret = get_clauses();
+                return true;
+            }
+            break;
         }
         return false;
     }
 };
 
 VARIANT_ENUM_CAST(DOJO::Clause_Tag);
+
 VARIANT_ENUM_CAST(DOJO::PatternMatching);
+
 VARIANT_ENUM_CAST(DOJO::ComparisonOperator);
+
 VARIANT_ENUM_CAST(DOJO::MemberValue_Tag);
+
 VARIANT_ENUM_CAST(DOJO::LogicalOperator);
+
 VARIANT_ENUM_CAST(DOJO::Primitive_Tag);
 
 #endif //OPTION_CLAUSE_H

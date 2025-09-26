@@ -47,7 +47,7 @@ public:
             DOJO::FieldElement* addresses_data = new DOJO::FieldElement[contract_addresses.size()];
             for (int i = 0; i < contract_addresses.size(); ++i) {
                 String address_str = contract_addresses[i];
-                addresses_data[i] = FieldElement(address_str).get_felt_no_ptr();
+                addresses_data[i] = FieldElement::from_string(address_str);
             }
             query->contract_addresses.data = addresses_data;
             query->contract_addresses.data_len = contract_addresses.size();

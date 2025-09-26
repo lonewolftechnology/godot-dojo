@@ -23,6 +23,7 @@ Variant DojoEnum::VariantFromEnum(const DOJO::Enum &enum_)
 {
     name = enum_.name;
     value = enum_.option;
+    // TODO: Check options
     DOJO::CArrayEnumOption options = enum_.options;
     std::vector<DOJO::EnumOption> enum_vector(options.data, options.data + options.data_len);
 
