@@ -59,8 +59,6 @@
 #include "ref_counted/options/option_transaction_filter.h"
 #include "ref_counted/options/option_array_field_element.h"
 
-#include "export_plugin/dojo_export.h"
-#include "export_plugin/dojo_editor_plugin.h"
 
 using namespace godot;
 
@@ -125,8 +123,6 @@ void initialize_dojoc_module(ModuleInitializationLevel p_level)
     {
         // EditorExportPlugin classes are automatically discovered by the editor
         // once they are registered with ClassDB. No manual registration is needed.
-        GDREGISTER_CLASS(DojoEditorPlugin);
-        GDREGISTER_CLASS(DojoExportPlugin)
     }
 }
 

@@ -3,7 +3,6 @@
 //
 #include "dojo_c_gdextension.h"
 
-#include <export_plugin/dojo_editor_plugin.h>
 #include <resources/dojo_policy.h>
 
 #include "godot_cpp/classes/project_settings.hpp"
