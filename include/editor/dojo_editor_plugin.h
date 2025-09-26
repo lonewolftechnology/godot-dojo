@@ -19,6 +19,7 @@ public:
         Logger::success_extra("DojoEditorPlugin", "Constructed");
 
     }
+
     ~DojoEditorPlugin()
     {
         Logger::success_extra("DojoEditorPlugin", "Destroyed");
@@ -57,6 +58,7 @@ public:
 protected:
     static void _bind_methods()
     {
+        ClassDB::bind_static_method("DojoEditorPlugin", D_METHOD("reset_project_settings"), &DojoEditorPlugin::reset_project_settings);
     }
 };
 

@@ -29,6 +29,10 @@ if(DEBUG_ENABLED)
     target_compile_definitions(godot-dojo PRIVATE DEBUG_ENABLED)
 endif()
 
+if(TOOLS_ENABLED)
+    message(STATUS "Web build enabled, defining TOOLS_ENABLED preprocessor macro.")
+    target_compile_definitions(godot-dojo PRIVATE TOOLS_ENABLED)
+endif()
 # Godot-cpp (use submodule headers directly to avoid building under _deps)
 # Define a header-only interface target that points to the submodule directories.
 add_library(godot-cpp INTERFACE)

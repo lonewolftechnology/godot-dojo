@@ -6,4 +6,11 @@
 	</description>
 	<tutorials>
 	</tutorials>
+	<methods>
+		<method name="reset_project_settings" qualifiers="static">
+			<return type="void" />
+			<description>
+			</description>
+		</method>
+	</methods>
 </class>

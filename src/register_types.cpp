@@ -128,6 +128,7 @@ void initialize_dojoc_module(ModuleInitializationLevel p_level)
     {
 #ifdef TOOLS_ENABLED
         GDREGISTER_CLASS(DojoEditorPlugin);
+        EditorPlugins::add_by_type<DojoEditorPlugin>();
 #endif
 
     }
