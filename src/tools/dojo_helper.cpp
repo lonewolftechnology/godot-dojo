@@ -42,7 +42,7 @@ DojoHelpers::~DojoHelpers()
 
 String DojoHelpers::get_katana_url()
 {
-    return get_setting("dojo/config/katana_url", "");
+    return get_setting("dojo/config/katana_url");
 }
 
 Variant DojoHelpers::get_setting(const String& setting, const Variant& default_value)
@@ -146,32 +146,32 @@ double DojoHelpers::fixed_to_float(const int& value, const int& precision)
 
 int64_t DojoHelpers::float_to_fixed_64(const float& value)
 {
-    return float_to_fixed(value, get_setting("dojo/config/fixed_point/64", 40));
+    return float_to_fixed(value, get_setting("dojo/config/fixed_point/64"));
 }
 
 double DojoHelpers::fixed_to_float_64(const int& value)
 {
-    return fixed_to_float(value, get_setting("dojo/config/fixed_point/64", 40));
+    return fixed_to_float(value, get_setting("dojo/config/fixed_point/64"));
 }
 
 int64_t DojoHelpers::float_to_fixed_128(const float& value)
 {
-    return float_to_fixed(value, get_setting("dojo/config/fixed_point/128", 60));
+    return float_to_fixed(value, get_setting("dojo/config/fixed_point/128"));
 }
 
 double DojoHelpers::fixed_to_float_128(const int& value)
 {
-    return fixed_to_float(value, get_setting("dojo/config/fixed_point/128", 60));
+    return fixed_to_float(value, get_setting("dojo/config/fixed_point/128"));
 }
 
 int64_t DojoHelpers::float_to_fixed_256(const float& value)
 {
-    return float_to_fixed(value, get_setting("dojo/config/fixed_point/256", 123));
+    return float_to_fixed(value, get_setting("dojo/config/fixed_point/256"));
 }
 
 double DojoHelpers::fixed_to_float_256(const int& value)
 {
-    return fixed_to_float(value, get_setting("dojo/config/fixed_point/256", 123));
+    return fixed_to_float(value, get_setting("dojo/config/fixed_point/256"));
 }
 
 String DojoHelpers::u256_to_string_boost(const DOJO::U256& u256)
@@ -502,7 +502,7 @@ DojoCallData DojoHelpers::prepare_dojo_call_data(const String& to, const String&
                 }
             case Variant::Type::FLOAT:
                 {
-                    worklist.push_front(double_to_variant_fp(arg, get_setting("dojo/config/fixed_point/default", 40)));
+                    worklist.push_front(double_to_variant_fp(arg, get_setting("dojo/config/fixed_point/default")));
                     continue;
                 }
             case Variant::Type::VECTOR2:

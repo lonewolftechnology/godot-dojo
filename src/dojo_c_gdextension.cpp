@@ -97,7 +97,7 @@ void DojoC::set_setting(const String& setting, const Variant& value, const bool&
     {
         settings->set_setting(setting, value);
         settings->set_as_basic(setting, true);
-        settings->set_initial_value(setting, Variant());
+        settings->set_initial_value(setting, value);
         Logger::info("Inited config", setting, "with value", value);
     }
     settings->save();
