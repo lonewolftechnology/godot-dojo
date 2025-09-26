@@ -96,7 +96,7 @@ jobs:
         id: create_release
         uses: softprops/action-gh-release@v2
         with:
-          name: "${{ github.ref_name }} - Dojo.c ${{ steps.get_dojoc_version.outputs.DOJOC_VERSION }} | godot-cpp ${{ steps.get_godotcpp_version.outputs.GODOTCPP_VERSION }}"
+          name: "${{ github.ref_name }} - Dojo.c ${{ steps.get_dojoc_version.outputs.DOJOC_VERSION }} | ${{ steps.get_godotcpp_version.outputs.GODOTCPP_VERSION }}"
           body: |
             ## Latest Changes
 
