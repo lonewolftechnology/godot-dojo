@@ -17,14 +17,29 @@ public:
     DojoEditorPlugin()
     {
         Logger::success_extra("DojoEditorPlugin", "Constructed");
-        add_tool_menu_item("Reset Dojo ProjectSettings to default", callable_mp_static(&DojoEditorPlugin::reset_project_settings));
 
     }
     ~DojoEditorPlugin()
     {
         Logger::success_extra("DojoEditorPlugin", "Destroyed");
-        // Maybe not needed as you can't actually toogle the gdextension on/off, you need to remove the files to disable it
-        // remove_tool_menu_item("Reset Dojo ProjectSettings to default");
+
+    }
+
+    void _enter_tree() override
+    {
+        Logger::success_extra("DojoEditorPlugin", "Entering tree");
+
+        add_tool_menu_item("Reset Dojo ProjectSettings to default", callable_mp_static(&DojoEditorPlugin::reset_project_settings));
+        Logger::success_extra("DojoEditorPlugin", "Tree entered");
+
+    }
+
+    void _exit_tree() override
+    {
+        Logger::success_extra("DojoEditorPlugin", "Exiting Tree");
+
+        remove_tool_menu_item("Reset Dojo ProjectSettings to default");
+        Logger::success_extra("DojoEditorPlugin", "Tree exited");
 
     }
 

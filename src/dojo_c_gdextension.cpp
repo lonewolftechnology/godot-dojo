@@ -37,6 +37,7 @@ DojoC::DojoC()
 
 DojoC::~DojoC()
 {
+    Logger::debug_extra("DojoC", "Destroyed");
     singleton = nullptr;
     enabled = false;
 }

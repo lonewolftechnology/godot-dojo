@@ -15,6 +15,11 @@
 #include <tools/dojo_bridge.h>
 #endif
 
+#ifdef TOOLS_ENABLED
+#include "editor/dojo_editor_plugin.h"
+#endif
+
+
 #include "classes/torii_client.h"
 #include "classes/controller_account.h"
 #include "classes/account.h"
@@ -59,7 +64,6 @@
 #include "ref_counted/options/option_field_element.h"
 #include "ref_counted/options/option_transaction_filter.h"
 #include "ref_counted/options/option_array_field_element.h"
-
 
 using namespace godot;
 
@@ -122,7 +126,10 @@ void initialize_dojoc_module(ModuleInitializationLevel p_level)
 
     if (p_level == MODULE_INITIALIZATION_LEVEL_EDITOR)
     {
+#ifdef TOOLS_ENABLED
         GDREGISTER_CLASS(DojoEditorPlugin);
+#endif
+
     }
 }
 
@@ -136,11 +143,11 @@ GDExtensionBool GDE_EXPORT dojoc_library_init(GDExtensionInterfaceGetProcAddress
                                               const GDExtensionClassLibraryPtr p_library,
                                               GDExtensionInitialization* r_initialization)
 {
-    godot::GDExtensionBinding::InitObject init_obj(p_get_proc_address, p_library, r_initialization);
+    GDExtensionBinding::InitObject init_obj(p_get_proc_address, p_library, r_initialization);
 
     init_obj.register_initializer(initialize_dojoc_module);
     init_obj.register_terminator(uninitialize_dojoc_module);
-    init_obj.set_minimum_library_initialization_level(MODULE_INITIALIZATION_LEVEL_SCENE);
+    init_obj.set_minimum_library_initialization_level(MODULE_INITIALIZATION_LEVEL_EDITOR);
 
     return init_obj.init();
 }

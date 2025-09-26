@@ -4,24 +4,24 @@ entry_symbol = "${ENTRY_POINT}"
 compatibility_minimum = "${GODOT_MIN_REQUIREMENT}"
 reloadable = true
 
-[editor_plugins]
-
-enabled=true
-plugin="DojoEditorPlugin"
-
 [libraries]
 
+macos.editor.x86_64 = "res://addons/godot-dojo/bin/macos/debug/${PROJECT_NAME}.macos.editor.x86_64.dylib"
 macos.debug.x86_64 = "res://addons/godot-dojo/bin/macos/debug/${PROJECT_NAME}.macos.template_debug.x86_64.dylib"
 macos.release.x86_64 = "res://addons/godot-dojo/bin/macos/release/${PROJECT_NAME}.macos.template_release.x86_64.dylib"
+
+macos.editor.arm64 = "res://addons/godot-dojo/bin/macos/debug/${PROJECT_NAME}.macos.editor.arm64.dylib"
 macos.debug.arm64 = "res://addons/godot-dojo/bin/macos/debug/${PROJECT_NAME}.macos.template_debug.arm64.dylib"
 macos.release.arm64 = "res://addons/godot-dojo/bin/macos/release/${PROJECT_NAME}.macos.template_release.arm64.dylib"
 
 ios.debug = "res://addons/godot-dojo/bin/ios/debug/${PROJECT_NAME}.ios.template_debug.xcframework"
 ios.release = "res://addons/godot-dojo/bin/ios/release/${PROJECT_NAME}.ios.template_release.xcframework"
 
+windows.editor.x86_64 = "res://addons/godot-dojo/bin/windows/debug/${PROJECT_NAME}.windows.editor.x86_64.dll"
 windows.debug.x86_64 = "res://addons/godot-dojo/bin/windows/debug/${PROJECT_NAME}.windows.template_debug.x86_64.dll"
 windows.release.x86_64 = "res://addons/godot-dojo/bin/windows/release/${PROJECT_NAME}.windows.template_release.x86_64.dll"
 
+linux.editor.x86_64 = "res://addons/godot-dojo/bin/linux/debug/${PROJECT_NAME}.linux.editor.x86_64.so"
 linux.debug.x86_64 = "res://addons/godot-dojo/bin/linux/debug/${PROJECT_NAME}.linux.template_debug.x86_64.so"
 linux.release.x86_64 = "res://addons/godot-dojo/bin/linux/release/${PROJECT_NAME}.linux.template_release.x86_64.so"
 
