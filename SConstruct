@@ -253,25 +253,16 @@ android_plugin_targets = []
 # This section runs only when building for Android. It prepares the Kotlin
 # plugin files and places them in the structure Godot's build system expects.
 if platform == "android":
-    print(f"{Y}{package} Preparing Android plugin files...{X}")
-    addon_dir = "demo/addons/godot-dojo"
-    # The .gdap file must be in the addon's root directory.
-    # The rest of the plugin files (sources, manifest) go into an 'android' subdirectory.
-    android_plugin_source_dir = f"{addon_dir}/android"
-    android_src_root = f"{android_plugin_source_dir}/src/main"
+    print(f"{Y}{package} Building Android plugin with Gradle...{X}")
+    gradlew_cmd = "gradlew.bat" if is_host_windows else "./gradlew"
+    try:
+        # Execute the gradle build command in the 'android' directory
+        subprocess.run([gradlew_cmd, ":plugin:assemble"], cwd="android", check=True)
+        print(f"{G}{check} Android plugin built successfully.{X}")
+    except subprocess.CalledProcessError as e:
+        print(f"{R}{cross} Gradle build failed: {e}{X}")
+        Exit(1)
 
-    # 1. Copy the .gdap configuration file
-    # We assume a file named 'GodotDojoBridge.gdap' exists in 'android/'
-    android_plugin_targets.extend(env.Install(addon_dir, "android/GodotDojoBridge.gdap"))
-
-    # 2. Copy the AndroidManifest.xml
-    android_plugin_targets.extend(env.Install(android_src_root, "android/src/main/AndroidManifest.xml"))
-
-    # 3. Copy the Kotlin source file into the correct package structure
-    kotlin_src_dir = f"{android_src_root}/java/org/godotengine/godot"
-    android_plugin_targets.extend(env.Install(kotlin_src_dir, "android/GodotDojoBridge.kt"))
-
-    print(f"{G}{check} Android plugin files copied to {addon_dir}{X}")
 
 # Link Rust libraries
 build_mode = "release" if target == "template_release" else "debug"
@@ -327,12 +318,10 @@ suffix_map = {
     "web": f".web.{target}.wasm32.wasm"
 }
 
-lib_name = f"demo/addons/godot-dojo/{prefix}godot-dojo{suffix_map.get(platform, f'.{platform}.{target}.{arch}.so')}"
+output_dir = f"demo/addons/godot-dojo/bin/{platform}/{build_mode}"
+lib_name = f"{output_dir}/{prefix}godot-dojo{suffix_map.get(platform, f'.{platform}.{target}.{arch}.so')}"
 library = env.SharedLibrary(target=lib_name, source=sources)
-
-# Make the main library target depend on the Android plugin files being copied.
-if android_plugin_targets:
-    env.Depends(library, android_plugin_targets)
+env.Alias(f"godot-dojo-{platform}-{build_mode}", library)
 
 # Generate .gdextension
 with open("plugin_template.gdextension.in", 'r') as f:
