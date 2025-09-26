@@ -112,8 +112,8 @@ jobs:
   build-linux-debug:
     name: Build Linux-x86_64-${{ matrix.precision }}-debug
     runs-on: ubuntu-latest
-    needs: create_release
-    if: always() && (needs.create_release.result == 'success' || !startsWith(github.ref, 'refs/tags/'))
+    needs: build-linux-editor
+    if: always() && (needs.build-linux-editor.result == 'success' || !startsWith(github.ref, 'refs/tags/'))
     strategy:
       fail-fast: false
       matrix:
@@ -198,8 +198,8 @@ jobs:
   build-linux-release:
     name: Build Linux-x86_64-${{ matrix.precision }}-release
     runs-on: ubuntu-latest
-    needs: [create_release, build-linux-debug]
-    if: always() && (needs.create_release.result == 'success' || !startsWith(github.ref, 'refs/tags/'))
+    needs: build-linux-debug
+    if: always() && (needs.build-linux-debug.result == 'success' || !startsWith(github.ref, 'refs/tags/'))
     strategy:
       fail-fast: false
       matrix:
@@ -370,8 +370,8 @@ jobs:
   build-macos-x86_64-debug:
     name: Build macOS-x86_64-${{ matrix.precision }}-debug
     runs-on: macos-14
-    needs: create_release
-    if: always() && (needs.create_release.result == 'success' || !startsWith(github.ref, 'refs/tags/'))
+    needs: build-macos-x86_64-editor
+    if: always() && (needs.build-macos-x86_64-editor.result == 'success' || !startsWith(github.ref, 'refs/tags/'))
     strategy:
       fail-fast: false
       matrix:
@@ -467,8 +467,8 @@ jobs:
   build-macos-x86_64-release:
     name: Build macOS-x86_64-${{ matrix.precision }}-release
     runs-on: macos-14
-    needs: [create_release, build-macos-x86_64-debug]
-    if: always() && (needs.create_release.result == 'success' || !startsWith(github.ref, 'refs/tags/'))
+    needs: build-macos-x86_64-debug
+    if: always() && (needs.build-macos-x86_64-debug.result == 'success' || !startsWith(github.ref, 'refs/tags/'))
     strategy:
       fail-fast: false
       matrix:
@@ -661,8 +661,8 @@ jobs:
   build-macos-arm64-debug:
     name: Build macOS-arm64-${{ matrix.precision }}-debug
     runs-on: macos-14
-    needs: create_release
-    if: always() && (needs.create_release.result == 'success' || !startsWith(github.ref, 'refs/tags/'))
+    needs: build-macos-arm64-editor
+    if: always() && (needs.build-macos-arm64-editor.result == 'success' || !startsWith(github.ref, 'refs/tags/'))
     strategy:
       fail-fast: false
       matrix:
@@ -758,8 +758,8 @@ jobs:
   build-macos-arm64-release:
     name: Build macOS-arm64-${{ matrix.precision }}-release
     runs-on: macos-14
-    needs: [create_release, build-macos-arm64-debug]
-    if: always() && (needs.create_release.result == 'success' || !startsWith(github.ref, 'refs/tags/'))
+    needs: build-macos-arm64-debug
+    if: always() && (needs.build-macos-arm64-debug.result == 'success' || !startsWith(github.ref, 'refs/tags/'))
     strategy:
       fail-fast: false
       matrix:
@@ -952,8 +952,8 @@ jobs:
   build-windows-debug:
     name: Build Windows-x86_64-${{ matrix.precision }}-debug
     runs-on: windows-latest
-    needs: create_release
-    if: always() && (needs.create_release.result == 'success' || !startsWith(github.ref, 'refs/tags/'))
+    needs: build-windows-editor
+    if: always() && (needs.build-windows-editor.result == 'success' || !startsWith(github.ref, 'refs/tags/'))
     strategy:
       fail-fast: false
       matrix:
@@ -1038,8 +1038,8 @@ jobs:
   build-windows-release:
     name: Build Windows-x86_64-${{ matrix.precision }}-release
     runs-on: windows-latest
-    needs: [create_release, build-windows-debug]
-    if: always() && (needs.create_release.result == 'success' || !startsWith(github.ref, 'refs/tags/'))
+    needs: build-windows-debug
+    if: always() && (needs.build-windows-debug.result == 'success' || !startsWith(github.ref, 'refs/tags/'))
     strategy:
       fail-fast: false
       matrix:
