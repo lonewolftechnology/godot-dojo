@@ -6,40 +6,31 @@ reloadable = true
 
 [libraries]
 
-macos.debug = "res://addons/godot-dojo/${PROJECT_NAME}.macos.template_debug.framework"
-macos.release = "res://addons/godot-dojo/${PROJECT_NAME}.macos.template_release.framework"
+macos.debug.x86_64 = "res://addons/godot-dojo/bin/macos/debug/${PROJECT_NAME}.macos.template_debug.x86_64.dylib"
+macos.release.x86_64 = "res://addons/godot-dojo/bin/macos/release/${PROJECT_NAME}.macos.template_release.x86_64.dylib"
+macos.debug.arm64 = "res://addons/godot-dojo/bin/macos/debug/${PROJECT_NAME}.macos.template_debug.arm64.dylib"
+macos.release.arm64 = "res://addons/godot-dojo/bin/macos/release/${PROJECT_NAME}.macos.template_release.arm64.dylib"
 
-ios.debug = "res://addons/godot-dojo/${PROJECT_NAME}.ios.template_debug.xcframework"
-ios.release = "res://addons/godot-dojo/${PROJECT_NAME}.ios.template_release.xcframework"
+ios.debug = "res://addons/godot-dojo/bin/ios/debug/${PROJECT_NAME}.ios.template_debug.xcframework"
+ios.release = "res://addons/godot-dojo/bin/ios/release/${PROJECT_NAME}.ios.template_release.xcframework"
 
-windows.debug.x86_32 = "res://addons/godot-dojo/${PROJECT_NAME}.windows.template_debug.x86_32.dll"
-windows.release.x86_32 = "res://addons/godot-dojo/${PROJECT_NAME}.windows.template_release.x86_32.dll"
-windows.debug.x86_64 = "res://addons/godot-dojo/${PROJECT_NAME}.windows.template_debug.x86_64.dll"
-windows.release.x86_64 = "res://addons/godot-dojo/${PROJECT_NAME}.windows.template_release.x86_64.dll"
+windows.debug.x86_64 = "res://addons/godot-dojo/bin/windows/debug/${PROJECT_NAME}.windows.template_debug.x86_64.dll"
+windows.release.x86_64 = "res://addons/godot-dojo/bin/windows/release/${PROJECT_NAME}.windows.template_release.x86_64.dll"
 
-linux.debug.x86_64 = "res://addons/godot-dojo/${PROJECT_NAME}.linux.template_debug.x86_64.so"
-linux.release.x86_64 = "res://addons/godot-dojo/${PROJECT_NAME}.linux.template_release.x86_64.so"
-linux.debug.arm64 = "res://addons/godot-dojo/${PROJECT_NAME}.linux.template_debug.arm64.so"
-linux.release.arm64 = "res://addons/godot-dojo/${PROJECT_NAME}.linux.template_release.arm64.so"
-linux.debug.rv64 = "res://addons/godot-dojo/${PROJECT_NAME}.linux.template_debug.rv64.so"
-linux.release.rv64 = "res://addons/godot-dojo/${PROJECT_NAME}.linux.template_release.rv64.so"
+linux.debug.x86_64 = "res://addons/godot-dojo/bin/linux/debug/${PROJECT_NAME}.linux.template_debug.x86_64.so"
+linux.release.x86_64 = "res://addons/godot-dojo/bin/linux/release/${PROJECT_NAME}.linux.template_release.x86_64.so"
 
-android.debug.x86_64 = "res://addons/godot-dojo/lib${PROJECT_NAME}.android.template_debug.x86_64.so"
-android.release.x86_64 = "res://addons/godot-dojo/lib${PROJECT_NAME}.android.template_release.x86_64.so"
-android.debug.arm64 = "res://addons/godot-dojo/lib${PROJECT_NAME}.android.template_debug.arm64.so"
-android.release.arm64 = "res://addons/godot-dojo/lib${PROJECT_NAME}.android.template_release.arm64.so"
+android.debug.arm64 = "res://addons/godot-dojo/bin/android/debug/lib${PROJECT_NAME}.android.template_debug.arm64.so"
+android.release.arm64 = "res://addons/godot-dojo/bin/android/release/lib${PROJECT_NAME}.android.template_release.arm64.so"
 
-[plugins]
-android.plugins = "res://addons/godot-dojo/GodotDojoBridge.gdap"
-
-web.debug.wasm32 = "res://addons/godot-dojo/${PROJECT_NAME}.web.template_debug.wasm32.wasm"
-web.release.wasm32 = "res://addons/godot-dojo/${PROJECT_NAME}.web.template_release.wasm32.wasm"
+web.debug.wasm32 = "res://addons/godot-dojo/bin/web/debug/${PROJECT_NAME}.web.template_debug.wasm32.wasm"
+web.release.wasm32 = "res://addons/godot-dojo/bin/web/release/${PROJECT_NAME}.web.template_release.wasm32.wasm"
 
 [dependencies]
 
 windows.debug = {
-    "res://addons/godot-dojo/dojo_c.dll" : "",
+    "res://addons/godot-dojo/bin/windows/debug/dojo_c.dll" : "",
 }
 windows.release = {
-    "res://addons/godot-dojo/dojo_c.dll" : "",
+    "res://addons/godot-dojo/bin/windows/release/dojo_c.dll" : "",
 }
