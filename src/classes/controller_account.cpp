@@ -143,31 +143,8 @@ void ControllerAccount::create(const Ref<DojoPolicies>& policies_data)
     FieldElement katana = {_chain};
     Logger::custom_color("azure", "katana", katana.to_string());
 #ifdef ANDROID_ENABLED
-    String auth_url = DOJO::controller_connect_android(
-        rpc_url.utf8().get_data(),
-        policies.data(),
-        policies_len,
-        on_account_callback
-    );
-    Logger::info("CONTROLLER ANDROID AUTH URL", auth_url);
-
-    if (auth_url.is_empty())
-    {
-        Logger::error("Failed to get connection URL for Android.");
-        return;
-    }
-
-    Engine* engine = Engine::get_singleton();
-    StringName bridge_name = "GodotDojoBridge";
-    if (engine->has_singleton(bridge_name))
-    {
-        Object* dojo_bridge = engine->get_singleton(bridge_name);
-        dojo_bridge->call("openCustomTab", auth_url);
-    }
-    else
-    {
-        Logger::error("GodotDojoBridge singleton not found. Make sure it's configured in your Android build.");
-    }
+    Logger::error("Not implemented yet");
+    return;
 #else
 
     DOJO::ResultControllerAccount resControllerAccount =
