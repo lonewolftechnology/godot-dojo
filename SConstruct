@@ -144,6 +144,32 @@ except subprocess.CalledProcessError as e:
     # Continue anyway, as cargo will show a more specific error if needed
 
 cmd = ["cargo", "build", "--target", rust_target]
+
+
+def apply_dojo_h_patch():
+    """Applies a patch to dojo.h to fix an incomplete type issue."""
+    print(f"{Y}{clipboard} Applying workaround patch to dojo.h...{X}")
+    # Check if the 'patch' command is available.
+    if not shutil.which("patch"):
+        print(f"{R}{cross} Error: The 'patch' command was not found in your system's PATH.{X}")
+        print(f"{Y}This is required to apply a necessary fix to a dependency.{X}")
+        print(f"{B}On Windows, the easiest way to get it is by installing 'Git for Windows':{X}")
+        print(f"{G}https://git-scm.com/download/win{X}")
+        print(f"{Y}Please install it and make sure its tools are added to your PATH, then try again.{X}")
+        Exit(1)
+
+    patch_file = 'patches/fix_dojo_c_incomplete_type.patch'
+    dojo_c_dir = 'external/dojo.c'
+    target_to_patch = f'{dojo_c_dir}/dojo.h'
+
+    try:
+        subprocess.run(['patch', '-p1', '-d', dojo_c_dir, '-i', os.path.abspath(patch_file)], check=True)
+        print(f"{G}{check} Patch applied successfully to {target_to_patch}.{X}")
+    except Exception as e:
+        print(f"{R}{cross} Failed to apply patch: {e}{X}")
+        Exit(1)
+
+
 if target == "template_release":
     cmd.append("--release")
 
@@ -160,6 +186,9 @@ if env["platform"] == "web":
     bindgen_env = os.environ.copy()
     bindgen_env["RUSTFLAGS"] = "-C target-feature=+atomics,+bulk-memory,+mutable-globals"
     subprocess.run(cmd, check=True, cwd="external/dojo.c", env=bindgen_env)
+
+    # Apply patch immediately after Rust compilation
+    apply_dojo_h_patch()
 
     # Step 2: Run wasm-bindgen
     print(f"{Y}Running wasm-bindgen...{X}")
@@ -207,30 +236,8 @@ else:
         print(f"{Y}With RUSTFLAGS: {env_vars.get('RUSTFLAGS', 'not set')}{X}")
 
     subprocess.run(cmd, check=True, cwd="external/dojo.c", env=env_vars)
-
-# Apply dojo.h patch
-print(f"{Y}{clipboard} Workaround patch for dojo.c ...{X}")
-# Check if platform can patch, windows most likely can't...
-if not shutil.which("patch"):
-    print(f"{R}{cross} Error: The 'patch' command was not found in your system's PATH.{X}")
-    print(f"{Y}This is required to apply a necessary fix to a dependency.{X}")
-    print(f"{B}On Windows, the easiest way to get it is by installing 'Git for Windows':{X}")
-    print(f"{G}https://git-scm.com/download/win{X}")
-    print(f"{Y}Please install it and make sure its tools are added to your PATH, then try again.{X}")
-    Exit(1)
-
-patch_file = 'patches/fix_dojo_c_incomplete_type.patch'
-dojo_c_dir = 'external/dojo.c'
-target_to_patch = f'{dojo_c_dir}/dojo.h'
-
-print(f"{Y}Applying patch to {target_to_patch}...{X}")
-try:
-    subprocess.run(['patch', '-p1', '-d', dojo_c_dir, '-i', os.path.abspath(patch_file)], check=True)
-    print(f"{G}{check} Patch applied successfully.{X}")
-except Exception as e:
-    print(f"{R}{cross} Failed to apply patch: {e}{X}")
-    Exit(1)
-
+    # Apply patch immediately after Rust compilation
+    apply_dojo_h_patch()
 
 
 # Configure library
