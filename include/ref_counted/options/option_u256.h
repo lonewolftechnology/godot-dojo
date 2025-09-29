@@ -16,17 +16,22 @@ class OptionU256 : public DojoOption {
     GDCLASS(OptionU256, DojoOption);
 
 protected:
-    static void _bind_methods() {}
+    static void _bind_methods() {
+    }
 
 public:
-    OptionU256() : DojoOption() {}
-    OptionU256(const String& value) : DojoOption(value) {}
-    OptionU256(const DOJO::COptionU256& native_option) : DojoOption() {
+    OptionU256() : DojoOption() {
+    }
+
+    OptionU256(const String &value) : DojoOption(value) {
+    }
+
+    OptionU256(const DOJO::COptionU256 &native_option) : DojoOption() {
         if (native_option.tag == DOJO::SomeU256) {
             Ref<U256> _u256 = memnew(U256(native_option.some));
             set_value(_u256);
         } else {
-            set_value("");
+            set_value(Variant());
         }
     }
 

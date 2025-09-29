@@ -14,11 +14,23 @@ class OptionChar : public DojoOption {
     GDCLASS(OptionChar, DojoOption);
 
 protected:
-    static void _bind_methods() {}
+    static void _bind_methods() {
+    }
 
 public:
-    OptionChar() : DojoOption() {}
-    OptionChar(const String& value) : DojoOption(value) {}
+    OptionChar() : DojoOption() {
+    }
+
+    OptionChar(const String &value) : DojoOption(value) {
+    }
+
+    OptionChar(const DOJO::COptionc_char &value) {
+        if (value.tag == DOJO::COptionc_char_Tag::Somec_char) {
+            set_value(value.some);
+        } else {
+            set_value(Variant());
+        }
+    }
 
     DOJO::COptionc_char get_native_option() const {
         DOJO::COptionc_char option = {};
@@ -27,7 +39,7 @@ public:
             String str = get_value();
             // The memory for this string must be managed by the caller
             // or the underlying C library.
-            char* c_str = new char[str.utf8().length() + 1];
+            char *c_str = new char[str.utf8().length() + 1];
             strcpy(c_str, str.utf8().get_data());
             option.some = c_str;
         } else {
