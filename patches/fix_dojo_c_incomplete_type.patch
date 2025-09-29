@@ -1,4 +1,4 @@
-Subject: [PATCH] better patch for dojo.h
+Subject: [PATCH] 1.7.2 header patch
 ---
 Index: dojo.h
 IDEA additional info:
@@ -6,38 +6,14 @@ Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
 <+>UTF-8
 ===================================================================
 diff --git a/dojo.h b/dojo.h
---- a/dojo.h	(revision bc07950a1afb962186527acb112a9881b5eb0f67)
-+++ b/dojo.h	(date 1758739214361)
-@@ -390,6 +390,15 @@
-   ByteArray,
- } Ty_Tag;
- 
-+typedef struct CArrayMember {
-+  struct Member *data;
-+  uintptr_t data_len;
-+} CArrayMember;
-+typedef struct Struct {
-+  const char *name;
-+  struct CArrayMember children;
-+} Struct;
-+
- typedef struct Ty {
-   Ty_Tag tag;
-   union {
-@@ -423,16 +432,6 @@
-   bool key;
- } Member;
- 
--typedef struct CArrayMember {
--  struct Member *data;
--  uintptr_t data_len;
--} CArrayMember;
--
--typedef struct Struct {
--  const char *name;
--  struct CArrayMember children;
--} Struct;
--
- typedef struct CArrayStruct {
-   struct Struct *data;
-   uintptr_t data_len;
+--- a/dojo.h	(revision d6853af81e552ee4dd8609f36b4a37c4c1ff5867)
++++ b/dojo.h	(date 1758923193594)
+@@ -24,7 +24,7 @@
+ struct AttributeFilter;
+ struct TokenBalance;
+ struct TokenContract;
+-enum ContractType;
++// enum ContractType;
+ struct Contract;
+ struct TokenTransfer;
+ struct Provider;
