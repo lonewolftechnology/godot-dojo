@@ -7,8 +7,10 @@
 #include "godot_cpp/core/class_db.hpp"
 
 #include "godot_cpp/classes/resource.hpp"
+#include "godot_cpp/variant/typed_array.hpp"
 
 #include "dojo_types.h"
+#include "dojo_order_by.h"
 using namespace  godot;
 class DojoQueryBase : public Resource
 {
@@ -17,6 +19,7 @@ class DojoQueryBase : public Resource
     uint32_t limit;
     String cursor;
     DOJO::PaginationDirection direction;
+    TypedArray<DojoOrderBy> order_by;
 
 public:
     DojoQueryBase()
@@ -34,6 +37,9 @@ public:
 
     DOJO::PaginationDirection get_direction() const {return direction;}
     void set_direction(DOJO::PaginationDirection p_direction) {direction = p_direction;}
+
+    void set_order_by(const TypedArray<DojoOrderBy>& p_order_by) { order_by = p_order_by; }
+    TypedArray<DojoOrderBy> get_order_by() const { return order_by; }
 
 protected:
     static void _bind_methods()
@@ -60,6 +66,10 @@ protected:
                      "set_direction",
                      "get_direction"
         );
+
+        ClassDB::bind_method(D_METHOD("get_order_by"), &DojoQueryBase::get_order_by);
+        ClassDB::bind_method(D_METHOD("set_order_by", "p_order_by"), &DojoQueryBase::set_order_by);
+        ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "order_by", PROPERTY_HINT_ARRAY_TYPE, MAKE_RESOURCE_TYPE_HINT("DojoOrderBy")), "set_order_by", "get_order_by");
 
     };
 };

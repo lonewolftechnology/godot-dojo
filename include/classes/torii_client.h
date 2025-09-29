@@ -19,7 +19,7 @@
 #include "resources/queries/dojo_token_query.h"
 #include "resources/queries/dojo_token_balance_query.h"
 #include "resources/queries/dojo_controller_query.h"
-#include "variant/field_element.h"
+#include "resources/queries/dojo_token_transfer_query.h"
 #include "resources/subscriptions/entity.h"
 #include "resources/subscriptions/message.h"
 #include "resources/subscriptions/starknet.h"
@@ -27,6 +27,7 @@
 #include "resources/subscriptions/token.h"
 #include "resources/subscriptions/contract.h"
 #include "resources/subscriptions/token_balance.h"
+#include "resources/subscriptions/token_transfer.h"
 
 #ifdef WEB_ENABLED
 #include "godot_cpp/classes/os.hpp"
@@ -56,6 +57,7 @@ public:
     Callable on_token_update_callback;
     Callable on_contract_update_callback;
     Callable on_token_balance_update_callback;
+    Callable on_token_transfer_update_callback;
 
     ToriiClient();
     ~ToriiClient();
@@ -80,9 +82,11 @@ public:
 
     TypedArray<Dictionary> get_tokens(const Ref<DojoTokenQuery>& query) const;
     TypedArray<Dictionary> get_token_balances(const Ref<DojoTokenBalanceQuery>& query) const;
+    TypedArray<Dictionary> get_token_transfers(const Ref<DojoTokenTransferQuery>& query) const;
     TypedArray<Dictionary> get_token_collections(const Ref<DojoContractQuery>& query) const;
     Dictionary get_token_info(const String& token_address) const;
 
+    // Subscriptions
     void on_entity_state_update(const Callable& callback, const Ref<EntitySubscription>& subscription);
     void on_event_message_update(const Callable& callback, const Ref<MessageSubscription>& subscription);
     void on_starknet_event(const Callable& callback, const Ref<StarknetSubscription>& subscription);
@@ -90,7 +94,9 @@ public:
     void on_token_update(const Callable& callback, const Ref<TokenSubscription>& subscription);
     void on_contract_update(const Callable& callback, const Ref<ContractSubscription>& subscription);
     void on_token_balance_update(const Callable& callback, const Ref<TokenBalanceSubscription>& subscription);
+    void on_token_transfer_update(const Callable& callback, const Ref<TokenTransferSubscription>& subscription);
 
+    // Subscriptions update
     void update_subscription(const Ref<DojoSubscription>& subscription, const Callable& callback = Callable());
     void update_entity_subscription(const Ref<EntitySubscription>& subscription, const Callable& callback = Callable());
     void update_event_message_subscription(const Ref<MessageSubscription>& subscription, const Callable& callback = Callable());
@@ -99,6 +105,7 @@ public:
     void update_token_subscription(const Ref<TokenSubscription>& subscription, const Callable& callback = Callable());
     void update_contract_subscription(const Ref<ContractSubscription>& subscription, const Callable& callback = Callable());
     void update_token_balance_subscription(const Ref<TokenBalanceSubscription>& subscription, const Callable& callback = Callable());
+    void update_token_transfer_subscription(const Ref<TokenTransferSubscription>& subscription, const Callable& callback = Callable());
 
     void cancel_all_subscriptions();
 
@@ -131,6 +138,10 @@ public:
     void set_models(const Array& p_models) { models = p_models; }
 
 private:
+    // Private helpers
+    bool _is_ready_for_query(const Ref<Resource> &query) const;
+    bool _is_ready_for_subscription(const Ref<DojoSubscription> &subscription) const;
+
 
 #ifdef WEB_ENABLED
     void _on_client_created(const Variant& result);
@@ -238,7 +249,11 @@ protected:
         ADD_SIGNAL(MethodInfo("metadata_updated", PropertyInfo(Variant::DICTIONARY, "metadata")));
         ADD_SIGNAL(MethodInfo("message_published", PropertyInfo(Variant::STRING, "message_hash")));
         ADD_SIGNAL(MethodInfo("transaction_confirmed", PropertyInfo(Variant::STRING, "transaction_hash")));
-        ADD_SIGNAL(MethodInfo("token_balance_updated", PropertyInfo(Variant::DICTIONARY, "balance_data")));
+        ADD_SIGNAL(MethodInfo("token_balance_update", PropertyInfo(Variant::DICTIONARY, "balance_data")));
+        ADD_SIGNAL(MethodInfo("token_transfer_update", PropertyInfo(Variant::DICTIONARY, "transfer_data")));
+        ADD_SIGNAL(MethodInfo("token_update", PropertyInfo(Variant::DICTIONARY, "token_data")));
+        ADD_SIGNAL(MethodInfo("contract_update", PropertyInfo(Variant::DICTIONARY, "contract_data")));
+
         // Signals for async web calls
         ADD_SIGNAL(MethodInfo("entities_received", PropertyInfo(Variant::ARRAY, "entities", PROPERTY_HINT_ARRAY_TYPE, "Dictionary")));
 

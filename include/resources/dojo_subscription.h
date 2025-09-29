@@ -21,6 +21,7 @@ public:
         ENTITY,
         TOKEN,
         TOKEN_BALANCE,
+        TOKEN_TRANSFER,
         TRANSACTION,
         STARKNET,
         CONTRACT,
@@ -94,7 +95,7 @@ protected:
                          Variant::INT,
                          "type",
                          PROPERTY_HINT_ENUM,
-                         "Event,Message,Entity,Token,TokenBalance,Transaction,Starknet,Contract,Nil",
+                         "Event,Message,Entity,Token,TokenBalance,TokenTransfer,Transaction,Starknet,Contract,Nil",
                          PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_READ_ONLY
                      ),
                      "", // No setter
@@ -106,6 +107,7 @@ protected:
         BIND_ENUM_CONSTANT(ENTITY);
         BIND_ENUM_CONSTANT(TOKEN);
         BIND_ENUM_CONSTANT(TOKEN_BALANCE);
+        BIND_ENUM_CONSTANT(TOKEN_TRANSFER);
         BIND_ENUM_CONSTANT(TRANSACTION);
         BIND_ENUM_CONSTANT(STARKNET);
         BIND_ENUM_CONSTANT(CONTRACT);

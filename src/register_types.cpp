@@ -43,6 +43,7 @@
 #include "resources/queries/dojo_controller_query.h"
 #include "resources/queries/dojo_transaction_query.h"
 #include "resources/queries/dojo_token_balance_query.h"
+#include "resources/queries/dojo_token_transfer_query.h"
 #include "resources/queries/dojo_transaction_filter.h"
 #include "resources/queries/dojo_contract_query.h"
 
@@ -52,6 +53,7 @@
 #include "resources/subscriptions/starknet.h"
 #include "resources/subscriptions/token.h"
 #include "resources/subscriptions/token_balance.h"
+#include "resources/subscriptions/token_transfer.h"
 #include "resources/subscriptions/transaction.h"
 #include "resources/subscriptions/contract.h"
 
@@ -110,6 +112,7 @@ void initialize_dojoc_module(ModuleInitializationLevel p_level)
         GDREGISTER_CLASS(DojoControllerQuery);
         GDREGISTER_CLASS(DojoTransactionQuery);
         GDREGISTER_CLASS(DojoTokenBalanceQuery);
+        GDREGISTER_CLASS(DojoTokenTransferQuery);
         GDREGISTER_CLASS(DojoContractQuery)
         GDREGISTER_CLASS(DojoSubscription);
         GDREGISTER_CLASS(DojoTransactionFilter);
@@ -117,6 +120,7 @@ void initialize_dojoc_module(ModuleInitializationLevel p_level)
         GDREGISTER_CLASS(MessageSubscription);
         GDREGISTER_CLASS(TokenSubscription);
         GDREGISTER_CLASS(TokenBalanceSubscription);
+        GDREGISTER_CLASS(TokenTransferSubscription);
         GDREGISTER_CLASS(ContractSubscription);
         GDREGISTER_CLASS(EntitySubscription);
         GDREGISTER_CLASS(TransactionSubscription);
