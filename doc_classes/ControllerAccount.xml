@@ -39,6 +39,7 @@
 			<param index="1" name="selector" type="String" />
 			<param index="2" name="args" type="Variant" default="[]" />
 			<description>
+				Executes a raw transaction using the connected controller account. [code]to[/code] is the contract address, [code]selector[/code] is the function selector, and [code]args[/code] is an array of arguments for the function.
 			</description>
 		</method>
 		<method name="get_account_info" qualifiers="const">

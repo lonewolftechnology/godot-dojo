@@ -1,15 +1,19 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="DojoControllerQuery" inherits="DojoQueryBase" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://raw.githubusercontent.com/godotengine/godot/master/doc/class.xsd">
 	<brief_description>
+		A query for retrieving controller accounts.
 	</brief_description>
 	<description>
+		This class is used to query for controller accounts. It allows filtering by contract addresses and usernames.
 	</description>
 	<tutorials>
 	</tutorials>
 	<members>
 		<member name="contract_addresses" type="String[]" setter="set_contract_addresses" getter="get_contract_addresses" default="[]">
+			An array of contract addresses associated with the controllers to filter by.
 		</member>
 		<member name="usernames" type="String[]" setter="set_usernames" getter="get_usernames" default="[]">
+			An array of usernames to filter by.
 		</member>
 	</members>
 </class>

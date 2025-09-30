@@ -1,8 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="OptionArrayFieldElement" inherits="DojoOption" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://raw.githubusercontent.com/godotengine/godot/master/doc/class.xsd">
 	<brief_description>
+		Represents an optional array of Starknet field elements.
 	</brief_description>
 	<description>
+		This class represents a value that may or may not be present. It can either be a [code]Some[/code] containing an array of [FieldElement]s, or [code]None[/code].
 	</description>
 	<tutorials>
 	</tutorials>

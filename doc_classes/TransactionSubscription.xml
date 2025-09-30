@@ -24,6 +24,6 @@
 		</member>
 		<member name="transaction_hashes" type="String[]" setter="set_transaction_hashes" getter="get_transaction_hashes" default="[]">
 		</member>
-		<member name="type" type="int" setter="" getter="get_type" overrides="DojoSubscription" enum="DojoSubscription.Type" default="5" />
+		<member name="type" type="int" setter="" getter="get_type" overrides="DojoSubscription" enum="DojoSubscription.Type" default="6" />
 	</members>
 </class>

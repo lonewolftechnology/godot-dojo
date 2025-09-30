@@ -276,6 +276,11 @@
 				Emitted when the client is disconnected.
 			</description>
 		</signal>
+		<signal name="contract_update">
+			<param index="0" name="contract_data" type="Dictionary" />
+			<description>
+			</description>
+		</signal>
 		<signal name="entities_received">
 			<param index="0" name="entities" type="Dictionary[]" />
 			<description>
@@ -318,10 +323,19 @@
 				Emitted when an error occurs during subscription creation or update.
 			</description>
 		</signal>
-		<signal name="token_balance_updated">
+		<signal name="token_balance_update">
 			<param index="0" name="balance_data" type="Dictionary" />
 			<description>
-				Emitted when a token balance is updated.
+			</description>
+		</signal>
+		<signal name="token_transfer_update">
+			<param index="0" name="transfer_data" type="Dictionary" />
+			<description>
+			</description>
+		</signal>
+		<signal name="token_update">
+			<param index="0" name="token_data" type="Dictionary" />
+			<description>
 			</description>
 		</signal>
 		<signal name="transaction_confirmed">

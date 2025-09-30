@@ -1,8 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="DojoSubscription" inherits="Resource" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://raw.githubusercontent.com/godotengine/godot/master/doc/class.xsd">
 	<brief_description>
+		Base class for all Dojo subscriptions.
 	</brief_description>
 	<description>
+		This class provides the basic structure for all subscriptions to the Torii client. It holds the callback to be executed when an update is received and allows for cancellation.
 	</description>
 	<tutorials>
 	</tutorials>
@@ -10,35 +12,51 @@
 		<method name="cancel">
 			<return type="void" />
 			<description>
+				Cancels the subscription.
 			</description>
 		</method>
 	</methods>
 	<members>
 		<member name="callback" type="Callable" setter="set_callback" getter="get_callback" default="Callable()">
+			The [Callable] to be invoked when an update is received.
 		</member>
 		<member name="name" type="String" setter="set_name" getter="get_name" default="&quot;DojoSubscription&quot;">
+			The name of the subscription.
 		</member>
-		<member name="type" type="int" setter="" getter="get_type" enum="DojoSubscription.Type" default="8">
+		<member name="type" type="int" setter="" getter="get_type" enum="DojoSubscription.Type" default="9">
+			The type of the subscription. See [enum Type].
 		</member>
 	</members>
 	<constants>
 		<constant name="EVENT" value="0" enum="Type">
+			Subscription for events.
 		</constant>
 		<constant name="MESSAGE" value="1" enum="Type">
+			Subscription for off-chain messages.
 		</constant>
 		<constant name="ENTITY" value="2" enum="Type">
+			Subscription for entity state updates.
 		</constant>
 		<constant name="TOKEN" value="3" enum="Type">
+			Subscription for token metadata updates.
 		</constant>
 		<constant name="TOKEN_BALANCE" value="4" enum="Type">
+			Subscription for token balance updates.
 		</constant>
-		<constant name="TRANSACTION" value="5" enum="Type">
+		<constant name="TOKEN_TRANSFER" value="5" enum="Type">
+			Subscription for token transfer events.
 		</constant>
-		<constant name="STARKNET" value="6" enum="Type">
+		<constant name="TRANSACTION" value="6" enum="Type">
+			Subscription for transaction updates.
 		</constant>
-		<constant name="CONTRACT" value="7" enum="Type">
+		<constant name="STARKNET" value="7" enum="Type">
+			Subscription for raw Starknet events.
 		</constant>
-		<constant name="NIL" value="8" enum="Type">
+		<constant name="CONTRACT" value="8" enum="Type">
+			Subscription for contract updates.
+		</constant>
+		<constant name="NIL" value="9" enum="Type">
+			Represents an uninitialized or invalid subscription type.
 		</constant>
 	</constants>
 </class>

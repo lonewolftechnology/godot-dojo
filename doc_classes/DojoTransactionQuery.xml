@@ -1,13 +1,16 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="DojoTransactionQuery" inherits="DojoQueryBase" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://raw.githubusercontent.com/godotengine/godot/master/doc/class.xsd">
 	<brief_description>
+		A query for retrieving transactions.
 	</brief_description>
 	<description>
+		This class is used to query for transactions. It allows filtering transactions using a [DojoTransactionFilter].
 	</description>
 	<tutorials>
 	</tutorials>
 	<members>
 		<member name="filter" type="DojoTransactionFilter" setter="set_filter" getter="get_filter">
+			The [DojoTransactionFilter] to apply to the query.
 		</member>
 	</members>
 </class>

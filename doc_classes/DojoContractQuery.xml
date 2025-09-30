@@ -1,15 +1,19 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="DojoContractQuery" inherits="DojoQueryBase" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://raw.githubusercontent.com/godotengine/godot/master/doc/class.xsd">
 	<brief_description>
+		A query for retrieving contracts.
 	</brief_description>
 	<description>
+		This class is used to query for contracts. It allows filtering by contract addresses and contract types.
 	</description>
 	<tutorials>
 	</tutorials>
 	<members>
 		<member name="contract_addresses" type="String[]" setter="set_contract_addresses" getter="get_contract_addresses" default="[]">
+			An array of contract addresses to filter by.
 		</member>
 		<member name="contract_types" type="Array" setter="set_contract_types" getter="get_contract_types" default="[]">
+			An array of contract types to filter by (e.g., 'ERC721', 'ERC1155').
 		</member>
 	</members>
 </class>

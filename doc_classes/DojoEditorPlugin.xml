@@ -1,8 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="DojoEditorPlugin" inherits="EditorPlugin" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://raw.githubusercontent.com/godotengine/godot/master/doc/class.xsd">
 	<brief_description>
+		The editor plugin for the Dojo SDK.
 	</brief_description>
 	<description>
+		This class provides the editor functionality for the Dojo SDK, including tools for managing project settings.
 	</description>
 	<tutorials>
 	</tutorials>
@@ -10,6 +12,7 @@
 		<method name="reset_project_settings" qualifiers="static">
 			<return type="void" />
 			<description>
+				Resets the Dojo-related project settings to their default values.
 			</description>
 		</method>
 	</methods>
