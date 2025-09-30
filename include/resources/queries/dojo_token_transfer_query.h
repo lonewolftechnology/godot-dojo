@@ -59,8 +59,8 @@ public:
                     strcpy(field_str, order_by_ref->get_field().utf8().get_data());
 
                     native_order_by_arr[i] = {
-                        .field = field_str,
-                        .direction = order_by_ref->get_direction()
+                        field_str,
+                        order_by_ref->get_direction()
                     };
                 }
             }
