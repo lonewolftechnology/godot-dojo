@@ -1,19 +1,25 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="DojoQuery" inherits="DojoQueryBase" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://raw.githubusercontent.com/godotengine/godot/master/doc/class.xsd">
 	<brief_description>
+		A query builder for retrieving entities from the Dojo world state.
 	</brief_description>
 	<description>
+		This class is used to construct queries to retrieve entities from the Dojo world state. You can specify the models to query, a [code]WHERE[/code] clause, and whether to query historical data.
 	</description>
 	<tutorials>
 	</tutorials>
 	<members>
 		<member name="clause" type="OptionClause" setter="set_clause" getter="get_clause">
+			The [code]WHERE[/code] clause for the query. Use this to filter entities based on their component values.
 		</member>
 		<member name="is_historical" type="bool" setter="set_historical" getter="get_historical" default="false">
+			If [code]true[/code], the query will be executed against historical data. Defaults to [code]false[/code].
 		</member>
 		<member name="models" type="String[]" setter="set_models" getter="get_models" default="[]">
+			An array of model names to query.
 		</member>
 		<member name="no_hashed_keys" type="bool" setter="set_no_hashed_keys" getter="get_no_hashed_keys" default="false">
+			If [code]true[/code], the keys will not be hashed before being sent to the Torii client. Defaults to [code]false[/code].
 		</member>
 	</members>
 </class>

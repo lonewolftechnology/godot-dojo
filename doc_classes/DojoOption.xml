@@ -1,8 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="DojoOption" inherits="Resource" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://raw.githubusercontent.com/godotengine/godot/master/doc/class.xsd">
 	<brief_description>
+		Base class for optional values.
 	</brief_description>
 	<description>
+		This class represents a value that may or may not be present. It's the base class for specific optional types like [OptionU32] and [OptionU64].
 	</description>
 	<tutorials>
 	</tutorials>
@@ -10,22 +12,26 @@
 		<method name="get_value" qualifiers="const">
 			<return type="Variant" />
 			<description>
+				Returns the contained value if it exists, otherwise [code]null[/code].
 			</description>
 		</method>
 		<method name="is_some" qualifiers="const">
 			<return type="bool" />
 			<description>
+				Returns [code]true[/code] if the option contains a value ([code]Some[/code]), [code]false[/code] otherwise ([code]None[/code]).
 			</description>
 		</method>
 		<method name="set_value">
 			<return type="void" />
 			<param index="0" name="p_value" type="Variant" />
 			<description>
+				Sets the value. If the value is [code]null[/code], it represents [code]None[/code].
 			</description>
 		</method>
 		<method name="to_json" qualifiers="const">
 			<return type="Dictionary" />
 			<description>
+				Converts the option to a JSON-representable dictionary.
 			</description>
 		</method>
 	</methods>

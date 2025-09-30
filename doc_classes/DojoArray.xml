@@ -1,8 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="DojoArray" inherits="RefCounted" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://raw.githubusercontent.com/godotengine/godot/master/doc/class.xsd">
 	<brief_description>
+		Represents a dynamic array of Dojo types.
 	</brief_description>
 	<description>
+		This class is a container for a dynamic array of elements, where each element is a Dojo type. It is used to handle arrays in Dojo contracts.
 	</description>
 	<tutorials>
 	</tutorials>

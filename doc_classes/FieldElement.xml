@@ -1,8 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="FieldElement" inherits="RefCounted" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://raw.githubusercontent.com/godotengine/godot/master/doc/class.xsd">
 	<brief_description>
+		Represents a Starknet field element (felt).
 	</brief_description>
 	<description>
+		This class is a wrapper around a Starknet field element. It provides methods to interact with the underlying value.
 	</description>
 	<tutorials>
 	</tutorials>
@@ -10,6 +12,7 @@
 		<method name="as_packed_array" qualifiers="const">
 			<return type="PackedByteArray" />
 			<description>
+				Returns the raw [PackedByteArray] representation of the field element.
 			</description>
 		</method>
 	</methods>

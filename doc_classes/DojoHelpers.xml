@@ -1,8 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="DojoHelpers" inherits="Object" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://raw.githubusercontent.com/godotengine/godot/master/doc/class.xsd">
 	<brief_description>
+		A collection of static helper functions for the Dojo SDK.
 	</brief_description>
 	<description>
+		This class provides various utility functions for common tasks, such as type conversions and configuration management.
 	</description>
 	<tutorials>
 	</tutorials>
@@ -11,18 +13,21 @@
 			<return type="String" />
 			<param index="0" name="bytes" type="PackedByteArray" />
 			<description>
+				Converts a [PackedByteArray] to a string representation of a 128-bit signed integer.
 			</description>
 		</method>
 		<method name="bytes_to_u128_string" qualifiers="static">
 			<return type="String" />
 			<param index="0" name="bytes" type="PackedByteArray" />
 			<description>
+				Converts a [PackedByteArray] to a string representation of a 128-bit unsigned integer.
 			</description>
 		</method>
 		<method name="bytes_to_u256_string" qualifiers="static">
 			<return type="String" />
 			<param index="0" name="bytes" type="PackedByteArray" />
 			<description>
+				Converts a [PackedByteArray] to a string representation of a 256-bit unsigned integer.
 			</description>
 		</method>
 		<method name="double_to_variant_fp" qualifiers="static">
@@ -30,6 +35,7 @@
 			<param index="0" name="value" type="float" />
 			<param index="1" name="precision" type="int" />
 			<description>
+				Converts a float to a fixed-point [Variant] with the specified precision.
 			</description>
 		</method>
 		<method name="fixed_to_float" qualifiers="static">
@@ -37,24 +43,28 @@
 			<param index="0" name="value" type="int" />
 			<param index="1" name="precision" type="int" default="24" />
 			<description>
+				Converts a fixed-point integer to a float with the specified precision.
 			</description>
 		</method>
 		<method name="fixed_to_float_64" qualifiers="static">
 			<return type="float" />
 			<param index="0" name="value" type="int" />
 			<description>
+				Converts a 64-bit fixed-point integer to a float.
 			</description>
 		</method>
 		<method name="fixed_to_float_128" qualifiers="static">
 			<return type="float" />
 			<param index="0" name="value" type="int" />
 			<description>
+				Converts a 128-bit fixed-point integer to a float.
 			</description>
 		</method>
 		<method name="fixed_to_float_256" qualifiers="static">
 			<return type="float" />
 			<param index="0" name="value" type="int" />
 			<description>
+				Converts a 256-bit fixed-point integer to a float.
 			</description>
 		</method>
 		<method name="float_to_fixed" qualifiers="static">
@@ -62,34 +72,40 @@
 			<param index="0" name="value" type="float" />
 			<param index="1" name="precision" type="int" default="24" />
 			<description>
+				Converts a float to a fixed-point integer with the specified precision.
 			</description>
 		</method>
 		<method name="float_to_fixed_64" qualifiers="static">
 			<return type="int" />
 			<param index="0" name="value" type="float" />
 			<description>
+				Converts a float to a 64-bit fixed-point integer.
 			</description>
 		</method>
 		<method name="float_to_fixed_128" qualifiers="static">
 			<return type="int" />
 			<param index="0" name="value" type="float" />
 			<description>
+				Converts a float to a 128-bit fixed-point integer.
 			</description>
 		</method>
 		<method name="float_to_fixed_256" qualifiers="static">
 			<return type="int" />
 			<param index="0" name="value" type="float" />
 			<description>
+				Converts a float to a 256-bit fixed-point integer.
 			</description>
 		</method>
 		<method name="get_default_policies" qualifiers="static">
 			<return type="DojoPolicies" />
 			<description>
+				Returns the default policies for the Dojo SDK.
 			</description>
 		</method>
 		<method name="get_katana_url" qualifiers="static">
 			<return type="String" />
 			<description>
+				Returns the Katana RPC URL.
 			</description>
 		</method>
 		<method name="get_setting" qualifiers="static">
@@ -97,24 +113,28 @@
 			<param index="0" name="setting" type="String" />
 			<param index="1" name="_unnamed_arg1" type="Variant" />
 			<description>
+				Gets the value of a setting.
 			</description>
 		</method>
 		<method name="signed_to_u32_offset" qualifiers="static">
 			<return type="int" />
 			<param index="0" name="signed_value" type="int" />
 			<description>
+				Converts a signed integer to a u32 offset.
 			</description>
 		</method>
 		<method name="string_to_field_element" qualifiers="static">
 			<return type="FieldElement" />
 			<param index="0" name="str" type="String" />
 			<description>
+				Converts a string to a [FieldElement].
 			</description>
 		</method>
 		<method name="u32_to_signed_offset" qualifiers="static">
 			<return type="int" />
 			<param index="0" name="u32_value" type="int" />
 			<description>
+				Converts a u32 value to a signed offset.
 			</description>
 		</method>
 		<method name="variant_to_double_fp" qualifiers="static">
@@ -122,6 +142,7 @@
 			<param index="0" name="value" type="Variant" />
 			<param index="1" name="precision" type="int" />
 			<description>
+				Converts a fixed-point [Variant] to a float with the specified precision.
 			</description>
 		</method>
 	</methods>

@@ -1,8 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="DojoC" inherits="Object" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://raw.githubusercontent.com/godotengine/godot/master/doc/class.xsd">
 	<brief_description>
+		A static class for managing Dojo configuration settings.
 	</brief_description>
 	<description>
+		This class provides static methods to initialize and manage configuration settings for the Dojo SDK. It allows resetting the configuration and setting individual values.
 	</description>
 	<tutorials>
 	</tutorials>
@@ -11,6 +13,7 @@
 			<return type="void" />
 			<param index="0" name="reset" type="bool" />
 			<description>
+				Initializes or resets the configuration. If [code]reset[/code] is [code]true[/code], it will reset the configuration to its default values.
 			</description>
 		</method>
 		<method name="init_setting" qualifiers="static">
@@ -19,11 +22,13 @@
 			<param index="1" name="value" type="Variant" />
 			<param index="2" name="force" type="bool" />
 			<description>
+				Sets a specific configuration setting. [code]setting[/code] is the name of the setting, [code]value[/code] is the new value, and [code]force[/code] determines whether to overwrite an existing value.
 			</description>
 		</method>
 	</methods>
 	<members>
 		<member name="is_enabled" type="bool" setter="set_enabled" getter="get_enabled" default="true">
+			A boolean flag to enable or disable the Dojo SDK functionality.
 		</member>
 	</members>
 </class>

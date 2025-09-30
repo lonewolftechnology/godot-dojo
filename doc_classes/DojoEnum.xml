@@ -1,8 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="DojoEnum" inherits="RefCounted" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://raw.githubusercontent.com/godotengine/godot/master/doc/class.xsd">
 	<brief_description>
+		Represents an enum value from a Dojo contract.
 	</brief_description>
 	<description>
+		This class holds the name and value of an enum from a Dojo contract. It's used to represent enum variants.
 	</description>
 	<tutorials>
 	</tutorials>
@@ -10,23 +12,27 @@
 		<method name="get_name" qualifiers="const">
 			<return type="String" />
 			<description>
+				Returns the name of the enum variant.
 			</description>
 		</method>
 		<method name="get_value" qualifiers="const">
 			<return type="Variant" />
 			<description>
+				Returns the value of the enum variant.
 			</description>
 		</method>
 		<method name="set_name">
 			<return type="void" />
 			<param index="0" name="name" type="String" />
 			<description>
+				Sets the name of the enum variant.
 			</description>
 		</method>
 		<method name="set_value">
 			<return type="void" />
 			<param index="0" name="value" type="Variant" />
 			<description>
+				Sets the value of the enum variant.
 			</description>
 		</method>
 	</methods>

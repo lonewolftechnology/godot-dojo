@@ -1,8 +1,11 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="ToriiClient" inherits="Node" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://raw.githubusercontent.com/godotengine/godot/master/doc/class.xsd">
 	<brief_description>
+		A client for interacting with a Dojo world's Torii network.
 	</brief_description>
 	<description>
+		The ToriiClient is the main entry point for interacting with a Dojo world. It allows you to query the world's state and subscribe to real-time updates for entities, events, and more.
+		To use it, add it to your scene tree (often as an autoload singleton), set the [member world_address] and [member torii_url] properties, and then call [method create_client].
 	</description>
 	<tutorials>
 	</tutorials>
@@ -10,79 +13,95 @@
 		<method name="cancel_all_subscriptions">
 			<return type="void" />
 			<description>
+				Cancels all active subscriptions.
 			</description>
 		</method>
 		<method name="create_client">
 			<return type="bool" />
 			<description>
+				Initializes and connects the client to the Torii server using the configured [member torii_url] and [member world_address]. Emits [signal client_connected] on success or failure.
 			</description>
 		</method>
 		<method name="disconnect_client">
 			<return type="void" />
 			<param index="0" name="send_signal" type="bool" />
 			<description>
+				Disconnects the client from the server. If [param send_signal] is true, it emits the [signal client_disconnected] signal.
 			</description>
 		</method>
 		<method name="get_client_info" qualifiers="const">
 			<return type="Dictionary" />
 			<description>
+				Returns a dictionary with information about the client's current state, including connection status, Torii URL, and world address.
 			</description>
 		</method>
 		<method name="get_connection_status" qualifiers="const">
 			<return type="Dictionary" />
 			<description>
+				Returns a dictionary with detailed connection status.
 			</description>
 		</method>
 		<method name="get_controller_info">
 			<return type="Dictionary" />
 			<param index="0" name="controller_address" type="String" />
 			<description>
+				A helper method to get information for a single controller by its address.
 			</description>
 		</method>
 		<method name="get_controllers">
 			<return type="Dictionary[]" />
 			<param index="0" name="query" type="DojoControllerQuery" />
 			<description>
+				Queries for controllers based on the provided [DojoControllerQuery].
 			</description>
 		</method>
 		<method name="get_entities">
 			<return type="Dictionary[]" />
 			<param index="0" name="query" type="DojoQuery" />
 			<description>
+				Queries for entities based on the provided [DojoQuery].
+				[b]Note:[/b] On web platforms, this operation is asynchronous. It returns an empty array, and the result is delivered via the [signal entities_received] signal.
 			</description>
 		</method>
 		<method name="get_token_balances" qualifiers="const">
 			<return type="Dictionary[]" />
 			<param index="0" name="query" type="DojoTokenBalanceQuery" />
 			<description>
+				Queries for token balances based on the provided [DojoTokenBalanceQuery].
 			</description>
 		</method>
 		<method name="get_token_collections" qualifiers="const">
 			<return type="Dictionary[]" />
 			<param index="0" name="query" type="DojoContractQuery" />
 			<description>
+				Queries for token contracts (collections) based on the provided [DojoContractQuery].
 			</description>
 		</method>
 		<method name="get_token_info" qualifiers="const">
 			<return type="Dictionary" />
 			<param index="0" name="token_address" type="String" />
 			<description>
+				A helper method to get information for a single token contract by its address.
 			</description>
 		</method>
 		<method name="get_tokens" qualifiers="const">
 			<return type="Dictionary[]" />
 			<param index="0" name="query" type="DojoTokenQuery" />
 			<description>
+				Queries for tokens (e.g., ERC721, ERC1155) based on the provided [DojoTokenQuery].
 			</description>
 		</method>
 		<method name="get_world_metadata">
 			<return type="Dictionary" />
 			<description>
+				Fetches metadata about the world, such as registered models and their schemas.
+				[b]Note:[/b] On web platforms, this operation is asynchronous. It returns an empty dictionary, and the result is delivered via the [signal metadata_updated] signal.
 			</description>
 		</method>
 		<method name="is_client_connected" qualifiers="const">
 			<return type="bool" />
 			<description>
+				Returns [code]true[/code] if the client is currently connected to the Torii server.
 			</description>
 		</method>
 		<method name="on_contract_update">
@@ -90,6 +109,7 @@
 			<param index="0" name="callback" type="Callable" />
 			<param index="1" name="subscription" type="ContractSubscription" />
 			<description>
+				Subscribes to updates for a specific contract. The [param callback] will be invoked with a dictionary containing the contract update data.
 			</description>
 		</method>
 		<method name="on_entity_state_update">
@@ -97,6 +117,7 @@
 			<param index="0" name="callback" type="Callable" />
 			<param index="1" name="subscription" type="EntitySubscription" />
 			<description>
+				Subscribes to state updates for entities matching the [param subscription] criteria. The [param callback] will be invoked with a dictionary representing the updated entity.
 			</description>
 		</method>
 		<method name="on_event_message_update">
@@ -104,6 +125,7 @@
 			<param index="0" name="callback" type="Callable" />
 			<param index="1" name="subscription" type="MessageSubscription" />
 			<description>
+				Subscribes to event messages. The [param callback] will be invoked when a new event message is received.
 			</description>
 		</method>
 		<method name="on_starknet_event">
@@ -111,6 +133,7 @@
 			<param index="0" name="callback" type="Callable" />
 			<param index="1" name="subscription" type="StarknetSubscription" />
 			<description>
+				Subscribes to raw Starknet events. The [param callback] will be invoked when a matching event is emitted.
 			</description>
 		</method>
 		<method name="on_token_balance_update">
@@ -118,6 +141,7 @@
 			<param index="0" name="callback" type="Callable" />
 			<param index="1" name="subscription" type="TokenBalanceSubscription" />
 			<description>
+				Subscribes to token balance updates. The [param callback] will be invoked when a balance changes.
 			</description>
 		</method>
 		<method name="on_token_update">
@@ -125,6 +149,7 @@
 			<param index="0" name="callback" type="Callable" />
 			<param index="1" name="subscription" type="TokenSubscription" />
 			<description>
+				Subscribes to token metadata updates. The [param callback] will be invoked when token information changes.
 			</description>
 		</method>
 		<method name="on_transaction">
@@ -132,6 +157,7 @@
 			<param index="0" name="callback" type="Callable" />
 			<param index="1" name="subscription" type="TransactionSubscription" />
 			<description>
+				Subscribes to transaction updates. The [param callback] will be invoked when a new transaction is processed.
 			</description>
 		</method>
 		<method name="publish_message">
@@ -139,6 +165,7 @@
 			<param index="0" name="message_data" type="String" />
 			<param index="1" name="signature_felts" type="Array" />
 			<description>
+				Publishes a message to the off-chain message bus. This is an experimental feature.
 			</description>
 		</method>
 		<method name="publish_typed_message">
@@ -146,11 +173,13 @@
 			<param index="0" name="typed_data" type="Dictionary" />
 			<param index="1" name="signature_felts" type="Array" />
 			<description>
+				Converts a [Dictionary] to a JSON string and publishes it using [method publish_message]. This is an experimental feature.
 			</description>
 		</method>
 		<method name="refresh_metadata">
 			<return type="bool" />
 			<description>
+				Calls [method get_world_metadata] and emits the [signal metadata_updated] signal with the result. Returns [code]true[/code] on success.
 			</description>
 		</method>
 		<method name="update_contract_subscription">
@@ -158,6 +187,7 @@
 			<param index="0" name="subscription" type="ContractSubscription" />
 			<param index="1" name="callback" type="Callable" default="Callable()" />
 			<description>
+				Updates an existing contract subscription with new criteria.
 			</description>
 		</method>
 		<method name="update_entity_subscription">
@@ -165,6 +195,7 @@
 			<param index="0" name="subscription" type="EntitySubscription" />
 			<param index="1" name="callback" type="Callable" default="Callable()" />
 			<description>
+				Updates an existing entity subscription with a new clause.
 			</description>
 		</method>
 		<method name="update_event_message_subscription">
@@ -172,6 +203,7 @@
 			<param index="0" name="subscription" type="MessageSubscription" />
 			<param index="1" name="callback" type="Callable" default="Callable()" />
 			<description>
+				Updates an existing event message subscription with a new clause.
 			</description>
 		</method>
 		<method name="update_starknet_event_subscription">
@@ -179,6 +211,7 @@
 			<param index="0" name="subscription" type="StarknetSubscription" />
 			<param index="1" name="callback" type="Callable" default="Callable()" />
 			<description>
+				Updates an existing Starknet event subscription.
 			</description>
 		</method>
 		<method name="update_subscription">
@@ -186,6 +219,7 @@
 			<param index="0" name="subscription" type="DojoSubscription" />
 			<param index="1" name="callback" type="Callable" default="Callable()" />
 			<description>
+				A generic method to update any type of subscription. It will call the appropriate specific update method based on the subscription's type.
 			</description>
 		</method>
 		<method name="update_token_balance_subscription">
@@ -193,6 +227,7 @@
 			<param index="0" name="subscription" type="TokenBalanceSubscription" />
 			<param index="1" name="callback" type="Callable" default="Callable()" />
 			<description>
+				Updates an existing token balance subscription with new criteria.
 			</description>
 		</method>
 		<method name="update_token_subscription">
@@ -200,6 +235,7 @@
 			<param index="0" name="subscription" type="TokenSubscription" />
 			<param index="1" name="callback" type="Callable" default="Callable()" />
 			<description>
+				Updates an existing token subscription with new criteria.
 			</description>
 		</method>
 		<method name="update_transaction_subscription">
@@ -207,74 +243,91 @@
 			<param index="0" name="subscription" type="TransactionSubscription" />
 			<param index="1" name="callback" type="Callable" default="Callable()" />
 			<description>
+				Updates an existing transaction subscription with a new filter.
 			</description>
 		</method>
 	</methods>
 	<members>
 		<member name="events" type="Array" setter="set_events" getter="get_events" default="[]">
+			A list of events.
 		</member>
 		<member name="logger_callback" type="Callable" setter="set_logger_callback" getter="get_logger_callback" default="Callable()">
+			A [Callable] that will be invoked with log messages from the underlying dojo.c library.
 		</member>
 		<member name="models" type="Array" setter="set_models" getter="get_models" default="[]">
+			A list of models from the world metadata.
 		</member>
 		<member name="torii_url" type="String" setter="set_torii_url" getter="get_torii_url" default="&quot;&quot;">
+			The URL of the Torii gRPC server.
 		</member>
 		<member name="world_address" type="String" setter="set_world_address" getter="get_world_address" default="&quot;&quot;">
+			The address of the Dojo world contract.
 		</member>
 	</members>
 	<signals>
 		<signal name="client_connected">
 			<param index="0" name="success" type="bool" />
 			<description>
+				Emitted when the client connection attempt is completed. [param success] is [code]true[/code] if the connection was successful.
 			</description>
 		</signal>
 		<signal name="client_disconnected">
 			<description>
+				Emitted when the client is disconnected.
 			</description>
 		</signal>
 		<signal name="entities_received">
 			<param index="0" name="entities" type="Dictionary[]" />
 			<description>
+				Emitted on web platforms with the result of a [method get_entities] call.
 			</description>
 		</signal>
 		<signal name="entity_updated">
 			<param index="0" name="entity_data" type="Dictionary" />
 			<description>
+				Emitted when an entity subscribed to via [method on_entity_state_update] is updated.
 			</description>
 		</signal>
 		<signal name="event_received">
 			<param index="0" name="event_data" type="Dictionary" />
 			<description>
+				Emitted when an event is received from a subscription.
 			</description>
 		</signal>
 		<signal name="message_published">
 			<param index="0" name="message_hash" type="String" />
 			<description>
+				Emitted after a message is successfully published via [method publish_message], containing the message hash.
 			</description>
 		</signal>
 		<signal name="metadata_updated">
 			<param index="0" name="metadata" type="Dictionary" />
 			<description>
+				Emitted when world metadata is fetched, either from [method get_world_metadata] or [method refresh_metadata].
 			</description>
 		</signal>
 		<signal name="subscription_created">
 			<param index="0" name="subscription_name" type="String" />
 			<description>
+				Emitted when a new subscription is successfully created.
 			</description>
 		</signal>
 		<signal name="subscription_error">
 			<param index="0" name="error_message" type="String" />
 			<description>
+				Emitted when an error occurs during subscription creation or update.
 			</description>
 		</signal>
 		<signal name="token_balance_updated">
 			<param index="0" name="balance_data" type="Dictionary" />
 			<description>
+				Emitted when a token balance is updated.
 			</description>
 		</signal>
 		<signal name="transaction_confirmed">
 			<param index="0" name="transaction_hash" type="String" />
 			<description>
+				Emitted when a transaction is confirmed.
 			</description>
 		</signal>
 	</signals>
