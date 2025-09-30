@@ -230,9 +230,7 @@ TypedArray<Dictionary> ToriiClient::get_entities(const Ref<DojoQuery> &query) {
     TypedArray<Dictionary> result = DojoArray::CArrayEntityToVariant(page_entities.items);
 
     Logger::success_extra("ToriiClient", "Entities obtained: ", result.size());
-    // return result;
-    return Array();
-#endif
+    return result;
 }
 
 TypedArray<Dictionary> ToriiClient::get_controllers(Ref<DojoControllerQuery> query) {
