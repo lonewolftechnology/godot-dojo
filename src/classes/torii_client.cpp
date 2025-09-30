@@ -1290,3 +1290,29 @@ void ToriiClient::update_token_balance_subscription(const Ref<TokenBalanceSubscr
         subscription->update_callback(callback);
     }
 }
+
+void ToriiClient::update_token_transfer_subscription(const Ref<TokenTransferSubscription> &subscription,
+                                                     const Callable &callback) {
+    DOJO::CArrayFieldElement contracts = subscription->get_native_contract_addresses();
+    DOJO::CArrayFieldElement accounts = subscription->get_native_account_addresses();
+    DOJO::CArrayU256 token_ids = subscription->get_native_token_ids();
+
+    DOJO::Resultbool result = DOJO::client_update_token_transfer_subscription(
+        client,
+        subscription->get_subscription(),
+        contracts.data,
+        contracts.data_len,
+        accounts.data,
+        accounts.data_len,
+        token_ids.data,
+        token_ids.data_len
+    );
+    if (result.tag == DOJO::Errbool) {
+        String error_msg = "Failed to update token transfer subscription: " + String(GET_DOJO_ERROR(result));
+        Logger::error(error_msg);
+        emit_signal("subscription_error", error_msg);
+    } else {
+        Logger::success_extra("ToriiClient", "Updated token transfer subscription");
+        subscription->update_callback(callback);
+    }
+}
