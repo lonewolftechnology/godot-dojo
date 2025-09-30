@@ -26,6 +26,9 @@ jobs:
           fetch-depth: 0
           submodules: true
 
+      - name: Fetch submodule tags
+        run: git submodule foreach --recursive git fetch --tags
+
       - name: Extract latest changelog entries
         id: changelog
         run: |
