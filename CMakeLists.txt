@@ -20,17 +20,17 @@ if(BUILD_WEB)
 endif()
 
 if(ANDROID_ENABLED)
-    message(STATUS "Web build enabled, defining ANDROID_ENABLED preprocessor macro.")
+    message(STATUS "Android build enabled, defining ANDROID_ENABLED preprocessor macro.")
     target_compile_definitions(godot-dojo PRIVATE ANDROID_ENABLED)
 endif()
 
 if(DEBUG_ENABLED)
-    message(STATUS "Web build enabled, defining DEBUG_ENABLED preprocessor macro.")
+    message(STATUS "Debug build enabled, defining DEBUG_ENABLED preprocessor macro.")
     target_compile_definitions(godot-dojo PRIVATE DEBUG_ENABLED)
 endif()
 
 if(TOOLS_ENABLED)
-    message(STATUS "Web build enabled, defining TOOLS_ENABLED preprocessor macro.")
+    message(STATUS "Tools build enabled, defining TOOLS_ENABLED preprocessor macro.")
     target_compile_definitions(godot-dojo PRIVATE TOOLS_ENABLED)
 endif()
 # Godot-cpp (use submodule headers directly to avoid building under _deps)
@@ -45,6 +45,12 @@ target_include_directories(godot-cpp INTERFACE
         ${CMAKE_CURRENT_SOURCE_DIR}/external/godot-cpp/gdextension
 )
 
+# Boost (header-only)
+add_library(boost INTERFACE)
+add_library(Boost::boost ALIAS boost)
+target_include_directories(boost INTERFACE
+        ${CMAKE_CURRENT_SOURCE_DIR}/external/boost/include)
+
 # Dojo.c (use submodule directly; avoid FetchContent/_deps)
 set(dojo_c_SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/external/dojo.c)
 # Place Rust build artifacts under the current CMake build dir to let CMake/Ninja manage rules.
@@ -53,35 +59,51 @@ set(dojo_c_BINARY_DIR ${CMAKE_CURRENT_BINARY_DIR}/dojo_c)
 find_package(Rust REQUIRED)
 # Ensure the binary directory exists at configure time to satisfy interface include dirs
 file(MAKE_DIRECTORY ${dojo_c_BINARY_DIR})
-add_rust_library(TARGET dojo_c SOURCE_DIRECTORY ${dojo_c_SOURCE_DIR} BINARY_DIRECTORY ${dojo_c_BINARY_DIR})
+
+# Apply patches to dojo.c submodule before it's built
+find_program(PATCH_EXECUTABLE patch)
+if(PATCH_EXECUTABLE)
+    file(GLOB PATCH_FILES "${CMAKE_CURRENT_SOURCE_DIR}/patches/*.patch")
+    if(PATCH_FILES)
+        add_custom_target(apply_dojo_c_patches
+            COMMAND ${CMAKE_COMMAND} -E echo "Resetting and patching dojo.c submodule..."
+            COMMAND ${CMAKE_COMMAND} -E chdir ${dojo_c_SOURCE_DIR}
+                git reset --hard
+            COMMAND ${CMAKE_COMMAND} -E chdir ${dojo_c_SOURCE_DIR}
+                git apply ${PATCH_FILES}
+            COMMENT "Resetting dojo.c and applying patches..."
+            # Este objetivo se ejecutará cada vez que se construya, asegurando que los parches estén aplicados.
+            # El 'git reset --hard' asegura un estado limpio antes de aplicar los parches.
+        )
+    endif()
+else()
+    message(WARNING "patch command not found. Cannot apply patches to dojo.c")
+endif()
+
+add_rust_library(TARGET dojo_c SOURCE_DIRECTORY ${dojo_c_SOURCE_DIR} BINARY_DIRECTORY ${dojo_c_BINARY_DIR} NO_DEFAULT_FEATURES)
+if(TARGET apply_dojo_c_patches)
+    add_dependencies(dojo_c apply_dojo_c_patches)
+endif()
 
 configure_file(plugin_template.gdextension.in godot-dojo.gdextension)
 
 target_include_directories(godot-dojo PRIVATE include src)
-target_include_directories(godot-dojo PUBLIC
-        ${CMAKE_CURRENT_SOURCE_DIR}/external/boost/include
-)
 
 # Link core libraries
-# Find and link libdbus-1 properly via pkg-config on Linux
-include(CheckIncludeFile)
-find_package(PkgConfig)
-if(PKG_CONFIG_FOUND)
-    pkg_check_modules(DBUS dbus-1)
-    if(DBUS_FOUND)
-        message(STATUS "Found dbus-1 via pkg-config: ${DBUS_VERSION}")
-        target_include_directories(godot-dojo PRIVATE ${DBUS_INCLUDE_DIRS})
-        target_link_directories(godot-dojo PRIVATE ${DBUS_LIBRARY_DIRS})
-        target_link_libraries(godot-dojo PRIVATE ${DBUS_LIBRARIES})
-    else()
-        message(WARNING "libdbus-1 not found via pkg-config; relying on transitive linkage may fail on Linux.")
+if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
+    # Find and link libdbus-1 properly via pkg-config on Linux
+    find_package(PkgConfig)
+    if(PKG_CONFIG_FOUND)
+        pkg_check_modules(DBUS IMPORTED_TARGET dbus-1)
+        if(DBUS_FOUND)
+            message(STATUS "Found dbus-1 via pkg-config: ${DBUS_VERSION}")
+            target_link_libraries(godot-dojo PRIVATE PkgConfig::DBUS)
+        endif()
     endif()
-else()
-    message(WARNING "pkg-config not found; cannot auto-detect libdbus-1")
 endif()
 
 # Always link to our C++/Rust parts
-target_link_libraries(godot-dojo PRIVATE godot::cpp dojo_c)
+target_link_libraries(godot-dojo PRIVATE godot::cpp dojo_c Boost::boost)
 
 # Avoid forcing -ldbus-1 or static stdlib via global CXX flags; manage via target_link_libraries instead.
 #set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -static-libgcc -static-libstdc++ -ldbus-1")
