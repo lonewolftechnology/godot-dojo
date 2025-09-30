@@ -69,7 +69,7 @@ protected:
 
         ClassDB::bind_method(D_METHOD("get_order_by"), &DojoQueryBase::get_order_by);
         ClassDB::bind_method(D_METHOD("set_order_by", "p_order_by"), &DojoQueryBase::set_order_by);
-        ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "order_by", PROPERTY_HINT_ARRAY_TYPE, MAKE_RESOURCE_TYPE_HINT("DojoOrderBy")), "set_order_by", "get_order_by");
+        ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "order_by", PROPERTY_HINT_ARRAY_TYPE, "DojoOrderBy"), "set_order_by", "get_order_by");
 
     };
 };
