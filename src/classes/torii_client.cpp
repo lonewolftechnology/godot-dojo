@@ -192,7 +192,7 @@ Dictionary ToriiClient::get_world_metadata() {
     result["models"] = DojoArray::CArrayModelToVariant(metadata.models);
     result["world_address"] = world_address;
 
-    Logger::success("Metadata obtained");
+    Logger::success_extra("ToriiClient", "Metadata obtained");
     return result;
 #endif
 }
@@ -211,7 +211,8 @@ TypedArray<Dictionary> ToriiClient::get_entities(const Ref<DojoQuery> &query) {
     Logger::info("Getting entities (Web)...");
     Logger::info("Not implemented");
     return {}; // Return empty, result will be in a signal.
-#else
+#endif
+
     Logger::info("Getting entities...");
     if (!_is_ready_for_query(query)) {
         return {};
@@ -331,7 +332,7 @@ TypedArray<Dictionary> ToriiClient::get_tokens(const Ref<DojoTokenQuery> &query)
         result_array.push_back(token_dict);
     }
 
-    Logger::success("Tokens obtained: ", result_array.size());
+    Logger::success_extra("ToriiClient", "Tokens obtained: ", result_array.size());
     return result_array;
 }
 
@@ -452,7 +453,7 @@ TypedArray<Dictionary> ToriiClient::get_token_collections(const Ref<DojoContract
         result_array.push_back(collection_dict);
     }
 
-    Logger::success("Token collections obtained: ", result_array.size());
+    Logger::success_extra("ToriiClient", "Token collections obtained: ", result_array.size());
     return result_array;
 }
 
@@ -515,7 +516,7 @@ Dictionary ToriiClient::get_token_info(const String &token_address) const {
         token_dict["metadata"] = Variant();
     }
 
-    Logger::success("Token info obtained");
+    Logger::success_extra("ToriiClient", "Token info obtained");
     return token_dict;
 }
 
@@ -531,7 +532,7 @@ void ToriiClient::cancel_all_subscriptions() {
 
     subscriptions.clear();
 
-    Logger::success("All subscriptions cancelled");
+    Logger::success_extra("ToriiClient", "All subscriptions cancelled");
 }
 
 bool ToriiClient::publish_message(const String &message_data, const Array &signature_felts) {
@@ -575,7 +576,7 @@ bool ToriiClient::publish_message(const String &message_data, const Array &signa
     }
 
     Ref<FieldElement> msg_hash = memnew(FieldElement(GET_DOJO_OK(result)));
-    Logger::success("Message published: ", msg_hash->to_string());
+    Logger::success_extra("ToriiClient", "Message published: ", msg_hash->to_string());
     emit_signal("message_published", msg_hash->to_string());
 
     return true;
@@ -889,7 +890,7 @@ void ToriiClient::on_entity_state_update(const Callable &callback, const Ref<Ent
     Array args;
     args.push_back(s);
     DojoBridge::call_async("toriiclient_onEntityStateUpdate", args, internal_callback);
-    Logger::success("Subscribed to entity state updates (Web)");
+    Logger::success_extra("ToriiClient", "Subscribed to entity state updates (Web)");
 #else
     if (!_is_ready_for_subscription(subscription)) {
         return;
@@ -906,7 +907,7 @@ void ToriiClient::on_entity_state_update(const Callable &callback, const Ref<Ent
         emit_signal("subscription_error", error_msg);
         on_entity_state_update_callback = Callable();
     } else {
-        Logger::success("Subscribed to entity state updates");
+        Logger::success_extra("ToriiClient", "Subscribed to entity state updates");
         emit_signal("subscription_created", "entity_state_update");
         subscription->set_subscription(result.ok);
         subscriptions.append(subscription);
@@ -929,7 +930,7 @@ void ToriiClient::on_event_message_update(const Callable &callback, const Ref<Me
     Array args;
     args.push_back(s);
     DojoBridge::call_async("toriiclient_onEventMessageUpdated", args, internal_callback);
-    Logger::success("Subscribed to event message updates (Web)");
+    Logger::success_extra("ToriiClient", "Subscribed to event message updates (Web)");
 #else
     if (!_is_ready_for_subscription(subscription)) {
         return;
@@ -945,7 +946,7 @@ void ToriiClient::on_event_message_update(const Callable &callback, const Ref<Me
         emit_signal("subscription_error", error_msg);
         on_event_message_update_callback = Callable();
     } else {
-        Logger::success("Subscribed to event message updates");
+        Logger::success_extra("ToriiClient", "Subscribed to event message updates");
         emit_signal("subscription_created", "event_message_update");
         subscription->set_subscription(result.ok);
         subscriptions.append(subscription);
@@ -968,7 +969,7 @@ void ToriiClient::on_starknet_event(const Callable &callback, const Ref<Starknet
         emit_signal("subscription_error", error_msg);
         this->on_starknet_event_callback = Callable();
     } else {
-        Logger::success("Subscribed to starknet events");
+        Logger::success_extra("ToriiClient", "Subscribed to starknet events");
         emit_signal("subscription_created", "starknet_event");
         subscription->set_subscription(result.ok);
         subscriptions.append(subscription);
@@ -990,7 +991,7 @@ void ToriiClient::on_transaction(const Callable &callback, const Ref<Transaction
         emit_signal("subscription_error", error_msg);
         this->on_transaction_callback = Callable();
     } else {
-        Logger::success("Subscribed to transactions");
+        Logger::success_extra("ToriiClient", "Subscribed to transactions");
         emit_signal("subscription_created", "transaction");
         subscription->set_subscription(result.ok);
         subscriptions.append(subscription);
@@ -1017,7 +1018,7 @@ void ToriiClient::on_token_update(const Callable &callback, const Ref<TokenSubsc
         emit_signal("subscription_error", error_msg);
         on_token_update_callback = Callable();
     } else {
-        Logger::success("Subscribed to token updates");
+        Logger::success_extra("ToriiClient", "Subscribed to token updates");
         emit_signal("subscription_created", "token_update");
         subscription->set_subscription(result.ok);
         subscriptions.append(subscription);
@@ -1040,7 +1041,7 @@ void ToriiClient::on_contract_update(const Callable &callback, const Ref<Contrac
         emit_signal("subscription_error", error_msg);
         on_contract_update_callback = Callable();
     } else {
-        Logger::success("Subscribed to contract updates");
+        Logger::success_extra("ToriiClient", "Subscribed to contract updates");
         emit_signal("subscription_created", "contract_update");
         subscription->set_subscription(result.ok);
         subscriptions.append(subscription);
@@ -1068,7 +1069,7 @@ void ToriiClient::on_token_balance_update(const Callable &callback, const Ref<To
         emit_signal("subscription_error", error_msg);
         on_token_balance_update_callback = Callable();
     } else {
-        Logger::success("Subscribed to token balance updates");
+        Logger::success_extra("ToriiClient", "Subscribed to token balance updates");
         emit_signal("subscription_created", "token_balance_update");
         subscription->set_subscription(result.ok);
         subscriptions.append(subscription);
@@ -1104,7 +1105,7 @@ void ToriiClient::on_token_transfer_update(const Callable &callback,
         emit_signal("subscription_error", error_msg);
         on_token_transfer_update_callback = Callable();
     } else {
-        Logger::success("Suscribed to token transfer updates");
+        Logger::success_extra("ToriiClient", "Suscribed to token transfer updates");
         emit_signal("subscription_created", "token_transfer_update");
         subscription->set_subscription(result.ok);
         subscriptions.append(subscription);
@@ -1174,7 +1175,7 @@ void ToriiClient::update_entity_subscription(const Ref<EntitySubscription> &subs
         Logger::error(error_msg);
         emit_signal("subscription_error", error_msg);
     } else {
-        Logger::success("Updated entity subscription");
+        Logger::success_extra("ToriiClient", "Updated entity subscription");
         subscription->update_callback(callback);
     }
 }
@@ -1187,7 +1188,7 @@ void ToriiClient::_on_get_entities_completed(const Variant &result) {
         return;
     }
 
-    Logger::success("Entities received from web bridge.");
+    Logger::success_extra("ToriiClient", "Entities received from web bridge.");
     emit_signal("entities_received", result);
 }
 
@@ -1198,7 +1199,7 @@ void ToriiClient::_on_get_world_metadata_completed(const Variant &result) {
         return;
     }
 
-    Logger::success("Metadata received from web bridge.");
+    Logger::success_extra("ToriiClient", "Metadata received from web bridge.");
     emit_signal("metadata_updated", result);
 }
 
@@ -1223,7 +1224,7 @@ void ToriiClient::_on_client_created(const Variant &result) {
     if (success) {
         is_web_client_initialized = true;
         is_connected = true;
-        Logger::success("Web client created successfully.");
+        Logger::success_extra("ToriiClient", "Web client created successfully.");
     } else {
         is_web_client_initialized = false;
         is_connected = false;
@@ -1243,7 +1244,7 @@ void ToriiClient::update_event_message_subscription(const Ref<MessageSubscriptio
         Logger::error(error_msg);
         emit_signal("subscription_error", error_msg);
     } else {
-        Logger::success("Updated event message subscription");
+        Logger::success_extra("ToriiClient", "Updated event message subscription");
         subscription->update_callback(callback);
     }
 }
@@ -1287,7 +1288,7 @@ void ToriiClient::update_token_balance_subscription(const Ref<TokenBalanceSubscr
         Logger::error(error_msg);
         emit_signal("subscription_error", error_msg);
     } else {
-        Logger::success("Updated token balance subscription");
+        Logger::success_extra("ToriiClient", "Updated token balance subscription");
         subscription->update_callback(callback);
     }
 }
