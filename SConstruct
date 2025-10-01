@@ -114,6 +114,7 @@ targets = {
     ("web", "wasm32"): "wasm32-unknown-unknown",
     ("android", "arm64"): "aarch64-linux-android",
     ("ios", "arm64"): "aarch64-apple-ios",
+    ("ios", "x86_64"): "x86_64-apple-ios", # Para el simulador en Mac Intel
 }
 # Use CARGO_BUILD_TARGET from environment if set, otherwise use the target from the platform/arch
 rust_target = os.environ.get("CARGO_BUILD_TARGET", targets.get((platform, arch), "x86_64-unknown-linux-gnu"))
@@ -191,9 +192,6 @@ if env["platform"] == "web":
     bindgen_env["RUSTFLAGS"] = "-C target-feature=+atomics,+bulk-memory,+mutable-globals"
     subprocess.run(cmd, check=True, cwd="external/dojo.c", env=bindgen_env)
 
-    # Apply patch immediately after Rust compilation
-    apply_dojo_h_patch()
-
     # Step 2: Run wasm-bindgen
     print(f"{Y}Running wasm-bindgen...{X}")
     build_mode = "release" if target == "template_release" else "debug"
@@ -232,6 +230,13 @@ else:
         rustflags += "-C link-arg=-mmacosx-version-min=14.0"
         env_vars["RUSTFLAGS"] = rustflags
 
+    if platform == "ios" and arch == "x86_64":
+        # Para el simulador de iOS, también es buena idea fijar la versión mínima.
+        print(f"{Y}Setting iOS simulator deployment target to 14.0...{X}")
+        env_vars["IPHONEOS_DEPLOYMENT_TARGET"] = "14.0"
+        rustflags = env_vars.get("RUSTFLAGS", "")
+        env_vars["RUSTFLAGS"] = f"{rustflags} -C link-arg=-mios-simulator-version-min=14.0".lstrip()
+
     # Print the command and environment for debugging
     print(f"{Y}Running cargo command: {' '.join(cmd)}{X}")
     print(f"{Y}With target: {rust_target}{X}")
@@ -239,9 +244,10 @@ else:
         print(f"{Y}With MACOSX_DEPLOYMENT_TARGET: {env_vars.get('MACOSX_DEPLOYMENT_TARGET', 'not set')}{X}")
         print(f"{Y}With RUSTFLAGS: {env_vars.get('RUSTFLAGS', 'not set')}{X}")
 
-    subprocess.run(cmd, check=True, cwd="external/dojo.c", env=env_vars)
-    # Apply patch immediately after Rust compilation
-    apply_dojo_h_patch()
+    try:
+        subprocess.run(cmd, check=True, cwd="external/dojo.c", env=env_vars)
+    finally:
+        apply_dojo_h_patch()
 
 
 # Configure library
@@ -250,12 +256,22 @@ if platform != "android":
     env['SHLIBPREFIX'] = ''
 prefix = env.subst('$SHLIBPREFIX')
 env.Append(CPPPATH=["src/", "include/", "external/dojo.c", "external/boost/include"])
-if platform == "macos":
-    # Set macOS deployment target for C++ compilation
-    print(f"{Y}Setting macOS deployment target for C++ compilation to 14.0...{X}")
-    env['ENV']['MACOSX_DEPLOYMENT_TARGET'] = '14.0'
-    env.Append(CCFLAGS=['-mmacosx-version-min=14.0'])
-    env.Append(LINKFLAGS=['-mmacosx-version-min=14.0'])
+
+# Platform-specific C++ flags
+if platform in ["macos", "ios"]:
+    print(f"{Y}Applying Apple platform specific flags...{X}")
+    # Link against necessary system frameworks. The Rust code uses them, so the final library needs them.
+    env.Append(LINKFLAGS=['-framework', 'Security', '-framework', 'CoreFoundation'])
+
+    if platform == "macos":
+        env['ENV']['MACOSX_DEPLOYMENT_TARGET'] = '14.0'
+        env.Append(CCFLAGS=['-mmacosx-version-min=14.0'])
+        env.Append(LINKFLAGS=['-mmacosx-version-min=14.0'])
+    elif platform == "ios":
+        env['ENV']['IPHONEOS_DEPLOYMENT_TARGET'] = '14.0'
+        # This flag works for both simulator and real devices
+        env.Append(CCFLAGS=['-miphoneos-version-min=14.0'])
+        env.Append(LINKFLAGS=['-miphoneos-version-min=14.0'])
 
 # List to hold the targets for the Android plugin files.
 android_plugin_targets = []
