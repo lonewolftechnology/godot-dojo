@@ -112,12 +112,12 @@ void ControllerAccount::init_provider()
     if (resControllerProvider.tag == DOJO::ErrProvider)
     {
         Logger::error(GET_DOJO_ERROR(resControllerProvider));
-        emit_signal("provider_status_updated", false);
+        call_deferred("emit_signal", "provider_status_updated", false);
         return;
     }
     Logger::success("Controller Provider created");
     provider = GET_DOJO_OK(resControllerProvider);
-    emit_signal("provider_status_updated", true);
+    call_deferred("emit_signal", "provider_status_updated", true);
 }
 
 void ControllerAccount::create(const Ref<DojoPolicies>& policies_data)
@@ -199,7 +199,7 @@ void ControllerAccount::disconnect_controller()
         // but does not provide a function to free it.
         session_account = nullptr;
         is_connected = false;
-        emit_signal("controller_disconnected");
+        call_deferred("emit_signal", "controller_disconnected");
         Logger::info("ControllerAccount disconnected");
     }
 }
@@ -262,7 +262,7 @@ void ControllerAccount::execute_from_outside(const String& to, const String& sel
     if (!is_controller_connected())
     {
         Logger::error("ControllerAccount not found");
-        emit_signal("transaction_failed", "Controller not found");
+        call_deferred("emit_signal", "transaction_failed", "Controller not found");
         return;
     }
     if (DojoHelpers::is_valid_calldata(calldata) == false)
@@ -293,7 +293,7 @@ void ControllerAccount::execute_from_outside(const String& to, const String& sel
         Logger::error("Selector:", selector);
         Logger::error("Args:", args);
         Logger::error("Error:", GET_DOJO_ERROR(result));
-        emit_signal("transaction_failed", GET_DOJO_ERROR(result));
+        call_deferred("emit_signal", "transaction_failed", GET_DOJO_ERROR(result));
     }
     else
     {
@@ -307,7 +307,7 @@ void ControllerAccount::execute_raw(const String& to, const String& selector, co
     if (!is_controller_connected())
     {
         Logger::error("ControllerAccount not found");
-        emit_signal("transaction_failed", "Controller not found");
+        call_deferred("emit_signal", "transaction_failed", "Controller not found");
         return;
     }
     if (DojoHelpers::is_valid_calldata(calldata) == false)
@@ -338,7 +338,7 @@ void ControllerAccount::execute_raw(const String& to, const String& selector, co
         Logger::error("Selector:", selector);
         Logger::error("Args:", args);
         Logger::error("Error:", GET_DOJO_ERROR(result));
-        emit_signal("transaction_failed", GET_DOJO_ERROR(result));
+        call_deferred("emit_signal", "transaction_failed", GET_DOJO_ERROR(result));
     }
     else
     {

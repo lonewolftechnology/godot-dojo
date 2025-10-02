@@ -195,7 +195,7 @@ void Account::execute_raw(const String& to, const String& selector, const Varian
         error_dict["selector"] = selector;
         error_dict["calldata"] = args;
         Logger::error_dict(error_dict);
-        emit_signal("transaction_failed", error_dict);
+        call_deferred("emit_signal", "transaction_failed", error_dict);
         return;
     }
 
@@ -217,7 +217,7 @@ void Account::execute_raw(const String& to, const String& selector, const Varian
         error_dict["selector"] = selector;
         error_dict["calldata"] = args;
 
-        emit_signal("transaction_failed", error_dict);
+        call_deferred("emit_signal", "transaction_failed", error_dict);
     }
     else
     {
@@ -226,7 +226,7 @@ void Account::execute_raw(const String& to, const String& selector, const Varian
         success_dict["selector"] = selector;
         success_dict["calldata"] = args;
         success_dict["txn"] = FieldElement::get_as_string(&GET_DOJO_OK(res_tx));
-        emit_signal("transaction_executed", success_dict);
+        call_deferred("emit_signal", "transaction_executed", success_dict);
         Logger::success("Transaction sent");
     }
 }

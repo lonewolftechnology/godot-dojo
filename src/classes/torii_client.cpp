@@ -50,7 +50,7 @@ bool ToriiClient::create_client() {
         world_address = DojoHelpers::get_setting("dojo/config/world_address");
         if (world_address.is_empty() || world_address == "0x0") {
             Logger::error("World Address not found");
-            emit_signal("client_connected", false);
+            call_deferred("emit_signal", "client_connected", false);
             return false;
         }
     }
@@ -60,7 +60,7 @@ bool ToriiClient::create_client() {
         torii_url = DojoHelpers::get_setting("dojo/config/torii_url");
         if (torii_url.is_empty()) {
             Logger::error("Torii Url not found");
-            emit_signal("client_connected", false);
+            call_deferred("emit_signal", "client_connected", false);
             return false;
         }
     }
@@ -68,7 +68,7 @@ bool ToriiClient::create_client() {
 #ifdef WEB_ENABLED
     if (is_web_client_initialized) {
         Logger::info("Web client already initialized.");
-        emit_signal("client_connected", true);
+        call_deferred("emit_signal", "client_connected", true);
         return true;
     }
 
@@ -100,7 +100,7 @@ bool ToriiClient::create_client() {
 
     if (resClient.tag == DOJO::ErrToriiClient) {
         Logger::error(String("Failed to create Torii client: ") + GET_DOJO_ERROR(resClient));
-        emit_signal("client_connected", false);
+        call_deferred("emit_signal", "client_connected", false);
         return false;
     }
 
@@ -112,7 +112,7 @@ bool ToriiClient::create_client() {
     });
 
     Logger::success("Torii client created successfully");
-    emit_signal("client_connected", true);
+    call_deferred("emit_signal", "client_connected", true);
     return true;
 #endif
 }
@@ -122,7 +122,7 @@ void ToriiClient::disconnect_client(bool send_signal = true) {
     is_web_client_initialized = false;
     is_connected = false;
     if (send_signal) {
-        emit_signal("client_disconnected");
+        call_deferred("emit_signal", "client_disconnected");
     }
 #else
     if (client != nullptr) {
@@ -132,7 +132,7 @@ void ToriiClient::disconnect_client(bool send_signal = true) {
         client = nullptr;
         is_connected = false;
         if (send_signal) {
-            emit_signal("client_disconnected");
+            call_deferred("emit_signal", "client_disconnected");
         }
         Logger::info("Torii client disconnected");
     }
@@ -200,7 +200,7 @@ Dictionary ToriiClient::get_world_metadata() {
 bool ToriiClient::refresh_metadata() {
     Dictionary metadata = get_world_metadata();
     if (!metadata.is_empty()) {
-        emit_signal("metadata_updated", metadata);
+        call_deferred("emit_signal", "metadata_updated", metadata);
         return true;
     }
     return false;
@@ -575,7 +575,7 @@ bool ToriiClient::publish_message(const String &message_data, const Array &signa
 
     Ref<FieldElement> msg_hash = memnew(FieldElement(GET_DOJO_OK(result)));
     Logger::success_extra("ToriiClient", "Message published: ", msg_hash->to_string());
-    emit_signal("message_published", msg_hash->to_string());
+    call_deferred("emit_signal", "message_published", msg_hash->to_string());
 
     return true;
 }
@@ -902,11 +902,11 @@ void ToriiClient::on_entity_state_update(const Callable &callback, const Ref<Ent
     if (result.tag == DOJO::ErrSubscription) {
         String error_msg = "Failed to subscribe to entity state updates: " + String(GET_DOJO_ERROR(result));
         Logger::error(error_msg);
-        emit_signal("subscription_error", error_msg);
+        call_deferred("emit_signal", "subscription_error", error_msg);
         on_entity_state_update_callback = Callable();
     } else {
         Logger::success_extra("ToriiClient", "Subscribed to entity state updates");
-        emit_signal("subscription_created", "entity_state_update");
+        call_deferred("emit_signal", "subscription_created", "entity_state_update");
         subscription->set_subscription(result.ok);
         subscriptions.append(subscription);
     }
@@ -941,11 +941,11 @@ void ToriiClient::on_event_message_update(const Callable &callback, const Ref<Me
     if (result.tag == DOJO::ErrSubscription) {
         String error_msg = "Failed to subscribe to event message updates: " + String(GET_DOJO_ERROR(result));
         Logger::error(error_msg);
-        emit_signal("subscription_error", error_msg);
+        call_deferred("emit_signal", "subscription_error", error_msg);
         on_event_message_update_callback = Callable();
     } else {
         Logger::success_extra("ToriiClient", "Subscribed to event message updates");
-        emit_signal("subscription_created", "event_message_update");
+        call_deferred("emit_signal", "subscription_created", "event_message_update");
         subscription->set_subscription(result.ok);
         subscriptions.append(subscription);
     }
@@ -964,11 +964,11 @@ void ToriiClient::on_starknet_event(const Callable &callback, const Ref<Starknet
     if (result.tag == DOJO::ErrSubscription) {
         String error_msg = "Failed to subscribe to starknet events: " + String(GET_DOJO_ERROR(result));
         Logger::error(error_msg);
-        emit_signal("subscription_error", error_msg);
+        call_deferred("emit_signal", "subscription_error", error_msg);
         this->on_starknet_event_callback = Callable();
     } else {
         Logger::success_extra("ToriiClient", "Subscribed to starknet events");
-        emit_signal("subscription_created", "starknet_event");
+        call_deferred("emit_signal", "subscription_created", "starknet_event");
         subscription->set_subscription(result.ok);
         subscriptions.append(subscription);
     }
@@ -986,11 +986,11 @@ void ToriiClient::on_transaction(const Callable &callback, const Ref<Transaction
     if (result.tag == DOJO::ErrSubscription) {
         String error_msg = "Failed to subscribe to transactions: " + String(GET_DOJO_ERROR(result));
         Logger::error(error_msg);
-        emit_signal("subscription_error", error_msg);
+        call_deferred("emit_signal", "subscription_error", error_msg);
         this->on_transaction_callback = Callable();
     } else {
         Logger::success_extra("ToriiClient", "Subscribed to transactions");
-        emit_signal("subscription_created", "transaction");
+        call_deferred("emit_signal", "subscription_created", "transaction");
         subscription->set_subscription(result.ok);
         subscriptions.append(subscription);
     }
@@ -1013,11 +1013,11 @@ void ToriiClient::on_token_update(const Callable &callback, const Ref<TokenSubsc
     if (result.tag == DOJO::ErrSubscription) {
         String error_msg = "Failed to subscribe to token updates: " + String(GET_DOJO_ERROR(result));
         Logger::error(error_msg);
-        emit_signal("subscription_error", error_msg);
+        call_deferred("emit_signal", "subscription_error", error_msg);
         on_token_update_callback = Callable();
     } else {
         Logger::success_extra("ToriiClient", "Subscribed to token updates");
-        emit_signal("subscription_created", "token_update");
+        call_deferred("emit_signal", "subscription_created", "token_update");
         subscription->set_subscription(result.ok);
         subscriptions.append(subscription);
     }
@@ -1036,11 +1036,11 @@ void ToriiClient::on_contract_update(const Callable &callback, const Ref<Contrac
     if (result.tag == DOJO::ErrSubscription) {
         String error_msg = "Failed to subscribe to contract updates: " + String(GET_DOJO_ERROR(result));
         Logger::error(error_msg);
-        emit_signal("subscription_error", error_msg);
+        call_deferred("emit_signal", "subscription_error", error_msg);
         on_contract_update_callback = Callable();
     } else {
         Logger::success_extra("ToriiClient", "Subscribed to contract updates");
-        emit_signal("subscription_created", "contract_update");
+        call_deferred("emit_signal", "subscription_created", "contract_update");
         subscription->set_subscription(result.ok);
         subscriptions.append(subscription);
     }
@@ -1064,11 +1064,11 @@ void ToriiClient::on_token_balance_update(const Callable &callback, const Ref<To
     if (result.tag == DOJO::ErrSubscription) {
         String error_msg = "Failed to subscribe to token balance updates: " + String(GET_DOJO_ERROR(result));
         Logger::error(error_msg);
-        emit_signal("subscription_error", error_msg);
+        call_deferred("emit_signal", "subscription_error", error_msg);
         on_token_balance_update_callback = Callable();
     } else {
         Logger::success_extra("ToriiClient", "Subscribed to token balance updates");
-        emit_signal("subscription_created", "token_balance_update");
+        call_deferred("emit_signal", "subscription_created", "token_balance_update");
         subscription->set_subscription(result.ok);
         subscriptions.append(subscription);
     }
@@ -1100,11 +1100,11 @@ void ToriiClient::on_token_transfer_update(const Callable &callback,
     if (result.tag == DOJO::ErrSubscription) {
         String error_msg = "Failed to suscribe to token transfer updates: " + String(GET_DOJO_ERROR(result));
         Logger::error(error_msg);
-        emit_signal("subscription_error", error_msg);
+        call_deferred("emit_signal", "subscription_error", error_msg);
         on_token_transfer_update_callback = Callable();
     } else {
         Logger::success_extra("ToriiClient", "Suscribed to token transfer updates");
-        emit_signal("subscription_created", "token_transfer_update");
+        call_deferred("emit_signal", "subscription_created", "token_transfer_update");
         subscription->set_subscription(result.ok);
         subscriptions.append(subscription);
     }
@@ -1171,7 +1171,7 @@ void ToriiClient::update_entity_subscription(const Ref<EntitySubscription> &subs
     if (result.tag == DOJO::Errbool) {
         String error_msg = "Failed to update entity subscription: " + String(GET_DOJO_ERROR(result));
         Logger::error(error_msg);
-        emit_signal("subscription_error", error_msg);
+        call_deferred("emit_signal", "subscription_error", error_msg);
     } else {
         Logger::success_extra("ToriiClient", "Updated entity subscription");
         subscription->update_callback(callback);
@@ -1182,23 +1182,23 @@ void ToriiClient::update_entity_subscription(const Ref<EntitySubscription> &subs
 void ToriiClient::_on_get_entities_completed(const Variant &result) {
     if (result.get_type() == Variant::Type::NIL) {
         Logger::error("Failed to get entities from web bridge.");
-        emit_signal("entities_received", Array());
+        call_deferred("emit_signal", "entities_received", Array());
         return;
     }
 
     Logger::success_extra("ToriiClient", "Entities received from web bridge.");
-    emit_signal("entities_received", result);
+    call_deferred("emit_signal", "entities_received", result);
 }
 
 void ToriiClient::_on_get_world_metadata_completed(const Variant &result) {
     if (result.get_type() == Variant::Type::NIL) {
         Logger::error("Failed to get metadata from web bridge.");
-        emit_signal("metadata_updated", Dictionary());
+        call_deferred("emit_signal", "metadata_updated", Dictionary());
         return;
     }
 
     Logger::success_extra("ToriiClient", "Metadata received from web bridge.");
-    emit_signal("metadata_updated", result);
+    call_deferred("emit_signal", "metadata_updated", result);
 }
 
 void ToriiClient::_on_entity_state_update_emitted(const Variant &entity_data) {
@@ -1229,7 +1229,7 @@ void ToriiClient::_on_client_created(const Variant &result) {
         Logger::error("Failed to create web client. Result was null.");
     }
 
-    emit_signal("client_connected", success);
+    call_deferred("emit_signal", "client_connected", success);
 }
 #endif
 
@@ -1240,7 +1240,7 @@ void ToriiClient::update_event_message_subscription(const Ref<MessageSubscriptio
     if (result.tag == DOJO::Errbool) {
         String error_msg = "Failed to update event message subscription: " + String(GET_DOJO_ERROR(result));
         Logger::error(error_msg);
-        emit_signal("subscription_error", error_msg);
+        call_deferred("emit_signal", "subscription_error", error_msg);
     } else {
         Logger::success_extra("ToriiClient", "Updated event message subscription");
         subscription->update_callback(callback);
@@ -1284,7 +1284,7 @@ void ToriiClient::update_token_balance_subscription(const Ref<TokenBalanceSubscr
     if (result.tag == DOJO::Errbool) {
         String error_msg = "Failed to update token balance subscription: " + String(GET_DOJO_ERROR(result));
         Logger::error(error_msg);
-        emit_signal("subscription_error", error_msg);
+        call_deferred("emit_signal", "subscription_error", error_msg);
     } else {
         Logger::success_extra("ToriiClient", "Updated token balance subscription");
         subscription->update_callback(callback);
@@ -1310,7 +1310,7 @@ void ToriiClient::update_token_transfer_subscription(const Ref<TokenTransferSubs
     if (result.tag == DOJO::Errbool) {
         String error_msg = "Failed to update token transfer subscription: " + String(GET_DOJO_ERROR(result));
         Logger::error(error_msg);
-        emit_signal("subscription_error", error_msg);
+        call_deferred("emit_signal", "subscription_error", error_msg);
     } else {
         Logger::success_extra("ToriiClient", "Updated token transfer subscription");
         subscription->update_callback(callback);
