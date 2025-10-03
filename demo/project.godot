@@ -25,7 +25,6 @@ window/stretch/aspect="expand"
 
 [dojo]
 
-config/fixed_point/default=40
 config/katana_url="https://api.cartridge.gg/x/godot-demo-rookie/katana"
 config/torii_url="https://api.cartridge.gg/x/godot-demo-rookie/torii"
 config/account/address="0x6677fe62ee39c7b07401f754138502bab7fac99d2d3c5d37df7d1c6fab10819"
@@ -41,6 +40,7 @@ config/policies={
 "spawn": "Spawn in the world"
 }
 config/free_controller_on_exit=false
+config/fixed_point/default=128
 
 [input]
 
