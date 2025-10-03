@@ -47,6 +47,9 @@ public:
     static DojoHelpers* get_singleton() { return singleton; };
     static String get_katana_url();
     static Variant get_setting(const String& setting, const Variant& default_value = Variant());
+
+    static Variant get_custom_setting(const String &category, const String &setting);
+
     static Variant get_dojo_setting(const String& setting);
     static Ref<DojoPolicies> get_default_policies();
 
@@ -103,6 +106,7 @@ protected:
         ClassDB::bind_static_method("DojoHelpers", D_METHOD("get_setting", "setting", "default_value"), &DojoHelpers::get_setting);
         ClassDB::bind_static_method("DojoHelpers", D_METHOD("get_dojo_setting", "setting"), &DojoHelpers::get_dojo_setting);
         ClassDB::bind_static_method("DojoHelpers", D_METHOD("get_default_policies"), &DojoHelpers::get_default_policies);
+        ClassDB::bind_static_method("DojoHelpers", D_METHOD("get_custom_setting", "category", "setting"), &DojoHelpers::get_custom_setting);
 
         ClassDB::bind_static_method("DojoHelpers", D_METHOD("signed_to_u32_offset", "signed_value"), &DojoHelpers::signed_to_u32_offset);
         ClassDB::bind_static_method("DojoHelpers", D_METHOD("u32_to_signed_offset", "u32_value"), &DojoHelpers::u32_to_signed_offset);

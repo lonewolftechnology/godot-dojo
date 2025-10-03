@@ -23,11 +23,8 @@ entity_sub = SubResource("EntitySubscription_henli")
 message_sub = SubResource("MessageSubscription_advu3")
 
 [node name="ToriiClient" type="ToriiClient" parent="."]
-torii_url = "https://api.cartridge.gg/x/godot-demo-rookie/torii"
-world_address = "0x044508ff3a94c19844702f34dd64c5a933870116a42ac1105fd324335ca7b3f9"
 
 [node name="ControllerAccount" type="ControllerAccount" parent="."]
-rpc_url = "https://api.cartridge.gg/x/godot-demo-rookie/katana"
 
 [node name="CanvasLayer" type="CanvasLayer" parent="."]
 layer = 10

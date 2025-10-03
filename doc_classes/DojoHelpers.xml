@@ -96,6 +96,13 @@
 				Converts a float to a 256-bit fixed-point integer.
 			</description>
 		</method>
+		<method name="get_custom_setting" qualifiers="static">
+			<return type="Variant" />
+			<param index="0" name="category" type="String" />
+			<param index="1" name="setting" type="String" />
+			<description>
+			</description>
+		</method>
 		<method name="get_default_policies" qualifiers="static">
 			<return type="DojoPolicies" />
 			<description>

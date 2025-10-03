@@ -47,6 +47,15 @@ Variant DojoHelpers::get_setting(const String &setting, const Variant &default_v
     return ProjectSettings::get_singleton()->get_setting(setting, default_value);
 }
 
+Variant DojoHelpers::get_custom_setting(const String& category, const String &setting) {
+    Variant result = get_setting(vformat("%s/%s", category, setting));
+    if (result.get_type() == Variant::NIL) {
+        Logger::debug_extra("DojoHelper", vformat("%s not found, trying dojo setting", setting));
+        result = get_dojo_setting(setting);
+    }
+    return result;
+}
+
 Variant DojoHelpers::get_dojo_setting(const String &setting) {
     return get_setting("dojo/config/" + setting);
 }
