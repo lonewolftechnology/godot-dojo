@@ -127,7 +127,8 @@ DOJO::FieldElement FieldElement::from_string(const String& hex_str, size_t max_b
 
     if (num_bytes > max_bytes)
     {
-        Logger::error("Hex string too long for FieldElement");
+        Logger::debug_extra("FIeldElement", hex_str);
+        Logger::error("Hex string too long for FieldElement", vformat("bytes %s | max_bytes %s", num_bytes, max_bytes));
         return result;
     }
 
