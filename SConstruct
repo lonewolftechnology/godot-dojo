@@ -215,9 +215,6 @@ def apply_dojo_h_patch():
         Exit(1)
 
 
-if target == "template_release":
-    cmd.append("--release")
-
 # Environment variables for WebAssembly
 if env["platform"] == "web":
     # For the web build, we need to do two things:
@@ -228,6 +225,9 @@ if env["platform"] == "web":
 
     # Step 1: Build for wasm-bindgen
     print(f"{Y}Building dojo.c for wasm-bindgen...{X}")
+    if target == "template_release":
+        cmd.append("--release")
+
     bindgen_env = os.environ.copy()
     bindgen_env["RUSTFLAGS"] = "-C target-feature=+atomics,+bulk-memory,+mutable-globals"
     subprocess.run(cmd, check=True, cwd="external/dojo.c", env=bindgen_env)
@@ -260,6 +260,9 @@ if env["platform"] == "web":
         Exit(1)
 else:
     if cmd: # Only run if not a universal macOS build (which has its own logic)
+        if target == "template_release":
+            cmd.append("--release")
+
         env_vars = os.environ.copy()
         # Explicitly set RUSTUP_TOOLCHAIN to ensure the correct toolchain is used
         if platform == "macos":
