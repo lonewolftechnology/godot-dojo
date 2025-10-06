@@ -15,15 +15,12 @@
 #include "variant/field_element.h"
 using namespace godot;
 
-class ControllerAccount : public Node
-{
+class ControllerAccount : public Node {
     GDCLASS(ControllerAccount, Node)
-
-    DOJO::ControllerAccount* session_account;
-    DOJO::Provider* provider;
+    DOJO::ControllerAccount *session_account;
+    DOJO::Provider *provider;
     bool is_connected;
-    static ControllerAccount* singleton;
-    Ref<DojoPolicies> policies;
+    static ControllerAccount *singleton;
     Dictionary policies;
     String rpc_url;
     String contract_address;
@@ -31,23 +28,30 @@ class ControllerAccount : public Node
     // Storage for policy strings to ensure their lifetime across C API calls.
     std::vector<std::string> policy_string_storage;
 
-    static void on_account_callback(DOJO::ControllerAccount* account);
+    static void on_account_callback(DOJO::ControllerAccount *account);
+
     mutable String chain_id;
     mutable String chain_id_hex;
 
 public:
     ControllerAccount();
+
     ~ControllerAccount();
 
-    static ControllerAccount* get_singleton();
+    static ControllerAccount *get_singleton();
 
-    void set_session_account(DOJO::ControllerAccount* account);
-    DOJO::ControllerAccount* get_session_account() const;
+    void set_session_account(DOJO::ControllerAccount *account);
+
+    DOJO::ControllerAccount *get_session_account() const;
 
     void setup();
+
     void init_provider();
-    void create(const Ref<DojoPolicies>& policies_data = nullptr);
+
+    void create(const Dictionary &policies_data = Dictionary());
+
     void disconnect_controller();
+
     bool is_controller_connected() const;
 
     String get_username() const
@@ -59,26 +63,28 @@ public:
         return {DOJO::controller_username(session_account)};
     }
 
-    String get_address() const
-    {
-        if (!is_controller_connected())
-        {
+    String get_address() const {
+        if (!is_controller_connected()) {
             return "0x0";
         }
         DOJO::FieldElement felt = DOJO::controller_address(session_account);
         return FieldElement::get_as_string(&felt);
     }
 
-    String get_chain_id(const bool& parse = true) const;
-    void set_chain_id(const String& p_chain_id) { chain_id = p_chain_id; }
+    String get_chain_id(const bool &parse = true) const;
+
+    void set_chain_id(const String &p_chain_id) { chain_id = p_chain_id; }
     String _get_chain_id() const { return chain_id; }
 
     void check_rpc_url();
-    String get_rpc_url();
-    void set_rpc_url(const String& p_rpc_url) { rpc_url = p_rpc_url; };
 
-    void execute_from_outside(const String& to, const String& selector, const Variant& args);
-    void execute_raw(const String& to, const String& selector, const Variant& args);
+    String get_rpc_url();
+
+    void set_rpc_url(const String &p_rpc_url) { rpc_url = p_rpc_url; };
+
+    void execute_from_outside(const String &to, const String &selector, const Variant &args);
+
+    void execute_raw(const String &to, const String &selector, const Variant &args);
 
     Dictionary get_account_info() const;
 
@@ -94,12 +100,9 @@ public:
     std::vector<DOJO::Policy> build_policies();
 
 protected:
-
-    static void _bind_methods()
-    {
-        // ClassDB::bind_method(D_METHOD("create", "rpc_url"),&ControllerAccount::create);
+    static void _bind_methods() {
         ClassDB::bind_method(D_METHOD("init_provider"), &ControllerAccount::init_provider);
-        ClassDB::bind_method(D_METHOD("create", "policies_data"), &ControllerAccount::create, DEFVAL(Variant()));
+        ClassDB::bind_method(D_METHOD("create", "policies_data"), &ControllerAccount::create, DEFVAL(Dictionary()));
         ClassDB::bind_method(D_METHOD("setup"), &ControllerAccount::setup);
         ClassDB::bind_method(D_METHOD("disconnect_controller"), &ControllerAccount::disconnect_controller);
         ClassDB::bind_method(D_METHOD("is_controller_connected"), &ControllerAccount::is_controller_connected);
@@ -139,7 +142,6 @@ protected:
         ClassDB::bind_method(D_METHOD("set_contract_address", "p_contract_address"), &ControllerAccount::set_contract_address);
         ADD_PROPERTY(PropertyInfo(Variant::STRING, "contract_address"), "set_policies", "get_policies");
     }
-
 };
 
 #endif // CONTROLLER_ACCOUNT_H
