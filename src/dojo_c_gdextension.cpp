@@ -36,7 +36,7 @@ void DojoC::init_config(bool reset)
 {
     if (Engine::get_singleton()->is_editor_hint())
     {
-        set_setting("dojo/config/free_controller_on_exit", false, reset);
+        set_setting("dojo/config/disconnect_controller_on_exit", false, reset);
         set_setting("dojo/config/katana_url", "http://localhost:5050", reset);
         set_setting("dojo/config/torii_url", "http://localhost:8080", reset);
 
@@ -59,13 +59,12 @@ void DojoC::init_config(bool reset)
         Dictionary godot_info = Engine::get_singleton()->get_version_info();
         set_setting("dojo/config/policies", Dictionary(), reset);
 
-        if ((int)godot_info["major"] > 4 || ((int)godot_info["major"] == 4 && (int)godot_info["minor"] >= 4))
+        if (static_cast<int>(godot_info["major"]) > 4 || (static_cast<int>(godot_info["major"]) == 4 && static_cast<int>(godot_info["minor"]) >= 4))
         {
             // PROPERTY_HINT_DICTIONARY_TYPE = 38 in Godot 4.4+
             policies_info["hint"] = vformat("%d/%d", Variant::DICTIONARY, 38);
             policies_info["hint_string"] = vformat("%s;%s", "String", "String");
-            // policies_info["hint_string"] = vformat("%d/%d:%s;%s", Variant::DICTIONARY, PROPERTY_HINT_TYPE_STRING,
-            //                                        "String", "String");
+
         }
 
 

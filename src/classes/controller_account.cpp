@@ -45,7 +45,7 @@ ControllerAccount::~ControllerAccount()
     {
         return;
     }
-    if (DojoHelpers::get_setting("dojo/config/free_controller_on_exit"))
+    if (DojoHelpers::get_setting("dojo/config/disconnect_controller_on_exit"))
     {
         disconnect_controller();
     }
