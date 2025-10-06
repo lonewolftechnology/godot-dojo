@@ -12,6 +12,7 @@
 #include "godot_cpp/variant/dictionary.hpp"
 
 #include "dojo_types.h"
+#include "tools/dojo_helper.h"
 #include "variant/field_element.h"
 using namespace godot;
 
@@ -133,14 +134,23 @@ protected:
         ClassDB::bind_method(D_METHOD("get_chain_id"), &ControllerAccount::_get_chain_id);
         ADD_PROPERTY(PropertyInfo(Variant::STRING, "chain_id"), "set_chain_id", "get_chain_id");
 
+        ClassDB::bind_method(D_METHOD("get_contract_address"), &ControllerAccount::get_contract_address);
+        ClassDB::bind_method(D_METHOD("set_contract_address", "p_contract_address"),
+                             &ControllerAccount::set_contract_address);
+        ADD_PROPERTY(PropertyInfo(Variant::STRING, "contract_address"), "set_contract_address",
+                     "get_contract_address");
+
         ClassDB::bind_method(D_METHOD("set_policies", "policies"), &ControllerAccount::set_policies);
         ClassDB::bind_method(D_METHOD("get_policies"), &ControllerAccount::get_policies);
-        ADD_PROPERTY(PropertyInfo(Variant::DICTIONARY, "policies"),
-                     "set_policies", "get_policies");
-
-        ClassDB::bind_method(D_METHOD("get_contract_address"), &ControllerAccount::get_contract_address);
-        ClassDB::bind_method(D_METHOD("set_contract_address", "p_contract_address"), &ControllerAccount::set_contract_address);
-        ADD_PROPERTY(PropertyInfo(Variant::STRING, "contract_address"), "set_contract_address", "get_contract_address");
+        if (DojoHelpers::can_use_typed_dictionaries()) {
+            // in 4.4+ PROPERTY_HINT_DICTIONARY_TYPE = 38
+            // in 4.3 PROPERTY_HINT_MAX = 38
+            ADD_PROPERTY(PropertyInfo(Variant::DICTIONARY, "policies", PROPERTY_HINT_MAX, "String;String"),
+                         "set_policies", "get_policies");
+        } else {
+            ADD_PROPERTY(PropertyInfo(Variant::DICTIONARY, "policies"),
+                         "set_policies", "get_policies");
+        }
     }
 };
 

@@ -119,6 +119,8 @@ public:
 
     static String bytes_to_u256_string(const PackedByteArray &bytes);
 
+    static bool can_use_typed_dictionaries();
+
     static Ref<FieldElement> string_to_field_element(const String &str);
 
     static DojoCallData prepare_dojo_call_data(const String &to, const String &selector, const Array &args);

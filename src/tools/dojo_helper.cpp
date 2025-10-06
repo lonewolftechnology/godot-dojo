@@ -638,3 +638,12 @@ String DojoHelpers::bytes_to_u256_string(const PackedByteArray &bytes) {
 
     return {val.str().c_str()};
 }
+
+bool DojoHelpers::can_use_typed_dictionaries() {
+    Dictionary godot_info = Engine::get_singleton()->get_version_info();
+    const int major = godot_info["major"];
+    const int minor = godot_info["minor"];
+
+    String hint_string;
+    return major > 4 || (major == 4 && minor >= 4);
+}

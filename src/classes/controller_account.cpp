@@ -14,8 +14,6 @@
 #include <vector>
 #include <classes/account.h>
 
-#include "tools/dojo_helper.h"
-
 #ifdef ANDROID_ENABLED
 #include "godot_cpp/classes/display_server.hpp"
 #include "godot_cpp/classes/java_class_wrapper.hpp"
