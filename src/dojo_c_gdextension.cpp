@@ -9,6 +9,7 @@
 #include "godot_cpp/core/class_db.hpp"
 #include "tools/logger.h"
 #include "godot_cpp/core/version.hpp"
+#include "tools/dojo_helper.h"
 DojoC* DojoC::singleton = nullptr;
 
 
@@ -53,11 +54,10 @@ void DojoC::init_config(bool reset)
         set_setting("dojo/config/account/private_key",
                     "0x1e8965b7d0b20b91a62fe515dd991dc9fcb748acddf6b2cf18cec3bdd0f9f9a", reset);
 
-        // Format: [VariantType]/[Hint]:[ClassName]
-        Dictionary godot_info = Engine::get_singleton()->get_version_info();
         set_setting("dojo/config/policies", Dictionary(), reset);
+        // Format: [VariantType]/[Hint]:[ClassName]
 
-        if (static_cast<int>(godot_info["major"]) > 4 || (static_cast<int>(godot_info["major"]) == 4 && static_cast<int>(godot_info["minor"]) >= 4))
+        if (DojoHelpers::can_use_typed_dictionaries())
         {
             // PROPERTY_HINT_DICTIONARY_TYPE = 38 in Godot 4.4+
             policies_info["hint"] = vformat("%d/%d", Variant::DICTIONARY, 38);
