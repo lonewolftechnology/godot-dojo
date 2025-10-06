@@ -33,8 +33,6 @@
 #include "variant/field_element.h"
 #include "types/big_int.h"
 
-#include "resources/dojo_policies.h"
-#include "resources/dojo_policy.h"
 #include "resources/dojo_query_base.h"
 #include "resources/dojo_subscription.h"
 
@@ -104,8 +102,6 @@ void initialize_dojoc_module(ModuleInitializationLevel p_level)
         GDREGISTER_CLASS(OptionTransactionFilter);
         GDREGISTER_CLASS(OptionArrayFieldElement);
         // Resources
-        GDREGISTER_CLASS(DojoPolicy);
-        GDREGISTER_CLASS(DojoPolicies);
         GDREGISTER_CLASS(DojoQueryBase);
         GDREGISTER_CLASS(DojoQuery);
         GDREGISTER_CLASS(DojoTokenQuery);

@@ -120,7 +120,7 @@ void ControllerAccount::init_provider()
     call_deferred("emit_signal", "provider_status_updated", true);
 }
 
-void ControllerAccount::create(const Ref<DojoPolicies>& policies_data)
+void ControllerAccount::create(const Dictionary& policies_data)
 {
 #ifdef ANDROID_ENABLED
     Logger::error("Not implemented yet");
@@ -128,11 +128,11 @@ void ControllerAccount::create(const Ref<DojoPolicies>& policies_data)
 #else
     check_rpc_url();
 
-    if (policies_data == nullptr || policies_data->is_empty())
+    if (policies_data.is_empty())
     {
         Logger::debug_extra("Policies", "Invalid policies data, trying from ProjectSettings");
-        Ref<DojoPolicies> settings_data = DojoHelpers::get_default_policies();
-        if (settings_data == nullptr || settings_data->is_empty() || !settings_data.is_valid())
+        Dictionary settings_data = DojoHelpers::get_policies();
+        if (settings_data.is_empty())
         {
             Logger::error("Invalid Policies data");
             return;
@@ -144,10 +144,11 @@ void ControllerAccount::create(const Ref<DojoPolicies>& policies_data)
         this->policies = policies_data;
     }
 
-    std::vector<DOJO::Policy> policies_vector = this->policies->build();
+    std::vector<DOJO::Policy> policies_vector =  build_policies();
 
     uintptr_t policies_len = policies_vector.size();
     String _chain = get_chain_id(false);
+
     Logger::debug_extra("ControllerAccount", "Chain ID: ", _chain);
     Ref<FieldElement> katana = memnew(FieldElement(_chain));
     Logger::custom_color("azure", "katana", katana->to_string());
@@ -177,12 +178,12 @@ void ControllerAccount::disconnect_controller()
 {
     if (session_account != nullptr)
     {
-        std::vector<DOJO::Policy> policy = policies->build();
-        uintptr_t policies_len = policy.size();
+
+        std::vector<DOJO::Policy> policies_vector =  build_policies();
+        uintptr_t policies_len = policies_vector.size();
         DOJO::FieldElement chain_id = DOJO::controller_chain_id(session_account);
 
-#ifndef ANDROID_ENABLED
-        DOJO::Resultbool resClear = DOJO::controller_clear(policy.data(), policies_len, chain_id);
+        DOJO::Resultbool resClear = DOJO::controller_clear(policies_vector.data(), policies_len, chain_id);
         if (resClear.tag == DOJO::Errbool)
         {
             Logger::error("Failed to clear Controller", resClear.err.message);
@@ -191,10 +192,7 @@ void ControllerAccount::disconnect_controller()
         {
             Logger::success("Controller cleared");
         }
-#else
-        Logger::warning(
-            "ControllerAccount: Remote session clearing is not supported on Android. Disconnecting locally.");
-#endif
+
         // WARNING: This will leak memory on all platforms. The 'dojo.c' library allocates the session_account
         // but does not provide a function to free it.
         session_account = nullptr;
@@ -377,4 +375,37 @@ void ControllerAccount::emit_connection_status(bool connected)
     {
         call_deferred("emit_signal", "controller_disconnected");
     }
+}
+
+std::vector<DOJO::Policy> ControllerAccount::build_policies() {
+
+    if (contract_address.is_empty()) {
+        Logger::debug_extra("ControllerAccount", "Contract Address not setted, searching ProjectSettings");
+        this->contract_address = DojoHelpers::get_dojo_setting("contract_address");
+        if (contract_address.is_empty()) {
+            Logger::error("Contract Address not found.");
+            return {};
+        }
+    }
+
+    policy_string_storage.clear();
+    policy_string_storage.reserve(policies.size() * 2); // method + description for each policy
+
+    std::vector<DOJO::Policy> policies_vector;
+    policies_vector.reserve(policies.size());
+
+    DOJO::FieldElement contract = FieldElement::from_string(contract_address);
+
+
+    for (int i = 0; i < policies.size(); i++) {
+        String key = policies.keys()[i];
+        String value = policies[key];
+
+        const auto& method_str = policy_string_storage.emplace_back(key.utf8().get_data());
+        const auto& desc_str = policy_string_storage.emplace_back(value.utf8().get_data());
+
+        policies_vector.push_back({contract, method_str.c_str(), desc_str.c_str()});
+    }
+
+    return policies_vector;
 }

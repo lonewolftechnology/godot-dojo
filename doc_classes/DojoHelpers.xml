@@ -96,17 +96,17 @@
 				Converts a float to a 256-bit fixed-point integer.
 			</description>
 		</method>
+		<method name="generate_controller_url_and_keys" qualifiers="static">
+			<return type="Dictionary" />
+			<param index="0" name="callback_url" type="String" />
+			<description>
+			</description>
+		</method>
 		<method name="get_custom_setting" qualifiers="static">
 			<return type="Variant" />
 			<param index="0" name="category" type="String" />
 			<param index="1" name="setting" type="String" />
 			<description>
-			</description>
-		</method>
-		<method name="get_default_policies" qualifiers="static">
-			<return type="DojoPolicies" />
-			<description>
-				Returns the default policies for the Dojo SDK.
 			</description>
 		</method>
 		<method name="get_dojo_setting" qualifiers="static">
@@ -119,6 +119,12 @@
 			<return type="String" />
 			<description>
 				Returns the Katana RPC URL.
+			</description>
+		</method>
+		<method name="get_policies" qualifiers="static">
+			<return type="Dictionary" />
+			<param index="0" name="p_custom" type="String" default="&quot;&quot;" />
+			<description>
 			</description>
 		</method>
 		<method name="get_setting" qualifiers="static">

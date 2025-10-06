@@ -10,7 +10,6 @@
 #include "godot_cpp/core/class_db.hpp"
 #include "variant/field_element.h"
 #include <boost/multiprecision/cpp_int.hpp>
-#include "resources/dojo_policies.h"
 using namespace godot;
 using boost::multiprecision::cpp_int;
 
@@ -52,6 +51,7 @@ public:
 
     static Variant get_dojo_setting(const String& setting);
     static Ref<DojoPolicies> get_default_policies();
+    static Dictionary get_policies(const String &custom  = String());
 
     static int64_t float_to_fixed(const double& value, const int& precision = 24);
     static double fixed_to_float(const int& value, const int& precision = 24);
@@ -100,13 +100,16 @@ public:
 
 
 protected:
-    static void _bind_methods()
-    {
+    static DojoHelpers *singleton;
+
+    static void _bind_methods() {
         ClassDB::bind_static_method("DojoHelpers", D_METHOD("get_katana_url"), &DojoHelpers::get_katana_url);
         ClassDB::bind_static_method("DojoHelpers", D_METHOD("get_setting", "setting", "default_value"), &DojoHelpers::get_setting);
         ClassDB::bind_static_method("DojoHelpers", D_METHOD("get_dojo_setting", "setting"), &DojoHelpers::get_dojo_setting);
         ClassDB::bind_static_method("DojoHelpers", D_METHOD("get_default_policies"), &DojoHelpers::get_default_policies);
         ClassDB::bind_static_method("DojoHelpers", D_METHOD("get_custom_setting", "category", "setting"), &DojoHelpers::get_custom_setting);
+        ClassDB::bind_static_method("DojoHelpers", D_METHOD("get_policies", "p_custom"),
+                                    &DojoHelpers::get_policies, DEFVAL(String()));
 
         ClassDB::bind_static_method("DojoHelpers", D_METHOD("signed_to_u32_offset", "signed_value"), &DojoHelpers::signed_to_u32_offset);
         ClassDB::bind_static_method("DojoHelpers", D_METHOD("u32_to_signed_offset", "u32_value"), &DojoHelpers::u32_to_signed_offset);
@@ -138,8 +141,6 @@ protected:
         ClassDB::bind_static_method("DojoHelpers", D_METHOD("bytes_to_u128_string", "bytes"), &DojoHelpers::bytes_to_u128_string);
         ClassDB::bind_static_method("DojoHelpers", D_METHOD("bytes_to_u256_string", "bytes"), &DojoHelpers::bytes_to_u256_string);
     }
-    static DojoHelpers* singleton;
-
 };
 
 

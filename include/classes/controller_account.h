@@ -12,7 +12,7 @@
 #include "godot_cpp/variant/dictionary.hpp"
 
 #include "dojo_types.h"
-#include "resources/dojo_policies.h"
+#include "variant/field_element.h"
 using namespace godot;
 
 class ControllerAccount : public Node
@@ -24,7 +24,12 @@ class ControllerAccount : public Node
     bool is_connected;
     static ControllerAccount* singleton;
     Ref<DojoPolicies> policies;
+    Dictionary policies;
     String rpc_url;
+    String contract_address;
+
+    // Storage for policy strings to ensure their lifetime across C API calls.
+    std::vector<std::string> policy_string_storage;
 
     static void on_account_callback(DOJO::ControllerAccount* account);
     mutable String chain_id;
@@ -79,9 +84,14 @@ public:
 
     void emit_connection_status(bool connected);
 
-    void set_policies(const Ref<DojoPolicies>& p_policies) { policies = p_policies; };
+    void set_policies(const Dictionary &p_policies) { policies = p_policies; };
 
-    Ref<DojoPolicies> get_policies() { return policies; };
+    Dictionary get_policies() { return policies; };
+
+    void set_contract_address(const String &p_contract_address) { contract_address = p_contract_address; }
+    String get_contract_address() { return contract_address; }
+
+    std::vector<DOJO::Policy> build_policies();
 
 protected:
 
@@ -122,8 +132,12 @@ protected:
 
         ClassDB::bind_method(D_METHOD("set_policies", "policies"), &ControllerAccount::set_policies);
         ClassDB::bind_method(D_METHOD("get_policies"), &ControllerAccount::get_policies);
-        ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "policies", PROPERTY_HINT_RESOURCE_TYPE, "DojoPolicies"),
+        ADD_PROPERTY(PropertyInfo(Variant::DICTIONARY, "policies"),
                      "set_policies", "get_policies");
+
+        ClassDB::bind_method(D_METHOD("get_contract_address"), &ControllerAccount::get_contract_address);
+        ClassDB::bind_method(D_METHOD("set_contract_address", "p_contract_address"), &ControllerAccount::set_contract_address);
+        ADD_PROPERTY(PropertyInfo(Variant::STRING, "contract_address"), "set_policies", "get_policies");
     }
 
 };

@@ -12,7 +12,7 @@
 	<methods>
 		<method name="create">
 			<return type="void" />
-			<param index="0" name="policies_data" type="DojoPolicies" default="null" />
+			<param index="0" name="policies_data" type="Dictionary" default="{}" />
 			<description>
 				Creates and initializes a new controller account.
 				This method starts the process of creating a controller account, which can be used to sign transactions and authenticate with Dojo services. It emits the [signal controller_connected] signal upon successful completion.
@@ -54,6 +54,11 @@
 				Gets the address of the controller account as a hex string. Returns "0x0" if not connected.
 			</description>
 		</method>
+		<method name="get_contract_address">
+			<return type="String" />
+			<description>
+			</description>
+		</method>
 		<method name="get_username" qualifiers="const">
 			<return type="String" />
 			<description>
@@ -72,6 +77,12 @@
 				Returns [code]true[/code] if a controller account is connected and ready to use.
 			</description>
 		</method>
+		<method name="set_contract_address">
+			<return type="void" />
+			<param index="0" name="p_contract_address" type="String" />
+			<description>
+			</description>
+		</method>
 		<method name="setup">
 			<return type="void" />
 			<description>
@@ -83,7 +94,9 @@
 		<member name="chain_id" type="String" setter="set_chain_id" getter="get_chain_id" default="&quot;&quot;">
 			The Chain ID to connect to, e.g., "KATANA" or "SN_SEPOLIA".
 		</member>
-		<member name="policies" type="DojoPolicies" setter="set_policies" getter="get_policies">
+		<member name="contract_address" type="Dictionary" setter="set_policies" getter="get_policies" default="{}">
+		</member>
+		<member name="policies" type="Dictionary" setter="set_policies" getter="get_policies" default="{}">
 			The [DojoPolicies] resource that defines the account's policies.
 		</member>
 		<member name="rpc_url" type="String" setter="set_rpc_url" getter="get_rpc_url" default="&quot;&quot;">

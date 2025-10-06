@@ -8,6 +8,7 @@
 #include <deque>
 #include "variant/field_element.h"
 
+#include "godot_cpp/classes/json.hpp"
 DojoHelpers *DojoHelpers::singleton = nullptr;
 using boost::multiprecision::cpp_int;
 using boost::multiprecision::int128_t;
@@ -48,7 +49,7 @@ Variant DojoHelpers::get_setting(const String &setting, const Variant &default_v
 }
 
 Variant DojoHelpers::get_custom_setting(const String& category, const String &setting) {
-    Variant result = get_setting(vformat("%s/%s", category, setting));
+    Variant result = get_setting(vformat("%s/config/%s", category, setting));
     if (result.get_type() == Variant::NIL) {
         Logger::debug_extra("DojoHelper", vformat("%s not found, trying dojo setting", setting));
         result = get_dojo_setting(setting);
@@ -60,14 +61,15 @@ Variant DojoHelpers::get_dojo_setting(const String &setting) {
     return get_setting("dojo/config/" + setting);
 }
 
-Ref<DojoPolicies> DojoHelpers::get_default_policies() {
-    Dictionary default_policies = get_setting("dojo/config/policies", TypedArray<DojoPolicy>());
+Dictionary DojoHelpers::get_policies(const String& custom) {
+    Dictionary policies = {};
 
-    String contract_address = get_setting("dojo/config/contract_address", "0x0");
-    Ref<DojoPolicies> policies = {};
-    policies.instantiate();
-    policies->set_dojo_contract(contract_address);
-    policies->set_policies(default_policies);
+    if (custom.is_empty()) {
+        policies = get_custom_setting(custom, "policies");
+    } else {
+        policies = get_dojo_setting("policies");
+    }
+
     return policies;
 }
 
