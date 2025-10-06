@@ -140,7 +140,7 @@ protected:
 
         ClassDB::bind_method(D_METHOD("get_contract_address"), &ControllerAccount::get_contract_address);
         ClassDB::bind_method(D_METHOD("set_contract_address", "p_contract_address"), &ControllerAccount::set_contract_address);
-        ADD_PROPERTY(PropertyInfo(Variant::STRING, "contract_address"), "set_policies", "get_policies");
+        ADD_PROPERTY(PropertyInfo(Variant::STRING, "contract_address"), "set_contract_address", "get_contract_address");
     }
 };
 
