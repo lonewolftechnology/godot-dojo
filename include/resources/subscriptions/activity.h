@@ -34,13 +34,13 @@ public:
     }
 
     void set_world_addresses(const TypedArray<String>& p_array){ world_addresses = p_array; }
-    TypedArray<String> get_world_addresses(const TypedArray<String>& p_array){ return world_addresses; }
+    TypedArray<String> get_world_addresses(){ return world_addresses; }
 
     void set_namespaces(const TypedArray<String>& p_array){ namespaces = p_array; }
-    TypedArray<String> get_namespaces(const TypedArray<String>& p_array){ return namespaces; }
+    TypedArray<String> get_namespaces(){ return namespaces; }
 
     void set_caller_addresses(const TypedArray<String>& p_array){ caller_addresses = p_array; }
-    TypedArray<String> get_caller_addresses(const TypedArray<String>& p_array){ return caller_addresses; }
+    TypedArray<String> get_caller_addresses(){ return caller_addresses; }
 
 protected:
     static void _bind_methods() {
