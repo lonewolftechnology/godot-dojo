@@ -110,6 +110,8 @@ void initialize_dojoc_module(ModuleInitializationLevel p_level)
         GDREGISTER_CLASS(DojoTokenBalanceQuery);
         GDREGISTER_CLASS(DojoTokenTransferQuery);
         GDREGISTER_CLASS(DojoContractQuery)
+        GDREGISTER_CLASS(DojoActivityQuery)
+        GDREGISTER_CLASS(DojoAggregationQuery)
         GDREGISTER_CLASS(DojoSubscription);
         GDREGISTER_CLASS(DojoTransactionFilter);
         GDREGISTER_CLASS(EventSubscription);
@@ -121,6 +123,8 @@ void initialize_dojoc_module(ModuleInitializationLevel p_level)
         GDREGISTER_CLASS(EntitySubscription);
         GDREGISTER_CLASS(TransactionSubscription);
         GDREGISTER_CLASS(StarknetSubscription);
+        GDREGISTER_CLASS(ActivitySubscription)
+        GDREGISTER_CLASS(AggregationSubscription)
         GDREGISTER_CLASS(DojoC);
     }
 
