@@ -250,11 +250,11 @@ protected:
         ClassDB::bind_method(D_METHOD("update_token_balance_subscription", "subscription", "callback"),
                              &ToriiClient::update_token_balance_subscription, DEFVAL(Callable()));
 
-        ClassDB::bind_method(D_METHOD("update_aggregation_update_subscription", "subscription", "callback"),
-                             &ToriiClient::update_aggregation_update_subscription, DEFVAL(Callable()));
+        ClassDB::bind_method(D_METHOD("update_aggregation_subscription", "subscription", "callback"),
+                             &ToriiClient::update_aggregation_subscription, DEFVAL(Callable()));
 
-        ClassDB::bind_method(D_METHOD("update_activity_update_subscription", "subscription", "callback"),
-                             &ToriiClient::update_activity_update_subscription, DEFVAL(Callable()));
+        ClassDB::bind_method(D_METHOD("update_activity_subscription", "subscription", "callback"),
+                             &ToriiClient::update_activity_subscription, DEFVAL(Callable()));
 
         //
         ClassDB::bind_method(D_METHOD("cancel_all_subscriptions"), &ToriiClient::cancel_all_subscriptions);
