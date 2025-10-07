@@ -10,11 +10,6 @@
 #include "ref_counted/options/option_u256.h"
 #include "tools/logger.h"
 #include "variant/ty/dojo_array.h"
-#include "resources/queries/dojo_query.h"
-#include "resources/queries/dojo_token_query.h"
-#include "resources/queries/dojo_token_balance_query.h"
-#include "resources/queries/dojo_controller_query.h"
-#include "resources/queries/dojo_contract_query.h"
 #include "tools/dojo_helper.h"
 #include "types/big_int.h"
 
@@ -424,7 +419,7 @@ TypedArray<Dictionary> ToriiClient::get_token_collections(const Ref<DojoContract
     );
 
     if (result.tag == DOJO::ErrPageTokenContract) {
-        Logger::error(String("Error getting token collections: ") + GET_DOJO_ERROR(result));
+        Logger::error("Error getting token collections: ", GET_DOJO_ERROR(result));
         return {};
     }
 
@@ -517,6 +512,88 @@ Dictionary ToriiClient::get_token_info(const String &token_address) const {
     Logger::success_extra("ToriiClient", "Token info obtained");
     return token_dict;
 }
+
+TypedArray<Dictionary> ToriiClient::get_aggregations(const Ref<DojoAggregationQuery> &query) const {
+    Logger::info("Getting Aggregations...");
+    if (!_is_ready_for_query(query)) {
+        return {};
+    }
+    DOJO::AggregationQuery *aggregation_query_ptr = static_cast<DOJO::AggregationQuery *>(query->get_native_query());
+
+    DOJO::ResultPageAggregationEntry result = DOJO::client_aggregations(
+        client,
+        *aggregation_query_ptr
+        );
+
+    if (result.tag == DOJO::ErrPageAggregationEntry) {
+        Logger::error("Error getting aggregations: ", GET_DOJO_ERROR(result));
+        return {};
+    }
+
+    DOJO::PageAggregationEntry aggregations = result.ok;
+    TypedArray<Dictionary> result_array;
+
+    for (size_t i = 0; i < aggregations.items.data_len; i++) {
+        DOJO::AggregationEntry entry = aggregations.items.data[i];
+        Dictionary entry_dict;
+        entry_dict["id"] = entry.id;
+        entry_dict["aggregator_id"] = entry.aggregator_id;
+        entry_dict["entity_id"] = entry.entity_id;
+        entry_dict["value"] = memnew(U256(entry.value));
+        entry_dict["display_value"] = entry.display_value;
+        entry_dict["position"] = entry.position;
+        entry_dict["model_id"] = FieldElement::get_as_string(&entry.model_id);
+        entry_dict["created_at"] = entry.created_at;
+        entry_dict["updated_at"] = entry.updated_at;
+        result_array.push_back(entry_dict);
+    }
+
+    Logger::success_extra("ToriiClient", "Aggregations obtained: ", result_array.size());
+
+    return result_array;
+}
+
+TypedArray<Dictionary> ToriiClient::get_activities(const Ref<DojoActivityQuery> &query) const {
+    Logger::info("Getting Activities...");
+    if (!_is_ready_for_query(query)) {
+        return {};
+    }
+    DOJO::ActivityQuery *activity_query_ptr = static_cast<DOJO::ActivityQuery *>(query->get_native_query());
+
+    DOJO::ResultPageActivity result = DOJO::client_activities(
+        client,
+        *activity_query_ptr
+        );
+
+    if (result.tag == DOJO::ErrPageActivity) {
+        Logger::error("Error getting aggregations: ", GET_DOJO_ERROR(result));
+        return {};
+    }
+
+    DOJO::PageActivity activities = result.ok;
+    TypedArray<Dictionary> result_array;
+
+    for (size_t i = 0; i < activities.items.data_len; i++) {
+        DOJO::Activity activity = activities.items.data[i];
+        Dictionary activity_dict;
+
+        activity_dict["id"] = activity.id;
+        activity_dict["world_address"] = FieldElement::get_as_string(&activity.world_address);
+        activity_dict["namespace_"] = activity.namespace_;
+        activity_dict["caller_address"] = FieldElement::get_as_string(&activity.caller_address);
+        activity_dict["session_start"] = activity.session_start;
+        activity_dict["session_end"] = activity.session_end;
+        activity_dict["action_count"] = activity.action_count;
+        activity_dict["actions"] = DojoArray::CArrayActionCountToVariant(activity.actions);
+        activity_dict["updated_at"] = activity.updated_at;
+
+        result_array.push_back(activity_dict);
+    }
+
+    Logger::success_extra("ToriiClient", "Activities obtained: ", result_array.size());
+    return result_array;
+}
+
 
 void ToriiClient::cancel_all_subscriptions() {
     Logger::info("Cancelling all subscriptions");
@@ -874,6 +951,47 @@ void token_transfer_update_callback_wrapper(DOJO::TokenTransfer token_transfer) 
     }
 }
 
+void on_aggregation_update_callback_wrapper(DOJO::AggregationEntry entry){
+    Logger::info("on_aggregation_update_callback_wrapper");
+    ToriiClient *singleton = ToriiClient::get_singleton();
+
+    if (singleton && singleton->on_aggregation_update_callback.is_valid()) {
+        Dictionary entry_dict;
+        entry_dict["id"] = entry.id;
+        entry_dict["aggregator_id"] = entry.aggregator_id;
+        entry_dict["entity_id"] = entry.entity_id;
+        entry_dict["value"] = memnew(U256(entry.value));
+        entry_dict["display_value"] = entry.display_value;
+        entry_dict["position"] = entry.position;
+        entry_dict["model_id"] = FieldElement::get_as_string(&entry.model_id);
+        entry_dict["created_at"] = entry.created_at;
+        entry_dict["updated_at"] = entry.updated_at;
+
+        singleton->on_aggregation_update_callback.call_deferred(entry_dict);
+    }
+}
+void on_activity_update_callback_wrapper(DOJO::Activity activity){
+    Logger::info("on_activity_update_callback_wrapper");
+    ToriiClient *singleton = ToriiClient::get_singleton();
+    if (singleton && singleton->on_activity_update_callback.is_valid()) {
+        Dictionary activity_dict;
+
+        activity_dict["id"] = activity.id;
+        activity_dict["world_address"] = FieldElement::get_as_string(&activity.world_address);
+        activity_dict["namespace_"] = activity.namespace_;
+        activity_dict["caller_address"] = FieldElement::get_as_string(&activity.caller_address);
+        activity_dict["session_start"] = activity.session_start;
+        activity_dict["session_end"] = activity.session_end;
+        activity_dict["action_count"] = activity.action_count;
+        activity_dict["actions"] = DojoArray::CArrayActionCountToVariant(activity.actions);
+        activity_dict["updated_at"] = activity.updated_at;
+
+        singleton->on_activity_update_callback.call_deferred(activity_dict);
+    }
+
+
+}
+
 // Subscription method implementations
 
 void ToriiClient::on_entity_state_update(const Callable &callback, const Ref<EntitySubscription> &subscription) {
@@ -1110,6 +1228,73 @@ void ToriiClient::on_token_transfer_update(const Callable &callback,
     }
 }
 
+void ToriiClient::on_aggregation_update(const Callable &callback, const Ref<AggregationSubscription> &subscription) {
+    if (!_is_ready_for_subscription(subscription)) {
+        return;
+    }
+    on_aggregation_update_callback = callback;
+    subscription->set_callback(callback);
+    DOJO::CArrayc_char aggregator_ids = subscription->get_native_aggregator_id();
+    DOJO::CArrayc_char entity_ids = subscription->get_native_entity_ids();
+
+    DOJO::ResultSubscription result = DOJO::client_on_aggregation_update(
+        client,
+        aggregator_ids.data,
+        aggregator_ids.data_len,
+        entity_ids.data,
+        entity_ids.data_len,
+        on_aggregation_update_callback_wrapper
+    );
+
+    if (result.tag == DOJO::ErrSubscription) {
+        String error_msg = "Failed to suscribe to aggregation updates: " + String(GET_DOJO_ERROR(result));
+        Logger::error(error_msg);
+        call_deferred("emit_signal", "subscription_error", error_msg);
+        on_token_transfer_update_callback = Callable();
+    } else {
+        Logger::success_extra("ToriiClient", "Suscribed to aggregation updates");
+        call_deferred("emit_signal", "subscription_created", "aggregation_update");
+        subscription->set_subscription(result.ok);
+        subscriptions.append(subscription);
+    }
+}
+
+void ToriiClient::on_activity_update(const Callable &callback, const Ref<ActivitySubscription> &subscription) {
+    if (!_is_ready_for_subscription(subscription)) {
+        return;
+    }
+    on_activity_update_callback = callback;
+    subscription->set_callback(callback);
+    DOJO::CArrayFieldElement world_addresses = subscription->get_native_world_addresses();
+    DOJO::CArrayc_char namespaces = subscription->get_native_namespaces();
+    DOJO::CArrayFieldElement caller_addresses = subscription->get_native_caller_addresses();
+
+    DOJO::ResultSubscription result = DOJO::client_on_activity_update(
+        client,
+        world_addresses.data,
+        world_addresses.data_len,
+        namespaces.data,
+        namespaces.data_len,
+        caller_addresses.data,
+        caller_addresses.data_len,
+        on_activity_update_callback_wrapper
+    );
+
+    if (result.tag == DOJO::ErrSubscription) {
+        String error_msg = "Failed to suscribe to activity updates: " + String(GET_DOJO_ERROR(result));
+        Logger::error(error_msg);
+        call_deferred("emit_signal", "subscription_error", error_msg);
+        on_token_transfer_update_callback = Callable();
+    } else {
+        Logger::success_extra("ToriiClient", "Suscribed to activity updates");
+        call_deferred("emit_signal", "subscription_created", "activity_update");
+        subscription->set_subscription(result.ok);
+        subscriptions.append(subscription);
+    }
+
+}
+
+
 bool ToriiClient::_is_ready_for_query(const Ref<Resource> &query) const {
     if (!is_client_connected()) {
         Logger::error("Client not connected. Cannot execute query.");
@@ -1134,7 +1319,7 @@ bool ToriiClient::_is_ready_for_subscription(const Ref<DojoSubscription> &subscr
     return true;
 }
 
-void ToriiClient::update_subscription(const Ref<DojoSubscription> &subscription, const Callable &callback) {
+void ToriiClient::update_subscription(const Ref<DojoSubscription>& subscription, const Callable& callback) {
     using SubType = DojoSubscription::Type;
     Logger::info("Updating Subscription[color=Green]", subscription->get_name(), "[/color]");
 

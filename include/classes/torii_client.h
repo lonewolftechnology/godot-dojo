@@ -14,12 +14,16 @@
 #include "godot_cpp/variant/callable.hpp"
 
 #include "dojo_types.h"
+#include "resources/queries/dojo_activity_query.h"
+#include "resources/queries/dojo_aggregation_query.h"
 #include "resources/queries/dojo_contract_query.h"
 #include "resources/queries/dojo_query.h"
 #include "resources/queries/dojo_token_query.h"
 #include "resources/queries/dojo_token_balance_query.h"
 #include "resources/queries/dojo_controller_query.h"
 #include "resources/queries/dojo_token_transfer_query.h"
+#include "resources/subscriptions/activity.h"
+#include "resources/subscriptions/aggregation.h"
 #include "resources/subscriptions/entity.h"
 #include "resources/subscriptions/message.h"
 #include "resources/subscriptions/starknet.h"
@@ -58,6 +62,8 @@ public:
     Callable on_contract_update_callback;
     Callable on_token_balance_update_callback;
     Callable on_token_transfer_update_callback;
+    Callable on_aggregation_update_callback;
+    Callable on_activity_update_callback;
 
     ToriiClient();
     ~ToriiClient();
@@ -85,6 +91,8 @@ public:
     TypedArray<Dictionary> get_token_transfers(const Ref<DojoTokenTransferQuery>& query) const;
     TypedArray<Dictionary> get_token_collections(const Ref<DojoContractQuery>& query) const;
     Dictionary get_token_info(const String& token_address) const;
+    TypedArray<Dictionary> get_aggregations(const Ref<DojoAggregationQuery>& query) const;
+    TypedArray<Dictionary> get_activities(const Ref<DojoActivityQuery>& query) const;
 
     // Subscriptions
     void on_entity_state_update(const Callable& callback, const Ref<EntitySubscription>& subscription);
@@ -95,6 +103,9 @@ public:
     void on_contract_update(const Callable& callback, const Ref<ContractSubscription>& subscription);
     void on_token_balance_update(const Callable& callback, const Ref<TokenBalanceSubscription>& subscription);
     void on_token_transfer_update(const Callable& callback, const Ref<TokenTransferSubscription>& subscription);
+    void on_aggregation_update(const Callable& callback, const Ref<AggregationSubscription>& subscription);
+    void on_activity_update(const Callable& callback, const Ref<ActivitySubscription>& subscription);
+
 
     // Subscriptions update
     void update_subscription(const Ref<DojoSubscription>& subscription, const Callable& callback = Callable());
@@ -106,6 +117,8 @@ public:
     void update_contract_subscription(const Ref<ContractSubscription>& subscription, const Callable& callback = Callable());
     void update_token_balance_subscription(const Ref<TokenBalanceSubscription>& subscription, const Callable& callback = Callable());
     void update_token_transfer_subscription(const Ref<TokenTransferSubscription>& subscription, const Callable& callback = Callable());
+    void update_aggregation_update_subscription(const Ref<AggregationSubscription>& subscription, const Callable& callback = Callable());
+    void update_activity_update_subscription(const Ref<ActivitySubscription>& subscription, const Callable& callback = Callable());
 
     void cancel_all_subscriptions();
 
@@ -181,6 +194,8 @@ protected:
         ClassDB::bind_method(D_METHOD("get_tokens", "query"), &ToriiClient::get_tokens);
         ClassDB::bind_method(D_METHOD("get_token_balances", "query"), &ToriiClient::get_token_balances);
         ClassDB::bind_method(D_METHOD("get_token_collections", "query"), &ToriiClient::get_token_collections);
+        ClassDB::bind_method(D_METHOD("get_activities", "query"), &ToriiClient::get_activities);
+        ClassDB::bind_method(D_METHOD("get_aggregations", "query"), &ToriiClient::get_aggregations);
         ClassDB::bind_method(D_METHOD("get_token_info", "token_address"), &ToriiClient::get_token_info);
 
         //Subscription
@@ -204,6 +219,11 @@ protected:
 
         ClassDB::bind_method(D_METHOD("on_token_balance_update", "callback", "subscription"),
                              &ToriiClient::on_token_balance_update);
+
+        ClassDB::bind_method(D_METHOD("on_aggregation_update", "callback", "subscription"),
+                             &ToriiClient::on_aggregation_update);
+        ClassDB::bind_method(D_METHOD("on_activity_update", "callback", "subscription"),
+                             &ToriiClient::on_activity_update);
 
         // Subscription Update
         ClassDB::bind_method(D_METHOD("update_subscription", "subscription", "callback"),
@@ -230,6 +250,13 @@ protected:
         ClassDB::bind_method(D_METHOD("update_token_balance_subscription", "subscription", "callback"),
                              &ToriiClient::update_token_balance_subscription, DEFVAL(Callable()));
 
+        ClassDB::bind_method(D_METHOD("update_aggregation_update_subscription", "subscription", "callback"),
+                             &ToriiClient::update_aggregation_update_subscription, DEFVAL(Callable()));
+
+        ClassDB::bind_method(D_METHOD("update_activity_update_subscription", "subscription", "callback"),
+                             &ToriiClient::update_activity_update_subscription, DEFVAL(Callable()));
+
+        //
         ClassDB::bind_method(D_METHOD("cancel_all_subscriptions"), &ToriiClient::cancel_all_subscriptions);
 
         ClassDB::bind_method(D_METHOD("publish_message", "message_data", "signature_felts"),
