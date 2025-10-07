@@ -117,8 +117,8 @@ public:
     void update_contract_subscription(const Ref<ContractSubscription>& subscription, const Callable& callback = Callable());
     void update_token_balance_subscription(const Ref<TokenBalanceSubscription>& subscription, const Callable& callback = Callable());
     void update_token_transfer_subscription(const Ref<TokenTransferSubscription>& subscription, const Callable& callback = Callable());
-    void update_aggregation_update_subscription(const Ref<AggregationSubscription>& subscription, const Callable& callback = Callable());
-    void update_activity_update_subscription(const Ref<ActivitySubscription>& subscription, const Callable& callback = Callable());
+    void update_aggregation_subscription(const Ref<AggregationSubscription>& subscription, const Callable& callback = Callable());
+    void update_activity_subscription(const Ref<ActivitySubscription>& subscription, const Callable& callback = Callable());
 
     void cancel_all_subscriptions();
 

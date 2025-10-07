@@ -1501,3 +1501,49 @@ void ToriiClient::update_token_transfer_subscription(const Ref<TokenTransferSubs
         subscription->update_callback(callback);
     }
 }
+
+void ToriiClient::update_aggregation_subscription(const Ref<AggregationSubscription> &subscription, const Callable &callback) {
+    DOJO::CArrayc_char aggregator_ids = subscription->get_native_aggregator_id();
+    DOJO::CArrayc_char entity_ids = subscription->get_native_entity_ids();
+
+    DOJO::Resultbool result = DOJO::client_update_aggregation_subscription(
+        client,
+        subscription->get_subscription(),
+        aggregator_ids.data,
+        aggregator_ids.data_len,
+        entity_ids.data,
+        entity_ids.data_len
+    );
+    if (result.tag == DOJO::Errbool) {
+        Logger::error("Failed to update Aggregation Subscription", GET_DOJO_ERROR(result));
+        call_deferred("emit_signal", "subscription_error", GET_DOJO_ERROR(result));
+    } else {
+        Logger::success_extra("ToriiClient", "Updated aggregations subscription");
+        subscription->update_callback(callback);
+    }
+}
+
+void ToriiClient::update_activity_subscription(const Ref<ActivitySubscription> &subscription, const Callable &callback) {
+    DOJO::CArrayc_char namespaces = subscription->get_native_namespaces();
+    DOJO::CArrayFieldElement world_addresses = subscription->get_native_world_addresses();
+    DOJO::CArrayFieldElement caller_addresses = subscription->get_native_caller_addresses();
+
+    DOJO::Resultbool result = DOJO::client_update_activity_subscription(
+        client,
+        subscription->get_subscription(),
+        world_addresses.data,
+        world_addresses.data_len,
+        namespaces.data,
+        namespaces.data_len,
+        caller_addresses.data,
+        caller_addresses.data_len
+    );
+
+    if (result.tag == DOJO::Errbool) {
+        Logger::error("Failed to update Activities Subscription", GET_DOJO_ERROR(result));
+        call_deferred("emit_signal", "subscription_error", GET_DOJO_ERROR(result));
+    } else {
+        Logger::success_extra("ToriiClient", "Updated Activities subscription");
+        subscription->update_callback(callback);
+    }
+}
