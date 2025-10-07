@@ -24,7 +24,7 @@ public:
         DOJO::COptionu64 option = {};
         if (is_some()) {
             option.tag = DOJO::Someu64;
-            option.some = static_cast<uint64_t>((int64_t)get_value());
+            option.some = static_cast<uint64_t>(static_cast<int64_t>(get_value()));
         } else {
             option.tag = DOJO::Noneu64;
         }
