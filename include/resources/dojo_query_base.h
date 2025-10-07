@@ -29,6 +29,32 @@ public:
     };
     ~DojoQueryBase(){};
 
+    DOJO::Pagination get_native_pagination() const {
+        DOJO::Pagination pagination;
+
+        pagination.limit.tag = DOJO::COptionu32_Tag::Someu32;
+        pagination.limit.some = limit;
+
+        if (cursor.is_empty()) {
+            pagination.cursor.tag = DOJO::COptionc_char_Tag::Nonec_char;
+        } else {
+            pagination.cursor.tag = DOJO::COptionc_char_Tag::Somec_char;
+            pagination.cursor.some = cursor.utf8().get_data();
+        }
+
+        pagination.direction = direction;
+
+        pagination.order_by.data_len = order_by.size();
+        if (pagination.order_by.data_len > 0) {
+            pagination.order_by.data = (dojo_bindings::OrderBy*) memalloc(sizeof(dojo_bindings::OrderBy) * pagination.order_by.data_len);
+            for (int i = 0; i < pagination.order_by.data_len; ++i) {
+                Ref<DojoOrderBy> ob = order_by[i];
+                pagination.order_by.data[i] = ob->get_native_order_by();
+            }
+        }
+        return pagination;
+    }
+
     void set_limit(uint32_t p_limit) { limit = p_limit; }
     uint32_t get_limit() const { return limit; }
 

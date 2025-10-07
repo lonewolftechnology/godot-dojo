@@ -40,6 +40,13 @@ public:
 
     void set_direction(DOJO::OrderDirection p_direction) { direction = p_direction; }
     DOJO::OrderDirection get_direction() const { return direction; }
+
+    DOJO::OrderBy get_native_order_by() const {
+        dojo_bindings::OrderBy native_order_by;
+        native_order_by.field = strdup(field.utf8().get_data());
+        native_order_by.direction = static_cast<dojo_bindings::OrderDirection>(direction);
+        return native_order_by;
+    }
 };
 
 VARIANT_ENUM_CAST(DOJO::OrderDirection);
