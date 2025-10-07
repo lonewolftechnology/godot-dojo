@@ -78,6 +78,7 @@ public:
     DojoArray(DOJO::CArrayTokenContract array);
     DojoArray(DOJO::CArrayCOptionFieldElement array);
     DojoArray(DOJO::CArrayModel array);
+    DojoArray(DOJO::CArrayActionCount array);
 
     // "static" methods.
     static Variant CArrayTyToVariant(DOJO::CArrayTy array);
@@ -95,6 +96,7 @@ public:
     static Variant CArrayTokenContractToVariant(DOJO::CArrayTokenContract array);
     static Variant CArrayCOptionFieldElementToVariant(DOJO::CArrayCOptionFieldElement array);
     static Variant CArrayModelToVariant(DOJO::CArrayModel array);
+    static Variant CArrayActionCountToVariant(DOJO::CArrayActionCount array);
 
     Variant get_value() const { return value; }
     void set_value(const Variant& p_value) { value = p_value; }

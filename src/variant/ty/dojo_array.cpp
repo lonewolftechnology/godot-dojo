@@ -79,6 +79,10 @@ DojoArray::DojoArray(DOJO::CArrayModel array)
     value = CArrayModelToVariant(array);
 }
 
+DojoArray::DojoArray(dojo_bindings::CArrayActionCount array) {
+    value = CArrayActionCountToVariant(array);
+}
+
 Variant DojoArray::CArrayTyToVariant(DOJO::CArrayTy array_ty)
 {
     std::vector<DOJO::Ty> array_ty_vector(array_ty.data, array_ty.data + array_ty.data_len);
@@ -346,5 +350,19 @@ Variant DojoArray::CArrayModelToVariant(DOJO::CArrayModel array)
 
         result.append(model_dict);
     }
+    return result;
+}
+
+Variant DojoArray::CArrayActionCountToVariant(dojo_bindings::CArrayActionCount array) {
+    std::vector<DOJO::ActionCount> action_counts(array.data, array.data + array.data_len);
+    Array result = {};
+
+    for (const auto& action : action_counts) {
+        Dictionary action_dict;
+        action_dict["action_name"] = action.action_name;
+        action_dict["count"] = action.count;
+        result.append(action_dict);
+    }
+
     return result;
 }
