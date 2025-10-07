@@ -191,28 +191,37 @@ if platform == "macos" and arch == "universal":
     cmd = [] # Command already executed
 
 
-def apply_dojo_h_patch():
-    """Applies a patch to dojo.h to fix an incomplete type issue."""
-    print(f"{Y}{clipboard} Applying workaround patch to dojo.h...{X}")
-    # Check if the 'patch' command is available.
+def apply_patches():
+    """Checks for and applies all .patch files found in the 'patches' directory."""
+    patches_dir = 'patches'
+    if not os.path.isdir(patches_dir):
+        print(f"{B}Directorio de parches '{patches_dir}' no encontrado, omitiendo.{X}")
+        return
+
+    patch_files = sorted(glob.glob(os.path.join(patches_dir, '*.patch')))
+    if not patch_files:
+        print(f"{B}No se encontraron archivos .patch en '{patches_dir}', omitiendo.{X}")
+        return
+
+    print(f"{Y}{clipboard} Aplicando parches desde el directorio '{patches_dir}'...{X}")
+
+    # Verificar si el comando 'patch' está disponible.
     if not shutil.which("patch"):
         print(f"{R}{cross} Error: The 'patch' command was not found in your system's PATH.{X}")
         print(f"{Y}This is required to apply a necessary fix to a dependency.{X}")
         print(f"{B}On Windows, the easiest way to get it is by installing 'Git for Windows':{X}")
         print(f"{G}https://git-scm.com/download/win{X}")
         print(f"{Y}Please install it and make sure its tools are added to your PATH, then try again.{X}")
-        Exit(1)
+        Exit(1) # Salir si el comando patch no está disponible.
 
-    patch_file = 'patches/fix_dojo_c_incomplete_type.patch'
-    dojo_c_dir = 'external/dojo.c'
-    target_to_patch = f'{dojo_c_dir}/dojo.h'
-
-    try:
-        subprocess.run(['patch', '-p1', '-d', dojo_c_dir, '-i', os.path.abspath(patch_file)], check=True)
-        print(f"{G}{check} Patch applied successfully to {target_to_patch}.{X}")
-    except Exception as e:
-        print(f"{R}{cross} Failed to apply patch: {e}{X}")
-        Exit(1)
+    for patch_file in patch_files:
+        print(f"{Y}Aplicando parche: {os.path.basename(patch_file)}...{X}")
+        try:
+            subprocess.run(['patch', '-p1', '-i', os.path.abspath(patch_file)], check=True)
+            print(f"{G}{check} Parche {os.path.basename(patch_file)} aplicado con éxito.{X}")
+        except subprocess.CalledProcessError as e:
+            print(f"{R}{cross} Falló la aplicación del parche {os.path.basename(patch_file)}: {e}{X}")
+            Exit(1)
 
 
 # Environment variables for WebAssembly
@@ -233,7 +242,7 @@ if env["platform"] == "web":
     subprocess.run(cmd, check=True, cwd="external/dojo.c", env=bindgen_env)
 
     # Apply patch immediately after Rust compilation
-    apply_dojo_h_patch()
+    apply_patches()
 
     # Step 2: Run wasm-bindgen
     print(f"{Y}Running wasm-bindgen...{X}")
@@ -286,7 +295,7 @@ else:
 
         subprocess.run(cmd, check=True, cwd="external/dojo.c", env=env_vars)
     # Apply patch immediately after Rust compilation
-    apply_dojo_h_patch()
+    apply_patches()
 
 
 # Configure library
@@ -312,9 +321,29 @@ if platform == "android":
     print(f"{Y}{package} Building Android plugin with Gradle...{X}")
     gradlew_cmd = "gradlew.bat" if is_host_windows else "./gradlew"
     try:
-        # Execute the gradle build command in the 'android' directory
-        subprocess.run([gradlew_cmd, ":plugin:assemble"], cwd="android", check=True)
+        # Execute the gradle build command in the 'android' directory.
+        # We run both assembleDebug and assembleRelease to get both AARs.
+        subprocess.run([gradlew_cmd, ":plugin:assembleDebug", ":plugin:assembleRelease"], cwd="android", check=True)
         print(f"{G}{check} Android plugin built successfully.{X}")
+
+        # Copy the generated AAR files to the correct addon location
+        print(f"{Y}{clipboard} Copying Android plugin artifacts...{X}")
+        plugin_name = "GodotDojoAndroidPlugin" # Must match pluginName in build.gradle.kts
+        aar_source_dir = f"android/plugin/build/outputs/aar/"
+        
+        # Copy Debug AAR
+        debug_aar_src = f"{aar_source_dir}/{plugin_name}-debug.aar"
+        debug_aar_dest_dir = "demo/addons/godot-dojo/bin/android/debug"
+        os.makedirs(debug_aar_dest_dir, exist_ok=True)
+        shutil.copy(debug_aar_src, debug_aar_dest_dir)
+
+        # Copy Release AAR
+        release_aar_src = f"{aar_source_dir}/{plugin_name}-release.aar"
+        release_aar_dest_dir = "demo/addons/godot-dojo/bin/android/release"
+        os.makedirs(release_aar_dest_dir, exist_ok=True)
+        shutil.copy(release_aar_src, release_aar_dest_dir)
+
+        print(f"{G}{check} Android artifacts copied to demo/addons/godot-dojo/bin/android/{X}")
     except subprocess.CalledProcessError as e:
         print(f"{R}{cross} Gradle build failed: {e}{X}")
         Exit(1)
