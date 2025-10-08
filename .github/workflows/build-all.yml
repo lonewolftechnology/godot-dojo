@@ -98,7 +98,7 @@ jobs:
       - name: Get controller.c version
         id: get_controllerc_version
         run: |
-          GODOTCPP_VERSION=$(cd external/controller.c && (git describe --tags --abbrev=0 2>/dev/null || git rev-parse --short HEAD))
+          CONTROLLERC_VERSION=$(cd external/controller.c && (git describe --tags --abbrev=0 2>/dev/null || git rev-parse --short HEAD))
           echo "CONTROLLERC_VERSION=$CONTROLLERC_VERSION" >> $GITHUB_OUTPUT
 
       - name: Create release
