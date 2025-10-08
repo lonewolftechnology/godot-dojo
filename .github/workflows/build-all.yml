@@ -58,8 +58,8 @@ jobs:
 
           COMMIT_COUNT=$(echo "$COMMITS_LOG" | wc -l)
 
-          if [ $COMMIT_COUNT -gt 5 ]; then
-            COMMITS=$(echo "$COMMITS_LOG" | head -n 5)
+          if [ $COMMIT_COUNT -gt 10 ]; then
+            COMMITS=$(echo "$COMMITS_LOG" | head -n 10)
             COMMITS="$COMMITS\\n\\n[See all commits](https://github.com/${{ github.repository }}/compare/$PREVIOUS_TAG...$CURRENT_TAG)"
           else
             COMMITS="$COMMITS_LOG"
@@ -95,11 +95,17 @@ jobs:
           GODOTCPP_VERSION=$(cd external/godot-cpp && (git describe --tags --abbrev=0 2>/dev/null || git rev-parse --short HEAD))
           echo "GODOTCPP_VERSION=$GODOTCPP_VERSION" >> $GITHUB_OUTPUT
 
+      - name: Get controller.c version
+        id: get_controllerc_version
+        run: |
+          GODOTCPP_VERSION=$(cd external/controller.c && (git describe --tags --abbrev=0 2>/dev/null || git rev-parse --short HEAD))
+          echo "CONTROLLERC_VERSION=$CONTROLLERC_VERSION" >> $GITHUB_OUTPUT
+
       - name: Create release
         id: create_release
         uses: softprops/action-gh-release@v2
         with:
-          name: "${{ github.ref_name }} - Dojo.c ${{ steps.get_dojoc_version.outputs.DOJOC_VERSION }} | ${{ steps.get_godotcpp_version.outputs.GODOTCPP_VERSION }}"
+          name: "${{ github.ref_name }}"
           body: |
             ## Latest Changes
 
@@ -107,6 +113,13 @@ jobs:
 
             ### Commits Since Last Tag
             ${{ steps.get_commits.outputs.commits }}
+            
+            ### Target dependecies:
+            - Dojo.c ${{ steps.get_dojoc_version.outputs.DOJOC_VERSION }} 
+            - Controller.c ${{ steps.get_dojoc_version.outputs.CONTROLLERC_VERSION }} 
+            - Godot ${{ steps.get_godotcpp_version.outputs.GODOTCPP_VERSION }}
+              note: Godot target is minimum version, so it should work with 4.3+
+
           draft: false
           prerelease: ${{ steps.check_branch.outputs.is_prerelease == 'true' }}
         env:
