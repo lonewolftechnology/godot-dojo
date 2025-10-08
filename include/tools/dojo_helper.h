@@ -181,10 +181,6 @@ protected:
                                     &DojoHelpers::bytes_to_u128_string);
         ClassDB::bind_static_method("DojoHelpers", D_METHOD("bytes_to_u256_string", "bytes"),
                                     &DojoHelpers::bytes_to_u256_string);
-
-        ClassDB::bind_static_method("DojoHelpers", D_METHOD("bytes_to_i128_string", "bytes"), &DojoHelpers::bytes_to_i128_string);
-        ClassDB::bind_static_method("DojoHelpers", D_METHOD("bytes_to_u128_string", "bytes"), &DojoHelpers::bytes_to_u128_string);
-        ClassDB::bind_static_method("DojoHelpers", D_METHOD("bytes_to_u256_string", "bytes"), &DojoHelpers::bytes_to_u256_string);
     }
 };
 
