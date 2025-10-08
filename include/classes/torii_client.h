@@ -130,9 +130,6 @@ public:
 
     Dictionary get_connection_status() const;
 
-    static DOJO::Query create_query_from_dict(const Dictionary& query_params);
-    static DOJO::Pagination create_pagination_from_dict(const Dictionary& pagination_params);
-
     DOJO::ToriiClient* get_client() const { return client; }
 
     Callable get_logger_callback() const { return logger_callback; }
