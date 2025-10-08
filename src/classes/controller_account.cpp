@@ -19,13 +19,11 @@
 #include "godot_cpp/classes/java_class_wrapper.hpp"
 #endif
 
-ControllerAccount* ControllerAccount::singleton = nullptr;
+ControllerAccount *ControllerAccount::singleton = nullptr;
 
 
-ControllerAccount::ControllerAccount()
-{
-    if (Engine::get_singleton()->is_editor_hint())
-    {
+ControllerAccount::ControllerAccount() {
+    if (Engine::get_singleton()->is_editor_hint()) {
         return;
     }
     singleton = this;
@@ -37,50 +35,39 @@ ControllerAccount::ControllerAccount()
     Logger::debug_extra("ControllerAccount", "CONSTRUCTOR CALLED");
 }
 
-ControllerAccount::~ControllerAccount()
-{
-    if (Engine::get_singleton()->is_editor_hint())
-    {
+ControllerAccount::~ControllerAccount() {
+    if (Engine::get_singleton()->is_editor_hint()) {
         return;
     }
-    if (DojoHelpers::get_setting("dojo/config/disconnect_controller_on_exit"))
-    {
+    if (DojoHelpers::get_setting("dojo/config/disconnect_controller_on_exit")) {
         disconnect_controller();
-    }
-    else
-    {
+    } else {
         session_account = nullptr;
     }
-    if (singleton != nullptr && singleton == this)
-    {
+    if (singleton != nullptr && singleton == this) {
         singleton = nullptr;
     }
     Logger::debug_extra("ControllerAccount", "DESTRUCTOR CALLED");
 }
 
-ControllerAccount* ControllerAccount::get_singleton()
-{
+ControllerAccount *ControllerAccount::get_singleton() {
     return singleton;
 }
 
-void ControllerAccount::set_session_account(DOJO::ControllerAccount* account)
-{
+void ControllerAccount::set_session_account(DOJO::ControllerAccount *account) {
     session_account = account;
     is_connected = (account != nullptr);
     emit_connection_status(is_connected);
 }
 
-DOJO::ControllerAccount* ControllerAccount::get_session_account() const
-{
+DOJO::ControllerAccount *ControllerAccount::get_session_account() const {
     return session_account;
 }
 
-void ControllerAccount::on_account_callback(DOJO::ControllerAccount* account)
-{
+void ControllerAccount::on_account_callback(DOJO::ControllerAccount *account) {
     Logger::success("Account Data received");
-    ControllerAccount* instance = get_singleton();
-    if (!instance)
-    {
+    ControllerAccount *instance = get_singleton();
+    if (!instance) {
         Logger::warning(
             "ControllerAccount singleton is null in on_account_callback. The application may be shutting down.");
         return;
@@ -95,20 +82,17 @@ void ControllerAccount::on_account_callback(DOJO::ControllerAccount* account)
     Logger::custom("PLAYER ID", FieldElement::get_as_string(&player_address));
 }
 
-void ControllerAccount::setup()
-{
+void ControllerAccount::setup() {
     init_provider();
     create(policies);
 }
 
-void ControllerAccount::init_provider()
-{
+void ControllerAccount::init_provider() {
     check_rpc_url();
 
     Logger::debug_extra("Provider", rpc_url);
     DOJO::ResultProvider resControllerProvider = DOJO::provider_new(rpc_url.utf8().get_data());
-    if (resControllerProvider.tag == DOJO::ErrProvider)
-    {
+    if (resControllerProvider.tag == DOJO::ErrProvider) {
         Logger::error(GET_DOJO_ERROR(resControllerProvider));
         call_deferred("emit_signal", "provider_status_updated", false);
         return;
@@ -118,8 +102,7 @@ void ControllerAccount::init_provider()
     call_deferred("emit_signal", "provider_status_updated", true);
 }
 
-void ControllerAccount::create(const Dictionary& policies_data)
-{
+void ControllerAccount::create(const Dictionary &policies_data) {
 #ifdef ANDROID_ENABLED
     Logger::error("Not implemented yet");
     return;
@@ -136,16 +119,13 @@ void ControllerAccount::create(const Dictionary& policies_data)
     Logger::custom_color("azure", "katana", katana->to_string());
 
     DOJO::ResultControllerAccount resControllerAccount =
-        DOJO::controller_account(policies_vector.data(), policies_len, katana->get_felt_no_ptr());
+            DOJO::controller_account(policies_vector.data(), policies_len, katana->get_felt_no_ptr());
 
-    if (resControllerAccount.tag == DOJO::OkControllerAccount)
-    {
+    if (resControllerAccount.tag == DOJO::OkControllerAccount) {
         Logger::info("Session account already connected");
         session_account = GET_DOJO_OK(resControllerAccount);
         on_account_callback(session_account);
-    }
-    else
-    {
+    } else {
         Logger::info("Session account not connected, connecting...");
         DOJO::controller_connect(
             rpc_url.utf8().get_data(),
@@ -156,22 +136,16 @@ void ControllerAccount::create(const Dictionary& policies_data)
 #endif
 }
 
-void ControllerAccount::disconnect_controller()
-{
-    if (session_account != nullptr)
-    {
-
-        std::vector<DOJO::Policy> policies_vector =  build_policies();
+void ControllerAccount::disconnect_controller() {
+    if (session_account != nullptr) {
+        std::vector<DOJO::Policy> policies_vector = build_policies();
         uintptr_t policies_len = policies_vector.size();
-        DOJO::FieldElement chain_id = DOJO::controller_chain_id(session_account);
+        DOJO::FieldElement controller_chain_id = DOJO::controller_chain_id(session_account);
 
-        DOJO::Resultbool resClear = DOJO::controller_clear(policies_vector.data(), policies_len, chain_id);
-        if (resClear.tag == DOJO::Errbool)
-        {
+        DOJO::Resultbool resClear = DOJO::controller_clear(policies_vector.data(), policies_len, controller_chain_id);
+        if (resClear.tag == DOJO::Errbool) {
             Logger::error("Failed to clear Controller", resClear.err.message);
-        }
-        else
-        {
+        } else {
             Logger::success("Controller cleared");
         }
 
@@ -184,44 +158,37 @@ void ControllerAccount::disconnect_controller()
     }
 }
 
-bool ControllerAccount::is_controller_connected() const
-{
+bool ControllerAccount::is_controller_connected() const {
     return is_connected && session_account != nullptr;
 }
 
-String ControllerAccount::get_chain_id(const bool& parse) const
-{
+String ControllerAccount::get_chain_id(const bool &parse) const {
     if (Engine::get_singleton()->is_editor_hint()) return chain_id;
 
-    if (chain_id.is_empty() || !is_controller_connected())
-    {
+    if (chain_id.is_empty() || !is_controller_connected()) {
         Logger::debug_extra("ControllerAccount", "Getting chain id from provider by creating an Account");
-        Account* burner_account = memnew(Account);
+        Account *burner_account = memnew(Account);
         String _rpc_url = ProjectSettings::get_singleton()->get("dojo/config/katana_url");
         String _address = ProjectSettings::get_singleton()->get("dojo/config/account/address");
         String _private_key = ProjectSettings::get_singleton()->get("dojo/config/account/private_key");
         burner_account->create(_rpc_url, _address, _private_key);
         chain_id = burner_account->get_chain_id(true);
         chain_id_hex = burner_account->get_chain_id(false);
-        Logger::debug_extra("CHAINID", chain_id, burner_account->get_chain_id());
+        Logger::debug_extra("CHAIN ID", chain_id, burner_account->get_chain_id());
         burner_account->queue_free();
     }
-    if (parse)
-    {
+    if (parse) {
         return chain_id;
     }
     return chain_id_hex;
 }
 
-void ControllerAccount::check_rpc_url()
-{
-    Logger::debug_extra("ControllerAccount", "Checking RPC URL", rpc_url, rpc_url.is_empty());
-    if (rpc_url.is_empty())
-    {
+void ControllerAccount::check_rpc_url() {
+    Logger::debug_extra("ControllerAccount", "Checking RPC URL", rpc_url, "is_empty: ",rpc_url.is_empty());
+    if (rpc_url.is_empty()) {
         Logger::debug_extra("ControllerAccount", "RPC URL not set, checking project settings");
         String setting = ProjectSettings::get_singleton()->get("dojo/config/katana_url");
-        if (setting.is_empty())
-        {
+        if (setting.is_empty()) {
             Logger::error("RPC URL not found");
             return;
         }
@@ -230,8 +197,7 @@ void ControllerAccount::check_rpc_url()
     }
 }
 
-String ControllerAccount::get_rpc_url()
-{
+String ControllerAccount::get_rpc_url() {
     return rpc_url;
 }
 
@@ -263,17 +229,14 @@ void ControllerAccount::execute_from_outside(const String &to, const String &sel
     DOJO::ResultFieldElement result = DOJO::controller_execute_from_outside(
         session_account, &call, 1
     );
-    if (result.tag == DOJO::ErrFieldElement)
-    {
+    if (result.tag == DOJO::ErrFieldElement) {
         Logger::error("Transaction failed");
         Logger::error("To:", to);
         Logger::error("Selector:", selector);
         Logger::error("Args:", args);
         Logger::error("Error:", GET_DOJO_ERROR(result));
         call_deferred("emit_signal", "transaction_failed", GET_DOJO_ERROR(result));
-    }
-    else
-    {
+    } else {
         DOJO::wait_for_transaction(provider, GET_DOJO_OK(result));
         Logger::success_extra("EXECUTED", selector);
     }
@@ -305,28 +268,23 @@ void ControllerAccount::execute_raw(const String &to, const String &selector, co
     DOJO::ResultFieldElement result = DOJO::controller_execute_raw(
         session_account, &call, 1
     );
-    if (result.tag == DOJO::ErrFieldElement)
-    {
+    if (result.tag == DOJO::ErrFieldElement) {
         Logger::error("Transaction failed");
         Logger::error("To:", to);
         Logger::error("Selector:", selector);
         Logger::error("Args:", args);
         Logger::error("Error:", GET_DOJO_ERROR(result));
         call_deferred("emit_signal", "transaction_failed", GET_DOJO_ERROR(result));
-    }
-    else
-    {
+    } else {
         DOJO::wait_for_transaction(provider, GET_DOJO_OK(result));
         Logger::success_extra("EXECUTED", selector);
     }
 }
 
-Dictionary ControllerAccount::get_account_info() const
-{
+Dictionary ControllerAccount::get_account_info() const {
     Dictionary info = {};
 
-    if (!is_controller_connected())
-    {
+    if (!is_controller_connected()) {
         info["connected"] = false;
         return info;
     }
@@ -340,23 +298,18 @@ Dictionary ControllerAccount::get_account_info() const
 }
 
 
-void ControllerAccount::emit_connection_status(bool connected)
-{
-    if (connected)
-    {
+void ControllerAccount::emit_connection_status(bool connected) {
+    if (connected) {
         call_deferred("emit_signal", "controller_connected", connected);
         call_deferred("emit_signal", "current_user_info", get_account_info());
-    }
-    else
-    {
+    } else {
         call_deferred("emit_signal", "controller_disconnected");
     }
 }
 
-std::vector<DOJO::Policy> ControllerAccount::build_policies() {
-
+std::vector<DOJO::Policy> ControllerAccount::build_policies(const Dictionary& policies_data) {
     if (contract_address.is_empty()) {
-        Logger::debug_extra("ControllerAccount", "Contract Address not setted, searching ProjectSettings");
+        Logger::debug_extra("ControllerAccount", "Contract Address not set, searching ProjectSettings");
         this->contract_address = DojoHelpers::get_dojo_setting("contract_address");
         if (contract_address.is_empty()) {
             Logger::error("Contract Address not found.");
@@ -389,8 +342,8 @@ std::vector<DOJO::Policy> ControllerAccount::build_policies() {
         String key = policies.keys()[i];
         String value = policies[key];
 
-        const auto& method_str = policy_string_storage.emplace_back(key.utf8().get_data());
-        const auto& desc_str = policy_string_storage.emplace_back(value.utf8().get_data());
+        const auto &method_str = policy_string_storage.emplace_back(key.utf8().get_data());
+        const auto &desc_str = policy_string_storage.emplace_back(value.utf8().get_data());
 
         policies_vector.push_back({contract, method_str.c_str(), desc_str.c_str()});
     }

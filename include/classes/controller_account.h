@@ -55,10 +55,8 @@ public:
 
     bool is_controller_connected() const;
 
-    String get_username() const
-    {
-        if (!is_controller_connected())
-        {
+    String get_username() const {
+        if (!is_controller_connected()) {
             return "";
         }
         return {DOJO::controller_username(session_account)};
@@ -98,7 +96,7 @@ public:
     void set_contract_address(const String &p_contract_address) { contract_address = p_contract_address; }
     String get_contract_address() { return contract_address; }
 
-    std::vector<DOJO::Policy> build_policies(const Dictionary &policies_data);
+    std::vector<DOJO::Policy> build_policies(const Dictionary &policies_data = Dictionary());
 
 protected:
     static void _bind_methods() {
