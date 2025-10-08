@@ -98,7 +98,7 @@ public:
     void set_contract_address(const String &p_contract_address) { contract_address = p_contract_address; }
     String get_contract_address() { return contract_address; }
 
-    std::vector<DOJO::Policy> build_policies();
+    std::vector<DOJO::Policy> build_policies(const Dictionary &policies_data);
 
 protected:
     static void _bind_methods() {

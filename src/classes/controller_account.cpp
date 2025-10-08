@@ -126,23 +126,7 @@ void ControllerAccount::create(const Dictionary& policies_data)
 #else
     check_rpc_url();
 
-    if (policies_data.is_empty())
-    {
-        Logger::debug_extra("Policies", "Invalid policies data, trying from ProjectSettings");
-        Dictionary settings_data = DojoHelpers::get_policies();
-        if (settings_data.is_empty())
-        {
-            Logger::error("Invalid Policies data");
-            return;
-        }
-        this->policies = settings_data;
-    }
-    else
-    {
-        this->policies = policies_data;
-    }
-
-    std::vector<DOJO::Policy> policies_vector =  build_policies();
+    std::vector<DOJO::Policy> policies_vector = build_policies(policies_data);
 
     uintptr_t policies_len = policies_vector.size();
     String _chain = get_chain_id(false);
@@ -252,20 +236,17 @@ String ControllerAccount::get_rpc_url()
 }
 
 // TODO: Ver Threads
-void ControllerAccount::execute_from_outside(const String& to, const String& selector,
-                                             const Variant& calldata = Array())
-{
-    if (!is_controller_connected())
-    {
+void ControllerAccount::execute_from_outside(const String &to, const String &selector,
+                                             const Variant &call_args = Array()) {
+    if (!is_controller_connected()) {
         Logger::error("ControllerAccount not found");
         call_deferred("emit_signal", "transaction_failed", "Controller not found");
         return;
     }
-    if (DojoHelpers::is_valid_calldata(calldata) == false)
-    {
+    if (DojoHelpers::is_valid_calldata(call_args) == false) {
         return;
     }
-    const Array& args = calldata;
+    const Array &args = call_args;
 
     DojoCallData call_data = DojoHelpers::prepare_dojo_call_data(to, selector, args);
 
@@ -298,20 +279,17 @@ void ControllerAccount::execute_from_outside(const String& to, const String& sel
     }
 }
 
-void ControllerAccount::execute_raw(const String& to, const String& selector, const Variant& calldata = Array())
-{
-    if (!is_controller_connected())
-    {
+void ControllerAccount::execute_raw(const String &to, const String &selector, const Variant &call_args = Array()) {
+    if (!is_controller_connected()) {
         Logger::error("ControllerAccount not found");
         call_deferred("emit_signal", "transaction_failed", "Controller not found");
         return;
     }
-    if (DojoHelpers::is_valid_calldata(calldata) == false)
-    {
+    if (DojoHelpers::is_valid_calldata(call_args) == false) {
         return;
     }
 
-    const Array& args = calldata;
+    const Array &args = call_args;
     DojoCallData call_data = DojoHelpers::prepare_dojo_call_data(to, selector, args);
 
     Logger::debug_extra("ControllerAccount", "Populating Call");
@@ -384,6 +362,18 @@ std::vector<DOJO::Policy> ControllerAccount::build_policies() {
             Logger::error("Contract Address not found.");
             return {};
         }
+    }
+
+    if (policies_data.is_empty()) {
+        Logger::debug_extra("Policies", "Invalid policies data, trying from ProjectSettings");
+        Dictionary settings_data = DojoHelpers::get_policies();
+        if (settings_data.is_empty()) {
+            Logger::error("Invalid Policies data");
+            return {};
+        }
+        this->policies = settings_data;
+    } else {
+        this->policies = policies_data;
     }
 
     policy_string_storage.clear();
