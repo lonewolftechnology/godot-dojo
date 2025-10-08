@@ -8,3 +8,6 @@
 	url = https://github.com/godotengine/godot-cpp
 	branch = godot-4.3-stable
 
+[submodule "external/controller.c"]
+	path = external/controller.c
+	url = https://github.com/cartridge-gg/controller.c
