@@ -316,17 +316,17 @@ std::vector<DOJO::Policy> ControllerAccount::build_policies(const Dictionary& po
             return {};
         }
     }
-
-    if (policies_data.is_empty()) {
+    if (policies_data.is_empty() && policies.is_empty()) {
         Logger::debug_extra("Policies", "Invalid policies data, trying from ProjectSettings");
         Dictionary settings_data = DojoHelpers::get_policies();
         if (settings_data.is_empty()) {
             Logger::error("Invalid Policies data");
             return {};
         }
-        this->policies = settings_data;
+        this->policies = settings_data.duplicate(true);
     } else {
-        this->policies = policies_data;
+        Logger::debug_extra("Policies", "Invalid policies data, trying from saving");
+        this->policies = policies_data.duplicate(true);
     }
 
     policy_string_storage.clear();
