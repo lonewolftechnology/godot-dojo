@@ -31,8 +31,8 @@ class ControllerAccount : public Node {
 
     static void on_account_callback(DOJO::ControllerAccount *account);
 
-    mutable String chain_id;
-    mutable String chain_id_hex;
+    mutable String chain_id = "";
+    mutable String chain_id_hex = "";
 
 public:
     ControllerAccount();
