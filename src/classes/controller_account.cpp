@@ -167,7 +167,10 @@ String ControllerAccount::get_chain_id(const bool &parse) const {
 
     if (chain_id.is_empty() && !is_controller_connected()) {
         Logger::debug_extra("ControllerAccount", "Getting chain id from provider by creating an Account");
-        String _rpc_url = DojoHelpers::get_dojo_setting("katana_url");
+        String _rpc_url = rpc_url;
+        if (_rpc_url.is_empty()) {
+            _rpc_url = DojoHelpers::get_dojo_setting("katana_url");
+        }
         String _address = DojoHelpers::get_dojo_setting("account/address");
         String _private_key = DojoHelpers::get_dojo_setting("account/private_key");
         if (_rpc_url.is_empty() || _address.is_empty() || _private_key.is_empty()
