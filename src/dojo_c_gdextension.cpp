@@ -46,13 +46,12 @@ void DojoC::init_config(bool reset)
         policies_info["name"] = "dojo/config/policies";
         policies_info["type"] = Variant::DICTIONARY;
 
-        // The account default setting is a random one from KATANA
-        set_setting("dojo/config/account/address", "0x6677fe62ee39c7b07401f754138502bab7fac99d2d3c5d37df7d1c6fab10819",
+        set_setting("dojo/config/account/address", "0x0",
                     reset);
         set_setting("dojo/config/account/public_key",
-                    "0x3e3979c1ed728490308054fe357a9f49cf67f80f9721f44cc57235129e090f4", reset);
+                    "0x0", reset);
         set_setting("dojo/config/account/private_key",
-                    "0x1e8965b7d0b20b91a62fe515dd991dc9fcb748acddf6b2cf18cec3bdd0f9f9a", reset);
+                    "0x0", reset);
 
         set_setting("dojo/config/policies", Dictionary(), reset);
         // Format: [VariantType]/[Hint]:[ClassName]
