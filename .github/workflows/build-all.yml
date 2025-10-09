@@ -116,7 +116,7 @@ jobs:
             
             ### Target dependecies:
             - Dojo.c ${{ steps.get_dojoc_version.outputs.DOJOC_VERSION }} 
-            - Controller.c ${{ steps.get_dojoc_version.outputs.CONTROLLERC_VERSION }} 
+            - Controller.c ${{ steps.get_controllerc_version.outputs.CONTROLLERC_VERSION }} 
             - Godot ${{ steps.get_godotcpp_version.outputs.GODOTCPP_VERSION }}
               note: Godot target is minimum version, so it should work with 4.3+
 
