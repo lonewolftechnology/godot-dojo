@@ -139,6 +139,10 @@ void ControllerAccount::create(const Dictionary &policies_data) {
 void ControllerAccount::disconnect_controller() {
     if (session_account != nullptr) {
         std::vector<DOJO::Policy> policies_vector = build_policies();
+        if (policies_vector.empty()) {
+            Logger::warning("No policies found to clear. Aborting disconnect.");
+            return;
+        }
         uintptr_t policies_len = policies_vector.size();
         DOJO::FieldElement controller_chain_id = DOJO::controller_chain_id(session_account);
 
@@ -344,7 +348,11 @@ std::vector<DOJO::Policy> ControllerAccount::build_policies(const Dictionary& po
         }
         this->policies = settings_data.duplicate(true);
     } else {
-        Logger::debug_extra("Policies", "Invalid policies data, trying from saving");
+        Logger::debug_extra("Policies", "Invalid policies data, using provided policies");
+        if (policies_data.is_empty()) {
+            Logger::error("Invalid Policies data");
+            return {};
+        }
         this->policies = policies_data.duplicate(true);
     }
 
