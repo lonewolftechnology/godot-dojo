@@ -39,7 +39,7 @@ config/policies={
 "move": "Move in the world",
 "spawn": "Spawn in the world"
 }
-config/free_controller_on_exit=false
+config/disconnect_controller_on_exit=false
 config/fixed_point/default=128
 
 [input]
