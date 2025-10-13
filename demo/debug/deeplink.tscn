@@ -1,0 +1,20 @@
+[gd_scene load_steps=2 format=3 uid="uid://budnc57hu16jv"]
+
+[ext_resource type="Script" uid="uid://cse108aqk3wkd" path="res://debug/deeplink.gd" id="1_i3g1k"]
+
+[node name="DeepLink" type="VBoxContainer"]
+script = ExtResource("1_i3g1k")
+
+[node name="DeepLink" type="Label" parent="."]
+layout_mode = 2
+
+[node name="Toast" type="Button" parent="."]
+layout_mode = 2
+text = "Toast"
+
+[node name="DeepLinkBtn" type="Button" parent="."]
+layout_mode = 2
+text = "DeepLink"
+
+[connection signal="pressed" from="Toast" to="." method="_on_toast_pressed"]
+[connection signal="pressed" from="DeepLinkBtn" to="." method="_on_deep_link_btn_pressed"]

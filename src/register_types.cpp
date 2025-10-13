@@ -132,6 +132,7 @@ void initialize_dojoc_module(ModuleInitializationLevel p_level)
     {
 #ifdef TOOLS_ENABLED
         GDREGISTER_CLASS(DojoEditorPlugin);
+        GDREGISTER_CLASS(AndroidExportPlugin);
         EditorPlugins::add_by_type<DojoEditorPlugin>();
 #endif
 

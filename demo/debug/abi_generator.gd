@@ -49,23 +49,14 @@ func _generate_abi():
 	torii_client.models = parsed_models
 	torii_client.events = parsed_events
 	
-	var policies := DojoPolicies.new()
 	var contract_namespace:String = contract["tag"].split("-")[0]
 	var contract_name:String = contract["tag"].split("-")[1]
 	
-	policies.name = contract_name
-	policies.contract = contract["address"]
-	
-	var result_policies: Array = []
+	var result_policies: Dictionary = {}
 	for system in contract["systems"]:
 		if system == "upgrade": continue # Internal, ignore
-		var policy:DojoPolicy = DojoPolicy.new()
-		policy.method = system
-		policy.description = system
-		result_policies.append(policy)
-		
-	policies.policies = result_policies
-	controller_account.policies = policies
+		result_policies[system] = system
+	
 	controller_account.chain_id = chain_id
 	
 	var _script:GDScript = GDScript.new()

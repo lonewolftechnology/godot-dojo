@@ -1,6 +1,7 @@
-[gd_scene load_steps=2 format=3 uid="uid://d1loujwy6tlp4"]
+[gd_scene load_steps=3 format=3 uid="uid://d1loujwy6tlp4"]
 
 [ext_resource type="Script" uid="uid://da7hrpexr41qw" path="res://ui/screens/start_screen.gd" id="1_iacjs"]
+[ext_resource type="PackedScene" uid="uid://budnc57hu16jv" path="res://debug/deeplink.tscn" id="2_4lm27"]
 
 [node name="StartScreen" type="Control"]
 layout_mode = 3
@@ -38,5 +39,8 @@ text = "Godot Dojo Demo"
 [node name="ButtonEnter" type="Button" parent="CenterContainer/VBoxContainer"]
 layout_mode = 2
 text = "Enter"
+
+[node name="VBoxContainer" parent="CenterContainer/VBoxContainer" instance=ExtResource("2_4lm27")]
+layout_mode = 2
 
 [connection signal="pressed" from="CenterContainer/VBoxContainer/ButtonEnter" to="." method="_on_button_enter_pressed"]
