@@ -99,7 +99,54 @@ if env.get("precision") == "double":
 print(f"{B}Building: {build_info}{X}")
 
 # Compile Rust
-print(f"{Y}{package} Compiling dojo.c...{X}")
+# Se usa más adelante, pero se importa aquí para que esté disponible
+import re
+def _get_git_submodule_version(submodule_path):
+    """
+    Detects the version of a git submodule by trying to find a tag, then a branch name,
+    then the branch from .gitmodules, and finally the short commit hash.
+    Returns the found version string or None if all methods fail.
+    """
+    repo_path = os.path.join(os.getcwd(), submodule_path)
+    version_source = None
+    try:
+        # Prefer the latest reachable tag.
+        version_source = subprocess.check_output(
+            ["git", "describe", "--tags", "--abbrev=0"], cwd=repo_path, stderr=subprocess.DEVNULL, text=True
+        ).strip()
+    except Exception:
+        try:
+            # Fallback to branch name if no tag is found.
+            version_source = subprocess.check_output(
+                ["git", "symbolic-ref", "-q", "--short", "HEAD"], cwd=repo_path, stderr=subprocess.DEVNULL, text=True
+            ).strip()
+        except Exception:
+            # As a last resort, try reading the .gitmodules declared branch.
+            try:
+                with open(os.path.join(os.getcwd(), ".gitmodules"), "r") as gm:
+                    gm_text = gm.read()
+                    m = re.search(rf'\[submodule "{submodule_path}"\][\s\S]*?branch\s*=\s*([^\n\r]+)', gm_text)
+                    if m:
+                        version_source = m.group(1).strip()
+            except Exception:
+                # Final fallback to short commit hash.
+                try:
+                    version_source = subprocess.check_output(
+                        ["git", "rev-parse", "--short", "HEAD"], cwd=repo_path, stderr=subprocess.DEVNULL, text=True
+                    ).strip()
+                except Exception:
+                    return None # All methods failed
+    return version_source
+
+
+def _detect_godot_min_requirement():
+    version_source = _get_git_submodule_version("external/godot-cpp")
+    if version_source:
+        m = re.search(r"(\d+)\.(\d+)", version_source)
+        if m:
+            return f"{m.group(1)}.{m.group(2)}"
+    # Default fallback if detection fails.
+    return "4.2"
 
 # Detect host configuration and toolchain
 is_host_windows = host_platform.system().lower() == "windows"
@@ -151,6 +198,8 @@ except subprocess.CalledProcessError as e:
     print(f"{R}{cross} Failed to check or install Rust target: {e}{X}")
     # Continue anyway, as cargo will show a more specific error if needed
 
+dojoc_version = _get_git_submodule_version("external/dojo.c") or "unknown"
+print(f"{Y}{package} Compiling dojo.c ({dojoc_version})...{X}")
 cmd = ["cargo", "build", "--target", rust_target]
 
 # Special handling for macOS universal builds
@@ -393,7 +442,9 @@ if platform != "web" and not os.path.exists(rust_lib):
     Exit(1)
 
 sources = sorted(glob.glob("src/**/*.cpp", recursive=True))
-
+_godot_min = _detect_godot_min_requirement()
+_godot_tag = _get_git_submodule_version("external/godot-cpp")
+print(f"{Y}{clipboard} Building with {_godot_tag}.{X}")
 # Add documentation
 if target in ["editor", "template_debug"]:
     try:
@@ -423,54 +474,6 @@ with open("plugin_template.gdextension.in", 'r') as f:
 gdext = template.replace("${PROJECT_NAME}", "godot-dojo")
 gdext = gdext.replace("${ENTRY_POINT}", "dojoc_library_init")
 
-# Determine Godot minimum requirement from the godot-cpp submodule's tag/branch.
-# We extract the first two numeric components (e.g., 4.2 from 4.2.2 or godot-4.3-stable).
-import re
-
-
-def _detect_godot_min_requirement():
-    repo_path = os.path.join(os.getcwd(), "external", "godot-cpp")
-    version_source = None
-    try:
-        # Prefer the latest reachable tag.
-        tag = subprocess.check_output([
-            "git", "-C", repo_path, "describe", "--tags", "--abbrev=0"
-        ], stderr=subprocess.DEVNULL, text=True).strip()
-        version_source = tag
-    except Exception:
-        try:
-            # Fallback to branch name if no tag is found.
-            branch = subprocess.check_output([
-                "git", "-C", repo_path, "symbolic-ref", "-q", "--short", "HEAD"
-            ], stderr=subprocess.DEVNULL, text=True).strip()
-            version_source = branch
-        except Exception:
-            pass
-
-    # As a last resort, try reading the .gitmodules declared branch.
-    if not version_source:
-        try:
-            with open(os.path.join(os.getcwd(), ".gitmodules"), "r") as gm:
-                gm_text = gm.read()
-                # Look for the external/godot-cpp section and capture a version-like pattern.
-                # Example: branch = godot-4.3-stable
-                m = re.search(r"\[submodule \"external/godot-cpp\"\][\s\S]*?branch\s*=\s*([^\n\r]+)", gm_text)
-                if m:
-                    version_source = m.group(1).strip()
-        except Exception:
-            pass
-
-    if version_source:
-        m = re.search(r"(\d+)\.(\d+)", version_source)
-        if m:
-            return f"{m.group(1)}.{m.group(2)}"
-
-    # Default fallback if detection fails.
-    return "4.2"
-
-
-_godot_min = _detect_godot_min_requirement()
-print(f"Using GODOT_MIN_REQUIREMENT={_godot_min} derived from godot-cpp git ref.")
 
 gdext = gdext.replace("${GODOT_MIN_REQUIREMENT}", _godot_min)
 
