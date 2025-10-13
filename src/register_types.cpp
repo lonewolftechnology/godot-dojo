@@ -67,10 +67,8 @@
 
 using namespace godot;
 
-void initialize_dojoc_module(ModuleInitializationLevel p_level)
-{
-    if (p_level == MODULE_INITIALIZATION_LEVEL_SCENE)
-    {
+void initialize_dojoc_module(ModuleInitializationLevel p_level) {
+    if (p_level == MODULE_INITIALIZATION_LEVEL_SCENE) {
         // Tools
 #ifdef WEB_ENABLED
         GDREGISTER_CLASS(DojoBridge);
@@ -102,6 +100,7 @@ void initialize_dojoc_module(ModuleInitializationLevel p_level)
         GDREGISTER_CLASS(OptionTransactionFilter);
         GDREGISTER_CLASS(OptionArrayFieldElement);
         // Resources
+        // Queries
         GDREGISTER_CLASS(DojoQueryBase);
         GDREGISTER_CLASS(DojoQuery);
         GDREGISTER_CLASS(DojoTokenQuery);
@@ -114,6 +113,9 @@ void initialize_dojoc_module(ModuleInitializationLevel p_level)
         GDREGISTER_CLASS(DojoAggregationQuery)
         GDREGISTER_CLASS(DojoSubscription);
         GDREGISTER_CLASS(DojoTransactionFilter);
+        GDREGISTER_CLASS(DojoAchievementQuery)
+        GDREGISTER_CLASS(DojoPlayerAchievementQuery);
+        // Subscriptions
         GDREGISTER_CLASS(EventSubscription);
         GDREGISTER_CLASS(MessageSubscription);
         GDREGISTER_CLASS(TokenSubscription);
@@ -123,31 +125,29 @@ void initialize_dojoc_module(ModuleInitializationLevel p_level)
         GDREGISTER_CLASS(EntitySubscription);
         GDREGISTER_CLASS(TransactionSubscription);
         GDREGISTER_CLASS(StarknetSubscription);
-        GDREGISTER_CLASS(ActivitySubscription)
-        GDREGISTER_CLASS(AggregationSubscription)
+        GDREGISTER_CLASS(ActivitySubscription);
+        GDREGISTER_CLASS(AggregationSubscription);
+        GDREGISTER_CLASS(AchievementProgressionSubscription);
+        // Main Class
         GDREGISTER_CLASS(DojoC);
     }
 
-    if (p_level == MODULE_INITIALIZATION_LEVEL_EDITOR)
-    {
+    if (p_level == MODULE_INITIALIZATION_LEVEL_EDITOR) {
 #ifdef TOOLS_ENABLED
         GDREGISTER_CLASS(DojoEditorPlugin);
         EditorPlugins::add_by_type<DojoEditorPlugin>();
 #endif
-
     }
 }
 
-void uninitialize_dojoc_module(ModuleInitializationLevel p_level)
-{
+void uninitialize_dojoc_module(ModuleInitializationLevel p_level) {
 }
 
 extern "C" {
 // Initialization.
 GDExtensionBool GDE_EXPORT dojoc_library_init(GDExtensionInterfaceGetProcAddress p_get_proc_address,
                                               const GDExtensionClassLibraryPtr p_library,
-                                              GDExtensionInitialization* r_initialization)
-{
+                                              GDExtensionInitialization *r_initialization) {
     GDExtensionBinding::InitObject init_obj(p_get_proc_address, p_library, r_initialization);
 
     init_obj.register_initializer(initialize_dojoc_module);

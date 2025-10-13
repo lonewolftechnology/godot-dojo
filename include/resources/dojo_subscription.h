@@ -27,6 +27,7 @@ public:
         CONTRACT,
         AGGREGATION,
         ACTIVITY,
+        ACHIEVEMENT_PROGRESSION,
         NIL
     };
 
@@ -97,7 +98,7 @@ protected:
                          Variant::INT,
                          "type",
                          PROPERTY_HINT_ENUM,
-                         "Event,Message,Entity,Token,TokenBalance,TokenTransfer,Transaction,Starknet,Contract,Aggregation,Activity,Nil",
+                         "Event,Message,Entity,Token,TokenBalance,TokenTransfer,Transaction,Starknet,Contract,Aggregation,Activity,Achievement Progression,Nil",
                          PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_READ_ONLY
                      ),
                      "", // No setter
@@ -115,6 +116,7 @@ protected:
         BIND_ENUM_CONSTANT(CONTRACT);
         BIND_ENUM_CONSTANT(AGGREGATION);
         BIND_ENUM_CONSTANT(ACTIVITY);
+        BIND_ENUM_CONSTANT(ACHIEVEMENT_PROGRESSION);
         BIND_ENUM_CONSTANT(NIL);
     }
 };

@@ -81,16 +81,11 @@ bool ToriiClient::create_client() {
 #else
     disconnect_client(true);
 
-    DOJO::FieldElement world_felt = FieldElement::from_string(world_address, 32);
-    set_world(world_felt);
-
     Logger::info("Creating Torii client...");
     Logger::info("URL: ", torii_url);
-    Logger::info("World Address: ", world_address);
 
     DOJO::ResultToriiClient resClient = DOJO::client_new(
-        torii_url.utf8().get_data(),
-        world_felt
+        torii_url.utf8().get_data()
     );
 
     if (resClient.tag == DOJO::ErrToriiClient) {
@@ -174,21 +169,21 @@ Dictionary ToriiClient::get_world_metadata() {
         Logger::error("Client not connected");
         return Logger::error_dict("Client not connected");
     }
+// TODO: Update struct
+    return Logger::error_dict("get_work_metadata not updated to 1.8.3");
+    // DOJO::ResultCArrayWorld resMetadata = DOJO::client_worlds(client);
+    //
+    // if (resMetadata.tag == DOJO::ErrCArrayWorld) {
+    //     return Logger::error_dict(String("Failed to get metadata: ") + GET_DOJO_ERROR(resMetadata));
+    // }
+    //
+    // DOJO::CArrayWorld worlds = GET_DOJO_OK(resMetadata);
+    // Dictionary result = {};
+    // result["models"] = DojoArray::CArrayModelToVariant(metadata.models);
+    // result["world_address"] = world_address;
 
-    DOJO::ResultWorld resMetadata = DOJO::client_metadata(client);
-
-    if (resMetadata.tag == DOJO::ErrWorld) {
-        return Logger::error_dict(String("Failed to get metadata: ") + GET_DOJO_ERROR(resMetadata));
-    }
-
-    DOJO::World metadata = GET_DOJO_OK(resMetadata);
-    Dictionary result = {};
-
-    result["models"] = DojoArray::CArrayModelToVariant(metadata.models);
-    result["world_address"] = world_address;
-
-    Logger::success_extra("ToriiClient", "Metadata obtained");
-    return result;
+    Logger::success_extra("ToriiClient", "Worlds obtained");
+    // return result;
 #endif
 }
 
@@ -532,7 +527,7 @@ TypedArray<Dictionary> ToriiClient::get_aggregations(const Ref<DojoAggregationQu
 
     DOJO::PageAggregationEntry aggregations = result.ok;
     TypedArray<Dictionary> result_array;
-
+    // TODO: Check Entry struct
     for (size_t i = 0; i < aggregations.items.data_len; i++) {
         DOJO::AggregationEntry entry = aggregations.items.data[i];
         Dictionary entry_dict;
@@ -542,7 +537,7 @@ TypedArray<Dictionary> ToriiClient::get_aggregations(const Ref<DojoAggregationQu
         entry_dict["value"] = memnew(U256(entry.value));
         entry_dict["display_value"] = entry.display_value;
         entry_dict["position"] = entry.position;
-        entry_dict["model_id"] = FieldElement::get_as_string(&entry.model_id);
+        entry_dict["model_id"] = entry.model_id;
         entry_dict["created_at"] = entry.created_at;
         entry_dict["updated_at"] = entry.updated_at;
         result_array.push_back(entry_dict);
@@ -594,6 +589,14 @@ TypedArray<Dictionary> ToriiClient::get_activities(const Ref<DojoActivityQuery> 
     return result_array;
 }
 
+TypedArray<Dictionary> ToriiClient::get_achivements(const Ref<DojoAchievementQuery> &query) const {
+//TODO: implementar
+}
+
+TypedArray<Dictionary> ToriiClient::get_player_achivements(const Ref<DojoPlayerAchievementQuery> &query) const {
+//TODO: implementar
+}
+
 
 void ToriiClient::cancel_all_subscriptions() {
     Logger::info("Cancelling all subscriptions");
@@ -640,19 +643,19 @@ bool ToriiClient::publish_message(const String &message_data, const Array &signa
         }
     };
 
-    DOJO::ResultFieldElement result = DOJO::client_publish_message(
+    DOJO::Resultc_char result = DOJO::client_publish_message(
         client,
         message
     );
 
-    if (result.tag == DOJO::ErrFieldElement) {
+    if (result.tag == DOJO::Errc_char) {
         Logger::error(String("Failed to publish message: ") + GET_DOJO_ERROR(result));
         return false;
     }
 
-    Ref<FieldElement> msg_hash = memnew(FieldElement(GET_DOJO_OK(result)));
-    Logger::success_extra("ToriiClient", "Message published: ", msg_hash->to_string());
-    call_deferred("emit_signal", "message_published", msg_hash->to_string());
+    String result_message = GET_DOJO_OK(result);
+    Logger::success_extra("ToriiClient", "Message published: ", result_message);
+    call_deferred("emit_signal", "message_published", result_message);
 
     return true;
 }
@@ -860,7 +863,7 @@ void token_transfer_update_callback_wrapper(DOJO::TokenTransfer token_transfer) 
 void on_aggregation_update_callback_wrapper(DOJO::AggregationEntry entry){
     Logger::info("on_aggregation_update_callback_wrapper");
     ToriiClient *singleton = ToriiClient::get_singleton();
-
+    //TODO: revisar struct
     if (singleton && singleton->on_aggregation_update_callback.is_valid()) {
         Dictionary entry_dict;
         entry_dict["id"] = entry.id;
@@ -869,7 +872,7 @@ void on_aggregation_update_callback_wrapper(DOJO::AggregationEntry entry){
         entry_dict["value"] = memnew(U256(entry.value));
         entry_dict["display_value"] = entry.display_value;
         entry_dict["position"] = entry.position;
-        entry_dict["model_id"] = FieldElement::get_as_string(&entry.model_id);
+        entry_dict["model_id"] = entry.model_id;
         entry_dict["created_at"] = entry.created_at;
         entry_dict["updated_at"] = entry.updated_at;
 
@@ -898,6 +901,10 @@ void on_activity_update_callback_wrapper(DOJO::Activity activity){
 
 }
 
+void on_achievement_progression_update_callback_wrapper(DOJO::AchievementProgression achievement_progression) {
+    //TODO: implementar
+}
+
 // Subscription method implementations
 
 void ToriiClient::on_entity_state_update(const Callable &callback, const Ref<EntitySubscription> &subscription) {
@@ -919,7 +926,7 @@ void ToriiClient::on_entity_state_update(const Callable &callback, const Ref<Ent
     }
     on_entity_state_update_callback = callback;
     subscription->set_callback(callback);
-
+    //TODO: add world_array array to entity subscription
     DOJO::ResultSubscription result = DOJO::client_on_entity_state_update(
         client, subscription->get_native_clause(), entity_state_update_callback_wrapper);
 
@@ -959,6 +966,8 @@ void ToriiClient::on_event_message_update(const Callable &callback, const Ref<Me
     }
     on_event_message_update_callback = callback;
     subscription->set_callback(callback);
+    //TODO: add world_array array to message subscription
+
     DOJO::ResultSubscription result = DOJO::client_on_event_message_update(
         client, subscription->get_native_clause(), event_message_update_callback_wrapper);
 
@@ -1200,6 +1209,10 @@ void ToriiClient::on_activity_update(const Callable &callback, const Ref<Activit
 
 }
 
+void ToriiClient::on_achievement_progression_update(const Callable &callback,
+    const Ref<AchievementProgressionSubscription> &subscription) {
+}
+
 
 bool ToriiClient::_is_ready_for_query(const Ref<Resource> &query) const {
     if (!is_client_connected()) {
@@ -1228,13 +1241,13 @@ bool ToriiClient::_is_ready_for_subscription(const Ref<DojoSubscription> &subscr
 void ToriiClient::update_subscription(const Ref<DojoSubscription>& subscription, const Callable& callback) {
     using SubType = DojoSubscription::Type;
     Logger::info("Updating Subscription[color=Green]", subscription->get_name(), "[/color]");
-
+    // TODO: revisar cuales tienen update
     switch (subscription->get_type()) {
-        case SubType::ENTITY:
-            update_entity_subscription(subscription, callback);
-            break;
         case SubType::EVENT:
             update_event_message_subscription(subscription, callback);
+            break;
+        case SubType::ENTITY:
+            update_entity_subscription(subscription, callback);
             break;
         case SubType::CONTRACT:
             update_contract_subscription(subscription, callback);
@@ -1252,11 +1265,14 @@ void ToriiClient::update_subscription(const Ref<DojoSubscription>& subscription,
             update_starknet_event_subscription(subscription, callback);
             break;
         default:
+            Logger::error(subscription->get_name(), " doesnt support updating its subscription or is not implemented yet.");
             break;
     }
 }
 
 void ToriiClient::update_entity_subscription(const Ref<EntitySubscription> &subscription, const Callable &callback) {
+    //TODO: add world_array array to entity subscription
+
     DOJO::Resultbool result = DOJO::client_update_entity_subscription(client, subscription->get_subscription(),
                                                                       subscription->get_native_clause());
     if (result.tag == DOJO::Errbool) {
@@ -1326,6 +1342,8 @@ void ToriiClient::_on_client_created(const Variant &result) {
 
 void ToriiClient::update_event_message_subscription(const Ref<MessageSubscription> &subscription,
                                                     const Callable &callback) {
+    //TODO: add world_array array to message subscription
+
     DOJO::Resultbool result = DOJO::client_update_event_message_subscription(
         client, subscription->get_subscription(), subscription->get_native_clause());
     if (result.tag == DOJO::Errbool) {
@@ -1452,4 +1470,9 @@ void ToriiClient::update_activity_subscription(const Ref<ActivitySubscription> &
         Logger::success_extra("ToriiClient", "Updated Activities subscription");
         subscription->update_callback(callback);
     }
+}
+
+void ToriiClient::update_achievement_progression(const Ref<AchievementProgressionSubscription> &subscription,
+    const Callable &callback) {
+    // TODO: implementar
 }
