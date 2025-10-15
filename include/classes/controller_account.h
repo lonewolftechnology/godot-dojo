@@ -93,8 +93,8 @@ public:
 
     Dictionary get_policies() { return policies; };
 
-    void set_contract_address(const TypedArray<String> &p_contract_address) { contract_address = p_contract_address; }
-    TypedArray<String> get_contract_address() { return contract_address; }
+    void set_contract_address(const String &p_contract_address) { contract_address = p_contract_address; }
+    String get_contract_address() { return contract_address; }
 
     std::vector<DOJO::Policy> build_policies(const Dictionary &policies_data = Dictionary());
 
