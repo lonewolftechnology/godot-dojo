@@ -86,17 +86,17 @@ public:
 
 protected:
     static void _bind_methods() {
-        ClassDB::bind_method(D_METHOD("get_world_addresses"), &DojoPlayerAchievementQuery::set_world_addresses);
+        ClassDB::bind_method(D_METHOD("get_world_addresses"), &DojoPlayerAchievementQuery::get_world_addresses);
         ClassDB::bind_method(D_METHOD("set_world_addresses", "p_world_addresses"),
                              &DojoPlayerAchievementQuery::set_world_addresses);
         ADD_PROPERTY(PropertyInfo(Variant::PACKED_STRING_ARRAY, "world_addresses"), "set_world_addresses",
                      "get_world_addresses");
 
-        ClassDB::bind_method(D_METHOD("get_namespaces"), &DojoPlayerAchievementQuery::set_namespaces);
+        ClassDB::bind_method(D_METHOD("get_namespaces"), &DojoPlayerAchievementQuery::get_namespaces);
         ClassDB::bind_method(D_METHOD("set_namespaces", "p_namespaces"), &DojoPlayerAchievementQuery::set_namespaces);
         ADD_PROPERTY(PropertyInfo(Variant::PACKED_STRING_ARRAY, "namespaces"), "set_namespaces", "get_namespaces");
 
-        ClassDB::bind_method(D_METHOD("get_player_addresses"), &DojoPlayerAchievementQuery::set_player_addresses);
+        ClassDB::bind_method(D_METHOD("get_player_addresses"), &DojoPlayerAchievementQuery::get_player_addresses);
         ClassDB::bind_method(D_METHOD("set_player_addresses", "p_player_addresses"),
                              &DojoPlayerAchievementQuery::set_player_addresses);
         ADD_PROPERTY(PropertyInfo(Variant::PACKED_STRING_ARRAY, "player_addresses"), "set_player_addresses",
