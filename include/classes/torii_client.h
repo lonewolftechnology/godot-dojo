@@ -68,6 +68,7 @@ public:
     Callable on_aggregation_update_callback;
     Callable on_activity_update_callback;
     Callable on_update_achievement_update_callback;
+    Callable on_achievement_progression_update_callback;
 
     ToriiClient();
 
@@ -75,7 +76,7 @@ public:
 
     static ToriiClient *get_singleton();
 
-    bool create_client();
+    bool create_client(const String &p_url, const TypedArray<String> &p_addresses);
 
     void disconnect_client(bool send_signal);
 
@@ -85,13 +86,9 @@ public:
 
     void callable_call(const char *msg) const;
 
-    String get_world() const;
+    TypedArray<Dictionary> get_worlds_metadata(const TypedArray<String>& world_addresses = Array());
 
-    void set_world(const dojo_bindings::FieldElement &n_world);
-
-    Dictionary get_world_metadata();
-
-    bool refresh_metadata();
+    bool refresh_metadata(const TypedArray<String>& p_world_addresses = Array());
 
     TypedArray<Dictionary> get_entities(const Ref<DojoQuery> &query);
 
@@ -107,7 +104,7 @@ public:
 
     TypedArray<Dictionary> get_token_collections(const Ref<DojoContractQuery> &query) const;
 
-    Dictionary get_token_info(const String &token_address) const;
+    TypedArray<Dictionary> get_token_info(const Ref<DojoTokenQuery> &query) const;
 
     TypedArray<Dictionary> get_aggregations(const Ref<DojoAggregationQuery> &query) const;
 
@@ -196,8 +193,11 @@ public:
     String get_torii_url() const { return torii_url; }
     void set_torii_url(const String &p_torii_url) { torii_url = p_torii_url; }
 
-    void set_world_address(const String &p_world_address) { world_address = p_world_address; }
-    String get_world_address() const { return world_address; }
+    void set_world_addresses(const TypedArray<String> &p_world_address) { world_addresses = p_world_address; }
+    TypedArray<String> get_world_addresses() const { return world_addresses; }
+
+    TypedArray<String> get_worlds();
+    String get_url();
 
     Array get_events() const { return events; }
     void set_events(const Array &p_events) { events = p_events; }
@@ -223,9 +223,8 @@ private:
 
 protected:
     String torii_url;
-    String world_address;
+    TypedArray<String> world_addresses;
     Callable logger_callback;
-    DOJO::FieldElement *world;
 
     // Web specific properties
 #ifdef WEB_ENABLED
@@ -239,8 +238,8 @@ protected:
         ClassDB::bind_method(D_METHOD("disconnect_client", "send_signal"), &ToriiClient::disconnect_client);
         ClassDB::bind_method(D_METHOD("is_client_connected"), &ToriiClient::is_client_connected);
 
-        ClassDB::bind_method(D_METHOD("get_world_metadata"), &ToriiClient::get_world_metadata);
-        ClassDB::bind_method(D_METHOD("refresh_metadata"), &ToriiClient::refresh_metadata);
+        ClassDB::bind_method(D_METHOD("get_worlds_metadata", "world_addresses"), &ToriiClient::get_worlds_metadata, DEFVAL(Array()));
+        ClassDB::bind_method(D_METHOD("refresh_metadata", "p_world_addresses"), &ToriiClient::refresh_metadata, DEFVAL(Array()));
 
         ClassDB::bind_method(D_METHOD("get_entities", "query"), &ToriiClient::get_entities);
         ClassDB::bind_method(D_METHOD("get_controllers", "query"), &ToriiClient::get_controllers);
@@ -350,9 +349,9 @@ protected:
         ClassDB::bind_method(D_METHOD("set_torii_url", "torii_url"), &ToriiClient::set_torii_url);
         ADD_PROPERTY(PropertyInfo(Variant::STRING, "torii_url"), "set_torii_url", "get_torii_url");
 
-        ClassDB::bind_method(D_METHOD("set_world_address", "world_address"), &ToriiClient::set_world_address);
-        ClassDB::bind_method(D_METHOD("get_world_address"), &ToriiClient::get_world_address);
-        ADD_PROPERTY(PropertyInfo(Variant::STRING, "world_address"), "set_world_address", "get_world_address");
+        ClassDB::bind_method(D_METHOD("set_world_addresses", "p_addresses"), &ToriiClient::set_world_addresses);
+        ClassDB::bind_method(D_METHOD("get_world_addresses"), &ToriiClient::get_world_addresses);
+        ADD_PROPERTY(PropertyInfo(Variant::PACKED_STRING_ARRAY, "world_addresses"), "set_world_addresses", "get_world_addresses");
 
         ClassDB::bind_method(D_METHOD("set_logger_callback", "logger_callback"), &ToriiClient::set_logger_callback);
         ClassDB::bind_method(D_METHOD("get_logger_callback"), &ToriiClient::get_logger_callback);
