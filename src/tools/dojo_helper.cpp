@@ -61,6 +61,10 @@ Variant DojoHelpers::get_dojo_setting(const String &setting) {
     return get_setting("dojo/config/" + setting);
 }
 
+Variant DojoHelpers::get_torii_setting(const String &setting) {
+    return get_setting("dojo/config/torii/" + setting);
+}
+
 Dictionary DojoHelpers::get_policies(const String& custom) {
     Dictionary policies = {};
 
