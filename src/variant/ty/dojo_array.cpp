@@ -118,6 +118,21 @@ DojoArray::DojoArray(DOJO::CArrayAchievementTask array)
     value = CArrayAchievementTaskToVariant(array);
 }
 
+DojoArray::DojoArray(DOJO::CArrayPlayerAchievementEntry array)
+{
+    value = CArrayPlayerAchievementEntryToVariant(array);
+}
+
+DojoArray::DojoArray(DOJO::CArrayPlayerAchievementProgress array)
+{
+    value = CArrayPlayerAchievementProgressToVariant(array);
+}
+
+DojoArray::DojoArray(DOJO::CArrayTaskProgress array)
+{
+    value = CArrayTaskProgressToVariant(array);
+}
+
 Variant DojoArray::CArrayTyToVariant(DOJO::CArrayTy array_ty)
 {
     std::vector<DOJO::Ty> array_ty_vector(array_ty.data, array_ty.data + array_ty.data_len);
@@ -500,6 +515,98 @@ Variant DojoArray::CArrayAchievementToVariant(DOJO::CArrayAchievement array)
          achievement_dict["updated_at"] = achievement.updated_at;
 
          result.append(achievement_dict);
+     }
+
+     return result;
+ }
+
+ Variant DojoArray::CArrayPlayerAchievementEntryToVariant(DOJO::CArrayPlayerAchievementEntry array)
+ {
+     std::vector<DOJO::PlayerAchievementEntry> entries(array.data, array.data + array.data_len);
+     Array result;
+
+     for (const auto& entry : entries)
+     {
+         Dictionary entry_dict;
+         entry_dict["player_address"] = FieldElement::get_as_string_no_ptr(entry.player_address);
+
+         Dictionary stats_dict;
+         stats_dict["total_points"] = entry.stats.total_points;
+         stats_dict["completed_achievements"] = entry.stats.completed_achievements;
+         stats_dict["total_achievements"] = entry.stats.total_achievements;
+         stats_dict["completion_percentage"] = entry.stats.completion_percentage;
+         if (entry.stats.last_achievement_at.tag == DOJO::Someu64) {
+             stats_dict["last_achievement_at"] = entry.stats.last_achievement_at.some;
+         } else {
+             stats_dict["last_achievement_at"] = Variant();
+         }
+         stats_dict["created_at"] = entry.stats.created_at;
+         stats_dict["updated_at"] = entry.stats.updated_at;
+         entry_dict["stats"] = stats_dict;
+
+         entry_dict["achievements"] = CArrayPlayerAchievementProgressToVariant(entry.achievements);
+
+         result.append(entry_dict);
+     }
+
+     return result;
+ }
+
+ Variant DojoArray::CArrayPlayerAchievementProgressToVariant(DOJO::CArrayPlayerAchievementProgress array)
+ {
+     std::vector<DOJO::PlayerAchievementProgress> progresses(array.data, array.data + array.data_len);
+     Array result;
+
+     for (const auto& progress : progresses)
+     {
+         Dictionary progress_dict;
+
+         // Convert Achievement
+         Dictionary achievement_dict;
+         achievement_dict["id"] = progress.achievement.id;
+         achievement_dict["world_address"] = FieldElement::get_as_string_no_ptr(progress.achievement.world_address);
+         achievement_dict["namespace"] = progress.achievement.namespace_;
+         achievement_dict["entity_id"] = progress.achievement.entity_id;
+         achievement_dict["hidden"] = progress.achievement.hidden;
+         achievement_dict["index"] = progress.achievement.index;
+         achievement_dict["points"] = progress.achievement.points;
+         achievement_dict["start"] = progress.achievement.start;
+         achievement_dict["end"] = progress.achievement.end;
+         achievement_dict["group"] = progress.achievement.group;
+         achievement_dict["icon"] = progress.achievement.icon;
+         achievement_dict["title"] = progress.achievement.title;
+         achievement_dict["description"] = progress.achievement.description;
+         achievement_dict["tasks"] = CArrayAchievementTaskToVariant(progress.achievement.tasks);
+         achievement_dict["data"] = progress.achievement.data;
+         achievement_dict["total_completions"] = progress.achievement.total_completions;
+         achievement_dict["completion_rate"] = progress.achievement.completion_rate;
+         achievement_dict["created_at"] = progress.achievement.created_at;
+         achievement_dict["updated_at"] = progress.achievement.updated_at;
+         progress_dict["achievement"] = achievement_dict;
+
+         progress_dict["task_progress"] = CArrayTaskProgressToVariant(progress.task_progress);
+         progress_dict["completed"] = progress.completed;
+         progress_dict["progress_percentage"] = progress.progress_percentage;
+
+         result.append(progress_dict);
+     }
+
+     return result;
+ }
+
+ Variant DojoArray::CArrayTaskProgressToVariant(DOJO::CArrayTaskProgress array)
+ {
+     std::vector<DOJO::TaskProgress> tasks(array.data, array.data + array.data_len);
+     Array result;
+
+     for (const auto& task : tasks)
+     {
+         Dictionary task_dict;
+         task_dict["task_id"] = task.task_id;
+         task_dict["count"] = task.count;
+         task_dict["completed"] = task.completed;
+
+         result.append(task_dict);
      }
 
      return result;
