@@ -30,6 +30,13 @@ public:
         }
         return option;
     }
+
+    static Ref<OptionU64> from_native(const DOJO::COptionu64& native_option) {
+        if (native_option.tag == DOJO::Someu64) {
+            return memnew(OptionU64(native_option.some));
+        }
+        return memnew(OptionU64());
+    }
 };
 
 #endif //OPTION_U64_H
