@@ -55,6 +55,8 @@ public:
 
     static Variant get_dojo_setting(const String &setting);
 
+    static Variant get_torii_setting(const String &setting);
+
     static Dictionary get_policies(const String &custom  = String());
 
     static int64_t float_to_fixed(const double &value, const int &precision = 24);
