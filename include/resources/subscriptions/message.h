@@ -50,8 +50,8 @@ protected:
         ClassDB::bind_method(D_METHOD("set_clause", "p_clause"), &MessageSubscription::set_clause);
         ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "clause", PROPERTY_HINT_RESOURCE_TYPE, "OptionClause"), "set_clause", "get_clause");
 
-        ClassDB::bind_method(D_METHOD("get_world_addresses"), &EntitySubscription::get_world_addresses);
-        ClassDB::bind_method(D_METHOD("set_world_addresses", "p_addresses"), &EntitySubscription::set_world_addresses);
+        ClassDB::bind_method(D_METHOD("get_world_addresses"), &MessageSubscription::get_world_addresses);
+        ClassDB::bind_method(D_METHOD("set_world_addresses", "p_addresses"), &MessageSubscription::set_world_addresses);
         ADD_PROPERTY(PropertyInfo(Variant::PACKED_STRING_ARRAY, "world_addresses"), "set_world_addresses", "get_world_addresses");
     }
 

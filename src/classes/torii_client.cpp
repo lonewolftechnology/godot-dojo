@@ -573,7 +573,7 @@ String ToriiClient::get_url() {
             call_deferred("emit_signal", "client_connected", false);
             return "";
         }
-        torii_url = p_url;
+        return p_url;
     }
     return torii_url;
 }

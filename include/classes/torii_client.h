@@ -76,7 +76,7 @@ public:
 
     static ToriiClient *get_singleton();
 
-    bool create_client(const String &p_url, const TypedArray<String> &p_addresses);
+    bool create_client(const String &p_url = "", const TypedArray<String> &p_addresses = Array());
 
     void disconnect_client(bool send_signal);
 
@@ -234,7 +234,7 @@ protected:
 
 
     static void _bind_methods() {
-        ClassDB::bind_method(D_METHOD("create_client"), &ToriiClient::create_client);
+        ClassDB::bind_method(D_METHOD("create_client"), &ToriiClient::create_client, DEFVAL(String()), DEFVAL(Array()));
         ClassDB::bind_method(D_METHOD("disconnect_client", "send_signal"), &ToriiClient::disconnect_client);
         ClassDB::bind_method(D_METHOD("is_client_connected"), &ToriiClient::is_client_connected);
 
