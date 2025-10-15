@@ -298,3 +298,15 @@ std::vector<DOJO::FieldElement> FieldElement::create_array(TypedArray<String> ar
     }
     return result;
 }
+
+String FieldElement::parse_field_element_to_string(const DOJO::FieldElement& felt)
+{
+    DOJO::Resultc_char resCairo = DOJO::parse_cairo_short_string(felt);
+    if (resCairo.tag == DOJO::Errc_char)
+    {
+        Logger::debug_extra("FieldElement", "No cairo string found, returning as string hex");
+        return {get_as_string_no_ptr(felt)};
+    }
+    String result = GET_DOJO_OK(resCairo);
+    return result;
+}

@@ -24,7 +24,7 @@ class ControllerAccount : public Node {
     static ControllerAccount *singleton;
     Dictionary policies;
     String rpc_url;
-    String contract_address;
+    TypedArray<String> contract_address;
 
     // Storage for policy strings to ensure their lifetime across C API calls.
     std::vector<std::string> policy_string_storage;
@@ -93,8 +93,8 @@ public:
 
     Dictionary get_policies() { return policies; };
 
-    void set_contract_address(const String &p_contract_address) { contract_address = p_contract_address; }
-    String get_contract_address() { return contract_address; }
+    void set_contract_address(const TypedArray<String> &p_contract_address) { contract_address = p_contract_address; }
+    TypedArray<String> get_contract_address() { return contract_address; }
 
     std::vector<DOJO::Policy> build_policies(const Dictionary &policies_data = Dictionary());
 
@@ -135,7 +135,7 @@ protected:
         ClassDB::bind_method(D_METHOD("get_contract_address"), &ControllerAccount::get_contract_address);
         ClassDB::bind_method(D_METHOD("set_contract_address", "p_contract_address"),
                              &ControllerAccount::set_contract_address);
-        ADD_PROPERTY(PropertyInfo(Variant::STRING, "contract_address"), "set_contract_address",
+        ADD_PROPERTY(PropertyInfo(Variant::PACKED_STRING_ARRAY, "contract_address"), "set_contract_address",
                      "get_contract_address");
 
         ClassDB::bind_method(D_METHOD("set_policies", "policies"), &ControllerAccount::set_policies);

@@ -39,6 +39,9 @@ public:
     Variant _to_string() const { return as_packed_array(); };
     String parse_cairo();
     static std::vector<DOJO::FieldElement> create_array(TypedArray<String> array);
+
+    static String parse_field_element_to_string(const dojo_bindings::FieldElement &felt);
+
     String bytearray_deserialize(const uintptr_t& data_len);
 
     static String get_as_string(DOJO::FieldElement* _felt);

@@ -167,43 +167,43 @@ bool ControllerAccount::is_controller_connected() const {
 }
 
 String ControllerAccount::get_chain_id(const bool &parse) const {
-    if (Engine::get_singleton()->is_editor_hint()) return chain_id;
+	if (Engine::get_singleton()->is_editor_hint()) return chain_id;
 
-    if (chain_id.is_empty() && !is_controller_connected()) {
-        Logger::debug_extra("ControllerAccount", "Getting chain id from provider by creating an Account");
-        String _rpc_url = rpc_url;
-        if (_rpc_url.is_empty()) {
-            _rpc_url = DojoHelpers::get_dojo_setting("katana_url");
-        }
-        String _address = DojoHelpers::get_dojo_setting("account/address");
-        String _private_key = DojoHelpers::get_dojo_setting("account/private_key");
-        if (_rpc_url.is_empty() || _address.is_empty() || _private_key.is_empty()
-            || _rpc_url == "0x0" || _address == "0x0" || _private_key == "0x0"
-            || _rpc_url == "<null>" || _address == "<null>" || _private_key == "<null>"
-            ) {
-            Logger::error(
-                "Invalid account settings",
-                vformat("\n[Katana Url] %s", _rpc_url),
-                vformat("\n[Account Address] %s", _address),
-                vformat("\n[Private Key] %s", _private_key)
-                );
-            return "0x0";
-        }
-        Account *burner_account = memnew(Account);
-        burner_account->create(_rpc_url, _address, _private_key);
-        chain_id = burner_account->get_chain_id(true);
-        chain_id_hex = burner_account->get_chain_id(false);
-        Logger::debug_extra("CHAIN ID", chain_id, burner_account->get_chain_id());
-        burner_account->queue_free();
-    }
-    if (parse) {
-        return chain_id;
-    }
-    if (chain_id_hex.is_empty()) {
-        DOJO::FieldElement chain_id_felt = FieldElement::cairo_short_string_to_felt(chain_id);
-        chain_id_hex = FieldElement::get_as_string(&chain_id_felt);
-    }
-    return chain_id_hex;
+	if (chain_id.is_empty() || chain_id_hex.is_empty()) {
+		if (is_controller_connected()) {
+			DOJO::FieldElement fe_chain_id = DOJO::controller_chain_id(session_account);
+			chain_id_hex = FieldElement::get_as_string(&fe_chain_id);
+			chain_id = FieldElement::parse_field_element_to_string(fe_chain_id);
+		} else {
+			Logger::debug_extra("ControllerAccount", "Getting chain id from provider by creating a temporary Account");
+			String _rpc_url = rpc_url;
+			if (_rpc_url.is_empty()) {
+				_rpc_url = DojoHelpers::get_dojo_setting("katana_url");
+			}
+			String _address = DojoHelpers::get_dojo_setting("account/address");
+			String _private_key = DojoHelpers::get_dojo_setting("account/private_key");
+			if (_rpc_url.is_empty() || _address.is_empty() || _private_key.is_empty() ||
+				_rpc_url.begins_with("<") || _address.begins_with("<") || _private_key.begins_with("<")) {
+				Logger::error(
+					"Invalid account settings to fetch chain_id.",
+					vformat("\n[Katana Url] %s", _rpc_url),
+					vformat("\n[Account Address] %s", _address),
+					vformat("\n[Private Key] %s", _private_key));
+				return parse ? "" : "0x0";
+			}
+			Account *burner_account = memnew(Account);
+			burner_account->create(_rpc_url, _address, _private_key);
+			chain_id = burner_account->get_chain_id(true);
+			chain_id_hex = burner_account->get_chain_id(false);
+			Logger::debug_extra("CHAIN ID", chain_id, chain_id_hex);
+			burner_account->queue_free();
+		}
+	}
+
+	if (parse) {
+		return chain_id;
+	}
+	return chain_id_hex;
 }
 
 void ControllerAccount::check_rpc_url() {
@@ -355,6 +355,8 @@ std::vector<DOJO::Policy> ControllerAccount::build_policies(const Dictionary& po
         }
         this->policies = policies_data.duplicate(true);
     }
+
+    Logger::debug_extra("Policies", "using policies: ", policies);
 
     policy_string_storage.clear();
     policy_string_storage.reserve(policies.size() * 2); // method + description for each policy
