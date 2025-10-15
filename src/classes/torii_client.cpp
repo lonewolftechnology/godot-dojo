@@ -571,9 +571,11 @@ String ToriiClient::get_url() {
         if (p_url.is_empty()) {
             Logger::error("Torii Url not found");
             call_deferred("emit_signal", "client_connected", false);
-            return {};
+            return "";
         }
+        torii_url = p_url;
     }
+    return torii_url;
 }
 
 Dictionary ToriiClient::get_client_info() const {
