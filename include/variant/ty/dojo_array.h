@@ -14,6 +14,7 @@
 using namespace godot;
 
 namespace DojoArrayHelpers {
+// TODO: refactor, remove, improve
     inline DOJO::CArrayFieldElement string_array_to_native_carray_felt(const TypedArray<String>& arr) {
         auto* native_arr = new DOJO::FieldElement[arr.size()];
         for (int i = 0; i < arr.size(); ++i) {
@@ -68,6 +69,7 @@ public:
     DojoArray(DOJO::CArrayEntity array);
     DojoArray(DOJO::CArrayc_char array);
     DojoArray(DOJO::CArrayClause array);
+    DojoArray(DOJO::CArrayWorld array);
     DojoArray(DOJO::CArrayStruct array);
     DojoArray(DOJO::CArrayMember array);
     DojoArray(DOJO::CArrayOrderBy array);
@@ -79,6 +81,12 @@ public:
     DojoArray(DOJO::CArrayCOptionFieldElement array);
     DojoArray(DOJO::CArrayModel array);
     DojoArray(DOJO::CArrayActionCount array);
+    DojoArray(DOJO::CArrayActivity array);
+    DojoArray(DOJO::CArrayAggregationEntry array);
+    DojoArray(DOJO::CArrayAchievement array);
+    DojoArray(DOJO::CArrayTokenTransfer array);
+    DojoArray(DOJO::CArrayTokenBalance array);
+    DojoArray(DOJO::CArrayAchievementTask array);
 
     // "static" methods.
     static Variant CArrayTyToVariant(DOJO::CArrayTy array);
@@ -86,6 +94,7 @@ public:
     static Variant CArrayEntityToVariant(DOJO::CArrayEntity array);
     static Variant CArrayc_charToVariant(DOJO::CArrayc_char array);
     static Variant CArrayClauseToVariant(DOJO::CArrayClause array);
+    static Variant CArrayWorldToVariant(DOJO::CArrayWorld array);
     static Variant CArrayStructToVariant(DOJO::CArrayStruct array);
     static Variant CArrayMemberToVariant(DOJO::CArrayMember array);
     static Variant CArrayOrderByToVariant(DOJO::CArrayOrderBy array);
@@ -97,6 +106,13 @@ public:
     static Variant CArrayCOptionFieldElementToVariant(DOJO::CArrayCOptionFieldElement array);
     static Variant CArrayModelToVariant(DOJO::CArrayModel array);
     static Variant CArrayActionCountToVariant(DOJO::CArrayActionCount array);
+    static Variant CArrayActivityToVariant(DOJO::CArrayActivity array);
+    static Variant CArrayAggregationEntryToVariant(DOJO::CArrayAggregationEntry array);
+    static Variant CArrayAchievementToVariant(DOJO::CArrayAchievement array);
+    static Variant CArrayAchievementTaskToVariant(DOJO::CArrayAchievementTask array);
+    static Variant CArrayTokenTransferToVariant(DOJO::CArrayTokenTransfer array);
+    static Variant CArrayTokenBalanceToVariant(DOJO::CArrayTokenBalance array);
+
 
     Variant get_value() const { return value; }
     void set_value(const Variant& p_value) { value = p_value; }

@@ -29,6 +29,11 @@ DojoArray::DojoArray(DOJO::CArrayClause array)
     value = CArrayClauseToVariant(array);
 }
 
+DojoArray::DojoArray(DOJO::CArrayWorld array)
+{
+    value = CArrayWorldToVariant(array);
+}
+
 DojoArray::DojoArray(DOJO::CArrayStruct array)
 {
     value = CArrayStructToVariant(array);
@@ -81,6 +86,36 @@ DojoArray::DojoArray(DOJO::CArrayModel array)
 
 DojoArray::DojoArray(dojo_bindings::CArrayActionCount array) {
     value = CArrayActionCountToVariant(array);
+}
+
+DojoArray::DojoArray(DOJO::CArrayActivity array)
+{
+    value = CArrayActivityToVariant(array);
+}
+
+DojoArray::DojoArray(DOJO::CArrayAggregationEntry array)
+{
+    value = CArrayAggregationEntryToVariant(array);
+}
+
+DojoArray::DojoArray(DOJO::CArrayAchievement array)
+{
+    value = CArrayAchievementToVariant(array);
+}
+
+DojoArray::DojoArray(DOJO::CArrayTokenTransfer array)
+{
+    value = CArrayTokenTransferToVariant(array);
+}
+
+DojoArray::DojoArray(DOJO::CArrayTokenBalance array)
+{
+    value = CArrayTokenBalanceToVariant(array);
+}
+
+DojoArray::DojoArray(DOJO::CArrayAchievementTask array)
+{
+    value = CArrayAchievementTaskToVariant(array);
 }
 
 Variant DojoArray::CArrayTyToVariant(DOJO::CArrayTy array_ty)
@@ -160,6 +195,23 @@ Variant DojoArray::CArrayClauseToVariant(DOJO::CArrayClause array)
         Dictionary data;
         result.append(OptionClause::from_native(clause));
     }
+    return result;
+}
+
+Variant DojoArray::CArrayWorldToVariant(DOJO::CArrayWorld array)
+{
+    Array result;
+    std::vector<DOJO::World> worlds(array.data, array.data + array.data_len);
+
+    for (const auto& world : worlds)
+    {
+        Dictionary world_dict;
+        world_dict["world_address"] = FieldElement::get_as_string_no_ptr(world.world_address);
+        world_dict["models"] = CArrayModelToVariant(world.models);
+
+        result.append(world_dict);
+    }
+
     return result;
 }
 
@@ -302,6 +354,7 @@ Variant DojoArray::CArrayTokenContractToVariant(DOJO::CArrayTokenContract array)
         element_dict["name"] = element.name;
         element_dict["symbol"] = element.symbol;
         element_dict["decimals"] = element.decimals;
+        element_dict["token_metadata"] = element.token_metadata;
         element_dict["metadata"] = element.metadata;
         element_dict["total_supply"] = memnew(OptionU256(element.total_supply));
 
@@ -333,20 +386,22 @@ Variant DojoArray::CArrayModelToVariant(DOJO::CArrayModel array)
     for (const auto& model : models_vec)
     {
         Dictionary model_dict;
-
         Ref<FieldElement> selector_felt = memnew(FieldElement(model.selector));
         Ref<DojoTy> metadata_ty = memnew(DojoTy(model.schema));
+
+        model_dict["world_address"] = FieldElement::get_as_string_no_ptr(model.world_address);
         model_dict["schema"] = metadata_ty->get_value();
         model_dict["namespace"] = model.namespace_;
         model_dict["name"] = model.name;
+        model_dict["selector"] = FieldElement::get_as_string_no_ptr(model.selector);
         model_dict["packed_size"] = Variant(model.packed_size);
         model_dict["unpacked_size"] = Variant(model.unpacked_size);
-        model_dict["selector"] = FieldElement::get_as_string_no_ptr(model.selector);
-        model_dict["selector_txt1"] = selector_felt->bytearray_deserialize(32);
-        model_dict["selector_txt2"] = selector_felt->parse_cairo();
         model_dict["class_hash"] = FieldElement::get_as_string_no_ptr(model.class_hash);
         model_dict["contract_address"] = FieldElement::get_as_string_no_ptr(model.contract_address);
         model_dict["layout"] = model.layout;
+        model_dict["use_legacy_store"] = model.use_legacy_store;
+        model_dict["selector_txt1"] = selector_felt->bytearray_deserialize(32);
+        model_dict["selector_txt2"] = selector_felt->parse_cairo();
 
         result.append(model_dict);
     }
@@ -366,3 +421,157 @@ Variant DojoArray::CArrayActionCountToVariant(dojo_bindings::CArrayActionCount a
 
     return result;
 }
+
+Variant DojoArray::CArrayActivityToVariant(DOJO::CArrayActivity array)
+{
+    std::vector<DOJO::Activity> activities(array.data, array.data + array.data_len);
+    Array result;
+
+    for (const auto& activity : activities)
+    {
+        Dictionary activity_dict;
+        activity_dict["id"] = activity.id;
+        activity_dict["world_address"] = FieldElement::get_as_string_no_ptr(activity.world_address);
+        activity_dict["namespace"] = activity.namespace_;
+        activity_dict["caller_address"] = FieldElement::get_as_string_no_ptr(activity.caller_address);
+        activity_dict["session_start"] = activity.session_start;
+        activity_dict["session_end"] = activity.session_end;
+        activity_dict["action_count"] = activity.action_count;
+        activity_dict["actions"] = CArrayActionCountToVariant(activity.actions);
+        activity_dict["updated_at"] = activity.updated_at;
+
+        result.append(activity_dict);
+    }
+
+    return result;
+}
+
+Variant DojoArray::CArrayAggregationEntryToVariant(DOJO::CArrayAggregationEntry array)
+{
+    std::vector<DOJO::AggregationEntry> entries(array.data, array.data + array.data_len);
+    Array result;
+
+    for (const auto& entry : entries)
+    {
+        Dictionary entry_dict;
+        entry_dict["id"] = entry.id;
+        entry_dict["aggregator_id"] = entry.aggregator_id;
+        entry_dict["entity_id"] = entry.entity_id;
+        entry_dict["value"] = memnew(U256(entry.value));
+        entry_dict["display_value"] = entry.display_value;
+        entry_dict["position"] = entry.position;
+        entry_dict["model_id"] = entry.model_id;
+        entry_dict["created_at"] = entry.created_at;
+        entry_dict["updated_at"] = entry.updated_at;
+
+        result.append(entry_dict);
+    }
+
+    return result;
+}
+
+
+Variant DojoArray::CArrayAchievementToVariant(DOJO::CArrayAchievement array)
+ {
+     std::vector<DOJO::Achievement> achievements(array.data, array.data + array.data_len);
+     Array result;
+
+     for (const auto& achievement : achievements)
+     {
+         Dictionary achievement_dict;
+         achievement_dict["id"] = achievement.id;
+         achievement_dict["world_address"] = FieldElement::get_as_string_no_ptr(achievement.world_address);
+         achievement_dict["namespace"] = achievement.namespace_;
+         achievement_dict["entity_id"] = achievement.entity_id;
+         achievement_dict["hidden"] = achievement.hidden;
+         achievement_dict["index"] = achievement.index;
+         achievement_dict["points"] = achievement.points;
+         achievement_dict["start"] = achievement.start;
+         achievement_dict["end"] = achievement.end;
+         achievement_dict["group"] = achievement.group;
+         achievement_dict["icon"] = achievement.icon;
+         achievement_dict["title"] = achievement.title;
+         achievement_dict["description"] = achievement.description;
+         achievement_dict["tasks"] = CArrayAchievementTaskToVariant(achievement.tasks);
+         achievement_dict["data"] = achievement.data;
+         achievement_dict["total_completions"] = achievement.total_completions;
+         achievement_dict["completion_rate"] = achievement.completion_rate;
+         achievement_dict["created_at"] = achievement.created_at;
+         achievement_dict["updated_at"] = achievement.updated_at;
+
+         result.append(achievement_dict);
+     }
+
+     return result;
+ }
+
+ Variant DojoArray::CArrayTokenBalanceToVariant(DOJO::CArrayTokenBalance array)
+ {
+     std::vector<DOJO::TokenBalance> balances(array.data, array.data + array.data_len);
+     Array result;
+
+     for (const auto& balance : balances)
+     {
+         Dictionary balance_dict;
+         balance_dict["balance"] = memnew(U256(balance.balance));
+         balance_dict["account_address"] = FieldElement::get_as_string_no_ptr(balance.account_address);
+         balance_dict["contract_address"] = FieldElement::get_as_string_no_ptr(balance.contract_address);
+         balance_dict["token_id"] = memnew(OptionU256(balance.token_id));
+
+         result.append(balance_dict);
+     }
+
+     return result;
+ }
+
+
+
+
+ Variant DojoArray::CArrayTokenTransferToVariant(DOJO::CArrayTokenTransfer array)
+ {
+     std::vector<DOJO::TokenTransfer> transfers(array.data, array.data + array.data_len);
+     Array result;
+
+     for (const auto& transfer : transfers)
+     {
+         Dictionary transfer_dict;
+         transfer_dict["id"] = transfer.id;
+         transfer_dict["contract_address"] = FieldElement::get_as_string_no_ptr(transfer.contract_address);
+         transfer_dict["from_address"] = FieldElement::get_as_string_no_ptr(transfer.from_address);
+         transfer_dict["to_address"] = FieldElement::get_as_string_no_ptr(transfer.to_address);
+         transfer_dict["amount"] = memnew(U256(transfer.amount));
+         transfer_dict["token_id"] = memnew(OptionU256(transfer.token_id));
+         transfer_dict["executed_at"] = transfer.executed_at;
+
+         if (transfer.event_id.tag == DOJO::Somec_char)
+         {
+             transfer_dict["event_id"] = transfer.event_id.some;
+         } else {
+             transfer_dict["event_id"] = Variant();
+         }
+
+         result.append(transfer_dict);
+     }
+
+     return result;
+ }
+
+ Variant DojoArray::CArrayAchievementTaskToVariant(DOJO::CArrayAchievementTask array)
+ {
+     std::vector<DOJO::AchievementTask> tasks(array.data, array.data + array.data_len);
+     Array result;
+
+     for (const auto& task : tasks)
+     {
+         Dictionary task_dict;
+         task_dict["task_id"] = task.task_id;
+         task_dict["description"] = task.description;
+         task_dict["total"] = task.total;
+         task_dict["total_completions"] = task.total_completions;
+         task_dict["completion_rate"] = task.completion_rate;
+         task_dict["created_at"] = task.created_at;
+         result.append(task_dict);
+     }
+
+     return result;
+ }
