@@ -30,16 +30,20 @@ public:
     ~DojoQueryBase(){};
 
     DOJO::Pagination get_native_pagination() const {
-        DOJO::Pagination pagination;
+        DOJO::Pagination pagination{};
 
         pagination.limit.tag = DOJO::COptionu32_Tag::Someu32;
         pagination.limit.some = limit;
 
         if (cursor.is_empty()) {
             pagination.cursor.tag = DOJO::COptionc_char_Tag::Nonec_char;
+            pagination.cursor.some = nullptr;
         } else {
             pagination.cursor.tag = DOJO::COptionc_char_Tag::Somec_char;
-            pagination.cursor.some = cursor.utf8().get_data();
+            CharString utf8_cursor = cursor.utf8();
+            char *c_str_cursor = (char*) memalloc(utf8_cursor.length() + 1);
+            strcpy(c_str_cursor, utf8_cursor.get_data());
+            pagination.cursor.some = c_str_cursor;
         }
 
         pagination.direction = direction;

@@ -17,6 +17,7 @@ class DojoQuery : public DojoQueryBase
     bool no_hashed_keys;
     TypedArray<String> models;
     bool historical;
+    TypedArray<String> world_addresses;
 
 public:
     DojoQuery()
@@ -87,6 +88,12 @@ public:
     bool get_historical() const { return historical; }
     void set_historical(bool p_historical) { historical = p_historical; }
 
+    DOJO::CArrayFieldElement get_native_world_addresses() const {
+        return DojoArray::CFieldElementArrayHelper(world_addresses).c_array;
+    }
+
+    void set_world_addresses(const TypedArray<String>& p_addresses){ world_addresses = p_addresses; }
+    TypedArray<String> get_world_addresses() const { return world_addresses; }
 protected:
     static void _bind_methods()
     {
@@ -105,6 +112,10 @@ protected:
         ClassDB::bind_method(D_METHOD("get_historical"), &DojoQuery::get_historical);
         ClassDB::bind_method(D_METHOD("set_historical", "p_historical"), &DojoQuery::set_historical);
         ADD_PROPERTY(PropertyInfo(Variant::BOOL, "is_historical"), "set_historical", "get_historical");
+
+        ClassDB::bind_method(D_METHOD("get_world_addresses"), &DojoQuery::get_world_addresses);
+        ClassDB::bind_method(D_METHOD("set_world_addresses", "p_addresses"), &DojoQuery::set_world_addresses);
+        ADD_PROPERTY(PropertyInfo(Variant::PACKED_STRING_ARRAY, "world_addresses"), "set_world_addresses", "get_world_addresses");
     };
 };
 
