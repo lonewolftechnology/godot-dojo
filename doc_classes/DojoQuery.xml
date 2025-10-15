@@ -21,5 +21,7 @@
 		<member name="no_hashed_keys" type="bool" setter="set_no_hashed_keys" getter="get_no_hashed_keys" default="false">
 			If [code]true[/code], the keys will not be hashed before being sent to the Torii client. Defaults to [code]false[/code].
 		</member>
+		<member name="world_addresses" type="String[]" setter="set_world_addresses" getter="get_world_addresses" default="[]">
+		</member>
 	</members>
 </class>

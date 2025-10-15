@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="ControllerAccount" inherits="Node" deprecated="There is a new controller in the works, but its unknown if it will replace this one or just coexist with this one." xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://raw.githubusercontent.com/godotengine/godot/master/doc/class.xsd">
+<class name="ControllerAccount" inherits="Node" deprecated="Controller sessions will be removed from dojo.c in future versions in favor of controller.c and this node will likely be removed." xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://raw.githubusercontent.com/godotengine/godot/master/doc/class.xsd">
 	<brief_description>
 		Manages controller accounts to interact with the Dojo ecosystem.
 	</brief_description>

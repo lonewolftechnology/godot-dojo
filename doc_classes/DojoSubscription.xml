@@ -23,7 +23,7 @@
 		<member name="name" type="String" setter="set_name" getter="get_name" default="&quot;DojoSubscription&quot;">
 			The name of the subscription.
 		</member>
-		<member name="type" type="int" setter="" getter="get_type" enum="DojoSubscription.Type" default="9">
+		<member name="type" type="int" setter="" getter="get_type" enum="DojoSubscription.Type" default="12">
 			The type of the subscription. See [enum Type].
 		</member>
 	</members>
@@ -55,7 +55,13 @@
 		<constant name="CONTRACT" value="8" enum="Type">
 			Subscription for contract updates.
 		</constant>
-		<constant name="NIL" value="9" enum="Type">
+		<constant name="AGGREGATION" value="9" enum="Type">
+		</constant>
+		<constant name="ACTIVITY" value="10" enum="Type">
+		</constant>
+		<constant name="ACHIEVEMENT_PROGRESSION" value="11" enum="Type">
+		</constant>
+		<constant name="NIL" value="12" enum="Type">
 			Represents an uninitialized or invalid subscription type.
 		</constant>
 	</constants>

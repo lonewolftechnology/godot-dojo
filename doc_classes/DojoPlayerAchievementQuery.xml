@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="DojoPlayerAchievementQuery" inherits="DojoQueryBase" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://raw.githubusercontent.com/godotengine/godot/master/doc/class.xsd">
+	<brief_description>
+	</brief_description>
+	<description>
+	</description>
+	<tutorials>
+	</tutorials>
+	<members>
+		<member name="namespaces" type="String[]" setter="set_namespaces" getter="get_namespaces" default="[]">
+		</member>
+		<member name="player_addresses" type="String[]" setter="set_player_addresses" getter="get_player_addresses" default="[]">
+		</member>
+		<member name="world_addresses" type="String[]" setter="set_world_addresses" getter="get_world_addresses" default="[]">
+		</member>
+	</members>
+</class>

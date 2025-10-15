@@ -96,12 +96,6 @@
 				Converts a float to a 256-bit fixed-point integer.
 			</description>
 		</method>
-		<method name="generate_controller_url_and_keys" qualifiers="static">
-			<return type="Dictionary" />
-			<param index="0" name="callback_url" type="String" />
-			<description>
-			</description>
-		</method>
 		<method name="get_custom_setting" qualifiers="static">
 			<return type="Variant" />
 			<param index="0" name="category" type="String" />

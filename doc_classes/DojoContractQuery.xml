@@ -12,8 +12,22 @@
 		<member name="contract_addresses" type="String[]" setter="set_contract_addresses" getter="get_contract_addresses" default="[]">
 			An array of contract addresses to filter by.
 		</member>
-		<member name="contract_types" type="Array" setter="set_contract_types" getter="get_contract_types" default="[]">
+		<member name="contract_types" type="int[]" setter="set_contract_types" getter="get_contract_types" default="[]">
 			An array of contract types to filter by (e.g., 'ERC721', 'ERC1155').
 		</member>
 	</members>
+	<constants>
+		<constant name="DOJO::ContractType::WORLD" value="0" enum="ContractType">
+		</constant>
+		<constant name="DOJO::ContractType::ERC20" value="1" enum="ContractType">
+		</constant>
+		<constant name="DOJO::ContractType::ERC721" value="2" enum="ContractType">
+		</constant>
+		<constant name="DOJO::ContractType::ERC1155" value="3" enum="ContractType">
+		</constant>
+		<constant name="DOJO::ContractType::UDC" value="4" enum="ContractType">
+		</constant>
+		<constant name="DOJO::ContractType::OTHER" value="5" enum="ContractType">
+		</constant>
+	</constants>
 </class>
