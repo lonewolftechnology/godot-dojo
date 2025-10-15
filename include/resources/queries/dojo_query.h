@@ -89,6 +89,16 @@ public:
     void set_historical(bool p_historical) { historical = p_historical; }
 
     DOJO::CArrayFieldElement get_native_world_addresses() const {
+        if (world_addresses.is_empty()) {
+            Logger::debug_extra("DojoQuery", "Empty world addresses, fetching ProjectSettings");
+            TypedArray<String> setting = DojoHelpers::get_torii_setting("worlds");
+            if (setting.is_empty()) {
+                Logger::error("World addresses not found in Project Settings");
+                static DOJO::FieldElement dummy; // A static dummy pointer.
+                return {&dummy, 0};
+            }
+            return DojoArray::CFieldElementArrayHelper(setting).c_array;
+        }
         return DojoArray::CFieldElementArrayHelper(world_addresses).c_array;
     }
 

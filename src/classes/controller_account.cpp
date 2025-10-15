@@ -333,7 +333,7 @@ void ControllerAccount::emit_connection_status(bool connected) {
 std::vector<DOJO::Policy> ControllerAccount::build_policies(const Dictionary& policies_data) {
     if (contract_address.is_empty()) {
         Logger::debug_extra("ControllerAccount", "Contract Address not set, searching ProjectSettings");
-        this->contract_address = DojoHelpers::get_dojo_setting("contract_address");
+        contract_address = DojoHelpers::get_dojo_setting("contract_address");
         if (contract_address.is_empty()) {
             Logger::error("Contract Address not found.");
             return {};
@@ -346,14 +346,14 @@ std::vector<DOJO::Policy> ControllerAccount::build_policies(const Dictionary& po
             Logger::error("Invalid Policies data");
             return {};
         }
-        this->policies = settings_data.duplicate(true);
+        policies = settings_data.duplicate(true);
     } else {
         Logger::debug_extra("Policies", "Invalid policies data, using provided policies");
         if (policies_data.is_empty()) {
             Logger::error("Invalid Policies data");
             return {};
         }
-        this->policies = policies_data.duplicate(true);
+        policies = policies_data.duplicate(true);
     }
 
     Logger::debug_extra("Policies", "using policies: ", policies);

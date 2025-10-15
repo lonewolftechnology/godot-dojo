@@ -11,8 +11,7 @@
 
 using namespace godot;
 
-class EntitySubscription : public DojoSubscription
-{
+class EntitySubscription : public DojoSubscription {
     GDCLASS(EntitySubscription, DojoSubscription);
 
     Ref<OptionClause> clause;
@@ -27,7 +26,7 @@ public:
         return clause;
     }
 
-    void set_clause(const Ref<OptionClause>& p_clause) {
+    void set_clause(const Ref<OptionClause> &p_clause) {
         clause = p_clause;
     }
 
@@ -39,25 +38,34 @@ public:
     }
 
     DOJO::CArrayFieldElement get_native_world_addresses() const {
+        if (world_addresses.is_empty()) {
+            Logger::debug_extra("Entity Subscription", "Empty world addresses, fetching ProjectSettings");
+            TypedArray<String> setting = DojoHelpers::get_torii_setting("worlds");
+            if (setting.is_empty()) {
+                Logger::error("World addresses not found in Project Settings");
+                static DOJO::FieldElement dummy; // A static dummy pointer.
+                return {&dummy, 0};
+            }
+            return DojoArray::CFieldElementArrayHelper(setting).c_array;
+        }
         return DojoArray::CFieldElementArrayHelper(world_addresses).c_array;
     }
 
-    void set_world_addresses(const TypedArray<String>& p_addresses){ world_addresses = p_addresses; }
+    void set_world_addresses(const TypedArray<String> &p_addresses) { world_addresses = p_addresses; }
     TypedArray<String> get_world_addresses() const { return world_addresses; }
 
-
 protected:
-    static void _bind_methods()
-    {
+    static void _bind_methods() {
         ClassDB::bind_method(D_METHOD("get_clause"), &EntitySubscription::get_clause);
         ClassDB::bind_method(D_METHOD("set_clause", "p_clause"), &EntitySubscription::set_clause);
-        ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "clause", PROPERTY_HINT_RESOURCE_TYPE, "OptionClause"), "set_clause", "get_clause");
+        ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "clause", PROPERTY_HINT_RESOURCE_TYPE, "OptionClause"), "set_clause",
+                     "get_clause");
 
         ClassDB::bind_method(D_METHOD("get_world_addresses"), &EntitySubscription::get_world_addresses);
         ClassDB::bind_method(D_METHOD("set_world_addresses", "p_addresses"), &EntitySubscription::set_world_addresses);
-        ADD_PROPERTY(PropertyInfo(Variant::PACKED_STRING_ARRAY, "world_addresses"), "set_world_addresses", "get_world_addresses");
+        ADD_PROPERTY(PropertyInfo(Variant::PACKED_STRING_ARRAY, "world_addresses"), "set_world_addresses",
+                     "get_world_addresses");
     }
-
 };
 
 #endif //ENTITY_H

@@ -37,8 +37,19 @@ public:
         return {DOJO::COptionClause_Tag::NoneClause, {}};
     }
     DOJO::CArrayFieldElement get_native_world_addresses() const {
+        if (world_addresses.is_empty()) {
+            Logger::debug_extra("Message Subscription", "Empty world addresses, fetching ProjectSettings");
+            TypedArray<String> setting = DojoHelpers::get_torii_setting("worlds");
+            if (setting.is_empty()) {
+                Logger::error("World addresses not found in Project Settings");
+                static DOJO::FieldElement dummy; // A static dummy pointer.
+                return {&dummy, 0};
+            }
+            return DojoArray::CFieldElementArrayHelper(setting).c_array;
+        }
         return DojoArray::CFieldElementArrayHelper(world_addresses).c_array;
     }
+
 
     void set_world_addresses(const TypedArray<String>& p_addresses){ world_addresses = p_addresses; }
     TypedArray<String> get_world_addresses() const { return world_addresses; }

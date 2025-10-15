@@ -40,7 +40,7 @@ void DojoC::init_config(bool reset)
         set_setting("dojo/config/contract_address", "0x0", reset);
         // Torii Config
         set_setting("dojo/config/torii/torii_url", "http://localhost:8080", reset);
-        set_setting("dojo/config/torii/contract_addresses", TypedArray<String>(), reset);
+        // set_setting("dojo/config/torii/contract_addresses", TypedArray<String>(), reset);
         set_setting("dojo/config/torii/worlds", TypedArray<String>(), reset);
         // Policies
         Dictionary policies_info = {};
