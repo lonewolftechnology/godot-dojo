@@ -4,7 +4,9 @@
 		Represents a Starknet field element (felt).
 	</brief_description>
 	<description>
-		This class is a wrapper around a Starknet field element. It provides methods to interact with the underlying value.
+		This class is a wrapper around a Starknet field element (felt), which is the primitive data type in Cairo. It's a 252-bit unsigned integer, used to represent everything from numbers to contract addresses.
+		This class provides methods to interact with the underlying value, converting it to and from different Godot types.
+		When printed, it will output as PackedByteArray representation of the felt.
 	</description>
 	<tutorials>
 	</tutorials>
@@ -13,6 +15,12 @@
 			<return type="PackedByteArray" />
 			<description>
 				Returns the raw [PackedByteArray] representation of the field element.
+			</description>
+		</method>
+		<method name="to_string" qualifiers="const">
+			<return type="String" />
+			<description>
+				Returns the hexadecimal string representation of the field element.
 			</description>
 		</method>
 	</methods>

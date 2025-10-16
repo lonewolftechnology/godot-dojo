@@ -101,12 +101,14 @@
 			<param index="0" name="category" type="String" />
 			<param index="1" name="setting" type="String" />
 			<description>
+				Gets a custom project setting from a specified category.
 			</description>
 		</method>
 		<method name="get_dojo_setting" qualifiers="static">
 			<return type="Variant" />
 			<param index="0" name="setting" type="String" />
 			<description>
+				Gets a setting from the 'Dojo' category in project settings.
 			</description>
 		</method>
 		<method name="get_katana_url" qualifiers="static">
@@ -119,6 +121,7 @@
 			<return type="Dictionary" />
 			<param index="0" name="p_custom" type="String" default="&quot;&quot;" />
 			<description>
+				Gets the policies from the project settings. If `p_custom` is provided, it gets the policies from the specified custom path.
 			</description>
 		</method>
 		<method name="get_setting" qualifiers="static">

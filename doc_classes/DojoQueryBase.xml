@@ -12,20 +12,21 @@
 		<member name="cursor" type="String" setter="set_cursor" getter="get_cursor" default="&quot;&quot;">
 			The cursor to start the query from. Used for pagination.
 		</member>
-		<member name="direction" type="int" setter="set_direction" getter="get_direction" enum="dojo_bindings.PaginationDirection" default="0">
+		<member name="direction" type="int" setter="set_direction" getter="get_direction" enum="DojoQueryBase.PaginationDirection" default="0">
 			The direction of pagination. See [enum PaginationDirection].
 		</member>
 		<member name="limit" type="int" setter="set_limit" getter="get_limit" default="10">
 			The maximum number of items to return.
 		</member>
 		<member name="order_by" type="DojoOrderBy[]" setter="set_order_by" getter="get_order_by" default="[]">
+		    The order in which to sort the results.
 		</member>
 	</members>
 	<constants>
-		<constant name="DOJO::PaginationDirection::Forward" value="0" enum="PaginationDirection">
+		<constant name="Forward" value="0" enum="PaginationDirection">
 			Paginate forward.
 		</constant>
-		<constant name="DOJO::PaginationDirection::Backward" value="1" enum="PaginationDirection">
+		<constant name="Backward" value="1" enum="PaginationDirection">
 			Paginate backward.
 		</constant>
 	</constants>

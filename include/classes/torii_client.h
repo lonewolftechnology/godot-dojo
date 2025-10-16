@@ -110,9 +110,9 @@ public:
 
     TypedArray<Dictionary> get_activities(const Ref<DojoActivityQuery> &query) const;
 
-    TypedArray<Dictionary> get_achivements(const Ref<DojoAchievementQuery> &query) const;
+    TypedArray<Dictionary> get_achievements(const Ref<DojoAchievementQuery> &query) const;
 
-    TypedArray<Dictionary> get_player_achivements(const Ref<DojoPlayerAchievementQuery> &query) const;
+    TypedArray<Dictionary> get_player_achievements(const Ref<DojoPlayerAchievementQuery> &query) const;
 
     // Subscriptions
     void on_entity_state_update(const Callable &callback, const Ref<EntitySubscription> &subscription);
@@ -247,12 +247,13 @@ protected:
 
         ClassDB::bind_method(D_METHOD("get_tokens", "query"), &ToriiClient::get_tokens);
         ClassDB::bind_method(D_METHOD("get_token_balances", "query"), &ToriiClient::get_token_balances);
+        ClassDB::bind_method(D_METHOD("get_token_transfers", "query"), &ToriiClient::get_token_transfers);
         ClassDB::bind_method(D_METHOD("get_token_collections", "query"), &ToriiClient::get_token_collections);
         ClassDB::bind_method(D_METHOD("get_activities", "query"), &ToriiClient::get_activities);
         ClassDB::bind_method(D_METHOD("get_aggregations", "query"), &ToriiClient::get_aggregations);
         ClassDB::bind_method(D_METHOD("get_token_info", "token_address"), &ToriiClient::get_token_info);
-        ClassDB::bind_method(D_METHOD("get_achivements", "query"), &ToriiClient::get_achivements);
-        ClassDB::bind_method(D_METHOD("get_player_achivements", "query"), &ToriiClient::get_player_achivements);
+        ClassDB::bind_method(D_METHOD("get_achievements", "query"), &ToriiClient::get_achievements);
+        ClassDB::bind_method(D_METHOD("get_player_achievements", "query"), &ToriiClient::get_player_achievements);
 
         //Subscription
         ClassDB::bind_method(D_METHOD("on_entity_state_update", "callback", "subscription"),
@@ -275,6 +276,9 @@ protected:
 
         ClassDB::bind_method(D_METHOD("on_token_balance_update", "callback", "subscription"),
                              &ToriiClient::on_token_balance_update);
+                             
+        ClassDB::bind_method(D_METHOD("on_token_transfer_update", "callback", "subscription"),
+                             &ToriiClient::on_token_transfer_update);
 
         ClassDB::bind_method(D_METHOD("on_aggregation_update", "callback", "subscription"),
                              &ToriiClient::on_aggregation_update);
@@ -309,11 +313,17 @@ protected:
         ClassDB::bind_method(D_METHOD("update_token_balance_subscription", "subscription", "callback"),
                              &ToriiClient::update_token_balance_subscription, DEFVAL(Callable()));
 
+        ClassDB::bind_method(D_METHOD("update_token_transfer_subscription", "subscription", "callback"),
+                             &ToriiClient::update_token_transfer_subscription, DEFVAL(Callable()));
+
         ClassDB::bind_method(D_METHOD("update_aggregation_subscription", "subscription", "callback"),
                              &ToriiClient::update_aggregation_subscription, DEFVAL(Callable()));
 
         ClassDB::bind_method(D_METHOD("update_activity_subscription", "subscription", "callback"),
                              &ToriiClient::update_activity_subscription, DEFVAL(Callable()));
+        
+        ClassDB::bind_method(D_METHOD("update_achievement_progression", "subscription", "callback"),
+                             &ToriiClient::update_achievement_progression, DEFVAL(Callable()));
 
         //
         ClassDB::bind_method(D_METHOD("cancel_all_subscriptions"), &ToriiClient::cancel_all_subscriptions);

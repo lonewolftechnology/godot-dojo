@@ -426,7 +426,7 @@ TypedArray<Dictionary> ToriiClient::get_activities(const Ref<DojoActivityQuery> 
     return result_array;
 }
 
-TypedArray<Dictionary> ToriiClient::get_achivements(const Ref<DojoAchievementQuery> &query) const {
+TypedArray<Dictionary> ToriiClient::get_achievements(const Ref<DojoAchievementQuery> &query) const {
     Logger::info("Getting Achievements");
     if (!_is_ready_for_query(query)) {
         return {};
@@ -447,7 +447,7 @@ TypedArray<Dictionary> ToriiClient::get_achivements(const Ref<DojoAchievementQue
     return result_array;
 }
 
-TypedArray<Dictionary> ToriiClient::get_player_achivements(const Ref<DojoPlayerAchievementQuery> &query) const {
+TypedArray<Dictionary> ToriiClient::get_player_achievements(const Ref<DojoPlayerAchievementQuery> &query) const {
     Logger::info("Getting Player Achievements");
     if (!_is_ready_for_query(query)) {
         return {};

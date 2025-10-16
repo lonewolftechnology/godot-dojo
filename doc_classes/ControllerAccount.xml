@@ -5,7 +5,7 @@
 	</brief_description>
 	<description>
 		This class provides a Godot interface for Dojo controller accounts. It allows for authentication, transaction execution, and player account management.
-		The account can be generated on the fly or imported. Once connected, you can use it to execute systems in the Dojo world.
+		The account is generated on the fly. Once connected, you can use it to execute systems in the Dojo world.
 	</description>
 	<tutorials>
 	</tutorials>
@@ -15,7 +15,7 @@
 			<param index="0" name="policies_data" type="Dictionary" default="{}" />
 			<description>
 				Creates and initializes a new controller account.
-				This method starts the process of creating a controller account, which can be used to sign transactions and authenticate with Dojo services. It emits the [signal controller_connected] signal upon successful completion.
+				This method starts the process of creating a controller account, which can be used to sign transactions and authenticate with Dojo services. If an account is already connected, it will be used; otherwise, it will attempt to connect. It emits the [signal controller_connected] signal upon successful completion.
 			</description>
 		</method>
 		<method name="disconnect_controller">
@@ -30,7 +30,7 @@
 			<param index="1" name="selector" type="String" />
 			<param index="2" name="args" type="Variant" default="[]" />
 			<description>
-				Executes a transaction from an external account.
+				Executes a transaction. [code]to[/code] is the contract address, [code]selector[/code] is the function selector, and [code]args[/code] is an array of arguments for the function.
 			</description>
 		</method>
 		<method name="execute_raw">
@@ -75,7 +75,7 @@
 		<method name="setup">
 			<return type="void" />
 			<description>
-				Sets up the controller as a singleton.
+				This is a utility function, it calls [code]init_provider[/code] and [code]create[/code] using [member policies].
 			</description>
 		</method>
 	</methods>
@@ -84,9 +84,10 @@
 			The Chain ID to connect to, e.g., "KATANA" or "SN_SEPOLIA".
 		</member>
 		<member name="contract_address" type="String" setter="set_contract_address" getter="get_contract_address" default="&quot;&quot;">
+			The address of the contract to which the policies apply.
 		</member>
 		<member name="policies" type="Dictionary" setter="set_policies" getter="get_policies" default="{}">
-			The [DojoPolicies] resource that defines the account's policies.
+			A dictionary defining the account's policies. The keys are method selectors and the values are descriptions.
 		</member>
 		<member name="rpc_url" type="String" setter="set_rpc_url" getter="get_rpc_url" default="&quot;&quot;">
 			The URL of the Katana/Starknet RPC node to connect to.
