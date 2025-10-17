@@ -17,11 +17,5 @@
 				Returns the raw [PackedByteArray] representation of the field element.
 			</description>
 		</method>
-		<method name="to_string" qualifiers="const">
-			<return type="String" />
-			<description>
-				Returns the hexadecimal string representation of the field element.
-			</description>
-		</method>
 	</methods>
 </class>

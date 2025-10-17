@@ -5,7 +5,7 @@
 	</brief_description>
 	<description>
 		This class is a container for a dynamic array of elements, where each element is a Dojo type. It is used to handle arrays in Dojo contracts.
-        Its used internally to convert Dojo.c arrays to Godot's arrays
+		        Its used internally to convert Dojo.c arrays to Godot's arrays
 	</description>
 	<tutorials>
 	</tutorials>

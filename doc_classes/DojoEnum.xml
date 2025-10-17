@@ -16,6 +16,12 @@
 				Returns the name of the enum type.
 			</description>
 		</method>
+		<method name="get_option" qualifiers="const">
+			<return type="int" />
+			<description>
+				Returns the index of the selected enum option.
+			</description>
+		</method>
 		<method name="get_value" qualifiers="const">
 			<return type="Variant" />
 			<description>
@@ -36,17 +42,11 @@
 				Sets the value of the enum variant.
 			</description>
 		</method>
-        <method name="get_option" qualifiers="const">
-            <return type="int" />
-            <description>
-                Returns the index of the selected enum option.
-            </description>
-        </method>
-        <method name="to_string" qualifiers="const">
-            <return type="String" />
-            <description>
-                Returns the name of the selected enum option as a string.
-            </description>
-        </method>
+		<method name="to_string" qualifiers="const">
+			<return type="String" />
+			<description>
+				Returns the name of the selected enum option as a string.
+			</description>
+		</method>
 	</methods>
 </class>

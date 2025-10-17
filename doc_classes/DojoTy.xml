@@ -8,32 +8,4 @@
 	</description>
 	<tutorials>
 	</tutorials>
-    <methods>
-        <method name="get_value" qualifiers="const">
-            <return type="Variant" />
-            <description>
-                Returns the value of the type. This can be a [DojoPrimitive], [DojoStruct], [DojoEnum], or another [DojoTy] for complex types.
-            </description>
-        </method>
-        <method name="set_value">
-            <return type="void" />
-            <param index="0" name="value" type="Variant" />
-            <description>
-                Sets the value of the type.
-            </description>
-        </method>
-        <method name="get_name" qualifiers="const">
-            <return type="String" />
-            <description>
-                Returns the name of the type.
-            </description>
-        </method>
-        <method name="set_name">
-            <return type="void" />
-            <param index="0" name="name" type="String" />
-            <description>
-                Sets the name of the type.
-            </description>
-        </method>
-    </methods>
 </class>

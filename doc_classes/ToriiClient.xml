@@ -18,8 +18,7 @@
 		</method>
 		<method name="create_client">
 			<return type="bool" />
-			<param index="0" name="p_url" type="String" default="&quot;&quot;" />
-			<param index="1" name="p_addresses" type="String[]" default="[]" />
+			<param index="0" name="torii_url" type="String" default="&quot;&quot;" />
 			<description>
 				Initializes and connects the client to the Torii server. If [param p_url] or [param p_addresses] are not provided, it will use the values from [member torii_url] and [member world_addresses] respectively. Emits [signal client_connected] on success or failure.
 			</description>
@@ -126,18 +125,6 @@
 			<param index="0" name="query" type="DojoTokenQuery" />
 			<description>
 				Queries for tokens (e.g., ERC721, ERC1155) based on the provided [DojoTokenQuery].
-			</description>
-		</method>
-		<method name="get_url">
-			<return type="String" />
-			<description>
-				Returns the Torii URL.
-			</description>
-		</method>
-		<method name="get_worlds">
-			<return type="String[]" />
-			<description>
-				Returns the world addresses.
 			</description>
 		</method>
 		<method name="get_worlds_metadata">
@@ -377,9 +364,6 @@
 		</member>
 		<member name="torii_url" type="String" setter="set_torii_url" getter="get_torii_url" default="&quot;&quot;">
 			The URL of the Torii gRPC server.
-		</member>
-		<member name="world_addresses" type="String[]" setter="set_world_addresses" getter="get_world_addresses" default="[]">
-			The contract addresses of the Dojo worlds to interact with.
 		</member>
 	</members>
 	<signals>
