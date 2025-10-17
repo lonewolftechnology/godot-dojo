@@ -193,9 +193,6 @@ public:
     String get_torii_url() const { return torii_url; }
     void set_torii_url(const String &p_torii_url) { torii_url = p_torii_url; }
 
-    void set_world_addresses(const TypedArray<String> &p_world_address) { world_addresses = p_world_address; }
-    TypedArray<String> get_world_addresses() const { return world_addresses; }
-
     TypedArray<String> get_worlds();
     String get_url();
 
@@ -357,10 +354,6 @@ protected:
         ClassDB::bind_method(D_METHOD("get_torii_url"), &ToriiClient::get_torii_url);
         ClassDB::bind_method(D_METHOD("set_torii_url", "torii_url"), &ToriiClient::set_torii_url);
         ADD_PROPERTY(PropertyInfo(Variant::STRING, "torii_url"), "set_torii_url", "get_torii_url");
-
-        ClassDB::bind_method(D_METHOD("set_world_addresses", "p_addresses"), &ToriiClient::set_world_addresses);
-        ClassDB::bind_method(D_METHOD("get_world_addresses"), &ToriiClient::get_world_addresses);
-        ADD_PROPERTY(PropertyInfo(Variant::PACKED_STRING_ARRAY, "world_addresses"), "set_world_addresses", "get_world_addresses");
 
         ClassDB::bind_method(D_METHOD("set_logger_callback", "logger_callback"), &ToriiClient::set_logger_callback);
         ClassDB::bind_method(D_METHOD("get_logger_callback"), &ToriiClient::get_logger_callback);
