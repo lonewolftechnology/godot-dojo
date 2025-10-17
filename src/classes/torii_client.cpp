@@ -38,13 +38,7 @@ ToriiClient *ToriiClient::get_singleton() {
     return singleton;
 }
 
-bool ToriiClient::create_client(const String &p_url, const TypedArray<String> &p_addresses) {
-    if (p_addresses.is_empty()) {
-        world_addresses = get_worlds();
-    } else {
-        world_addresses = p_addresses;
-    }
-
+bool ToriiClient::create_client(const String &p_url) {
     if (p_url.is_empty()) {
         torii_url = get_url();
     } else {
@@ -151,10 +145,11 @@ TypedArray<Dictionary> ToriiClient::get_worlds_metadata(const TypedArray<String>
         Logger::error("Client not connected");
         return {};
     }
-    if (p_addresses.is_empty()) {
-        world_addresses = get_worlds();
+    TypedArray<String> addresess = p_addresses;
+    if (addresess.is_empty()) {
+        addresess = get_worlds();
     }
-    DOJO::CArrayFieldElement worlds_array = DojoArray::CFieldElementArrayHelper(p_addresses).c_array;
+    DOJO::CArrayFieldElement worlds_array = DojoArray::CFieldElementArrayHelper(addresess).c_array;
     DOJO::ResultCArrayWorld resMetadata = DOJO::client_worlds(client, worlds_array.data, worlds_array.data_len);
 
     if (resMetadata.tag == DOJO::ErrCArrayWorld) {
@@ -170,7 +165,7 @@ TypedArray<Dictionary> ToriiClient::get_worlds_metadata(const TypedArray<String>
 #endif
 }
 
-bool ToriiClient::refresh_metadata(const TypedArray<String>& p_world_addresses ) {
+bool ToriiClient::refresh_metadata(const TypedArray<String> &p_world_addresses) {
     TypedArray<Dictionary> metadata = get_worlds_metadata(p_world_addresses);
     if (!metadata.is_empty()) {
         call_deferred("emit_signal", "metadata_updated", metadata);
@@ -453,8 +448,10 @@ TypedArray<Dictionary> ToriiClient::get_player_achievements(const Ref<DojoPlayer
         return {};
     }
 
-    DOJO::PlayerAchievementQuery* player_achievement_query_ptr = static_cast<DOJO::PlayerAchievementQuery *>(query->get_native_query());;
-    DOJO::ResultPagePlayerAchievementEntry result = DOJO::client_player_achievements(client, *player_achievement_query_ptr);
+    DOJO::PlayerAchievementQuery *player_achievement_query_ptr = static_cast<DOJO::PlayerAchievementQuery *>(query->
+        get_native_query());;
+    DOJO::ResultPagePlayerAchievementEntry result = DOJO::client_player_achievements(
+        client, *player_achievement_query_ptr);
 
     if (result.tag == DOJO::ErrPagePlayerAchievementEntry) {
         Logger::error("Failed getting player achievements: ", GET_DOJO_ERROR(result));
@@ -552,16 +549,13 @@ void ToriiClient::set_logger_callback(const Callable &p_logger_callback) {
 }
 
 TypedArray<String> ToriiClient::get_worlds() {
-    if (world_addresses.is_empty()) {
-        Logger::debug_extra("ToriiClient", "No worlds addresses were setted, fetching ProjectSettings");
-        TypedArray<String> setting_worlds = DojoHelpers::get_torii_setting("worlds");
-        if (setting_worlds.is_empty()) {
-            Logger::warning("ToriiClient", " Could find world addresses");
-            return {};
-        }
-        return setting_worlds;
+    Logger::debug_extra("ToriiClient", "Fetching worlds from ProjectSettings");
+    TypedArray<String> setting_worlds = DojoHelpers::get_torii_setting("worlds");
+    if (setting_worlds.is_empty()) {
+        Logger::warning("ToriiClient", " Could find world addresses");
+        return {};
     }
-    return world_addresses;
+    return setting_worlds;
 }
 
 String ToriiClient::get_url() {
@@ -582,7 +576,6 @@ Dictionary ToriiClient::get_client_info() const {
     Dictionary info = {};
     info["connected"] = is_connected;
     info["torii_url"] = torii_url;
-    info["worlds"] = world_addresses;
     return info;
 }
 
@@ -591,7 +584,6 @@ Dictionary ToriiClient::get_connection_status() const {
     status["connected"] = is_connected;
     status["client_exists"] = (client != nullptr);
     status["torii_url"] = torii_url;
-    status["worlds"] = world_addresses;
     return status;
 }
 
@@ -811,13 +803,12 @@ void on_achievement_progression_update_callback_wrapper(DOJO::AchievementProgres
         progress_dict["player_id"] = FieldElement::get_as_string(&achievement_progression.player_id);
         progress_dict["count"] = achievement_progression.count;
         progress_dict["completed"] = achievement_progression.completed;
-        progress_dict["completed_at"] = OptionU64::from_native(achievement_progression.completed_at) ;
+        progress_dict["completed_at"] = OptionU64::from_native(achievement_progression.completed_at);
         progress_dict["created_at"] = achievement_progression.created_at;
         progress_dict["updated_at"] = achievement_progression.updated_at;
 
         singleton->on_achievement_progression_update_callback.call_deferred(progress_dict);
     }
-
 }
 
 // Subscription method implementations
@@ -1165,9 +1156,6 @@ void ToriiClient::on_achievement_progression_update(const Callable &callback,
         subscription->set_subscription(result.ok);
         subscriptions.append(subscription);
     }
-
-
-
 }
 
 
