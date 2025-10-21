@@ -14,18 +14,18 @@ class EventSubscription : public DojoSubscription
 {
     GDCLASS(EventSubscription, DojoSubscription);
 
-    Ref<OptionClause> clause;
+    Ref<DojoOptionClause> clause;
 
 public:
     Type get_type() const override {
         return EVENT;
     }
 
-    Ref<OptionClause> get_clause() const {
+    Ref<DojoOptionChar> get_clause() const {
         return clause;
     }
 
-    void set_clause(const Ref<OptionClause>& p_clause) {
+    void set_clause(const Ref<DojoOptionChar>& p_clause) {
         clause = p_clause;
     }
 
@@ -42,7 +42,7 @@ protected:
     {
         ClassDB::bind_method(D_METHOD("get_clause"), &EventSubscription::get_clause);
         ClassDB::bind_method(D_METHOD("set_clause", "p_clause"), &EventSubscription::set_clause);
-        ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "clause", PROPERTY_HINT_RESOURCE_TYPE, "OptionClause"), "set_clause", "get_clause");
+        ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "clause", PROPERTY_HINT_RESOURCE_TYPE, "DojoOptionChar"), "set_clause", "get_clause");
     }
 
 };

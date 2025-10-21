@@ -740,10 +740,10 @@ void token_transfer_update_callback_wrapper(DOJO::TokenTransfer token_transfer) 
         transfer_dict["to_address"] = FieldElement::get_as_string_no_ptr(token_transfer.to_address);
         Ref<U256> amount = memnew(U256(token_transfer.amount));
         transfer_dict["amount"] = amount;
-        Ref<OptionU256> option_u256 = memnew(OptionU256(token_transfer.token_id));
+        Ref<DojoOptionU256> option_u256 = memnew(DojoOptionU256(token_transfer.token_id));
         transfer_dict["option_token_id"] = option_u256;
         transfer_dict["executed_at"] = token_transfer.executed_at;
-        Ref<OptionChar> option_char = memnew(OptionChar(token_transfer.event_id));
+        Ref<DojoOptionChar> option_char = memnew(DojoOptionChar(token_transfer.event_id));
         transfer_dict["even_id"] = option_char;
         singleton->on_token_transfer_update_callback.call_deferred(transfer_dict);
     }
@@ -803,7 +803,7 @@ void on_achievement_progression_update_callback_wrapper(DOJO::AchievementProgres
         progress_dict["player_id"] = FieldElement::get_as_string(&achievement_progression.player_id);
         progress_dict["count"] = achievement_progression.count;
         progress_dict["completed"] = achievement_progression.completed;
-        progress_dict["completed_at"] = OptionU64::from_native(achievement_progression.completed_at);
+        progress_dict["completed_at"] = DojoOptionU64::from_native(achievement_progression.completed_at);
         progress_dict["created_at"] = achievement_progression.created_at;
         progress_dict["updated_at"] = achievement_progression.updated_at;
 

@@ -156,13 +156,13 @@ Variant DojoArray::CArrayTokenToVariant(DOJO::CArrayToken array)
     {
         Dictionary data;
         data["contract_address"] = FieldElement::get_as_string_no_ptr(token.contract_address);
-        Ref<OptionU256> token_id = memnew(OptionU256(token.token_id));
+        Ref<DojoOptionU256> token_id = memnew(DojoOptionU256(token.token_id));
         data["token_id"] = token_id->get_value();
         data["name"] = token.name;
         data["symbol"] = token.symbol;
         data["decimals"] = token.decimals;
         data["metadata"] = token.metadata;
-        Ref<OptionU256> total_supply = memnew(OptionU256(token.total_supply));
+        Ref<DojoOptionU256> total_supply = memnew(DojoOptionU256(token.total_supply));
         data["total_supply"] = total_supply->get_value();
         result.append(data);
     }
@@ -208,7 +208,7 @@ Variant DojoArray::CArrayClauseToVariant(DOJO::CArrayClause array)
     for (const auto& clause : array_clause_vector)
     {
         Dictionary data;
-        result.append(OptionClause::from_native(clause));
+        result.append(DojoOptionClause::from_native(clause));
     }
     return result;
 }
@@ -371,7 +371,7 @@ Variant DojoArray::CArrayTokenContractToVariant(DOJO::CArrayTokenContract array)
         element_dict["decimals"] = element.decimals;
         element_dict["token_metadata"] = element.token_metadata;
         element_dict["metadata"] = element.metadata;
-        element_dict["total_supply"] = memnew(OptionU256(element.total_supply));
+        element_dict["total_supply"] = memnew(DojoOptionU256(element.total_supply));
 
         result.append(element_dict);
     }
@@ -623,7 +623,7 @@ Variant DojoArray::CArrayAchievementToVariant(DOJO::CArrayAchievement array)
          balance_dict["balance"] = memnew(U256(balance.balance));
          balance_dict["account_address"] = FieldElement::get_as_string_no_ptr(balance.account_address);
          balance_dict["contract_address"] = FieldElement::get_as_string_no_ptr(balance.contract_address);
-         balance_dict["token_id"] = memnew(OptionU256(balance.token_id));
+         balance_dict["token_id"] = memnew(DojoOptionU256(balance.token_id));
 
          result.append(balance_dict);
      }
@@ -647,7 +647,7 @@ Variant DojoArray::CArrayAchievementToVariant(DOJO::CArrayAchievement array)
          transfer_dict["from_address"] = FieldElement::get_as_string_no_ptr(transfer.from_address);
          transfer_dict["to_address"] = FieldElement::get_as_string_no_ptr(transfer.to_address);
          transfer_dict["amount"] = memnew(U256(transfer.amount));
-         transfer_dict["token_id"] = memnew(OptionU256(transfer.token_id));
+         transfer_dict["token_id"] = memnew(DojoOptionU256(transfer.token_id));
          transfer_dict["executed_at"] = transfer.executed_at;
 
          if (transfer.event_id.tag == DOJO::Somec_char)

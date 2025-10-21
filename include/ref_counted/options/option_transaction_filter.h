@@ -11,15 +11,15 @@
 
 using namespace godot;
 
-class OptionTransactionFilter : public DojoOption {
-    GDCLASS(OptionTransactionFilter, DojoOption);
+class DojoOptionTransactionFilter : public DojoOption {
+    GDCLASS(DojoOptionTransactionFilter, DojoOption);
 
 protected:
     static void _bind_methods() {}
 
 public:
-    OptionTransactionFilter() : DojoOption() {}
-    OptionTransactionFilter(const Ref<DojoTransactionFilter>& value) : DojoOption(value) {}
+    DojoOptionTransactionFilter() : DojoOption() {}
+    DojoOptionTransactionFilter(const Ref<DojoTransactionFilter>& value) : DojoOption(value) {}
 
     DOJO::COptionTransactionFilter get_native_option() const {
         DOJO::COptionTransactionFilter option = {};

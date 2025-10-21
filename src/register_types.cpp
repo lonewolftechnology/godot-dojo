@@ -91,14 +91,14 @@ void initialize_dojoc_module(ModuleInitializationLevel p_level) {
         GDREGISTER_CLASS(Account);
         // RefCounted
         GDREGISTER_CLASS(DojoOption);
-        GDREGISTER_CLASS(OptionU32);
-        GDREGISTER_CLASS(OptionU64);
-        GDREGISTER_CLASS(OptionChar);
-        GDREGISTER_CLASS(OptionU256);
-        GDREGISTER_CLASS(OptionFieldElement);
-        GDREGISTER_CLASS(OptionClause);
-        GDREGISTER_CLASS(OptionTransactionFilter);
-        GDREGISTER_CLASS(OptionArrayFieldElement);
+        GDREGISTER_CLASS(DojoOptionU32);
+        GDREGISTER_CLASS(DojoOptionU64);
+        GDREGISTER_CLASS(DojoOptionChar);
+        GDREGISTER_CLASS(DojoOptionU256);
+        GDREGISTER_CLASS(DojoOptionFieldElement);
+        GDREGISTER_CLASS(DojoOptionClause);
+        GDREGISTER_CLASS(DojoOptionTransactionFilter);
+        GDREGISTER_CLASS(DojoOptionArrayFieldElement);
         // Resources
         // Queries
         GDREGISTER_CLASS(DojoQueryBase);

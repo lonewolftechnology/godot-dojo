@@ -11,15 +11,15 @@
 
 using namespace godot;
 
-class OptionArrayFieldElement : public DojoOption {
-    GDCLASS(OptionArrayFieldElement, DojoOption);
+class DojoOptionArrayFieldElement : public DojoOption {
+    GDCLASS(DojoOptionArrayFieldElement, DojoOption);
 
 protected:
     static void _bind_methods() {}
 
 public:
-    OptionArrayFieldElement() : DojoOption() {}
-    OptionArrayFieldElement(const TypedArray<String>& value) : DojoOption(value) {}
+    DojoOptionArrayFieldElement() : DojoOption() {}
+    DojoOptionArrayFieldElement(const TypedArray<String>& value) : DojoOption(value) {}
 
     DOJO::CArrayFieldElement get_native_array() const {
         if (!is_some()) {

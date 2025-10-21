@@ -57,12 +57,12 @@ Variant DojoHelpers::get_custom_setting(const String& category, const String &se
     return result;
 }
 
-Variant DojoHelpers::get_dojo_setting(const String &setting) {
-    return get_setting("dojo/config/" + setting);
+Variant DojoHelpers::get_dojo_setting(const String &setting, const Variant& default_value) {
+    return get_setting("dojo/config/" + setting, default_value);
 }
 
-Variant DojoHelpers::get_torii_setting(const String &setting) {
-    return get_setting("dojo/config/torii/" + setting);
+Variant DojoHelpers::get_torii_setting(const String &setting, const Variant& default_value) {
+    return get_setting("dojo/config/torii/" + setting, default_value);
 }
 
 Dictionary DojoHelpers::get_policies(const String& custom) {

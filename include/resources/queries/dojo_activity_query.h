@@ -12,8 +12,8 @@ class DojoActivityQuery : public DojoQueryBase {
     TypedArray<String> world_addresses;
     TypedArray<String> namespaces;
     TypedArray<String> caller_addresses;
-    Ref<OptionU64> from_time;
-    Ref<OptionU64> to_time;
+    Ref<DojoOptionU64> from_time;
+    Ref<DojoOptionU64> to_time;
 
 public:
     DojoActivityQuery() {}
@@ -35,13 +35,13 @@ public:
     void set_world_addresses(const TypedArray<String> &p_array) { world_addresses = p_array; }
     void set_namespaces(const TypedArray<String> &p_array) { namespaces = p_array; }
     void set_caller_addresses(const TypedArray<String> &p_array) { caller_addresses = p_array; }
-    void set_from_time(const Ref<OptionU64> &p_option) { from_time = p_option; }
-    void set_to_time(const Ref<OptionU64> &p_option) { to_time = p_option; }
+    void set_from_time(const Ref<DojoOptionU64> &p_option) { from_time = p_option; }
+    void set_to_time(const Ref<DojoOptionU64> &p_option) { to_time = p_option; }
     TypedArray<String> get_world_addresses() { return world_addresses; }
     TypedArray<String> get_namespaces() { return namespaces; }
     TypedArray<String> get_caller_addresses() { return caller_addresses; }
-    Ref<OptionU64> get_from_time() { return from_time; }
-    Ref<OptionU64> get_to_time() { return to_time; }
+    Ref<DojoOptionU64> get_from_time() { return from_time; }
+    Ref<DojoOptionU64> get_to_time() { return to_time; }
 
 protected:
     static void _bind_methods() {
@@ -62,12 +62,12 @@ protected:
 
         ClassDB::bind_method(D_METHOD("set_from_time", "p_option"), &DojoActivityQuery::set_from_time);
         ClassDB::bind_method(D_METHOD("get_from_time"), &DojoActivityQuery::get_from_time);
-        ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "from_time", PROPERTY_HINT_RESOURCE_TYPE, "OptionU64"),
+        ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "from_time", PROPERTY_HINT_RESOURCE_TYPE, "DojoOptionU64"),
                      "set_from_time", "get_from_time");
 
         ClassDB::bind_method(D_METHOD("set_to_time", "p_option"), &DojoActivityQuery::set_to_time);
         ClassDB::bind_method(D_METHOD("get_to_time"), &DojoActivityQuery::get_to_time);
-        ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "to_time", PROPERTY_HINT_RESOURCE_TYPE, "OptionU64"), "set_to_time",
+        ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "to_time", PROPERTY_HINT_RESOURCE_TYPE, "DojoOptionU64"), "set_to_time",
                      "get_to_time");
     }
 };

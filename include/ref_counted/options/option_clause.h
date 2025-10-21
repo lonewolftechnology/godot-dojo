@@ -14,9 +14,9 @@
 
 using namespace godot;
 
-class OptionClause : public DojoOption
+class DojoOptionClause : public DojoOption
 {
-    GDCLASS(OptionClause, DojoOption);
+    GDCLASS(DojoOptionClause, DojoOption);
 
     // Clause type tag
     DOJO::Clause_Tag tag;
@@ -122,7 +122,7 @@ class OptionClause : public DojoOption
     }
 
 public:
-    OptionClause()
+    DojoOptionClause()
     {
         tag = DOJO::Clause_Tag::HashedKeys;
         pattern_matching = DOJO::PatternMatching::FixedLen;
@@ -162,7 +162,7 @@ public:
                 for (uintptr_t i = 0; i < p_clause.keys.keys.data_len; ++i)
                 {
                     const DOJO::COptionFieldElement& k = p_clause.keys.keys.data[i];
-                    Ref<OptionFieldElement> opt = memnew(OptionFieldElement());
+                    Ref<DojoOptionFieldElement> opt = memnew(DojoOptionFieldElement());
                     if (k.tag == DOJO::COptionFieldElement_Tag::SomeFieldElement)
                     {
                         Ref<FieldElement> felt = memnew(FieldElement(k.some));
@@ -260,7 +260,7 @@ public:
                 Array out_clauses;
                 for (uintptr_t i = 0; i < p_clause.composite.clauses.data_len; ++i)
                 {
-                    Ref<OptionClause> sub = from_native(p_clause.composite.clauses.data[i]);
+                    Ref<DojoOptionClause> sub = from_native(p_clause.composite.clauses.data[i]);
                     out_clauses.push_back(sub);
                 }
                 clauses = out_clauses;
@@ -269,20 +269,20 @@ public:
         }
     }
 
-    static Ref<OptionClause> from_native(const DOJO::Clause& p_clause)
+    static Ref<DojoOptionClause> from_native(const DOJO::Clause& p_clause)
     {
-        Ref<OptionClause> ref = memnew(OptionClause());
+        Ref<DojoOptionClause> ref = memnew(DojoOptionClause());
         ref->load_from_native(p_clause);
         return ref;
     }
 
-    static Ref<OptionClause> from_native_option(const DOJO::COptionClause& p_opt)
+    static Ref<DojoOptionClause> from_native_option(const DOJO::COptionClause& p_opt)
     {
         if (p_opt.tag == DOJO::COptionClause_Tag::SomeClause)
         {
             return from_native(p_opt.some);
         }
-        return Ref<OptionClause>();
+        return Ref<DojoOptionClause>();
     }
 
     DOJO::COptionClause get_native_option() const
@@ -316,7 +316,7 @@ public:
                 auto* native_keys = new DOJO::COptionFieldElement[keys.size()];
                 for (int i = 0; i < keys.size(); ++i)
                 {
-                    Ref<OptionFieldElement> key_ref = keys[i];
+                    Ref<DojoOptionFieldElement> key_ref = keys[i];
                     if (key_ref.is_valid())
                     {
                         native_keys[i] = key_ref->get_native_option();
@@ -356,7 +356,7 @@ public:
                 auto* native_clauses = new DOJO::Clause[clauses.size()];
                 for (int i = 0; i < clauses.size(); ++i)
                 {
-                    Ref<OptionClause> clause_ref = clauses[i];
+                    Ref<DojoOptionClause> clause_ref = clauses[i];
                     if (clause_ref.is_valid())
                     {
                         native_clauses[i] = clause_ref->get_native_clause();
@@ -485,43 +485,43 @@ protected:
         BIND_ENUM_CONSTANT(DOJO::Primitive_Tag::EthAddress);
 
         // Tag
-        ClassDB::bind_method(D_METHOD("get_tag"), &OptionClause::get_tag);
-        ClassDB::bind_method(D_METHOD("set_tag", "p_tag"), &OptionClause::set_tag);
+        ClassDB::bind_method(D_METHOD("get_tag"), &DojoOptionClause::get_tag);
+        ClassDB::bind_method(D_METHOD("set_tag", "p_tag"), &DojoOptionClause::set_tag);
 
         // HashedKeys
-        ClassDB::bind_method(D_METHOD("get_hashed_keys"), &OptionClause::get_hashed_keys);
-        ClassDB::bind_method(D_METHOD("set_hashed_keys", "p_keys"), &OptionClause::set_hashed_keys);
+        ClassDB::bind_method(D_METHOD("get_hashed_keys"), &DojoOptionClause::get_hashed_keys);
+        ClassDB::bind_method(D_METHOD("set_hashed_keys", "p_keys"), &DojoOptionClause::set_hashed_keys);
 
         // Keys
-        ClassDB::bind_method(D_METHOD("get_keys"), &OptionClause::get_keys);
-        ClassDB::bind_method(D_METHOD("set_keys", "p_keys"), &OptionClause::set_keys);
-        ClassDB::bind_method(D_METHOD("get_pattern_matching"), &OptionClause::get_pattern_matching);
-        ClassDB::bind_method(D_METHOD("set_pattern_matching", "p_pm"), &OptionClause::set_pattern_matching);
-        ClassDB::bind_method(D_METHOD("get_models"), &OptionClause::get_models);
-        ClassDB::bind_method(D_METHOD("set_models", "p_models"), &OptionClause::set_models);
+        ClassDB::bind_method(D_METHOD("get_keys"), &DojoOptionClause::get_keys);
+        ClassDB::bind_method(D_METHOD("set_keys", "p_keys"), &DojoOptionClause::set_keys);
+        ClassDB::bind_method(D_METHOD("get_pattern_matching"), &DojoOptionClause::get_pattern_matching);
+        ClassDB::bind_method(D_METHOD("set_pattern_matching", "p_pm"), &DojoOptionClause::set_pattern_matching);
+        ClassDB::bind_method(D_METHOD("get_models"), &DojoOptionClause::get_models);
+        ClassDB::bind_method(D_METHOD("set_models", "p_models"), &DojoOptionClause::set_models);
 
         // Member
-        ClassDB::bind_method(D_METHOD("get_model"), &OptionClause::get_model);
-        ClassDB::bind_method(D_METHOD("set_model", "p_model"), &OptionClause::set_model);
-        ClassDB::bind_method(D_METHOD("get_member"), &OptionClause::get_member);
-        ClassDB::bind_method(D_METHOD("set_member", "p_member"), &OptionClause::set_member);
-        ClassDB::bind_method(D_METHOD("get_comparison_operator"), &OptionClause::get_comparison_operator);
-        ClassDB::bind_method(D_METHOD("set_comparison_operator", "p_op"), &OptionClause::set_comparison_operator);
-        ClassDB::bind_method(D_METHOD("get_member_tag"), &OptionClause::get_member_tag);
-        ClassDB::bind_method(D_METHOD("set_member_tag", "p_tag"), &OptionClause::set_member_tag);
-        ClassDB::bind_method(D_METHOD("get_primitive_tag"), &OptionClause::get_primitive_tag);
-        ClassDB::bind_method(D_METHOD("set_primitive_tag", "p_tag"), &OptionClause::set_primitive_tag);
-        ClassDB::bind_method(D_METHOD("get_value"), &OptionClause::get_value);
-        ClassDB::bind_method(D_METHOD("set_value", "p_value"), &OptionClause::set_value);
+        ClassDB::bind_method(D_METHOD("get_model"), &DojoOptionClause::get_model);
+        ClassDB::bind_method(D_METHOD("set_model", "p_model"), &DojoOptionClause::set_model);
+        ClassDB::bind_method(D_METHOD("get_member"), &DojoOptionClause::get_member);
+        ClassDB::bind_method(D_METHOD("set_member", "p_member"), &DojoOptionClause::set_member);
+        ClassDB::bind_method(D_METHOD("get_comparison_operator"), &DojoOptionClause::get_comparison_operator);
+        ClassDB::bind_method(D_METHOD("set_comparison_operator", "p_op"), &DojoOptionClause::set_comparison_operator);
+        ClassDB::bind_method(D_METHOD("get_member_tag"), &DojoOptionClause::get_member_tag);
+        ClassDB::bind_method(D_METHOD("set_member_tag", "p_tag"), &DojoOptionClause::set_member_tag);
+        ClassDB::bind_method(D_METHOD("get_primitive_tag"), &DojoOptionClause::get_primitive_tag);
+        ClassDB::bind_method(D_METHOD("set_primitive_tag", "p_tag"), &DojoOptionClause::set_primitive_tag);
+        ClassDB::bind_method(D_METHOD("get_value"), &DojoOptionClause::get_value);
+        ClassDB::bind_method(D_METHOD("set_value", "p_value"), &DojoOptionClause::set_value);
 
         // Composite
-        ClassDB::bind_method(D_METHOD("get_logical_operator"), &OptionClause::get_logical_operator);
-        ClassDB::bind_method(D_METHOD("set_logical_operator", "p_op"), &OptionClause::set_logical_operator);
-        ClassDB::bind_method(D_METHOD("get_clauses"), &OptionClause::get_clauses);
-        ClassDB::bind_method(D_METHOD("set_clauses", "p_clauses"), &OptionClause::set_clauses);
+        ClassDB::bind_method(D_METHOD("get_logical_operator"), &DojoOptionClause::get_logical_operator);
+        ClassDB::bind_method(D_METHOD("set_logical_operator", "p_op"), &DojoOptionClause::set_logical_operator);
+        ClassDB::bind_method(D_METHOD("get_clauses"), &DojoOptionClause::get_clauses);
+        ClassDB::bind_method(D_METHOD("set_clauses", "p_clauses"), &DojoOptionClause::set_clauses);
 
         // Overridden from DojoOption
-        ClassDB::bind_method(D_METHOD("to_json"), &OptionClause::to_json);
+        ClassDB::bind_method(D_METHOD("to_json"), &DojoOptionClause::to_json);
     }
 
     void _get_property_list(List<PropertyInfo>* p_list) const
