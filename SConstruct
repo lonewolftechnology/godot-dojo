@@ -192,52 +192,12 @@ try:
 
     # Ensure targets are also available in the submodule directory context
     for rt in targets_to_check:
-        subprocess.run(["rustup", "target", "add", rt], check=False, cwd="external/dojo.c")
+        subprocess.run(["rustup", "target", "add", rt], check=False, cwd="external/dojo.c", capture_output=True)
+        subprocess.run(["rustup", "target", "add", rt], check=False, cwd="external/controller.c", capture_output=True)
 
 except subprocess.CalledProcessError as e:
     print(f"{R}{cross} Failed to check or install Rust target: {e}{X}")
     # Continue anyway, as cargo will show a more specific error if needed
-
-dojoc_version = _get_git_submodule_version("external/dojo.c") or "unknown"
-print(f"{Y}{package} Compiling dojo.c ({dojoc_version})...{X}")
-cmd = ["cargo", "build", "--target", rust_target]
-
-# Special handling for macOS universal builds
-if platform == "macos" and arch == "universal":
-    print(f"{Y}Starting universal build for macOS...{X}")
-    build_mode = "release" if target == "template_release" else "debug"
-    rust_targets = targets.get((platform, arch))
-    libs_to_lipo = []
-
-    for rt in rust_targets:
-        print(f"{Y}Compiling for target: {rt}...{X}")
-        cargo_cmd = ["cargo", "build", "--target", rt]
-        if build_mode == "release":
-            cargo_cmd.append("--release")
-
-        env_vars = os.environ.copy()
-        env_vars["MACOSX_DEPLOYMENT_TARGET"] = "14.0"
-        rustflags = env_vars.get("RUSTFLAGS", "")
-        if rustflags:
-            rustflags += " "
-        rustflags += "-C link-arg=-mmacosx-version-min=14.0"
-        env_vars["RUSTFLAGS"] = rustflags
-
-        subprocess.run(cargo_cmd, check=True, cwd="external/dojo.c", env=env_vars)
-        libs_to_lipo.append(f"external/dojo.c/target/{rt}/{build_mode}/libdojo_c.a")
-
-    print(f"{Y}Creating universal library with lipo...{X}")
-    universal_dir = f"external/dojo.c/target/universal/{build_mode}"
-    os.makedirs(universal_dir, exist_ok=True)
-    universal_lib_path = f"{universal_dir}/libdojo_c.a"
-
-    lipo_cmd = ["lipo", "-create"] + libs_to_lipo + ["-output", universal_lib_path]
-    subprocess.run(lipo_cmd, check=True)
-
-    print(f"{G}{check} Universal library created at: {universal_lib_path}{X}")
-    # Set rust_target to 'universal' to adjust library path later
-    rust_target = "universal"
-    cmd = [] # Command already executed
 
 
 def apply_patches():
@@ -272,30 +232,90 @@ def apply_patches():
             print(f"{R}{cross} Falló la aplicación del parche {os.path.basename(patch_file)}: {e}{X}")
             Exit(1)
 
+def _compile_rust_library(lib_name, lib_path, is_release, extra_flags=None):
+    """Compiles a Rust library, handling normal, universal, and web builds."""
+    lib_version = _get_git_submodule_version(lib_path) or "unknown"
+    print(f"{Y}{package} Compiling {lib_name} ({lib_version})...{X}")
+
+    build_mode = "release" if is_release else "debug"
+    base_cmd = ["cargo", "build", "--target", rust_target]
+    if is_release:
+        base_cmd.append("--release")
+    if extra_flags:
+        base_cmd.extend(extra_flags)
+
+    # Special handling for macOS universal builds
+    if platform == "macos" and arch == "universal":
+        print(f"{Y}Starting universal build for {lib_name}...{X}")
+        rust_targets_for_lipo = targets.get((platform, arch))
+        libs_to_lipo = []
+
+        for rt in rust_targets_for_lipo:
+            print(f"{Y}Compiling {lib_name} for target: {rt}...{X}")
+            cargo_cmd = ["cargo", "build", "--target", rt]
+            if is_release:
+                cargo_cmd.append("--release")
+
+            env_vars = os.environ.copy()
+            env_vars["MACOSX_DEPLOYMENT_TARGET"] = "14.0"
+            rustflags = env_vars.get("RUSTFLAGS", "")
+            if rustflags: rustflags += " "
+            rustflags += "-C link-arg=-mmacosx-version-min=14.0"
+            env_vars["RUSTFLAGS"] = rustflags
+
+            subprocess.run(cargo_cmd, check=True, cwd=lib_path, env=env_vars)
+            libs_to_lipo.append(f"{lib_path}/target/{rt}/{build_mode}/lib{lib_name}.a")
+
+        print(f"{Y}Creating universal library for {lib_name} with lipo...{X}")
+        universal_dir = f"{lib_path}/target/universal/{build_mode}"
+        os.makedirs(universal_dir, exist_ok=True)
+        universal_lib_path = f"{universal_dir}/lib{lib_name}.a"
+
+        lipo_cmd = ["lipo", "-create"] + libs_to_lipo + ["-output", universal_lib_path]
+        subprocess.run(lipo_cmd, check=True)
+        print(f"{G}{check} Universal library for {lib_name} created at: {universal_lib_path}{X}")
+        return # Handled
+
+    # Standard build for other platforms
+    env_vars = os.environ.copy()
+    if platform == "macos":
+        print(f"{Y}Setting macOS deployment target to 14.0 for {lib_name}...{X}")
+        env_vars["MACOSX_DEPLOYMENT_TARGET"] = "14.0"
+        rustflags = env_vars.get("RUSTFLAGS", "")
+        if rustflags: rustflags += " "
+        rustflags += "-C link-arg=-mmacosx-version-min=14.0"
+        env_vars["RUSTFLAGS"] = rustflags
+
+    print(f"{Y}Running cargo command for {lib_name}: {' '.join(base_cmd)}{X}")
+    subprocess.run(base_cmd, check=True, cwd=lib_path, env=env_vars)
+
+
+is_release_build = target == "template_release"
 
 # Environment variables for WebAssembly
 if env["platform"] == "web":
     # For the web build, we need to do two things:
-    # 1. Build the dojo.c library with wasm-bindgen to create the JS interface.
+    # 1. Build the dojo.c library with wasm-bindgen to create the JS interface (only for dojo.c).
     #    This build must NOT use `-C relocation-model=pic`.
-    # 2. Build the dojo.c library as an rlib with `-C relocation-model=pic`
+    # 2. Build the dojo.c and controller.c libraries as rlib with `-C relocation-model=pic`
     #    so scons can link it into the final GDExtension .wasm file.
 
     # Step 1: Build for wasm-bindgen
     print(f"{Y}Building dojo.c for wasm-bindgen...{X}")
-    if target == "template_release":
-        cmd.append("--release")
+    cmd_bindgen = ["cargo", "build", "--target", rust_target]
+    if is_release_build:
+        cmd_bindgen.append("--release")
 
     bindgen_env = os.environ.copy()
     bindgen_env["RUSTFLAGS"] = "-C target-feature=+atomics,+bulk-memory,+mutable-globals"
-    subprocess.run(cmd, check=True, cwd="external/dojo.c", env=bindgen_env)
+    subprocess.run(cmd_bindgen, check=True, cwd="external/dojo.c", env=bindgen_env)
 
     # Apply patch immediately after Rust compilation
     apply_patches()
 
     # Step 2: Run wasm-bindgen
     print(f"{Y}Running wasm-bindgen...{X}")
-    build_mode = "release" if target == "template_release" else "debug"
+    build_mode = "release" if is_release_build else "debug"
     wasm_input_path = f"external/dojo.c/target/{rust_target}/{build_mode}/dojo_c.wasm"
     out_dir = "demo/addons/godot-dojo/"
     os.makedirs(out_dir, exist_ok=True)
@@ -316,43 +336,26 @@ if env["platform"] == "web":
             f"{R}{cross} wasm-bindgen failed. This might be due to incompatible Rust flags or wasm-bindgen version.{X}")
         print(f"{R}Error: {e}{X}")
         Exit(1)
+
+    # Step 3: Build dojo.c and controller.c as rlib for SCons linking
+    print(f"{Y}Building libraries as rlib for SCons linking...{X}")
+    rlib_flags = ["-C", "relocation-model=pic"]
+    _compile_rust_library("dojo_c", "external/dojo.c", is_release_build, extra_flags=rlib_flags)
+    _compile_rust_library("controller_c", "external/controller.c", is_release_build, extra_flags=rlib_flags)
+
 else:
-    if cmd: # Only run if not a universal macOS build (which has its own logic)
-        if target == "template_release":
-            cmd.append("--release")
-
-        env_vars = os.environ.copy()
-        # Explicitly set RUSTUP_TOOLCHAIN to ensure the correct toolchain is used
-        if platform == "macos":
-            # Set macOS deployment target to 14.0 to ensure compatibility
-            print(f"{Y}Setting macOS deployment target to 14.0...{X}")
-            env_vars["MACOSX_DEPLOYMENT_TARGET"] = "14.0"
-
-            # Add deployment target to RUSTFLAGS
-            rustflags = env_vars.get("RUSTFLAGS", "")
-            if rustflags:  # Add a space if RUSTFLAGS is not empty
-                rustflags += " "
-            rustflags += "-C link-arg=-mmacosx-version-min=14.0"
-            env_vars["RUSTFLAGS"] = rustflags
-
-        # Print the command and environment for debugging
-        print(f"{Y}Running cargo command: {' '.join(cmd)}{X}")
-        print(f"{Y}With target: {rust_target}{X}")
-        if platform == "macos":
-            print(f"{Y}With MACOSX_DEPLOYMENT_TARGET: {env_vars.get('MACOSX_DEPLOYMENT_TARGET', 'not set')}{X}")
-            print(f"{Y}With RUSTFLAGS: {env_vars.get('RUSTFLAGS', 'not set')}{X}")
-
-        subprocess.run(cmd, check=True, cwd="external/dojo.c", env=env_vars)
+    # Standard compilation for all non-web platforms
+    _compile_rust_library("dojo_c", "external/dojo.c", is_release_build)
+    _compile_rust_library("controller_c", "external/controller.c", is_release_build)
     # Apply patch immediately after Rust compilation
     apply_patches()
-
 
 # Configure library
 if platform != "android":
     # Android build requires lib prefix
     env['SHLIBPREFIX'] = ''
 prefix = env.subst('$SHLIBPREFIX')
-env.Append(CPPPATH=["src/", "include/", "external/dojo.c", "external/boost/include"])
+env.Append(CPPPATH=["src/", "include/", "external/dojo.c", "external/controller.c/bindings/c", "external/boost/include"])
 if platform == "macos":
     # Set macOS deployment target for C++ compilation
     print(f"{Y}Setting macOS deployment target for C++ compilation to 14.0...{X}")
@@ -400,26 +403,30 @@ if platform == "android":
 
 # Link Rust libraries
 build_mode = "release" if target == "template_release" else "debug"
-rust_lib_dir = f"external/dojo.c/target/{rust_target}/{build_mode}"
+
+# For macOS universal, rust_target was modified, so we handle it specially
+rust_lib_target_dir = "universal" if platform == "macos" and arch == "universal" else rust_target
+
+rust_lib_dir_dojo = f"external/dojo.c/target/{rust_lib_target_dir}/{build_mode}"
+rust_lib_dir_controller = f"external/controller.c/target/{rust_lib_target_dir}/{build_mode}"
+
+rust_lib_dojo = ""
+rust_lib_controller = ""
 
 if platform == "windows":
-
     if use_mingw:
         # For MinGW, we link against the static .a library
-        rust_lib = f"{rust_lib_dir}/libdojo_c.a"
+        rust_lib_dojo = f"{rust_lib_dir_dojo}/libdojo_c.a"
+        rust_lib_controller = f"{rust_lib_dir_controller}/libcontroller_c.a"
     elif is_host_windows:
         # For MSVC, we link against the static .lib library
-        rust_lib = f"{rust_lib_dir}/dojo_c.lib"
+        rust_lib_dojo = f"{rust_lib_dir_dojo}/dojo_c.lib"
+        rust_lib_controller = f"{rust_lib_dir_controller}/controller_c.lib"
         env.Append(LINKFLAGS=['/NODEFAULTLIB:MSVCRT'])
-    else:
-        rust_lib = ""  # Should not happen
-
-    # Link our library first, then the system libraries it depends on.
-    env.Append(LIBS=[File(rust_lib)])
     env.Append(LIBS=['ws2_32', 'advapi32', 'ntdll'])
 elif platform == "linux":
-    rust_lib = f"{rust_lib_dir}/libdojo_c.a"
-    env.Append(LIBS=[File(rust_lib)])
+    rust_lib_dojo = f"{rust_lib_dir_dojo}/libdojo_c.a"
+    rust_lib_controller = f"{rust_lib_dir_controller}/libcontroller_c.a"
     # Use pkg-config to add proper include/lib flags for dbus-1 and ensure correct link order.
     # It's important to add this *after* our own library which depends on it.
     try:
@@ -427,18 +434,24 @@ elif platform == "linux":
     except Exception:
         env.Append(LIBS=['dbus-1'])
 elif platform == "web":
-    print(f"{Y}{clipboard} Web export doesn't link to anything.{X}")
-#     rust_lib = f"{rust_lib_dir}/libdojo_c.rlib"
-#     env.Append(LIBS=[File(rust_lib)])
-elif platform in ["linux", "macos", "android", "ios"]:
-    rust_lib = f"{rust_lib_dir}/libdojo_c.a"
-    env.Append(LIBS=[File(rust_lib)])
+    print(f"{Y}{clipboard} Web export links to rlib files.{X}")
+    rust_lib_dojo = f"{rust_lib_dir_dojo}/libdojo_c.rlib"
+    rust_lib_controller = f"{rust_lib_dir_controller}/libcontroller_c.rlib"
 else:
-    print(f"{R}{cross} Rust library not found for platform {platform}{X}")
+    # Default for other platforms like macos (non-universal), android, ios
+    rust_lib_dojo = f"{rust_lib_dir_dojo}/libdojo_c.a"
+    rust_lib_controller = f"{rust_lib_dir_controller}/libcontroller_c.a"
+
+if rust_lib_dojo and rust_lib_controller:
+    # Link our libraries first, then the system libraries they depend on.
+    env.Append(LIBS=[File(rust_lib_dojo), File(rust_lib_controller)])
+else:
+    print(f"{R}{cross} Could not determine Rust library paths for platform {platform}{X}")
     Exit(1)
 
-if platform != "web" and not os.path.exists(rust_lib):
-    print(f"{R}{cross} Rust library not found: {rust_lib}{X}")
+if platform != "web" and (not os.path.exists(rust_lib_dojo) or not os.path.exists(rust_lib_controller)):
+    if not os.path.exists(rust_lib_dojo): print(f"{R}{cross} Rust library not found: {rust_lib_dojo}{X}")
+    if not os.path.exists(rust_lib_controller): print(f"{R}{cross} Rust library not found: {rust_lib_controller}{X}")
     Exit(1)
 
 sources = sorted(glob.glob("src/**/*.cpp", recursive=True))

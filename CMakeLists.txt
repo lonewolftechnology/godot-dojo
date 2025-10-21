@@ -84,7 +84,7 @@ if(TARGET apply_dojo_c_patches)
 endif()
 
 # controller.c (use submodule directly; avoid FetchContent/_deps)
-set(controller_c_SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/external/controller.c)
+set(controller_c_SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/external/controller.c/bindings/c/)
 # Place Rust build artifacts under the current CMake build dir to let CMake/Ninja manage rules.
 set(controller_c_BINARY_DIR ${CMAKE_CURRENT_BINARY_DIR}/controller_c)
 
@@ -96,9 +96,9 @@ if(PATCH_EXECUTABLE)
     file(GLOB CONTROLLER_C_PATCH_FILES "${CMAKE_CURRENT_SOURCE_DIR}/patches/controller.c/*.patch")
     if(CONTROLLER_C_PATCH_FILES)
         add_custom_target(apply_controller_c_patches
-                COMMAND ${CMAKE_COMMAND} -E echo "Resetting and patching controller.c submodule..."
-                COMMAND ${CMAKE_COMMAND} -E chdir ${controller_c_SOURCE_DIR} git reset --hard
-                COMMAND ${CMAKE_COMMAND} -E chdir ${controller_c_SOURCE_DIR} git apply ${CONTROLLER_C_PATCH_FILES}
+                COMMAND ${CMAKE_COMMAND} -E echo "Resetting and patching controller.c submodule (at root)..."
+                COMMAND ${CMAKE_COMMAND} -E chdir ${CMAKE_CURRENT_SOURCE_DIR}/external/controller.c git reset --hard
+                COMMAND ${CMAKE_COMMAND} -E chdir ${CMAKE_CURRENT_SOURCE_DIR}/external/controller.c git apply ${CONTROLLER_C_PATCH_FILES}
                 COMMENT "Resetting controller.c and applying patches..."
                 )
     endif()
@@ -111,7 +111,10 @@ endif()
 
 configure_file(plugin_template.gdextension.in godot-dojo.gdextension)
 
-target_include_directories(godot-dojo PRIVATE include src)
+target_include_directories(godot-dojo PRIVATE include src
+    ${controller_c_BINARY_DIR} # Include generated headers from controller_c
+    ${CMAKE_CURRENT_SOURCE_DIR}/external/controller.c/bindings/c # Include C bindings for controller.c
+)
 
 # Link core libraries
 if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
