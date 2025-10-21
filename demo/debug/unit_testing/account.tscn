@@ -3,10 +3,10 @@
 [ext_resource type="Script" uid="uid://tglr6c87m0ic" path="res://debug/unit_testing/account.gd" id="1_t46s5"]
 [ext_resource type="Script" uid="uid://ddffsx4elm2xp" path="res://debug/unit_testing/output_tab.gd" id="2_ow3x2"]
 
-[sub_resource type="OptionClause" id="OptionClause_t46s5"]
+[sub_resource type="DojoOptionClause" id="DojoOptionClause_t46s5"]
 
 [sub_resource type="MessageSubscription" id="MessageSubscription_t46s5"]
-clause = SubResource("OptionClause_t46s5")
+clause = SubResource("DojoOptionClause_t46s5")
 
 [sub_resource type="TransactionSubscription" id="TransactionSubscription_t46s5"]
 filter_enabled = true
