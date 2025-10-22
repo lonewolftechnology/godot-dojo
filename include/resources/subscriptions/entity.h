@@ -22,11 +22,11 @@ public:
         return ENTITY;
     }
 
-    Ref<DojoOptionChar> get_clause() const {
+    Ref<DojoOptionClause> get_clause() const {
         return clause;
     }
 
-    void set_clause(const Ref<DojoOptionChar> &p_clause) {
+    void set_clause(const Ref<DojoOptionClause> &p_clause) {
         clause = p_clause;
     }
 
@@ -58,7 +58,7 @@ protected:
     static void _bind_methods() {
         ClassDB::bind_method(D_METHOD("get_clause"), &EntitySubscription::get_clause);
         ClassDB::bind_method(D_METHOD("set_clause", "p_clause"), &EntitySubscription::set_clause);
-        ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "clause", PROPERTY_HINT_RESOURCE_TYPE, "DojoOptionChar"), "set_clause",
+        ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "clause", PROPERTY_HINT_RESOURCE_TYPE, "DojoOptionClause"), "set_clause",
                      "get_clause");
 
         ClassDB::bind_method(D_METHOD("get_world_addresses"), &EntitySubscription::get_world_addresses);

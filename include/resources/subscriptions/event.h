@@ -21,11 +21,11 @@ public:
         return EVENT;
     }
 
-    Ref<DojoOptionChar> get_clause() const {
+    Ref<DojoOptionClause> get_clause() const {
         return clause;
     }
 
-    void set_clause(const Ref<DojoOptionChar>& p_clause) {
+    void set_clause(const Ref<DojoOptionClause>& p_clause) {
         clause = p_clause;
     }
 
@@ -42,7 +42,7 @@ protected:
     {
         ClassDB::bind_method(D_METHOD("get_clause"), &EventSubscription::get_clause);
         ClassDB::bind_method(D_METHOD("set_clause", "p_clause"), &EventSubscription::set_clause);
-        ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "clause", PROPERTY_HINT_RESOURCE_TYPE, "DojoOptionChar"), "set_clause", "get_clause");
+        ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "clause", PROPERTY_HINT_RESOURCE_TYPE, "DojoOptionClause"), "set_clause", "get_clause");
     }
 
 };
