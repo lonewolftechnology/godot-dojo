@@ -771,7 +771,7 @@ jobs:
           key: ${{ runner.os }}-scons-${{ matrix.precision }}-windows-x86_64-release-${{ hashFiles('**/*.cpp', '**/*.h', 'SConstruct', 'external/godot-cpp/**/*.cpp', 'external/godot-cpp/**/*.h') }}
           restore-keys: |
             ${{ runner.os }}-scons-${{ matrix.precision }}-windows-x86_64-release-
-            ${{ runner.os }}-scons-${{ matrix.precision }}-windows-x86_64-
+            ${{ runneros }}-scons-${{ matrix.precision }}-windows-x86_64-
             ${{ runner.os }}-scons-${{ matrix.precision }}-windows-
 
       - name: Build release
@@ -945,14 +945,8 @@ jobs:
       - name: Upload assets to release
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: ${{ github.ref_name }}
+          append_body: true
           body: |
-            ## Latest Changes
-
-            ${{ needs.create_release.outputs.changelog_content }}
-
-            ### Commits Since Last Tag
-            ${{ needs.create_release.outputs.commits_log }}
 
             ### Downloads
             - [Standard Precision](https://github.com/${{ github.repository }}/releases/download/${{ github.ref_name }}/godot-dojo-${{ github.ref_name }}.zip)
