@@ -7,24 +7,21 @@
 #include <boost/multiprecision/cpp_dec_float.hpp>
 
 using boost::multiprecision::cpp_int;
-typedef boost::multiprecision::number<boost::multiprecision::cpp_dec_float<100>> cpp_dec_float_100;
+typedef boost::multiprecision::number<boost::multiprecision::cpp_dec_float<100> > cpp_dec_float_100;
 
 // Common template for to_bytes to reduce duplication
-template <typename T, size_t N>
-PackedByteArray value_to_bytes(const T& value)
-{
+template<typename T, size_t N>
+PackedByteArray value_to_bytes(const T &value) {
     std::vector<uint8_t> bytes_vec;
     boost::multiprecision::export_bits(value, std::back_inserter(bytes_vec), 8);
 
     PackedByteArray bytes;
     bytes.resize(N);
-    uint8_t* write_ptr = bytes.ptrw();
+    uint8_t *write_ptr = bytes.ptrw();
 
     uint8_t padding = 0x00;
-    if constexpr (std::is_signed_v<T>)
-    {
-        if (value < 0)
-        {
+    if constexpr (std::is_signed_v<T>) {
+        if (value < 0) {
             padding = 0xFF;
         }
     }
@@ -34,13 +31,10 @@ PackedByteArray value_to_bytes(const T& value)
     uint8_t temp_buffer[N];
     memset(temp_buffer, padding, N);
 
-    if (bytes_vec.size() > N)
-    {
+    if (bytes_vec.size() > N) {
         // This handles cases where boost might give more bytes than expected for negative numbers
         memcpy(temp_buffer, bytes_vec.data() + (bytes_vec.size() - N), N);
-    }
-    else
-    {
+    } else {
         memcpy(temp_buffer + (N - bytes_vec.size()), bytes_vec.data(), bytes_vec.size());
     }
 
@@ -50,31 +44,25 @@ PackedByteArray value_to_bytes(const T& value)
     return bytes;
 }
 
-template <typename T>
-DOJO::FieldElement value_to_felt(const T& value)
-{
+template<typename T>
+DOJO::FieldElement value_to_felt(const T &value) {
     std::vector<uint8_t> bytes_vec;
     boost::multiprecision::export_bits(value, std::back_inserter(bytes_vec), 8);
 
     DOJO::FieldElement felt = {};
 
     uint8_t padding = 0x00;
-    if constexpr (std::is_signed_v<T>)
-    {
-        if (value < 0)
-        {
+    if constexpr (std::is_signed_v<T>) {
+        if (value < 0) {
             padding = 0xFF;
         }
     }
     memset(felt.data, padding, 32);
 
     const size_t num_bytes = bytes_vec.size();
-    if (num_bytes > 32)
-    {
+    if (num_bytes > 32) {
         memcpy(felt.data, bytes_vec.data() + (num_bytes - 32), 32);
-    }
-    else
-    {
+    } else {
         memcpy(felt.data + (32 - num_bytes), bytes_vec.data(), num_bytes);
     }
 
@@ -83,29 +71,26 @@ DOJO::FieldElement value_to_felt(const T& value)
 
 // Template helper to initialize any big integer class from a Variant.
 // This removes code duplication from the _init methods and factory methods.
-template <typename T>
-void _initialize_from_variant(T* instance, const Variant& p_value)
-{
+template<typename T>
+void _initialize_from_variant(T *instance, const Variant &p_value) {
     // Initialize to a known, safe state first.
     instance->set_value(0);
 
-    switch (p_value.get_type())
-    {
-    case Variant::NIL:
-        // This handles .new() called with no arguments.
-        break;
-    case Variant::STRING:
-        instance->_init_from_string(p_value);
-        break;
-    case Variant::INT:
-        instance->_init_from_int(p_value);
-        break;
-    case Variant::FLOAT:
-        instance->_init_from_float(
-            p_value, ProjectSettings::get_singleton()->get_setting("dojo/config/fixed_point/default", 40));
-        break;
-    default:
-        {
+    switch (p_value.get_type()) {
+        case Variant::NIL:
+            // This handles .new() called with no arguments.
+            break;
+        case Variant::STRING:
+            instance->_init_from_string(p_value);
+            break;
+        case Variant::INT:
+            instance->_init_from_int(p_value);
+            break;
+        case Variant::FLOAT:
+            instance->_init_from_float(
+                p_value, ProjectSettings::get_singleton()->get_setting("dojo/config/fixed_point/default", 40));
+            break;
+        default: {
             String class_name = instance->get_class();
             Logger::error(
                 "Error: Invalid type for " + class_name +
@@ -116,34 +101,28 @@ void _initialize_from_variant(T* instance, const Variant& p_value)
 }
 
 // U128 Implementation
-U128::U128()
-{
+U128::U128() {
 }
 
-U128::~U128()
-{
+U128::~U128() {
 }
 
-void U128::_init(const Variant& p_value)
-{
+void U128::_init(const Variant &p_value) {
     // Default constructor for `U128.new()`
     _initialize_from_variant(this, p_value);
 }
 
-void U128::_init_from_string(const String& p_value)
-{
+void U128::_init_from_string(const String &p_value) {
     // Project is compiled with -fno-exceptions
     value = uint128_t(p_value.utf8().get_data());
 }
 
-void U128::_init_from_int(int64_t p_value)
-{
+void U128::_init_from_int(int64_t p_value) {
     // Initialize as a fixed-point number by reusing the float logic.
     _init_from_float(p_value, ProjectSettings::get_singleton()->get_setting("dojo/config/fixed_point/default", 40));
 }
 
-void U128::_init_from_float(double p_value, int p_precision)
-{
+void U128::_init_from_float(double p_value, int p_precision) {
     cpp_dec_float_100 float_val(p_value);
     cpp_int multiplier = 1;
     multiplier <<= p_precision;
@@ -151,12 +130,10 @@ void U128::_init_from_float(double p_value, int p_precision)
     value = DojoHelpers::to_starknet_negative_felt(fixed_point_val).convert_to<uint128_t>();
 }
 
-U128::U128(const uint8_t p_bytes[16])
-{
+U128::U128(const uint8_t p_bytes[16]) {
     std::vector<uint8_t> bytes(p_bytes, p_bytes + 16);
     boost::multiprecision::import_bits(value, bytes.begin(), bytes.end());
-    if ((value >> 127) & 1)
-    {
+    if ((value >> 127) & 1) {
         cpp_int val(value);
         val -= (cpp_int(1) << 128) + 1;
         signed_value = val.convert_to<int128_t>();
@@ -164,29 +141,23 @@ U128::U128(const uint8_t p_bytes[16])
     }
 }
 
-U128::U128(const uint128_t& p_value) : value(p_value)
-{
+U128::U128(const uint128_t &p_value) : value(p_value) {
 }
 
-String U128::to_string() const
-{
-    if (is_signed)
-    {
+String U128::to_string() const {
+    if (is_signed) {
         return String(signed_value.str().c_str());
     }
     return String(value.str().c_str());
 }
 
-double U128::to_float(int p_precision) const
-{
-    if (p_precision < 0)
-    {
+double U128::to_float(int p_precision) const {
+    if (p_precision < 0) {
         p_precision = ProjectSettings::get_singleton()->get_setting("dojo/config/fixed_point/default", 40);
     }
 
     cpp_int val(value);
-    if (is_signed)
-    {
+    if (is_signed) {
         val = signed_value;
     }
 
@@ -200,15 +171,13 @@ PackedByteArray U128::to_bytes() const { return value_to_bytes<uint128_t, 16>(va
 
 DOJO::FieldElement U128::to_felt() const { return value_to_felt<uint128_t>(value); }
 
-Ref<U128> U128::from_variant(const Variant& p_value)
-{
+Ref<U128> U128::from_variant(const Variant &p_value) {
     Ref<U128> instance = memnew(U128);
     _initialize_from_variant(instance.ptr(), p_value);
     return instance;
 }
 
-PackedByteArray U128::_to_felt_bytes() const
-{
+PackedByteArray U128::_to_felt_bytes() const {
     DOJO::FieldElement felt = to_felt();
     PackedByteArray bytes;
     bytes.resize(32);
@@ -216,35 +185,79 @@ PackedByteArray U128::_to_felt_bytes() const
     return bytes;
 }
 
+int U128::get_width() const {
+    if (is_signed) {
+        if (signed_value == 0) {
+            return 0;
+        }
+        return boost::multiprecision::msb(abs(signed_value)) + 1;
+    }
+    if (value == 0) {
+        return 0;
+    }
+    // msb() returns the index of the most significant bit.
+    // Add 1 to get the total number of bits.
+    return boost::multiprecision::msb(value) + 1;
+}
+
+uint64_t U128::get_uint64() const {
+    if (is_signed) {
+        if (signed_value < 0) {
+            Logger::error("U128 value ", signed_value.str().c_str(), " is negative and cannot be converted to uint64_t.");
+            return 0;
+        }
+    }
+
+    // An unsigned 128-bit integer fits in an unsigned 64-bit integer if its width is 64 bits or less.
+    if (get_width() <= 64) {
+        return static_cast<uint64_t>(value);
+    }
+    Logger::error("U128 value ", value.str().c_str(), " is too large to fit in a uint64_t.");
+    return 0;
+}
+
+int64_t U128::get_int64() const {
+    if (is_signed) {
+        if (signed_value >= std::numeric_limits<int64_t>::min() &&
+            signed_value <= std::numeric_limits<int64_t>::max()) {
+            return static_cast<int64_t>(signed_value);
+        }
+        Logger::error("U128 value ", signed_value.str().c_str(), " is out of int64_t range.");
+        return 0;
+    }
+
+    // An unsigned 128-bit integer fits in a signed 64-bit integer if it's less than or equal to
+    // INT64_MAX (2^63 - 1), which has a width of 63 bits.
+    if (get_width() <= 63) {
+        return static_cast<int64_t>(value);
+    }
+    Logger::error("U128 value ", value.str().c_str(), " is too large to fit in a signed int64_t.");
+    return 0;
+}
+
 // I128 Implementation
-I128::I128()
-{
+I128::I128() {
 }
 
-I128::~I128()
-{
+I128::~I128() {
 }
 
-void I128::_init(const Variant& p_value)
-{
+void I128::_init(const Variant &p_value) {
     // Default constructor for `I128.new()`
     _initialize_from_variant(this, p_value);
 }
 
-void I128::_init_from_string(const String& p_value)
-{
+void I128::_init_from_string(const String &p_value) {
     // Project is compiled with -fno-exceptions
     value = int128_t(p_value.utf8().get_data());
 }
 
-void I128::_init_from_int(int64_t p_value)
-{
+void I128::_init_from_int(int64_t p_value) {
     // Initialize as a fixed-point number by reusing the float logic.
     _init_from_float(p_value, ProjectSettings::get_singleton()->get_setting("dojo/config/fixed_point/default", 40));
 }
 
-void I128::_init_from_float(double p_value, int p_precision)
-{
+void I128::_init_from_float(double p_value, int p_precision) {
     cpp_dec_float_100 float_val(p_value);
     cpp_int multiplier = 1;
     multiplier <<= p_precision;
@@ -252,31 +265,25 @@ void I128::_init_from_float(double p_value, int p_precision)
     value = fixed_point_val.convert_to<int128_t>();
 }
 
-I128::I128(const uint8_t p_bytes[16])
-{
+I128::I128(const uint8_t p_bytes[16]) {
     std::vector<uint8_t> bytes(p_bytes, p_bytes + 16);
     boost::multiprecision::import_bits(value, bytes.begin(), bytes.end());
-    if (value > 0 && (value >> 127) & 1)
-    {
+    if (value > 0 && (value >> 127) & 1) {
         cpp_int val(value);
         val -= (cpp_int(1) << 128);
         value = val.convert_to<int128_t>();
     }
 }
 
-I128::I128(const int128_t& p_value) : value(p_value)
-{
+I128::I128(const int128_t &p_value) : value(p_value) {
 }
 
-String I128::to_string() const
-{
+String I128::to_string() const {
     return String(value.str().c_str());
 }
 
-double I128::to_float(int p_precision) const
-{
-    if (p_precision < 0)
-    {
+double I128::to_float(int p_precision) const {
+    if (p_precision < 0) {
         p_precision = ProjectSettings::get_singleton()->get_setting("dojo/config/fixed_point/default", 40);
     }
     cpp_int divisor = 1;
@@ -287,22 +294,19 @@ double I128::to_float(int p_precision) const
 
 PackedByteArray I128::to_bytes() const { return value_to_bytes<int128_t, 16>(value); }
 
-DOJO::FieldElement I128::to_felt() const
-{
+DOJO::FieldElement I128::to_felt() const {
     cpp_int val(value);
     val = DojoHelpers::to_starknet_negative_felt(val);
     return value_to_felt<cpp_int>(val);
 }
 
-Ref<I128> I128::from_variant(const Variant& p_value)
-{
+Ref<I128> I128::from_variant(const Variant &p_value) {
     Ref<I128> instance = memnew(I128);
     _initialize_from_variant(instance.ptr(), p_value);
     return instance;
 }
 
-PackedByteArray I128::_to_felt_bytes() const
-{
+PackedByteArray I128::_to_felt_bytes() const {
     DOJO::FieldElement felt = to_felt();
     PackedByteArray bytes;
     bytes.resize(32);
@@ -310,35 +314,48 @@ PackedByteArray I128::_to_felt_bytes() const
     return bytes;
 }
 
+int I128::get_width() const {
+    if (value == 0) {
+        return 0;
+    }
+    // msb() returns the index of the most significant bit.
+    // Add 1 to get the total number of bits.
+    return boost::multiprecision::msb(abs(value)) + 1;
+}
+
+int64_t I128::get_int64() const {
+    // A signed 128-bit integer fits in a signed 64-bit integer if it needs 64 bits or less
+    // to be represented (63 for magnitude + 1 for sign).
+    if (get_width() <= 64) {
+        return static_cast<int64_t>(value);
+    }
+    Logger::error("I128 value ", value.str().c_str(), " is out of int64_t range.");
+    return 0;
+}
+
 // U256 Implementation
-U256::U256()
-{
+U256::U256() {
 }
 
-U256::~U256()
-{
+U256::~U256() {
 }
 
-void U256::_init(const Variant& p_value)
-{
+void U256::_init(const Variant &p_value) {
     // Default constructor for `U256.new()`
     _initialize_from_variant(this, p_value);
 }
 
-void U256::_init_from_string(const String& p_value)
-{
+void U256::_init_from_string(const String &p_value) {
     // Project is compiled with -fno-exceptions
     value = uint256_t(p_value.utf8().get_data());
 }
 
-void U256::_init_from_int(int64_t p_value)
-{
+void U256::_init_from_int(int64_t p_value) {
     // Initialize as a fixed-point number by reusing the float logic.
     _init_from_float(p_value, ProjectSettings::get_singleton()->get_setting("dojo/config/fixed_point/default", 40));
 }
 
-void U256::_init_from_float(double p_value, int p_precision)
-{
+void U256::_init_from_float(double p_value, int p_precision) {
     cpp_dec_float_100 float_val(p_value);
     cpp_int multiplier = 1;
     multiplier <<= p_precision;
@@ -346,32 +363,26 @@ void U256::_init_from_float(double p_value, int p_precision)
     value = DojoHelpers::to_starknet_negative_felt(fixed_point_val).convert_to<uint256_t>();
 }
 
-U256::U256(const DOJO::U256& p_value)
-{
+U256::U256(const DOJO::U256 &p_value) {
     std::vector<uint8_t> bytes(p_value.data, p_value.data + 32);
     boost::multiprecision::import_bits(value, bytes.begin(), bytes.end());
 }
 
-String U256::to_string() const
-{
+String U256::to_string() const {
     cpp_int val(value);
-    if (val > DojoHelpers::STARK_PRIME / 2)
-    {
+    if (val > DojoHelpers::STARK_PRIME / 2) {
         val -= DojoHelpers::STARK_PRIME;
     }
     return String(val.str().c_str());
 }
 
-double U256::to_float(int p_precision) const
-{
-    if (p_precision < 0)
-    {
+double U256::to_float(int p_precision) const {
+    if (p_precision < 0) {
         p_precision = ProjectSettings::get_singleton()->get_setting("dojo/config/fixed_point/default", 40);
     }
 
     cpp_int val(value);
-    if (val > DojoHelpers::STARK_PRIME / 2)
-    {
+    if (val > DojoHelpers::STARK_PRIME / 2) {
         val -= DojoHelpers::STARK_PRIME;
     }
 
@@ -383,32 +394,55 @@ double U256::to_float(int p_precision) const
 
 PackedByteArray U256::to_bytes() const { return value_to_bytes<uint256_t, 32>(value); }
 
-Ref<U128> U256::get_low() const
-{
+Ref<U128> U256::get_low() const {
     return memnew(U128(value.convert_to<uint128_t>()));
 }
 
-Ref<U128> U256::get_high() const
-{
+Ref<U128> U256::get_high() const {
     return memnew(U128((value >> 128).convert_to<uint128_t>()));
 }
 
-DOJO::FieldElement U256::to_felt() const
-{
+int U256::get_width() const {
+    if (value == 0) {
+        return 0;
+    }
+    // msb() returns the index of the most significant bit.
+    // Add 1 to get the total number of bits.
+    return boost::multiprecision::msb(value) + 1;
+}
+
+uint64_t U256::get_uint64() const {
+    // An unsigned 256-bit integer fits in an unsigned 64-bit integer if its width is 64 bits or less.
+    if (get_width() <= 64) {
+        return static_cast<uint64_t>(value);
+    }
+    Logger::error("U256 value ", value.str().c_str(), " is too large to fit in a uint64_t.");
+    return 0;
+}
+
+int64_t U256::get_int64() const {
+    // An unsigned 256-bit integer fits in a signed 64-bit integer if it's less than or equal to
+    // INT64_MAX (2^63 - 1), which has a width of 63 bits.
+    if (get_width() <= 63) {
+        return static_cast<int64_t>(value);
+    }
+    Logger::error("U256 value ", value.str().c_str(), " is too large to fit in a signed int64_t.");
+    return 0;
+}
+
+DOJO::FieldElement U256::to_felt() const {
     Logger::warning(
         "U256::to_felt() is deprecated and likely incorrect for calldata. A u256 is represented by two felts (low, high). This function truncates to the low part. Use get_low() and get_high() instead.");
     return value_to_felt<uint128_t>(value.convert_to<uint128_t>());
 }
 
-Ref<U256> U256::from_variant(const Variant& p_value)
-{
+Ref<U256> U256::from_variant(const Variant &p_value) {
     Ref<U256> instance = memnew(U256);
     _initialize_from_variant(instance.ptr(), p_value);
     return instance;
 }
 
-PackedByteArray U256::_to_felt_bytes() const
-{
+PackedByteArray U256::_to_felt_bytes() const {
     DOJO::FieldElement felt = to_felt();
     PackedByteArray bytes;
     bytes.resize(32);
