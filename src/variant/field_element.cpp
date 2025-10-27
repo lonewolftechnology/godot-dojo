@@ -177,7 +177,8 @@ String FieldElement::to_string() const
     String ret = "0x";
     for (unsigned char i : felt->data)
     {
-        ret += String::num_int64(i, 16, false);
+        String byte_str = String::num_int64(i, 16, false);
+        ret += byte_str.pad_zeros(2);
     };
 
     return ret;
