@@ -74,15 +74,40 @@ print(f"{B}{rocket} Building godot-dojo{X}")
 
 # Cleanup
 if GetOption('clean'):
-    print(f"{Y}{broom} Cleaning...{X}")
+    print(f"{Y}{broom} Starting cleanup process...{X}")
+
+    # Limpiar proyecto Rust dojo.c
+    print(f"{B}  -> Cleaning Rust project: external/dojo.c{X}")
     try:
-        subprocess.run(["cargo", "clean"], cwd="external/dojo.c", check=True)
-        shutil.rmtree("demo/addons/godot-dojo", ignore_errors=True)
-        shutil.rmtree("demo/dist", ignore_errors=True)
-        subprocess.run(["scons", "-C", "external/godot-cpp", "--clean"], check=False)
-    except:
-        pass
-    print(f"{G}{check} Cleanup complete{X}")
+        subprocess.run(["cargo", "clean"], cwd="external/dojo.c", check=True, capture_output=False, text=True)
+        print(f"{G}     {check} dojo.c cleanup complete.{X}")
+    except subprocess.CalledProcessError as e:
+        print(f"{R}     {cross} dojo.c cleanup failed: {e.stderr}{X}")
+
+    # Limpiar proyecto Rust controller.c
+    print(f"{B}  -> Cleaning Rust project: external/controller.c{X}")
+    try:
+        subprocess.run(["cargo", "clean"], cwd="external/controller.c", check=True, capture_output=False, text=True)
+        print(f"{G}     {check} controller.c cleanup complete.{X}")
+    except subprocess.CalledProcessError as e:
+        print(f"{R}     {cross} controller.c cleanup failed: {e.stderr}{X}")
+
+    # Eliminar directorio del addon
+    print(f"{B}  -> Deleting addon directory: demo/addons/godot-dojo{X}")
+    shutil.rmtree("demo/addons/godot-dojo", ignore_errors=True)
+    print(f"{G}     {check} Addon directory deleted.{X}")
+
+    # Eliminar directorio de distribución
+    print(f"{B}  -> Deleting distribution directory: demo/dist{X}")
+    shutil.rmtree("demo/dist", ignore_errors=True)
+    print(f"{G}     {check} Distribution directory deleted.{X}")
+
+    # Limpiar submódulo godot-cpp
+    print(f"{B}  -> Cleaning godot-cpp submodule...{X}")
+    subprocess.run(["scons", "-C", "external/godot-cpp", "--clean"], check=False, capture_output=False)
+    print(f"{G}     {check} godot-cpp cleanup complete.{X}")
+
+    print(f"\n{G}{check} Cleanup process finished.{X}")
     Return()
 
 # Setup
@@ -192,8 +217,8 @@ try:
 
     # Ensure targets are also available in the submodule directory context
     for rt in targets_to_check:
-        subprocess.run(["rustup", "target", "add", rt], check=False, cwd="external/dojo.c", capture_output=True)
-        subprocess.run(["rustup", "target", "add", rt], check=False, cwd="external/controller.c", capture_output=True)
+        subprocess.run(["rustup", "target", "add", rt], check=False, cwd="external/dojo.c", capture_output=False)
+        subprocess.run(["rustup", "target", "add", rt], check=False, cwd="external/controller.c", capture_output=False)
 
 except subprocess.CalledProcessError as e:
     print(f"{R}{cross} Failed to check or install Rust target: {e}{X}")
@@ -204,15 +229,15 @@ def apply_patches():
     """Checks for and applies all .patch files found in the 'patches' directory."""
     patches_dir = 'patches'
     if not os.path.isdir(patches_dir):
-        print(f"{B}Directorio de parches '{patches_dir}' no encontrado, omitiendo.{X}")
+        print(f"{B}Patch directory '{patches_dir}' not found, skipping.{X}")
         return
 
     patch_files = sorted(glob.glob(os.path.join(patches_dir, '*.patch')))
     if not patch_files:
-        print(f"{B}No se encontraron archivos .patch en '{patches_dir}', omitiendo.{X}")
+        print(f"{B}No .patch files found in '{patches_dir}', skipping.{X}")
         return
 
-    print(f"{Y}{clipboard} Aplicando parches desde el directorio '{patches_dir}'...{X}")
+    print(f"{Y}{clipboard} Applying patches from '{patches_dir}' directory...{X}")
 
     # Verificar si el comando 'patch' está disponible.
     if not shutil.which("patch"):
@@ -221,28 +246,36 @@ def apply_patches():
         print(f"{B}On Windows, the easiest way to get it is by installing 'Git for Windows':{X}")
         print(f"{G}https://git-scm.com/download/win{X}")
         print(f"{Y}Please install it and make sure its tools are added to your PATH, then try again.{X}")
-        Exit(1) # Salir si el comando patch no está disponible.
+        Exit(1) # Exit if patch command is not available.
 
     for patch_file in patch_files:
-        print(f"{Y}Aplicando parche: {os.path.basename(patch_file)}...{X}")
+        print(f"{Y}Applying patch: {os.path.basename(patch_file)}...{X}")
         try:
             subprocess.run(['patch', '-p1', '-i', os.path.abspath(patch_file)], check=True)
-            print(f"{G}{check} Parche {os.path.basename(patch_file)} aplicado con éxito.{X}")
+            print(f"{G}{check} Patch {os.path.basename(patch_file)} applied successfully.{X}")
         except subprocess.CalledProcessError as e:
-            print(f"{R}{cross} Falló la aplicación del parche {os.path.basename(patch_file)}: {e}{X}")
+            print(f"{R}{cross} Failed to apply patch {os.path.basename(patch_file)}: {e}{X}")
             Exit(1)
 
-def _compile_rust_library(lib_name, lib_path, is_release, extra_flags=None):
+def _compile_rust_library(lib_name, lib_path, is_release, cargo_flags=None, rustc_flags=None):
     """Compiles a Rust library, handling normal, universal, and web builds."""
     lib_version = _get_git_submodule_version(lib_path) or "unknown"
     print(f"{Y}{package} Compiling {lib_name} ({lib_version})...{X}")
 
     build_mode = "release" if is_release else "debug"
     base_cmd = ["cargo", "build", "--target", rust_target]
+
+    # Prepare environment variables
+    env_vars = os.environ.copy()
+    current_rustflags = env_vars.get("RUSTFLAGS", "")
+    if rustc_flags:
+        current_rustflags += " " + " ".join(rustc_flags)
+    env_vars["RUSTFLAGS"] = current_rustflags.strip()
+
     if is_release:
         base_cmd.append("--release")
-    if extra_flags:
-        base_cmd.extend(extra_flags)
+    if cargo_flags:
+        base_cmd.extend(cargo_flags)
 
     # Special handling for macOS universal builds
     if platform == "macos" and arch == "universal":
@@ -256,7 +289,6 @@ def _compile_rust_library(lib_name, lib_path, is_release, extra_flags=None):
             if is_release:
                 cargo_cmd.append("--release")
 
-            env_vars = os.environ.copy()
             env_vars["MACOSX_DEPLOYMENT_TARGET"] = "14.0"
             rustflags = env_vars.get("RUSTFLAGS", "")
             if rustflags: rustflags += " "
@@ -277,7 +309,6 @@ def _compile_rust_library(lib_name, lib_path, is_release, extra_flags=None):
         return # Handled
 
     # Standard build for other platforms
-    env_vars = os.environ.copy()
     if platform == "macos":
         print(f"{Y}Setting macOS deployment target to 14.0 for {lib_name}...{X}")
         env_vars["MACOSX_DEPLOYMENT_TARGET"] = "14.0"
@@ -289,6 +320,39 @@ def _compile_rust_library(lib_name, lib_path, is_release, extra_flags=None):
     print(f"{Y}Running cargo command for {lib_name}: {' '.join(base_cmd)}{X}")
     subprocess.run(base_cmd, check=True, cwd=lib_path, env=env_vars)
 
+def _regenerate_uniffi_bindings():
+    """
+    Regenerates the UniFFI C++ bindings for controller.c by running the
+    dedicated Rust binary for this task.
+    """
+    print(f"{Y}{clipboard} Regenerating UniFFI bindings for controller.c...{X}")
+
+    # Check if uniffi-bindgen-cpp is installed. If not, install it from the specified repo.
+    if not shutil.which("uniffi-bindgen-cpp"):
+        print(f"{Y}Command 'uniffi-bindgen-cpp' not found. Installing from git...{X}")
+        install_cmd = [
+            "cargo", "install", "uniffi-bindgen-cpp",
+            "--git", "https://github.com/Larkooo/uniffi-bindgen-cpp",
+            "--branch", "update-0.30"
+        ]
+        try:
+            subprocess.run(install_cmd, check=True)
+            print(f"{G}{check} 'uniffi-bindgen-cpp' installed successfully.{X}")
+        except subprocess.CalledProcessError as e:
+            print(f"{R}{cross} Failed to install 'uniffi-bindgen-cpp': {e}{X}")
+            Exit(1)
+
+    bridge_crate_path = "external/controller.c/crates/bridge"
+    try:
+        cmd = ["cargo", "run", "--bin", "uniffi-bindgen-cpp"]
+        # We use capture_output to show stdout/stderr only on failure.
+        subprocess.run(cmd, cwd=bridge_crate_path, check=True, capture_output=False, text=True)
+        print(f"{G}{check} UniFFI C++ bindings regenerated successfully.{X}")
+    except subprocess.CalledProcessError as e:
+        print(f"{R}{cross} Failed to regenerate UniFFI bindings:{X}")
+        print(f"{R}STDOUT:\n{e.stdout}{X}")
+        print(f"{R}STDERR:\n{e.stderr}{X}")
+        Exit(1)
 
 is_release_build = target == "template_release"
 
@@ -301,7 +365,7 @@ if env["platform"] == "web":
     #    so scons can link it into the final GDExtension .wasm file.
 
     # Step 1: Build for wasm-bindgen
-    print(f"{Y}Building dojo.c for wasm-bindgen...{X}")
+    print(f"{Y}Building dojo.c for wasm-bindgen (step 1/3)...{X}")
     cmd_bindgen = ["cargo", "build", "--target", rust_target]
     if is_release_build:
         cmd_bindgen.append("--release")
@@ -311,7 +375,7 @@ if env["platform"] == "web":
     subprocess.run(cmd_bindgen, check=True, cwd="external/dojo.c", env=bindgen_env)
 
     # Apply patch immediately after Rust compilation
-    apply_patches()
+    # apply_patches() # Patches are applied later for web
 
     # Step 2: Run wasm-bindgen
     print(f"{Y}Running wasm-bindgen...{X}")
@@ -339,29 +403,38 @@ if env["platform"] == "web":
 
     # Step 3: Build dojo.c and controller.c as rlib for SCons linking
     print(f"{Y}Building libraries as rlib for SCons linking...{X}")
-    rlib_flags = ["-C", "relocation-model=pic"]
-    _compile_rust_library("dojo_c", "external/dojo.c", is_release_build, extra_flags=rlib_flags)
-    _compile_rust_library("controller_c", "external/controller.c", is_release_build, extra_flags=rlib_flags)
-
+    rlib_flags = ["-C", "relocation-model=pic", "-C", "target-feature=+atomics,+bulk-memory,+mutable-globals"]
+    _compile_rust_library("dojo_c", "external/dojo.c", is_release_build, rustc_flags=rlib_flags)
+    _compile_rust_library("controller_uniffi", "external/controller.c", is_release_build, cargo_flags=["-p", "controller-uniffi"], rustc_flags=rlib_flags)
 else:
     # Standard compilation for all non-web platforms
     _compile_rust_library("dojo_c", "external/dojo.c", is_release_build)
-    _compile_rust_library("controller_c", "external/controller.c", is_release_build)
-    # Apply patch immediately after Rust compilation
-    apply_patches()
+    _compile_rust_library("controller_uniffi", "external/controller.c", is_release_build, cargo_flags=["-p", "controller-uniffi"])
+
+apply_patches()
+
+_regenerate_uniffi_bindings()
 
 # Configure library
 if platform != "android":
     # Android build requires lib prefix
     env['SHLIBPREFIX'] = ''
 prefix = env.subst('$SHLIBPREFIX')
-env.Append(CPPPATH=["src/", "include/", "external/dojo.c", "external/controller.c/bindings/c", "external/boost/include"])
+env.Append(CPPPATH=["src/", "include/", "external/dojo.c", "external/controller.c/bindings/cpp", "external/boost/include"])
 if platform == "macos":
     # Set macOS deployment target for C++ compilation
     print(f"{Y}Setting macOS deployment target for C++ compilation to 14.0...{X}")
     env['ENV']['MACOSX_DEPLOYMENT_TARGET'] = '14.0'
     env.Append(CCFLAGS=['-mmacosx-version-min=14.0'])
     env.Append(LINKFLAGS=['-mmacosx-version-min=14.0'])
+
+# Enable C++ exceptions for try/catch blocks
+if env["platform"] == "windows" and not env.get("use_mingw"):
+    # For MSVC
+    env.Append(CXXFLAGS=['/EHsc', '/std:c++20'])
+else:
+    # For GCC/Clang
+    env.Append(CXXFLAGS=['-fexceptions', '-std=c++20', '-Wno-template-id-cdtor'])
 
 # List to hold the targets for the Android plugin files.
 android_plugin_targets = []
@@ -417,16 +490,16 @@ if platform == "windows":
     if use_mingw:
         # For MinGW, we link against the static .a library
         rust_lib_dojo = f"{rust_lib_dir_dojo}/libdojo_c.a"
-        rust_lib_controller = f"{rust_lib_dir_controller}/libcontroller_c.a"
+        rust_lib_controller = f"{rust_lib_dir_controller}/libcontroller_uniffi.a"
     elif is_host_windows:
         # For MSVC, we link against the static .lib library
         rust_lib_dojo = f"{rust_lib_dir_dojo}/dojo_c.lib"
-        rust_lib_controller = f"{rust_lib_dir_controller}/controller_c.lib"
+        rust_lib_controller = f"{rust_lib_dir_controller}/controller_uniffi.lib"
         env.Append(LINKFLAGS=['/NODEFAULTLIB:MSVCRT'])
     env.Append(LIBS=['ws2_32', 'advapi32', 'ntdll'])
 elif platform == "linux":
     rust_lib_dojo = f"{rust_lib_dir_dojo}/libdojo_c.a"
-    rust_lib_controller = f"{rust_lib_dir_controller}/libcontroller_c.a"
+    rust_lib_controller = f"{rust_lib_dir_controller}/libcontroller_uniffi.a"
     # Use pkg-config to add proper include/lib flags for dbus-1 and ensure correct link order.
     # It's important to add this *after* our own library which depends on it.
     try:
@@ -436,11 +509,11 @@ elif platform == "linux":
 elif platform == "web":
     print(f"{Y}{clipboard} Web export links to rlib files.{X}")
     rust_lib_dojo = f"{rust_lib_dir_dojo}/libdojo_c.rlib"
-    rust_lib_controller = f"{rust_lib_dir_controller}/libcontroller_c.rlib"
+    rust_lib_controller = f"{rust_lib_dir_controller}/libcontroller_uniffi.rlib"
 else:
     # Default for other platforms like macos (non-universal), android, ios
     rust_lib_dojo = f"{rust_lib_dir_dojo}/libdojo_c.a"
-    rust_lib_controller = f"{rust_lib_dir_controller}/libcontroller_c.a"
+    rust_lib_controller = f"{rust_lib_dir_controller}/libcontroller_uniffi.a"
 
 if rust_lib_dojo and rust_lib_controller:
     # Link our libraries first, then the system libraries they depend on.
@@ -454,7 +527,9 @@ if platform != "web" and (not os.path.exists(rust_lib_dojo) or not os.path.exist
     if not os.path.exists(rust_lib_controller): print(f"{R}{cross} Rust library not found: {rust_lib_controller}{X}")
     Exit(1)
 
-sources = sorted(glob.glob("src/**/*.cpp", recursive=True))
+sources = sorted(glob.glob("src/**/*.cpp", recursive=True)) + [
+    "external/controller.c/bindings/cpp/controller.cpp",
+]
 _godot_min = _detect_godot_min_requirement()
 _godot_tag = _get_git_submodule_version("external/godot-cpp")
 print(f"{Y}{clipboard} Building with {_godot_tag}.{X}")

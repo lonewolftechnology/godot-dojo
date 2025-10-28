@@ -1,8 +1,8 @@
-cmake_minimum_required(VERSION 3.31.6)
+cmake_minimum_required(VERSION 3.16)
 project(godot-dojo LANGUAGES CXX VERSION 0.1)
 
 set(CMAKE_CXX_STANDARD 17)
-set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_CXX_STANDARD_REQUIRED ON) # Ensure C++17 is used
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 set(CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake" ${CMAKE_MODULE_PATH})
@@ -13,6 +13,15 @@ file(GLOB_RECURSE SOURCES CONFIGURE_DEPENDS src/*.cpp src/*.c)
 file(GLOB_RECURSE HEADERS CONFIGURE_DEPENDS include/*.hpp include/*.h)
 
 add_library(godot-dojo SHARED ${SOURCES} ${HEADERS})
+
+# Enable C++ exceptions for try/catch blocks (cross-compiler compatible)
+if(MSVC)
+    # For MSVC on Windows
+    target_compile_options(godot-dojo PRIVATE /EHsc)
+else()
+    # For GCC/Clang on Linux, macOS, MinGW, etc.
+    target_compile_options(godot-dojo PRIVATE -fexceptions)
+endif()
 
 if(BUILD_WEB)
     message(STATUS "Web build enabled, defining WEB_ENABLED preprocessor macro.")
@@ -83,8 +92,26 @@ if(TARGET apply_dojo_c_patches)
     add_dependencies(dojo_c apply_dojo_c_patches)
 endif()
 
+# --- UniFFI C++ Binding Generation for controller.c ---
+# Define paths for the source UDL and the generated C++ bindings.
+set(CONTROLLER_BRIDGE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/external/controller.c/crates/bridge)
+set(CONTROLLER_UDL_FILE ${CONTROLLER_BRIDGE_DIR}/src/controller.udl)
+set(CONTROLLER_BINDINGS_DIR ${CMAKE_CURRENT_SOURCE_DIR}/external/controller.c/bindings/cpp)
+set(CONTROLLER_HPP ${CONTROLLER_BINDINGS_DIR}/controller.hpp)
+set(CONTROLLER_CPP ${CONTROLLER_BINDINGS_DIR}/controller.cpp)
+
+# This custom command tells CMake how to generate the C++ bindings from the UDL file.
+# It will run automatically if controller.hpp is missing or if controller.udl is newer.
+add_custom_command(
+    OUTPUT ${CONTROLLER_HPP} ${CONTROLLER_CPP}
+    COMMAND cargo run --bin uniffi-bindgen-cpp
+    WORKING_DIRECTORY ${CONTROLLER_BRIDGE_DIR}
+    DEPENDS ${CONTROLLER_UDL_FILE}
+    COMMENT "Generating C++ bindings for controller.c via UniFFI..."
+)
+
 # controller.c (use submodule directly; avoid FetchContent/_deps)
-set(controller_c_SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/external/controller.c/bindings/c/)
+set(controller_c_SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/external/controller.c/bindings/cpp/)
 # Place Rust build artifacts under the current CMake build dir to let CMake/Ninja manage rules.
 set(controller_c_BINARY_DIR ${CMAKE_CURRENT_BINARY_DIR}/controller_c)
 
@@ -112,7 +139,10 @@ endif()
 configure_file(plugin_template.gdextension.in godot-dojo.gdextension)
 
 target_include_directories(godot-dojo PRIVATE include src
-    ${controller_c_BINARY_DIR} # Include generated headers from controller_c
+    # We depend on the generated controller.hpp, so we need to include its directory.
+    # By adding the generated files to a custom command OUTPUT, CMake knows they need to be created.
+    ${CONTROLLER_BINDINGS_DIR}
+    ${controller_c_BINARY_DIR} # Include generated headers from rust build
     ${CMAKE_CURRENT_SOURCE_DIR}/external/controller.c/bindings/c # Include C bindings for controller.c
 )
 
