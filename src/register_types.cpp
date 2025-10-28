@@ -8,6 +8,9 @@
 #include "dojo_c_gdextension.h"
 
 #include "gdextension_interface.h"
+#include "classes/dojo_owner.h"
+#include "classes/dojo_controller.h"
+#include "classes/dojo_session_account.h"
 #include "editor/dojo_editor_plugin.h"
 #include "godot_cpp/core/defs.hpp"
 #include "godot_cpp/godot.hpp"
@@ -73,7 +76,7 @@ void initialize_dojoc_module(ModuleInitializationLevel p_level) {
 #ifdef WEB_ENABLED
         GDREGISTER_CLASS(DojoBridge);
 #endif
-
+        // Tools
         GDREGISTER_CLASS(DojoHelpers);
         // DojoTypes
         GDREGISTER_CLASS(DojoTy);
@@ -89,6 +92,9 @@ void initialize_dojoc_module(ModuleInitializationLevel p_level) {
         GDREGISTER_CLASS(ToriiClient);
         GDREGISTER_CLASS(ControllerAccount);
         GDREGISTER_CLASS(Account);
+        GDREGISTER_CLASS(DojoSessionAccount);
+        GDREGISTER_CLASS(DojoOwner);
+        GDREGISTER_CLASS(DojoController);
         // RefCounted
         GDREGISTER_CLASS(DojoOption);
         GDREGISTER_CLASS(DojoOptionU32);
