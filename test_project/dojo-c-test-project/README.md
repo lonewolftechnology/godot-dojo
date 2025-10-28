@@ -1,37 +1,57 @@
 ## Overview
 
-Este proyecto contiene lo básico para utilizar la GDExtension de DojoC en Godot.
-El contrato usado es una version modificada de Dojo-Starter
-Este proyecto no esta configurado completamente.
+This project contains the basic setup required to use the **DojoC GDExtension** in Godot.  
+The contract used is a modified version of **Dojo-Starter**.  
+This project is **not fully configured** yet.
 
-Este documento es una guia para el usuario para completar la configuración final del proyecto para poder ejecutarlo
+This document serves as a user guide to complete the final configuration steps needed to run the project.
+
+---
+
+## Setup
+
+First, download the latest version of the **Godot Dojo.c** plugin from:  
+`https://github.com/lonewolftechnology/godot-dojo`
+
+Unzip the archive and copy its contents into this project’s files.
+
+---
 
 ## Configuration
 
-Para la ejecucion de este juego se deben configurar los parametros del `ToriiClient` y `ControllerAccount`
+To run this game, you need to configure the parameters of both the **ToriiClient** and **ControllerAccount**.
 
-Existen tres maneras posibles de configurar los parametros para estos nodos, con distinto orden de precedencia
+There are three possible ways to configure these parameters, listed below in order of precedence:
 
-1. Usando los parametros de los respectivos métodos de cada uno
-2. Configurando los parametros desde el editor
-3. Configurando los project settings
+1. Using the parameters provided directly in each node’s methods.  
+2. Setting the parameters from the editor.  
+3. Setting them in the **Project Settings**.
 
-En este documento se utilizara la tercer opcion. Que es la de menor orden de presedencia.
+In this document, we’ll use the third option — configuring through **Project Settings**, which has the lowest precedence.
 
-1. Abra las project settings desde su menu
-2. Navegue hasta la sección de Dojo (que se deberia encontrar al final de las opciones)
-3. Configure:
-	- **Katana URL**: Con el url de su servidor de Katana. 
-Puede utilizar: `https://api.cartridge.gg/x/godot-demo-rookie/katana`
-	- **Torii URL**: Con el url de su servidor de Torii. 
-Puede utilizar: `https://api.cartridge.gg/x/godot-demo-rookie/torii`
-	- **Torii World Address**: Con los addresses de lo mundos de Torii.
-Este demo solo utiliza el siguiente address: `0x03a7e28319f3617da4135893c711c79a1306adcd87cca4fbd0ceda50ae397683`
-	- **Contract Address**: Con el address de su contrato.
-Puede utilizar: `0x01d18853e41a1607c1bd80c2e80c34db3a59999a038b54a2424fae4ac71278da`
-	- **Policies**: Con las policies que utiliza su contrato.
-Las policies usads por este contrato son:
- 		- "move": "Move in the world"
-		- "spawn": "Spawn in the world"
+### Steps
 
-	
+1. Open the **Project Settings** menu.  
+2. Navigate to the **Dojo** section (it should appear near the end of the list).  
+3. Configure the following:
+
+   - **Katana URL**: The URL of your Katana server.  
+	 You can use:  
+	 `https://api.cartridge.gg/x/godot-demo-rookie/katana`
+
+   - **Torii URL**: The URL of your Torii server.  
+	 You can use:  
+	 `https://api.cartridge.gg/x/godot-demo-rookie/torii`
+
+   - **Torii World Address**: The addresses of the Torii worlds.  
+	 This demo only uses the following address:  
+	 `0x03a7e28319f3617da4135893c711c79a1306adcd87cca4fbd0ceda50ae397683`
+
+   - **Contract Address**: The address of your contract.  
+	 You can use:  
+	 `0x01d18853e41a1607c1bd80c2e80c34db3a59999a038b54a2424fae4ac71278da`
+
+   - **Policies**: The policies used by your contract.  
+	 The policies used by this contract are:
+	 - `"move"`: “Move in the world”
+	 - `"spawn"`: “Spawn in the world”
