@@ -1,0 +1,16 @@
+[package]
+name = "godot-dojo-core"
+version = "0.1.0"
+
+[lib]
+crate-type = ["staticlib"]
+
+[dependencies]
+dojo-c = { path = "../external/dojo.c/crates/c" }
+controller-uniffi = { path = "../external/controller.c" }
+
+[build-dependencies]
+controller-uniffi = { path = "../external/controller.c", artifact = "bin:uniffi-bindgen-cpp" }
+
+[patch.crates-io]
+starknet-crypto = { git = "https://github.com/glihm/starknet-rs", rev = "c1e7e19f45f9fad6ea2796da9b7b3dcf8f9f2b82" } # Force to fix crate version mismatch
