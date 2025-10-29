@@ -34,17 +34,15 @@ func _on_controller_current_user_info(data:Dictionary) -> void:
 	var player_entity := controllers_manager.spawn_entity(address,true)
 	player_entity.set_username(username)
 
-
 func _on_events(args:Dictionary) -> void:
 	push_warning("CALLBACK EVENTS", args)
-	#_handle_callback(args)
 
 func _on_entities(args:Dictionary) -> void:
 	_handle_callback(args)
 
 func _handle_callback(args:Dictionary) -> void:
 	var data = args["models"]
-	# This is contract specific and data structure may change
+	# This is contract specific
 	var result_data : Dictionary
 	for entry : Dictionary in data:
 		result_data.merge(entry)
@@ -60,10 +58,8 @@ func _handle_callback(args:Dictionary) -> void:
 		if id == _player_address:
 			label_moves.text = "Moves: %s" % moves_model['remaining']
 
-
 func spawn() -> void:
 	connection.controller_account.execute_from_outside(connection.ACTIONS_CONTRACT, "spawn")
-
 
 func _on_start_screen_entered() -> void:
 	start()
@@ -80,18 +76,12 @@ func start() -> void:
 	for id in parsed.keys():
 		controllers_manager.spawn_entity(id)
 	
-	
-	#await get_tree().create_timer(0.1).timeout
 	_update_entities(parsed)	
 	get_controllers(parsed.keys())
 	spawn()
-	
-
 
 func get_controllers(addrs:Array = []) -> void:
-	print("&&&&&&& Addresses: %s\n"%str(addrs))
 	var data = connection.client.get_controllers(controller_query)
-	print("######\nControllers: %s\n######\n"%str(data))
 	for controller in data:
 		var id : String = controller["address"]
 		var username : String = controller["username"]
@@ -100,7 +90,6 @@ func get_controllers(addrs:Array = []) -> void:
 			entity = controllers_manager.spawn_entity(id)
 		
 		entity.set_username(username)
-
 
 func get_entities() -> Dictionary:
 	var data = connection.client.get_entities(DojoQuery.new())
@@ -113,10 +102,9 @@ func get_entities() -> Dictionary:
 			var remaining : int = 100
 			for key in model:
 				var entry:Dictionary = model[key]
-				#print("###### KEY: %s\n###### ENTRY: %s\n"%[str(key),str(entry)])
 				id = entry["player"]
 				match key:
-					"dojo_starter-Position":#,"dojo_starter-PositionSigned","dojo_starter-PositionI32":
+					"dojo_starter-Position":
 						var v : Dictionary = {}
 						
 						if entry.has("vec"):
@@ -149,7 +137,6 @@ func get_entities() -> Dictionary:
 						pass
 	return parsed_entities
 
-
 func _update_entities(parsed_entities:Dictionary) -> void:
 	for key in parsed_entities.keys():
 		var id : String = key
@@ -157,10 +144,8 @@ func _update_entities(parsed_entities:Dictionary) -> void:
 			var position : Vector2 = parsed_entities[key]["position"]
 			controllers_manager.move_controller(id,position)
 
-
-
 func _move(dir:Directions) -> void:
-	var calldata:Array = [dir,1]
+	var calldata:Array = [dir]
 	connection.controller_account.execute_from_outside(connection.ACTIONS_CONTRACT, "move", calldata)
 
 func _on_arrow_left_pressed() -> void:
