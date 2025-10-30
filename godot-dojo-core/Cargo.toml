@@ -14,6 +14,8 @@ controller-uniffi = { git = "https://github.com/cartridge-gg/controller.c", rev 
 dojo-uniffi = { git = "https://github.com/dojoengine/dojo.c", tag = "v1.8.7", artifact = "bin:uniffi-bindgen-cpp" }
 controller-uniffi = { git = "https://github.com/cartridge-gg/controller.c", rev = "a15fb31", lib = true, artifact = "bin:uniffi-bindgen-cpp" }
 cargo_metadata = "0.23.0"
+build-print = "1.0.1"
+
 
 [patch.crates-io]
 starknet-crypto = { git = "https://github.com/glihm/starknet-rs", rev = "c1e7e19f45f9fad6ea2796da9b7b3dcf8f9f2b82" } # Force to fix crate version mismatch
