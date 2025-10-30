@@ -76,21 +76,13 @@ print(f"{B}{rocket} Building godot-dojo{X}")
 if GetOption('clean'):
     print(f"{Y}{broom} Starting cleanup process...{X}")
 
-    # Limpiar proyecto Rust dojo.c
-    print(f"{B}  -> Cleaning Rust project: external/dojo.c{X}")
+    # Limpiar proyecto Rust godot-dojo-core
+    print(f"{B}  -> Cleaning Rust project: godot-dojo-core{X}")
     try:
-        subprocess.run(["cargo", "clean"], cwd="external/dojo.c", check=True, capture_output=False, text=True)
-        print(f"{G}     {check} dojo.c cleanup complete.{X}")
+        subprocess.run(["cargo", "clean"], cwd="godot-dojo-core", check=True, capture_output=False, text=True)
+        print(f"{G}     {check} godot-dojo-core cleanup complete.{X}")
     except subprocess.CalledProcessError as e:
-        print(f"{R}     {cross} dojo.c cleanup failed: {e.stderr}{X}")
-
-    # Limpiar proyecto Rust controller.c
-    print(f"{B}  -> Cleaning Rust project: external/controller.c{X}")
-    try:
-        subprocess.run(["cargo", "clean"], cwd="external/controller.c", check=True, capture_output=False, text=True)
-        print(f"{G}     {check} controller.c cleanup complete.{X}")
-    except subprocess.CalledProcessError as e:
-        print(f"{R}     {cross} controller.c cleanup failed: {e.stderr}{X}")
+        print(f"{R}     {cross} godot-dojo-core cleanup failed: {e.stderr}{X}")
 
     # Eliminar directorio del addon
     print(f"{B}  -> Deleting addon directory: demo/addons/godot-dojo{X}")
@@ -217,17 +209,15 @@ try:
 
     # Ensure targets are also available in the submodule directory context
     for rt in targets_to_check:
-        subprocess.run(["rustup", "target", "add", rt], check=False, cwd="external/dojo.c", capture_output=False)
-        subprocess.run(["rustup", "target", "add", rt], check=False, cwd="external/controller.c", capture_output=False)
+        subprocess.run(["rustup", "target", "add", rt], check=False, cwd="godot-dojo-core", capture_output=False)
 
 except subprocess.CalledProcessError as e:
     print(f"{R}{cross} Failed to check or install Rust target: {e}{X}")
     # Continue anyway, as cargo will show a more specific error if needed
 
-
 def apply_patches():
     """Checks for and applies all .patch files found in the 'patches' directory."""
-    patches_dir = 'patches'
+    patches_dir = "patches"
     if not os.path.isdir(patches_dir):
         print(f"{B}Patch directory '{patches_dir}' not found, skipping.{X}")
         return
@@ -263,7 +253,7 @@ def _compile_rust_library(lib_name, lib_path, is_release, cargo_flags=None, rust
     print(f"{Y}{package} Compiling {lib_name} ({lib_version})...{X}")
 
     build_mode = "release" if is_release else "debug"
-    base_cmd = ["cargo", "build", "--target", rust_target]
+    base_cmd = ["cargo", "+nightly", "build", "-Z", "bindeps", "--target", rust_target]
 
     # Prepare environment variables
     env_vars = os.environ.copy()
@@ -285,7 +275,7 @@ def _compile_rust_library(lib_name, lib_path, is_release, cargo_flags=None, rust
 
         for rt in rust_targets_for_lipo:
             print(f"{Y}Compiling {lib_name} for target: {rt}...{X}")
-            cargo_cmd = ["cargo", "build", "--target", rt]
+            cargo_cmd = ["cargo", "+nightly", "build", "-Z", "bindeps", "--target", rt]
             if is_release:
                 cargo_cmd.append("--release")
 
@@ -320,59 +310,25 @@ def _compile_rust_library(lib_name, lib_path, is_release, cargo_flags=None, rust
     print(f"{Y}Running cargo command for {lib_name}: {' '.join(base_cmd)}{X}")
     subprocess.run(base_cmd, check=True, cwd=lib_path, env=env_vars)
 
-def _regenerate_uniffi_bindings():
-    """
-    Regenerates the UniFFI C++ bindings for controller.c by running the
-    dedicated Rust binary for this task.
-    """
-    print(f"{Y}{clipboard} Regenerating UniFFI bindings for controller.c...{X}")
-
-    # Check if uniffi-bindgen-cpp is installed. If not, install it from the specified repo.
-    if not shutil.which("uniffi-bindgen-cpp"):
-        print(f"{Y}Command 'uniffi-bindgen-cpp' not found. Installing from git...{X}")
-        install_cmd = [
-            "cargo", "install", "uniffi-bindgen-cpp",
-            "--git", "https://github.com/Larkooo/uniffi-bindgen-cpp",
-            "--branch", "update-0.30"
-        ]
-        try:
-            subprocess.run(install_cmd, check=True)
-            print(f"{G}{check} 'uniffi-bindgen-cpp' installed successfully.{X}")
-        except subprocess.CalledProcessError as e:
-            print(f"{R}{cross} Failed to install 'uniffi-bindgen-cpp': {e}{X}")
-            Exit(1)
-
-    bridge_crate_path = "external/controller.c/crates/bridge"
-    try:
-        cmd = ["cargo", "run", "--bin", "uniffi-bindgen-cpp"]
-        # We use capture_output to show stdout/stderr only on failure.
-        subprocess.run(cmd, cwd=bridge_crate_path, check=True, capture_output=False, text=True)
-        print(f"{G}{check} UniFFI C++ bindings regenerated successfully.{X}")
-    except subprocess.CalledProcessError as e:
-        print(f"{R}{cross} Failed to regenerate UniFFI bindings:{X}")
-        print(f"{R}STDOUT:\n{e.stdout}{X}")
-        print(f"{R}STDERR:\n{e.stderr}{X}")
-        Exit(1)
-
 is_release_build = target == "template_release"
 
 # Environment variables for WebAssembly
 if env["platform"] == "web":
     # For the web build, we need to do two things:
-    # 1. Build the dojo.c library with wasm-bindgen to create the JS interface (only for dojo.c).
+    # 1. Build the godot-dojo-core library with wasm-bindgen to create the JS interface.
     #    This build must NOT use `-C relocation-model=pic`.
-    # 2. Build the dojo.c and controller.c libraries as rlib with `-C relocation-model=pic`
+    # 2. Build the godot-dojo-core library as rlib with `-C relocation-model=pic`
     #    so scons can link it into the final GDExtension .wasm file.
 
     # Step 1: Build for wasm-bindgen
-    print(f"{Y}Building dojo.c for wasm-bindgen (step 1/3)...{X}")
-    cmd_bindgen = ["cargo", "build", "--target", rust_target]
+    print(f"{Y}Building godot-dojo-core for wasm-bindgen (step 1/3)...{X}")
+    cmd_bindgen = ["cargo", "+nightly", "build", "-Z", "bindeps", "--target", rust_target]
     if is_release_build:
         cmd_bindgen.append("--release")
 
     bindgen_env = os.environ.copy()
     bindgen_env["RUSTFLAGS"] = "-C target-feature=+atomics,+bulk-memory,+mutable-globals"
-    subprocess.run(cmd_bindgen, check=True, cwd="external/dojo.c", env=bindgen_env)
+    subprocess.run(cmd_bindgen, check=True, cwd="godot-dojo-core", env=bindgen_env)
 
     # Apply patch immediately after Rust compilation
     # apply_patches() # Patches are applied later for web
@@ -380,10 +336,10 @@ if env["platform"] == "web":
     # Step 2: Run wasm-bindgen
     print(f"{Y}Running wasm-bindgen...{X}")
     build_mode = "release" if is_release_build else "debug"
-    wasm_input_path = f"external/dojo.c/target/{rust_target}/{build_mode}/dojo_c.wasm"
+    wasm_input_path = f"godot-dojo-core/target/{rust_target}/{build_mode}/godot_dojo_core.wasm"
     out_dir = "demo/addons/godot-dojo/"
     os.makedirs(out_dir, exist_ok=True)
-    out_name = f"dojo_c_{build_mode}"
+    out_name = f"godot_dojo_core_{build_mode}"
 
     bindgen_cmd = [
         "wasm-bindgen", wasm_input_path,
@@ -401,26 +357,21 @@ if env["platform"] == "web":
         print(f"{R}Error: {e}{X}")
         Exit(1)
 
-    # Step 3: Build dojo.c and controller.c as rlib for SCons linking
+    # Step 3: Build godot-dojo-core as rlib for SCons linking
     print(f"{Y}Building libraries as rlib for SCons linking...{X}")
     rlib_flags = ["-C", "relocation-model=pic", "-C", "target-feature=+atomics,+bulk-memory,+mutable-globals"]
-    _compile_rust_library("dojo_c", "external/dojo.c", is_release_build, rustc_flags=rlib_flags)
-    _compile_rust_library("controller_uniffi", "external/controller.c", is_release_build, cargo_flags=["-p", "controller-uniffi"], rustc_flags=rlib_flags)
+    _compile_rust_library("godot_dojo_core", "godot-dojo-core", is_release_build, rustc_flags=rlib_flags) 
 else:
     # Standard compilation for all non-web platforms
-    _compile_rust_library("dojo_c", "external/dojo.c", is_release_build)
-    _compile_rust_library("controller_uniffi", "external/controller.c", is_release_build, cargo_flags=["-p", "controller-uniffi"])
+    _compile_rust_library("godot_dojo_core", "godot-dojo-core", is_release_build)
 
 apply_patches()
-
-_regenerate_uniffi_bindings()
-
 # Configure library
 if platform != "android":
     # Android build requires lib prefix
     env['SHLIBPREFIX'] = ''
 prefix = env.subst('$SHLIBPREFIX')
-env.Append(CPPPATH=["src/", "include/", "external/dojo.c", "external/controller.c/bindings/cpp", "external/boost/include"])
+env.Append(CPPPATH=["src/", "include/", "bindings/", "external/boost/include"])
 if platform == "macos":
     # Set macOS deployment target for C++ compilation
     print(f"{Y}Setting macOS deployment target for C++ compilation to 14.0...{X}")
@@ -442,37 +393,37 @@ android_plugin_targets = []
 # --- Android Plugin Setup ---
 # This section runs only when building for Android. It prepares the Kotlin
 # plugin files and places them in the structure Godot's build system expects.
-if platform == "android":
-    print(f"{Y}{package} Building Android plugin with Gradle...{X}")
-    gradlew_cmd = "gradlew.bat" if is_host_windows else "./gradlew"
-    try:
-        # Execute the gradle build command in the 'android' directory.
-        # We run both assembleDebug and assembleRelease to get both AARs.
-        subprocess.run([gradlew_cmd, ":plugin:assembleDebug", ":plugin:assembleRelease"], cwd="android", check=True)
-        print(f"{G}{check} Android plugin built successfully.{X}")
-
-        # Copy the generated AAR files to the correct addon location
-        print(f"{Y}{clipboard} Copying Android plugin artifacts...{X}")
-        plugin_name = "GodotDojoAndroidPlugin" # Must match pluginName in build.gradle.kts
-        aar_source_dir = f"android/plugin/build/outputs/aar/"
-        
-        # Copy Debug AAR
-        debug_aar_src = f"{aar_source_dir}/{plugin_name}-debug.aar"
-        debug_aar_dest_dir = "demo/addons/godot-dojo/bin/android/debug"
-        os.makedirs(debug_aar_dest_dir, exist_ok=True)
-        shutil.copy(debug_aar_src, debug_aar_dest_dir)
-
-        # Copy Release AAR
-        release_aar_src = f"{aar_source_dir}/{plugin_name}-release.aar"
-        release_aar_dest_dir = "demo/addons/godot-dojo/bin/android/release"
-        os.makedirs(release_aar_dest_dir, exist_ok=True)
-        shutil.copy(release_aar_src, release_aar_dest_dir)
-
-        print(f"{G}{check} Android artifacts copied to demo/addons/godot-dojo/bin/android/{X}")
-    except subprocess.CalledProcessError as e:
-        print(f"{R}{cross} Gradle build failed: {e}{X}")
-        Exit(1)
-
+# if platform == "android":
+#     print(f"{Y}{package} Building Android plugin with Gradle...{X}")
+#     gradlew_cmd = "gradlew.bat" if is_host_windows else "./gradlew"
+#     try:
+#         # Execute the gradle build command in the 'android' directory.
+#         # We run both assembleDebug and assembleRelease to get both AARs.
+#         subprocess.run([gradlew_cmd, ":plugin:assembleDebug", ":plugin:assembleRelease"], cwd="android", check=True)
+#         print(f"{G}{check} Android plugin built successfully.{X}")
+#
+#         # Copy the generated AAR files to the correct addon location
+#         print(f"{Y}{clipboard} Copying Android plugin artifacts...{X}")
+#         plugin_name = "GodotDojoAndroidPlugin" # Must match pluginName in build.gradle.kts
+#         aar_source_dir = f"android/plugin/build/outputs/aar/"
+#
+#         # Copy Debug AAR
+#         debug_aar_src = f"{aar_source_dir}/{plugin_name}-debug.aar"
+#         debug_aar_dest_dir = "demo/addons/godot-dojo/bin/android/debug"
+#         os.makedirs(debug_aar_dest_dir, exist_ok=True)
+#         shutil.copy(debug_aar_src, debug_aar_dest_dir)
+#
+#         # Copy Release AAR
+#         release_aar_src = f"{aar_source_dir}/{plugin_name}-release.aar"
+#         release_aar_dest_dir = "demo/addons/godot-dojo/bin/android/release"
+#         os.makedirs(release_aar_dest_dir, exist_ok=True)
+#         shutil.copy(release_aar_src, release_aar_dest_dir)
+#
+#         print(f"{G}{check} Android artifacts copied to demo/addons/godot-dojo/bin/android/{X}")
+#     except subprocess.CalledProcessError as e:
+#         print(f"{R}{cross} Gradle build failed: {e}{X}")
+#         Exit(1)
+#
 
 # Link Rust libraries
 build_mode = "release" if target == "template_release" else "debug"
@@ -480,26 +431,21 @@ build_mode = "release" if target == "template_release" else "debug"
 # For macOS universal, rust_target was modified, so we handle it specially
 rust_lib_target_dir = "universal" if platform == "macos" and arch == "universal" else rust_target
 
-rust_lib_dir_dojo = f"external/dojo.c/target/{rust_lib_target_dir}/{build_mode}"
-rust_lib_dir_controller = f"external/controller.c/target/{rust_lib_target_dir}/{build_mode}"
+rust_lib_dir = f"godot-dojo-core/target/{rust_lib_target_dir}/{build_mode}"
 
-rust_lib_dojo = ""
-rust_lib_controller = ""
+rust_lib = ""
 
 if platform == "windows":
     if use_mingw:
         # For MinGW, we link against the static .a library
-        rust_lib_dojo = f"{rust_lib_dir_dojo}/libdojo_c.a"
-        rust_lib_controller = f"{rust_lib_dir_controller}/libcontroller_uniffi.a"
+        rust_lib = f"{rust_lib_dir}/libgodot_dojo_core.a"
     elif is_host_windows:
         # For MSVC, we link against the static .lib library
-        rust_lib_dojo = f"{rust_lib_dir_dojo}/dojo_c.lib"
-        rust_lib_controller = f"{rust_lib_dir_controller}/controller_uniffi.lib"
+        rust_lib = f"{rust_lib_dir}/godot_dojo_core.lib"
         env.Append(LINKFLAGS=['/NODEFAULTLIB:MSVCRT'])
     env.Append(LIBS=['ws2_32', 'advapi32', 'ntdll'])
 elif platform == "linux":
-    rust_lib_dojo = f"{rust_lib_dir_dojo}/libdojo_c.a"
-    rust_lib_controller = f"{rust_lib_dir_controller}/libcontroller_uniffi.a"
+    rust_lib = f"{rust_lib_dir}/libgodot_dojo_core.a"
     # Use pkg-config to add proper include/lib flags for dbus-1 and ensure correct link order.
     # It's important to add this *after* our own library which depends on it.
     try:
@@ -508,27 +454,34 @@ elif platform == "linux":
         env.Append(LIBS=['dbus-1'])
 elif platform == "web":
     print(f"{Y}{clipboard} Web export links to rlib files.{X}")
-    rust_lib_dojo = f"{rust_lib_dir_dojo}/libdojo_c.rlib"
-    rust_lib_controller = f"{rust_lib_dir_controller}/libcontroller_uniffi.rlib"
+    rust_lib = f"{rust_lib_dir}/libgodot_dojo_core.rlib"
 else:
     # Default for other platforms like macos (non-universal), android, ios
-    rust_lib_dojo = f"{rust_lib_dir_dojo}/libdojo_c.a"
-    rust_lib_controller = f"{rust_lib_dir_controller}/libcontroller_uniffi.a"
+    rust_lib = f"{rust_lib_dir}/libgodot_dojo_core.a"
 
-if rust_lib_dojo and rust_lib_controller:
-    # Link our libraries first, then the system libraries they depend on.
-    env.Append(LIBS=[File(rust_lib_dojo), File(rust_lib_controller)])
+if rust_lib:
+    # For static libraries, we need to tell the linker to include all symbols,
+    # as external C++ code (like the UniFFI bindings) will depend on them.
+    # This solves "undefined symbol" errors for symbols inside the Rust static lib.
+    if platform in ["linux", "macos", "android", "ios"] or use_mingw:
+        # For GCC/Clang based toolchains
+        env.Append(LINKFLAGS=["-Wl,--whole-archive", File(rust_lib), "-Wl,--no-whole-archive"])
+    elif platform == "web":
+        env.Append(LINKFLAGS=[File(rust_lib)])
+    elif platform == "windows" and not use_mingw:
+        # For MSVC
+        env.Append(LINKFLAGS=[f"/WHOLEARCHIVE:{os.path.basename(rust_lib)}"])
+        env.Append(LIBPATH=[os.path.dirname(rust_lib)])
 else:
     print(f"{R}{cross} Could not determine Rust library paths for platform {platform}{X}")
     Exit(1)
-
-if platform != "web" and (not os.path.exists(rust_lib_dojo) or not os.path.exists(rust_lib_controller)):
-    if not os.path.exists(rust_lib_dojo): print(f"{R}{cross} Rust library not found: {rust_lib_dojo}{X}")
-    if not os.path.exists(rust_lib_controller): print(f"{R}{cross} Rust library not found: {rust_lib_controller}{X}")
-    Exit(1)
+if platform != "web":
+    if not os.path.exists(rust_lib):
+        print(f"{R}{cross} Rust library not found: {rust_lib}{X}")
+        Exit(1)
 
 sources = sorted(glob.glob("src/**/*.cpp", recursive=True)) + [
-    "external/controller.c/bindings/cpp/controller.cpp",
+    "bindings/controller/controller.cpp",
 ]
 _godot_min = _detect_godot_min_requirement()
 _godot_tag = _get_git_submodule_version("external/godot-cpp")
@@ -574,7 +527,7 @@ def copy_web_artifacts(target, source, env):
     build_mode = "release" if env.get("target", "template_debug") == "template_release" else "debug"
 
     addon_dir = "demo/addons/godot-dojo"
-    out_name = f"dojo_c_{build_mode}"
+    out_name = f"godot_dojo_core_{build_mode}"
 
     js_path = f"{addon_dir}/{out_name}.js"
     wasm_bg_path = f"{addon_dir}/{out_name}_bg.wasm"

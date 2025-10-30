@@ -65,85 +65,10 @@ find_program(PATCH_EXECUTABLE patch)
 if(NOT PATCH_EXECUTABLE)
     message(WARNING "patch command not found. Cannot apply patches to dojo.c")
 endif()
-
-# Dojo.c (use submodule directly; avoid FetchContent/_deps)
-set(dojo_c_SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/external/dojo.c)
-# Place Rust build artifacts under the current CMake build dir to let CMake/Ninja manage rules.
-set(dojo_c_BINARY_DIR ${CMAKE_CURRENT_BINARY_DIR}/dojo_c)
-
-# Ensure the binary directory exists at configure time to satisfy interface include dirs
-file(MAKE_DIRECTORY ${dojo_c_BINARY_DIR})
-
-# Apply patches to dojo.c submodule before it's built
-if(PATCH_EXECUTABLE)
-    file(GLOB DOJO_C_PATCH_FILES "${CMAKE_CURRENT_SOURCE_DIR}/patches/dojo.c/*.patch")
-    if(DOJO_C_PATCH_FILES)
-        add_custom_target(apply_dojo_c_patches
-                COMMAND ${CMAKE_COMMAND} -E echo "Resetting and patching dojo.c submodule..."
-                COMMAND ${CMAKE_COMMAND} -E chdir ${dojo_c_SOURCE_DIR} git reset --hard
-                COMMAND ${CMAKE_COMMAND} -E chdir ${dojo_c_SOURCE_DIR} git apply ${DOJO_C_PATCH_FILES}
-                COMMENT "Resetting dojo.c and applying patches..."
-                )
-    endif()
-endif()
-
-add_rust_library(TARGET dojo_c SOURCE_DIRECTORY ${dojo_c_SOURCE_DIR} BINARY_DIRECTORY ${dojo_c_BINARY_DIR} NO_DEFAULT_FEATURES)
-if(TARGET apply_dojo_c_patches)
-    add_dependencies(dojo_c apply_dojo_c_patches)
-endif()
-
-# --- UniFFI C++ Binding Generation for controller.c ---
-# Define paths for the source UDL and the generated C++ bindings.
-set(CONTROLLER_BRIDGE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/external/controller.c/crates/bridge)
-set(CONTROLLER_UDL_FILE ${CONTROLLER_BRIDGE_DIR}/src/controller.udl)
-set(CONTROLLER_BINDINGS_DIR ${CMAKE_CURRENT_SOURCE_DIR}/external/controller.c/bindings/cpp)
-set(CONTROLLER_HPP ${CONTROLLER_BINDINGS_DIR}/controller.hpp)
-set(CONTROLLER_CPP ${CONTROLLER_BINDINGS_DIR}/controller.cpp)
-
-# This custom command tells CMake how to generate the C++ bindings from the UDL file.
-# It will run automatically if controller.hpp is missing or if controller.udl is newer.
-add_custom_command(
-    OUTPUT ${CONTROLLER_HPP} ${CONTROLLER_CPP}
-    COMMAND cargo run --bin uniffi-bindgen-cpp
-    WORKING_DIRECTORY ${CONTROLLER_BRIDGE_DIR}
-    DEPENDS ${CONTROLLER_UDL_FILE}
-    COMMENT "Generating C++ bindings for controller.c via UniFFI..."
-)
-
-# controller.c (use submodule directly; avoid FetchContent/_deps)
-set(controller_c_SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/external/controller.c/bindings/cpp/)
-# Place Rust build artifacts under the current CMake build dir to let CMake/Ninja manage rules.
-set(controller_c_BINARY_DIR ${CMAKE_CURRENT_BINARY_DIR}/controller_c)
-
-# Ensure the binary directory exists at configure time to satisfy interface include dirs
-file(MAKE_DIRECTORY ${controller_c_BINARY_DIR})
-
-# Apply patches to controller.c submodule before it's built
-if(PATCH_EXECUTABLE)
-    file(GLOB CONTROLLER_C_PATCH_FILES "${CMAKE_CURRENT_SOURCE_DIR}/patches/controller.c/*.patch")
-    if(CONTROLLER_C_PATCH_FILES)
-        add_custom_target(apply_controller_c_patches
-                COMMAND ${CMAKE_COMMAND} -E echo "Resetting and patching controller.c submodule (at root)..."
-                COMMAND ${CMAKE_COMMAND} -E chdir ${CMAKE_CURRENT_SOURCE_DIR}/external/controller.c git reset --hard
-                COMMAND ${CMAKE_COMMAND} -E chdir ${CMAKE_CURRENT_SOURCE_DIR}/external/controller.c git apply ${CONTROLLER_C_PATCH_FILES}
-                COMMENT "Resetting controller.c and applying patches..."
-                )
-    endif()
-endif()
-
-add_rust_library(TARGET controller_c SOURCE_DIRECTORY ${controller_c_SOURCE_DIR} BINARY_DIRECTORY ${controller_c_BINARY_DIR} NO_DEFAULT_FEATURES)
-if(TARGET apply_controller_c_patches)
-    add_dependencies(controller_c apply_controller_c_patches)
-endif()
-
 configure_file(plugin_template.gdextension.in godot-dojo.gdextension)
 
 target_include_directories(godot-dojo PRIVATE include src
-    # We depend on the generated controller.hpp, so we need to include its directory.
-    # By adding the generated files to a custom command OUTPUT, CMake knows they need to be created.
-    ${CONTROLLER_BINDINGS_DIR}
-    ${controller_c_BINARY_DIR} # Include generated headers from rust build
-    ${CMAKE_CURRENT_SOURCE_DIR}/external/controller.c/bindings/c # Include C bindings for controller.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/bindings
 )
 
 # Link core libraries
@@ -160,7 +85,7 @@ if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
 endif()
 
 # Always link to our C++/Rust parts
-target_link_libraries(godot-dojo PRIVATE godot::cpp dojo_c controller_c Boost::boost)
+target_link_libraries(godot-dojo PRIVATE godot::cpp Boost::boost)
 
 # Avoid forcing -ldbus-1 or static stdlib via global CXX flags; manage via target_link_libraries instead.
 #set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -static-libgcc -static-libstdc++ -ldbus-1")
