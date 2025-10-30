@@ -253,7 +253,7 @@ def _compile_rust_library(lib_name, lib_path, is_release, cargo_flags=None, rust
     print(f"{Y}{package} Compiling {lib_name} ({lib_version})...{X}")
 
     build_mode = "release" if is_release else "debug"
-    base_cmd = ["cargo", "+nightly", "build", "-Z", "bindeps", "--target", rust_target]
+    base_cmd = ["cargo", "build"]
 
     # Prepare environment variables
     env_vars = os.environ.copy()
@@ -267,6 +267,10 @@ def _compile_rust_library(lib_name, lib_path, is_release, cargo_flags=None, rust
     if cargo_flags:
         base_cmd.extend(cargo_flags)
 
+    # Always specify the target unless it's a universal macOS build (handled separately)
+    if not (platform == "macos" and arch == "universal"):
+        base_cmd.extend(["--target", rust_target])
+
     # Special handling for macOS universal builds
     if platform == "macos" and arch == "universal":
         print(f"{Y}Starting universal build for {lib_name}...{X}")
@@ -275,7 +279,7 @@ def _compile_rust_library(lib_name, lib_path, is_release, cargo_flags=None, rust
 
         for rt in rust_targets_for_lipo:
             print(f"{Y}Compiling {lib_name} for target: {rt}...{X}")
-            cargo_cmd = ["cargo", "+nightly", "build", "-Z", "bindeps", "--target", rt]
+            cargo_cmd = ["cargo", "build", "--target", rt]
             if is_release:
                 cargo_cmd.append("--release")
 
@@ -312,64 +316,12 @@ def _compile_rust_library(lib_name, lib_path, is_release, cargo_flags=None, rust
 
 is_release_build = target == "template_release"
 
-# Environment variables for WebAssembly
-if env["platform"] == "web":
-    # For the web build, we need to do two things:
-    # 1. Build the godot-dojo-core library with wasm-bindgen to create the JS interface.
-    #    This build must NOT use `-C relocation-model=pic`.
-    # 2. Build the godot-dojo-core library as rlib with `-C relocation-model=pic`
-    #    so scons can link it into the final GDExtension .wasm file.
-
-    # Step 1: Build for wasm-bindgen
-    print(f"{Y}Building godot-dojo-core for wasm-bindgen (step 1/3)...{X}")
-    cmd_bindgen = ["cargo", "+nightly", "build", "-Z", "bindeps", "--target", rust_target]
-    if is_release_build:
-        cmd_bindgen.append("--release")
-
-    bindgen_env = os.environ.copy()
-    bindgen_env["RUSTFLAGS"] = "-C target-feature=+atomics,+bulk-memory,+mutable-globals"
-    subprocess.run(cmd_bindgen, check=True, cwd="godot-dojo-core", env=bindgen_env)
-
-    # Apply patch immediately after Rust compilation
-    # apply_patches() # Patches are applied later for web
-
-    # Step 2: Run wasm-bindgen
-    print(f"{Y}Running wasm-bindgen...{X}")
-    build_mode = "release" if is_release_build else "debug"
-    wasm_input_path = f"godot-dojo-core/target/{rust_target}/{build_mode}/godot_dojo_core.wasm"
-    out_dir = "demo/addons/godot-dojo/"
-    os.makedirs(out_dir, exist_ok=True)
-    out_name = f"godot_dojo_core_{build_mode}"
-
-    bindgen_cmd = [
-        "wasm-bindgen", wasm_input_path,
-        "--out-dir", out_dir,
-        "--out-name", out_name,
-        "--target", "web",
-        "--no-typescript"
-    ]
-    try:
-        subprocess.run(bindgen_cmd, check=True)
-        print(f"{G}{check} wasm-bindgen finished. Output in {out_dir}{X}")
-    except subprocess.CalledProcessError as e:
-        print(
-            f"{R}{cross} wasm-bindgen failed. This might be due to incompatible Rust flags or wasm-bindgen version.{X}")
-        print(f"{R}Error: {e}{X}")
-        Exit(1)
-
-    # Step 3: Build godot-dojo-core as rlib for SCons linking
-    print(f"{Y}Building libraries as rlib for SCons linking...{X}")
-    rlib_flags = ["-C", "relocation-model=pic", "-C", "target-feature=+atomics,+bulk-memory,+mutable-globals"]
-    _compile_rust_library("godot_dojo_core", "godot-dojo-core", is_release_build, rustc_flags=rlib_flags) 
-else:
-    # Standard compilation for all non-web platforms
-    _compile_rust_library("godot_dojo_core", "godot-dojo-core", is_release_build)
+# Standard compilation for all non-web platforms
+_compile_rust_library("godot_dojo_core", "godot-dojo-core", is_release_build)
 
 apply_patches()
 # Configure library
-if platform != "android":
-    # Android build requires lib prefix
-    env['SHLIBPREFIX'] = ''
+env['SHLIBPREFIX'] = ''
 prefix = env.subst('$SHLIBPREFIX')
 env.Append(CPPPATH=["src/", "include/", "bindings/", "external/boost/include"])
 if platform == "macos":
@@ -386,44 +338,6 @@ if env["platform"] == "windows" and not env.get("use_mingw"):
 else:
     # For GCC/Clang
     env.Append(CXXFLAGS=['-fexceptions', '-std=c++20', '-Wno-template-id-cdtor'])
-
-# List to hold the targets for the Android plugin files.
-android_plugin_targets = []
-
-# --- Android Plugin Setup ---
-# This section runs only when building for Android. It prepares the Kotlin
-# plugin files and places them in the structure Godot's build system expects.
-# if platform == "android":
-#     print(f"{Y}{package} Building Android plugin with Gradle...{X}")
-#     gradlew_cmd = "gradlew.bat" if is_host_windows else "./gradlew"
-#     try:
-#         # Execute the gradle build command in the 'android' directory.
-#         # We run both assembleDebug and assembleRelease to get both AARs.
-#         subprocess.run([gradlew_cmd, ":plugin:assembleDebug", ":plugin:assembleRelease"], cwd="android", check=True)
-#         print(f"{G}{check} Android plugin built successfully.{X}")
-#
-#         # Copy the generated AAR files to the correct addon location
-#         print(f"{Y}{clipboard} Copying Android plugin artifacts...{X}")
-#         plugin_name = "GodotDojoAndroidPlugin" # Must match pluginName in build.gradle.kts
-#         aar_source_dir = f"android/plugin/build/outputs/aar/"
-#
-#         # Copy Debug AAR
-#         debug_aar_src = f"{aar_source_dir}/{plugin_name}-debug.aar"
-#         debug_aar_dest_dir = "demo/addons/godot-dojo/bin/android/debug"
-#         os.makedirs(debug_aar_dest_dir, exist_ok=True)
-#         shutil.copy(debug_aar_src, debug_aar_dest_dir)
-#
-#         # Copy Release AAR
-#         release_aar_src = f"{aar_source_dir}/{plugin_name}-release.aar"
-#         release_aar_dest_dir = "demo/addons/godot-dojo/bin/android/release"
-#         os.makedirs(release_aar_dest_dir, exist_ok=True)
-#         shutil.copy(release_aar_src, release_aar_dest_dir)
-#
-#         print(f"{G}{check} Android artifacts copied to demo/addons/godot-dojo/bin/android/{X}")
-#     except subprocess.CalledProcessError as e:
-#         print(f"{R}{cross} Gradle build failed: {e}{X}")
-#         Exit(1)
-#
 
 # Link Rust libraries
 build_mode = "release" if target == "template_release" else "debug"
@@ -450,11 +364,8 @@ elif platform == "linux":
     # It's important to add this *after* our own library which depends on it.
     try:
         env.ParseConfig('pkg-config --cflags --libs dbus-1')
-    except Exception:
+    except Exception: # Fallback if pkg-config is not available
         env.Append(LIBS=['dbus-1'])
-elif platform == "web":
-    print(f"{Y}{clipboard} Web export links to rlib files.{X}")
-    rust_lib = f"{rust_lib_dir}/libgodot_dojo_core.rlib"
 else:
     # Default for other platforms like macos (non-universal), android, ios
     rust_lib = f"{rust_lib_dir}/libgodot_dojo_core.a"
@@ -463,11 +374,9 @@ if rust_lib:
     # For static libraries, we need to tell the linker to include all symbols,
     # as external C++ code (like the UniFFI bindings) will depend on them.
     # This solves "undefined symbol" errors for symbols inside the Rust static lib.
-    if platform in ["linux", "macos", "android", "ios"] or use_mingw:
+    if platform in ["linux", "macos", "ios"] or use_mingw:
         # For GCC/Clang based toolchains
         env.Append(LINKFLAGS=["-Wl,--whole-archive", File(rust_lib), "-Wl,--no-whole-archive"])
-    elif platform == "web":
-        env.Append(LINKFLAGS=[File(rust_lib)])
     elif platform == "windows" and not use_mingw:
         # For MSVC
         env.Append(LINKFLAGS=[f"/WHOLEARCHIVE:{os.path.basename(rust_lib)}"])
@@ -475,10 +384,9 @@ if rust_lib:
 else:
     print(f"{R}{cross} Could not determine Rust library paths for platform {platform}{X}")
     Exit(1)
-if platform != "web":
-    if not os.path.exists(rust_lib):
-        print(f"{R}{cross} Rust library not found: {rust_lib}{X}")
-        Exit(1)
+if not os.path.exists(rust_lib):
+    print(f"{R}{cross} Rust library not found: {rust_lib}{X}")
+    Exit(1)
 
 sources = sorted(glob.glob("src/**/*.cpp", recursive=True)) + [
     "bindings/controller/controller.cpp",
@@ -500,7 +408,6 @@ suffix_map = {
     "windows": f".windows.{target}.{arch}.dll",
     "macos": f".macos.{target}.{arch}.dylib",
     "ios": f".ios.{target}.{arch}.dylib",
-    "web": f".web.{target}.wasm32.wasm"
 }
 
 output_dir = f"demo/addons/godot-dojo/bin/{platform}/{build_mode}"
@@ -522,53 +429,8 @@ with open("demo/addons/godot-dojo/godot-dojo.gdextension", 'w') as f:
     f.write(gdext)
 
 
-def copy_web_artifacts(target, source, env):
-    print(f"{Y}{clipboard} Preparing web export files...{X}")
-    build_mode = "release" if env.get("target", "template_debug") == "template_release" else "debug"
-
-    addon_dir = "demo/addons/godot-dojo"
-    out_name = f"godot_dojo_core_{build_mode}"
-
-    js_path = f"{addon_dir}/{out_name}.js"
-    wasm_bg_path = f"{addon_dir}/{out_name}_bg.wasm"
-    wasm_final_path = f"{addon_dir}/{out_name}.wasm"
-
-    # 1. Rename the wasm file (e.g., dojo_c_release_bg.wasm -> dojo_c_release.wasm)
-    print(f"{Y}Renaming {os.path.basename(wasm_bg_path)} to {os.path.basename(wasm_final_path)}...{X}")
-    shutil.move(wasm_bg_path, wasm_final_path)
-
-    # 2. Patch the JS file to load the renamed wasm file
-    print(f"{Y}Patching {os.path.basename(js_path)} to load the new wasm file...{X}")
-    with open(js_path, 'r+') as f:
-        content = f.read()
-        # Replace the old wasm filename with the new one
-        content = content.replace(f"'{out_name}_bg.wasm'", f"'{out_name}.wasm'")
-        f.seek(0)
-        f.write(content)
-        f.truncate()
-
-    print(f"{G}{check} Web artifacts prepared in {addon_dir}{X}")
-
-    # Copy the custom HTML template to the addon directory
-    template_html_src = "web/godot-template.html"
-    shutil.copy(template_html_src, f"{addon_dir}/godot-template.html")
-    print(f"{G}{check} Custom HTML template copied to {addon_dir}{X}")
-
-    print(f"")
-    print(f"{Y}********************************************************************************{X}")
-    print(f"{Y}** {clipboard} ACTION REQUIRED: Configure Godot Web Export                        **{X}")
-    print(f"{Y}********************************************************************************{X}")
-    print(f"{B}To complete the web export, you MUST configure the Godot export preset:{X}")
-    print(f"{B}1. Go to {G}Project -> Export...{X} and select the {G}Web{X} preset.{X}")
-    print(f"{B}2. In the options, find {G}Shell -> Custom HTML Shell{X}.{X}")
-    print(f"{B}3. Select the file: {G}res://addons/godot-dojo/godot-template.html{X}{X}")
-    print(f"{Y}********************************************************************************{X}")
-
-
 def build_complete_callback(target, source, env):
     print(f"{G}{party} Build complete!{X}")
-    if env["platform"] == "web":
-        copy_web_artifacts(target, source, env)
     return None
 
 
