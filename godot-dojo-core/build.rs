@@ -46,6 +46,11 @@ fn handle_uniffi_dependency(dep_name: &str, udl_relative_path: &str, output_sub_
         .join("bindings") // And use the "bindings" folder
         .join(output_sub_dir);
     note!("Output directory: {}", output_dir.display());
+    
+    // Ensure the output directory exists before generating files
+    fs::create_dir_all(&output_dir)
+        .unwrap_or_else(|e| panic!("Failed to create output directory {}: {}", output_dir.display(), e));
+
 
     let output = Command::new(&bindgen_path)
         .arg(&source_udl_path)
