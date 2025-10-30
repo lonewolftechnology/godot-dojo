@@ -1,0 +1,4 @@
+# Esto le dice a Cargo que use la característica inestable 'bindeps'.
+# A diferencia de 'rustflags', esto se aplica al comando 'cargo' y no a 'rustc'.
+[unstable]
+bindeps = true
