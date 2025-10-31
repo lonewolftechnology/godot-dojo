@@ -130,19 +130,14 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-  build-rust-core:
-    name: Build Core Crate (${{ matrix.platform.os_name }}-${{ matrix.platform.arch }}-${{ matrix.profile }})
-    runs-on: ${{ matrix.platform.os }}
+  build-rust-core-linux:
+    name: Build Core Crate (linux-x86_64)
+    runs-on: ubuntu-latest
     needs: create_release
     if: needs.create_release.result == 'success'
     strategy:
       fail-fast: false
       matrix:
-        platform:
-          - { os: ubuntu-latest,  os_name: linux,   arch: x86_64, target: x86_64-unknown-linux-gnu }
-          - { os: macos-latest,   os_name: macos,   arch: arm64,  target: aarch64-apple-darwin }
-          - { os: macos-13,       os_name: macos,   arch: x86_64, target: x86_64-apple-darwin }
-          - { os: windows-latest, os_name: windows, arch: x86_64, target: x86_64-pc-windows-msvc }
         profile: [debug, release]
 
     steps:
@@ -153,21 +148,12 @@ jobs:
           fetch-depth: 0
 
       - name: Install Linux build dependencies
-        if: matrix.platform.os_name == 'linux'
         run: sudo apt-get update && sudo apt-get install -y build-essential pkg-config libdbus-1-dev protobuf-compiler libprotobuf-dev
 
       - name: Set up Rust nightly
         uses: dtolnay/rust-toolchain@nightly
         with:
-          targets: ${{ matrix.platform.target }}
-
-      - name: Install macOS build dependencies
-        if: matrix.platform.os_name == 'macos'
-        run: brew install protobuf
-
-      - name: Install Windows build dependencies
-        if: matrix.platform.os_name == 'windows'
-        run: choco install protoc
+          targets: x86_64-unknown-linux-gnu
 
       - name: Install uniffi-bindgen-cpp from source
         run: cargo install --git https://github.com/Larkooo/uniffi-bindgen-cpp --branch update-0.30 uniffi-bindgen-cpp
@@ -190,21 +176,19 @@ jobs:
           if [ "${{ matrix.profile }}" = "release" ]; then
             BUILD_ARGS="--release"
           fi
-          
-          cargo build $BUILD_ARGS --target ${{ matrix.platform.target }}
+          cargo build $BUILD_ARGS --target x86_64-unknown-linux-gnu
 
       - name: Upload core artifacts (target)
         uses: actions/upload-artifact@v4
         with:
-          # For macOS, we add the target to the name to differentiate archs
-          name: core-target-${{ matrix.platform.os_name }}-${{ matrix.platform.os_name != 'macos' && matrix.profile || format('{0}-{1}', matrix.platform.target, matrix.profile) }}
+          name: core-target-linux-${{ matrix.profile }}
           path: godot-dojo-core/target
           if-no-files-found: error
 
       - name: Upload core artifacts (bindings)
         uses: actions/upload-artifact@v4
         with:
-          name: core-bindings-${{ matrix.platform.os_name }}-${{ matrix.platform.os_name != 'macos' && matrix.profile || format('{0}-{1}', matrix.platform.target, matrix.profile) }}
+          name: core-bindings-linux-${{ matrix.profile }}
           path: bindings
           if-no-files-found: error
 
@@ -235,8 +219,8 @@ jobs:
 
       - name: Restore downloaded artifacts
         run: |
-          mv core-target-linux-debug/target godot-dojo-core/
-          mv core-bindings-linux-debug/* .
+          mv core-target-linux-debug/target godot-dojo-core
+          mv core-bindings-linux-debug/bindings .
 
       - name: Install scons
         run: pip install scons
@@ -310,8 +294,8 @@ jobs:
 
       - name: Restore downloaded artifacts
         run: |
-          mv core-target-linux-release/target godot-dojo-core/
-          mv core-bindings-linux-release/* .
+          mv core-target-linux-release/target godot-dojo-core
+          mv core-bindings-linux-release/bindings .
 
       - name: Install scons
         run: pip install scons
@@ -361,8 +345,8 @@ jobs:
   build-linux-editor:
     name: Build Linux-x86_64-${{ matrix.precision }}-editor
     runs-on: ubuntu-latest
-    needs: [create_release, build-rust-core]
-    if: needs.create_release.result == 'success' && needs.build-rust-core.result == 'success'
+    needs: [create_release, build-rust-core-linux]
+    if: needs.create_release.result == 'success' && needs.build-rust-core-linux.result == 'success'
     strategy:
       fail-fast: false
       matrix:
@@ -385,8 +369,8 @@ jobs:
 
       - name: Restore downloaded artifacts
         run: |
-          mv core-target-linux-debug/target godot-dojo-core/
-          mv core-bindings-linux-debug/* .
+          mv core-target-linux-debug/target godot-dojo-core
+          mv core-bindings-linux-debug/bindings .
 
       - name: Install scons
         run: pip install scons
@@ -433,11 +417,78 @@ jobs:
           path: demo/addons/godot-dojo/
           if-no-files-found: error
 
+  build-rust-core-macos-arm64:
+    name: Build Core Crate (macos-arm64)
+    runs-on: macos-latest
+    needs: create_release
+    if: needs.create_release.result == 'success'
+    strategy:
+      fail-fast: false
+      matrix:
+        profile: [debug, release]
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          submodules: true
+          fetch-depth: 0
+
+      - name: Set up Rust nightly
+        uses: dtolnay/rust-toolchain@nightly
+        with:
+          targets: aarch64-apple-darwin
+
+      - name: Install macOS build dependencies
+        run: brew install protobuf
+
+      - name: Install uniffi-bindgen-cpp from source
+        run: cargo install --git https://github.com/Larkooo/uniffi-bindgen-cpp --branch update-0.30 uniffi-bindgen-cpp
+
+      - name: Cache Rust dependencies
+        uses: actions/cache@v3
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+          key: ${{ runner.os }}-cargo-deps-${{ hashFiles('**/Cargo.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-cargo-deps-
+
+      - name: Build godot-dojo-core
+        shell: bash
+        working-directory: godot-dojo-core
+        run: |
+          # Set deployment target for Rust build to match C++ build
+          export MACOSX_DEPLOYMENT_TARGET=11.0
+          # Add deployment target to RUSTFLAGS
+          export RUSTFLAGS="${RUSTFLAGS:+$RUSTFLAGS }-C link-arg=-mmacosx-version-min=11.0"
+
+          BUILD_ARGS=""
+          if [ "${{ matrix.profile }}" = "release" ]; then
+            BUILD_ARGS="--release"
+          fi
+          cargo build $BUILD_ARGS --target aarch64-apple-darwin
+
+      - name: Upload core artifacts (target)
+        uses: actions/upload-artifact@v4
+        with:
+          name: core-target-macos-arm64-${{ matrix.profile }}
+          path: godot-dojo-core/target
+          if-no-files-found: error
+
+      - name: Upload core artifacts (bindings)
+        uses: actions/upload-artifact@v4
+        with:
+          name: core-bindings-macos-arm64-${{ matrix.profile }}
+          path: bindings
+          if-no-files-found: error
+
   build-macos-editor-arm64:
     name: Build macOS-arm64-${{ matrix.precision }}-editor
     runs-on: macos-latest # arm64 runner
-    needs: [create_release, build-rust-core]
-    if: needs.create_release.result == 'success' && needs.build-rust-core.result == 'success'
+    needs: [create_release, build-rust-core-macos-arm64]
+    if: needs.create_release.result == 'success' && needs.build-rust-core-macos-arm64.result == 'success'
     strategy:
       fail-fast: false
       matrix:
@@ -463,8 +514,8 @@ jobs:
       - name: Restore downloaded artifacts
         run: |
           # For editor, we use debug profile of rust core
-          mv core-target-macos-${{ matrix.rust_target }}-debug/target godot-dojo-core/
-          mv core-bindings-macos-${{ matrix.rust_target }}-debug/* .
+          mv core-target-macos-arm64-debug/target godot-dojo-core/
+          mv core-bindings-macos-arm64-debug/bindings .
 
       - name: Install scons
         run: pip install scons
@@ -493,9 +544,9 @@ jobs:
           PRECISION_ARG=""
           export CARGO_BUILD_TARGET=${{ matrix.rust_target }}
 
-          export MACOSX_DEPLOYMENT_TARGET=11.0
+          export MACOSX_DEPLOYMENT_TARGET=11.0 # Min for arm64
           # Add deployment target to RUSTFLAGS
-          export RUSTFLAGS="${RUSTFLAGS:+$RUSTFLAGS }-C link-arg=-mmacosx-version-min=14.0"
+          export RUSTFLAGS="${RUSTFLAGS:+$RUSTFLAGS }-C link-arg=-mmacosx-version-min=11.0"
 
           # Set precision argument if building double precision
           if [ "${{ matrix.precision }}" = "double" ]; then
@@ -513,11 +564,78 @@ jobs:
           path: demo/addons/godot-dojo/
           if-no-files-found: error
 
+  build-rust-core-macos-x86_64:
+    name: Build Core Crate (macos-x86_64)
+    runs-on: macos-13
+    needs: create_release
+    if: needs.create_release.result == 'success'
+    strategy:
+      fail-fast: false
+      matrix:
+        profile: [debug, release]
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          submodules: true
+          fetch-depth: 0
+
+      - name: Set up Rust nightly
+        uses: dtolnay/rust-toolchain@nightly
+        with:
+          targets: x86_64-apple-darwin
+
+      - name: Install macOS build dependencies
+        run: brew install protobuf
+
+      - name: Install uniffi-bindgen-cpp from source
+        run: cargo install --git https://github.com/Larkooo/uniffi-bindgen-cpp --branch update-0.30 uniffi-bindgen-cpp
+
+      - name: Cache Rust dependencies
+        uses: actions/cache@v3
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+          key: ${{ runner.os }}-cargo-deps-${{ hashFiles('**/Cargo.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-cargo-deps-
+
+      - name: Build godot-dojo-core
+        shell: bash
+        working-directory: godot-dojo-core
+        run: |
+          # Set deployment target for Rust build to match C++ build
+          export MACOSX_DEPLOYMENT_TARGET=10.13
+          # Add deployment target to RUSTFLAGS
+          export RUSTFLAGS="${RUSTFLAGS:+$RUSTFLAGS }-C link-arg=-mmacosx-version-min=10.13"
+
+          BUILD_ARGS=""
+          if [ "${{ matrix.profile }}" = "release" ]; then
+            BUILD_ARGS="--release"
+          fi
+          cargo build $BUILD_ARGS --target x86_64-apple-darwin
+
+      - name: Upload core artifacts (target)
+        uses: actions/upload-artifact@v4
+        with:
+          name: core-target-macos-x86_64-${{ matrix.profile }}
+          path: godot-dojo-core/target
+          if-no-files-found: error
+
+      - name: Upload core artifacts (bindings)
+        uses: actions/upload-artifact@v4
+        with:
+          name: core-bindings-macos-x86_64-${{ matrix.profile }}
+          path: bindings
+          if-no-files-found: error
+
   build-macos-editor-x86_64:
     name: Build macOS-x86_64-${{ matrix.precision }}-editor
     runs-on: macos-13 # x86_64 runner
-    needs: [create_release, build-rust-core]
-    if: needs.create_release.result == 'success' && needs.build-rust-core.result == 'success'
+    needs: [create_release, build-rust-core-macos-x86_64]
+    if: needs.create_release.result == 'success' && needs.build-rust-core-macos-x86_64.result == 'success'
     strategy:
       fail-fast: false
       matrix:
@@ -543,8 +661,8 @@ jobs:
       - name: Restore downloaded artifacts
         run: |
           # For editor, we use debug profile of rust core
-          mv core-target-macos-${{ matrix.rust_target }}-debug/target godot-dojo-core/
-          mv core-bindings-macos-${{ matrix.rust_target }}-debug/* .
+          mv core-target-macos-x86_64-debug/target godot-dojo-core/
+          mv core-bindings-macos-x86_64-debug/bindings .
 
       - name: Install scons
         run: pip install scons
@@ -573,7 +691,7 @@ jobs:
           PRECISION_ARG=""
           export CARGO_BUILD_TARGET=${{ matrix.rust_target }}
 
-          export MACOSX_DEPLOYMENT_TARGET=10.13
+          export MACOSX_DEPLOYMENT_TARGET=10.13 # Min for x86_64
           # Add deployment target to RUSTFLAGS
           export RUSTFLAGS="${RUSTFLAGS:+$RUSTFLAGS }-C link-arg=-mmacosx-version-min=10.13"
 
@@ -622,8 +740,8 @@ jobs:
 
       - name: Restore downloaded artifacts
         run: |
-          mv core-target-macos-${{ matrix.rust_target }}-debug/target godot-dojo-core/
-          mv core-bindings-macos-${{ matrix.rust_target }}-debug/* .
+          mv core-target-macos-arm64-debug/target godot-dojo-core/
+          mv core-bindings-macos-arm64-debug/bindings .
 
       - name: Install scons
         run: pip install scons
@@ -652,9 +770,9 @@ jobs:
           PRECISION_ARG=""
           export CARGO_BUILD_TARGET=${{ matrix.rust_target }}
 
-          export MACOSX_DEPLOYMENT_TARGET=11.0
+          export MACOSX_DEPLOYMENT_TARGET=11.0 # Min for arm64
           # Add deployment target to RUSTFLAGS
-          export RUSTFLAGS="${RUSTFLAGS:+$RUSTFLAGS }-C link-arg=-mmacosx-version-min=14.0"
+          export RUSTFLAGS="${RUSTFLAGS:+$RUSTFLAGS }-C link-arg=-mmacosx-version-min=11.0"
 
           # Set precision argument if building double precision
           if [ "${{ matrix.precision }}" = "double" ]; then
@@ -701,8 +819,8 @@ jobs:
 
       - name: Restore downloaded artifacts
         run: |
-          mv core-target-macos-${{ matrix.rust_target }}-debug/target godot-dojo-core/
-          mv core-bindings-macos-${{ matrix.rust_target }}-debug/* .
+          mv core-target-macos-x86_64-debug/target godot-dojo-core/
+          mv core-bindings-macos-x86_64-debug/bindings .
 
       - name: Install scons
         run: pip install scons
@@ -731,7 +849,7 @@ jobs:
           PRECISION_ARG=""
           export CARGO_BUILD_TARGET=${{ matrix.rust_target }}
 
-          export MACOSX_DEPLOYMENT_TARGET=10.13
+          export MACOSX_DEPLOYMENT_TARGET=10.13 # Min for x86_64
           # Add deployment target to RUSTFLAGS
           export RUSTFLAGS="${RUSTFLAGS:+$RUSTFLAGS }-C link-arg=-mmacosx-version-min=10.13"
 
@@ -780,8 +898,8 @@ jobs:
 
       - name: Restore downloaded artifacts
         run: |
-          mv core-target-macos-${{ matrix.rust_target }}-release/target godot-dojo-core/
-          mv core-bindings-macos-${{ matrix.rust_target }}-release/* .
+          mv core-target-macos-arm64-release/target godot-dojo-core/
+          mv core-bindings-macos-arm64-release/bindings .
 
       - name: Install scons
         run: pip install scons
@@ -810,9 +928,9 @@ jobs:
           PRECISION_ARG=""
           export CARGO_BUILD_TARGET=${{ matrix.rust_target }}
 
-          export MACOSX_DEPLOYMENT_TARGET=11.0
+          export MACOSX_DEPLOYMENT_TARGET=11.0 # Min for arm64
           # Add deployment target to RUSTFLAGS
-          export RUSTFLAGS="${RUSTFLAGS:+$RUSTFLAGS }-C link-arg=-mmacosx-version-min=14.0"
+          export RUSTFLAGS="${RUSTFLAGS:+$RUSTFLAGS }-C link-arg=-mmacosx-version-min=11.0"
 
           # Set precision argument if building double precision
           if [ "${{ matrix.precision }}" = "double" ]; then
@@ -859,8 +977,8 @@ jobs:
 
       - name: Restore downloaded artifacts
         run: |
-          mv core-target-macos-${{ matrix.rust_target }}-release/target godot-dojo-core/
-          mv core-bindings-macos-${{ matrix.rust_target }}-release/* .
+          mv core-target-macos-x86_64-release/target godot-dojo-core/
+          mv core-bindings-macos-x86_64-release/bindings .
 
       - name: Install scons
         run: pip install scons
@@ -889,7 +1007,7 @@ jobs:
           PRECISION_ARG=""
           export CARGO_BUILD_TARGET=${{ matrix.rust_target }}
 
-          export MACOSX_DEPLOYMENT_TARGET=10.13
+          export MACOSX_DEPLOYMENT_TARGET=10.13 # Min for x86_64
           # Add deployment target to RUSTFLAGS
           export RUSTFLAGS="${RUSTFLAGS:+$RUSTFLAGS }-C link-arg=-mmacosx-version-min=10.13"
 
@@ -907,6 +1025,69 @@ jobs:
         with:
           name: bin-${{ matrix.precision }}-macos-${{ matrix.arch }}-release
           path: demo/addons/godot-dojo/
+          if-no-files-found: error
+
+
+  build-rust-core-windows:
+    name: Build Core Crate (windows-x86_64)
+    runs-on: windows-latest
+    needs: create_release
+    if: needs.create_release.result == 'success'
+    strategy:
+      fail-fast: false
+      matrix:
+        profile: [debug, release]
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          submodules: true
+          fetch-depth: 0
+
+      - name: Set up Rust nightly
+        uses: dtolnay/rust-toolchain@nightly
+        with:
+          targets: x86_64-pc-windows-msvc
+
+      - name: Install Windows build dependencies
+        run: choco install protoc
+
+      - name: Install uniffi-bindgen-cpp from source
+        run: cargo install --git https://github.com/Larkooo/uniffi-bindgen-cpp --branch update-0.30 uniffi-bindgen-cpp
+
+      - name: Cache Rust dependencies
+        uses: actions/cache@v3
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+          key: ${{ runner.os }}-cargo-deps-${{ hashFiles('**/Cargo.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-cargo-deps-
+
+      - name: Build godot-dojo-core
+        shell: bash
+        working-directory: godot-dojo-core
+        run: |
+          BUILD_ARGS=""
+          if [ "${{ matrix.profile }}" = "release" ]; then
+            BUILD_ARGS="--release"
+          fi
+          cargo build $BUILD_ARGS --target x86_64-pc-windows-msvc
+
+      - name: Upload core artifacts (target)
+        uses: actions/upload-artifact@v4
+        with:
+          name: core-target-windows-${{ matrix.profile }}
+          path: godot-dojo-core/target
+          if-no-files-found: error
+
+      - name: Upload core artifacts (bindings)
+        uses: actions/upload-artifact@v4
+        with:
+          name: core-bindings-windows-${{ matrix.profile }}
+          path: bindings
           if-no-files-found: error
 
 
@@ -939,7 +1120,7 @@ jobs:
         shell: bash
         run: |
           mv core-target-windows-debug/target godot-dojo-core/
-          mv core-bindings-windows-debug/* .
+          mv core-bindings-windows-debug/bindings .
 
       - name: Install scons
         run: pip install scons
@@ -1017,7 +1198,7 @@ jobs:
         shell: bash
         run: |
           mv core-target-windows-release/target godot-dojo-core/
-          mv core-bindings-windows-release/* .
+          mv core-bindings-windows-release/bindings .
 
       - name: Install scons
         run: pip install scons
@@ -1069,8 +1250,8 @@ jobs:
   build-windows-editor:
     name: Build Windows-x86_64-${{ matrix.precision }}-editor
     runs-on: windows-latest
-    needs: [create_release, build-rust-core]
-    if: needs.create_release.result == 'success' && needs.build-rust-core.result == 'success'
+    needs: [create_release, build-rust-core-windows]
+    if: needs.create_release.result == 'success' && needs.build-rust-core-windows.result == 'success'
     strategy:
       fail-fast: false
       matrix:
@@ -1095,7 +1276,7 @@ jobs:
         shell: bash
         run: |
           mv core-target-windows-debug/target godot-dojo-core/
-          mv core-bindings-windows-debug/* .
+          mv core-bindings-windows-debug/bindings .
 
       - name: Install scons
         run: pip install scons
@@ -1147,7 +1328,7 @@ jobs:
   package:
     name: Combine all binaries and create zip files
     runs-on: ubuntu-latest
-    needs: [create_release, build-linux-debug, build-linux-release, build-linux-editor, build-macos-debug-arm64, build-macos-debug-x86_64, build-macos-release-arm64, build-macos-release-x86_64, build-macos-editor-arm64, build-macos-editor-x86_64, build-windows-debug, build-windows-release, build-windows-editor]
+    needs: [create_release, build-linux-release, build-macos-release-arm64, build-macos-release-x86_64, build-windows-release, build-linux-editor, build-macos-editor-arm64, build-macos-editor-x86_64, build-windows-editor]
     if: needs.create_release.result == 'success'
 
     steps:
