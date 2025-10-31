@@ -46,10 +46,10 @@ jobs:
 
           if [ -z "$PREVIOUS_TAG" ]; then
             # If there's no previous tag, get all commits excluding those with '.idea' in the message
-            COMMITS_LOG=$(git log --pretty=format:"- %h %s (%an)" --invert-grep --grep=".idea" $CURRENT_TAG)
+            COMMITS_LOG=$(git log --pretty=format:"- %h %s ([%aN](https://github.com/%aN))" --invert-grep --grep="\.idea" --invert-grep --grep="^ci:" $CURRENT_TAG)
           else
             # Get commits between the previous tag and the current tag, excluding those with '.idea' in the message
-            COMMITS_LOG=$(git log --pretty=format:"- %h %s (%an)" --invert-grep --grep=".idea" $PREVIOUS_TAG..$CURRENT_TAG)
+            COMMITS_LOG=$(git log --pretty=format:"- %h %s ([%aN](https://github.com/%aN))" --invert-grep --grep="\.idea" --invert-grep --grep="^ci:" $PREVIOUS_TAG..$CURRENT_TAG)
           fi
 
           COMMIT_COUNT=$(echo "$COMMITS_LOG" | wc -l)
