@@ -47,33 +47,17 @@ jobs:
         if: runner.os == 'Windows'
         run: choco install protoc
 
-      - name: Download core artifacts (debug)
+      - name: Download core artifacts (target)
         uses: actions/download-artifact@v4
         with:
-          pattern: core-*-${{ runner.os == 'Windows' && 'windows' || (runner.os == 'macOS' && 'macos' || 'linux') }}-${{ inputs.arch }}-debug
-          path: core-debug
-          merge-multiple: true
+          name: core-target-${{ runner.os == 'Windows' && 'windows' || (runner.os == 'macOS' && 'macos' || 'linux') }}-${{ inputs.arch }}-release
+          path: godot-dojo-core/target
 
-      - name: Download core artifacts (release)
-        if: inputs.build_target == 'templates'
+      - name: Download core artifacts (bindings)
         uses: actions/download-artifact@v4
         with:
-          pattern: core-*-${{ runner.os == 'Windows' && 'windows' || (runner.os == 'macOS' && 'macos' || 'linux') }}-${{ inputs.arch }}-release
-          path: core-release
-          merge-multiple: true
-
-      - name: Restore downloaded artifacts
-        shell: bash
-        run: |
-          mkdir -p godot-dojo-core/target bindings
-          if [ -d "core-debug" ]; then
-            cp -r core-debug/* godot-dojo-core/target/
-            # Bindings are the same for debug/release, just need one
-            cp -r core-debug/* bindings/
-          fi
-          if [ -d "core-release" ]; then
-            cp -r core-release/* godot-dojo-core/target/
-          fi
+          name: core-bindings-${{ runner.os == 'Windows' && 'windows' || (runner.os == 'macOS' && 'macos' || 'linux') }}-${{ inputs.arch }}-release
+          path: bindings
 
       - name: Install scons
         run: pip install scons
@@ -121,6 +105,5 @@ jobs:
           name: bin-${{ inputs.precision }}-${{ runner.os == 'Windows' && 'windows' || (runner.os == 'macOS' && 'macos' || 'linux') }}-${{ inputs.arch }}-${{ inputs.build_target }}
           path: |
             demo/addons/godot-dojo/
-            ${{ runner.os == 'Windows' && format('godot-dojo-core/target/{0}/debug/dojo_c.dll', inputs.rust_target) || '' }}
-            ${{ runner.os == 'Windows' && inputs.build_target == 'templates' && format('godot-dojo-core/target/{0}/release/dojo_c.dll', inputs.rust_target) || '' }}
+            ${{ runner.os == 'Windows' && format('godot-dojo-core/target/{0}/release/dojo_c.dll', inputs.rust_target) || '' }}
           if-no-files-found: error
