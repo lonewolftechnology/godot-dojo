@@ -219,33 +219,39 @@ jobs:
       - name: Download core artifacts (debug)
         uses: actions/download-artifact@v4
         with:
-          name: core-target-linux-debug
+          pattern: core-target-linux-debug
           path: core-target-linux-debug
+          merge-multiple: true
       - uses: actions/download-artifact@v4
         with:
-          name: core-bindings-linux-debug
+          pattern: core-bindings-linux-debug
           path: core-bindings-linux-debug
+          merge-multiple: true
 
       - name: Download core artifacts (release)
         uses: actions/download-artifact@v4
         with:
-          name: core-target-linux-release
+          pattern: core-target-linux-release
           path: core-target-linux-release
+          merge-multiple: true
       - uses: actions/download-artifact@v4
         with:
-          name: core-bindings-linux-release
+          pattern: core-bindings-linux-release
           path: core-bindings-linux-release
+          merge-multiple: true
 
       - name: Restore downloaded artifacts (debug)
         run: |
           mkdir -p godot-dojo-core-debug/target
-          mv core-target-linux-debug/target/* godot-dojo-core-debug/target/
+          # The files are directly in the download path, not in a nested 'target' dir
+          mv core-target-linux-debug/* godot-dojo-core-debug/target/
           mv core-bindings-linux-debug/bindings bindings-debug
 
       - name: Restore downloaded artifacts (release)
         run: |
           mkdir -p godot-dojo-core-release/target
-          mv core-target-linux-release/target/* godot-dojo-core-release/target/
+          # The files are directly in the download path, not in a nested 'target' dir
+          mv core-target-linux-release/* godot-dojo-core-release/target/
           mv core-bindings-linux-release/bindings bindings-release
 
       - name: Install scons
@@ -388,19 +394,22 @@ jobs:
 
       - name: Download core artifacts
         uses: actions/download-artifact@v4
-        with: # Download only the artifacts needed for this job
-          name: core-target-macos-arm64-debug
+        with:
+          pattern: core-target-macos-arm64-debug
           path: core-target-macos-arm64-debug
+          merge-multiple: true
       - uses: actions/download-artifact@v4
         with:
-          name: core-bindings-macos-arm64-debug
+          pattern: core-bindings-macos-arm64-debug
           path: core-bindings-macos-arm64-debug
+          merge-multiple: true
 
       - name: Restore downloaded artifacts
         run: |
           # For editor, we use debug profile of rust core
-          mv core-target-macos-arm64-debug/target godot-dojo-core/
-          mv core-bindings-macos-arm64-debug/bindings .
+          mkdir -p godot-dojo-core/target
+          mv core-target-macos-arm64-debug/* godot-dojo-core/target/
+          mv core-bindings-macos-arm64-debug/* .
 
       - name: Install scons
         run: pip install scons
@@ -540,19 +549,22 @@ jobs:
 
       - name: Download core artifacts
         uses: actions/download-artifact@v4
-        with: # Download only the artifacts needed for this job
-          name: core-target-macos-x86_64-debug
+        with:
+          pattern: core-target-macos-x86_64-debug
           path: core-target-macos-x86_64-debug
+          merge-multiple: true
       - uses: actions/download-artifact@v4
         with:
-          name: core-bindings-macos-x86_64-debug
+          pattern: core-bindings-macos-x86_64-debug
           path: core-bindings-macos-x86_64-debug
+          merge-multiple: true
 
       - name: Restore downloaded artifacts
         run: |
           # For editor, we use debug profile of rust core
-          mv core-target-macos-x86_64-debug/target godot-dojo-core/
-          mv core-bindings-macos-x86_64-debug/bindings .
+          mkdir -p godot-dojo-core/target
+          mv core-target-macos-x86_64-debug/* godot-dojo-core/target/
+          mv core-bindings-macos-x86_64-debug/* .
 
       - name: Install scons
         run: pip install scons
@@ -601,11 +613,11 @@ jobs:
           path: demo/addons/godot-dojo/
           if-no-files-found: error
 
-  build-macos-debug-arm64:
-    name: Build macOS-arm64-${{ matrix.precision }}-debug
+  build-macos-templates-arm64:
+    name: Build macOS-arm64-${{ matrix.precision }}-templates
     runs-on: macos-latest # arm64 runner
-    needs: build-macos-editor-arm64
-    if: needs.build-macos-editor-arm64.result == 'success'
+    needs: [create_release, build-rust-core-macos-arm64]
+    if: needs.create_release.result == 'success' && needs.build-rust-core-macos-arm64.result == 'success'
     strategy:
       fail-fast: false
       matrix:
@@ -623,188 +635,34 @@ jobs:
       - name: Install build dependencies
         run: brew install protobuf
 
-      - name: Download core artifacts
+      - name: Download core artifacts (debug)
         uses: actions/download-artifact@v4
-        with: # Download only the artifacts needed for this job
-          name: core-target-macos-arm64-debug
+        with:
+          pattern: core-target-macos-arm64-debug
           path: core-target-macos-arm64-debug
+          merge-multiple: true
       - uses: actions/download-artifact@v4
         with:
-          name: core-bindings-macos-arm64-debug
+          pattern: core-bindings-macos-arm64-debug
           path: core-bindings-macos-arm64-debug
+          merge-multiple: true
 
-      - name: Restore downloaded artifacts
-        run: |
-          mv core-target-macos-arm64-debug/target godot-dojo-core/
-          mv core-bindings-macos-arm64-debug/bindings .
-
-      - name: Install scons
-        run: pip install scons
-
-      - name: Cache SCons and godot-cpp build artifacts
-        uses: actions/cache@v3
-        with:
-          path: |
-            .sconsign.dblite
-            demo/addons/godot-dojo/
-            external/godot-cpp/bin/
-            external/godot-cpp/.sconsign.dblite
-            external/godot-cpp/gen/
-            external/godot-cpp/__pycache__/
-          key: ${{ runner.os }}-scons-${{ matrix.precision }}-macos-${{ matrix.arch }}-debug-${{ hashFiles('**/*.cpp', '**/*.h', 'SConstruct', 'external/godot-cpp/**/*.cpp', 'external/godot-cpp/**/*.h') }}
-          restore-keys: |
-            ${{ runner.os }}-scons-${{ matrix.precision }}-macos-${{ matrix.arch }}-debug-
-            ${{ runner.os }}-scons-${{ matrix.precision }}-macos-${{ matrix.arch }}-
-
-      - name: Build
-        shell: bash
-        run: |
-          set -e
-          PLATFORM_ARG="platform=macos"
-          ARCH_ARG="arch=${{ matrix.arch }}"
-          PRECISION_ARG=""
-          export CARGO_BUILD_TARGET=${{ matrix.rust_target }}
-
-          export MACOSX_DEPLOYMENT_TARGET=11.0 # Min for arm64
-          # Add deployment target to RUSTFLAGS
-          export RUSTFLAGS="${RUSTFLAGS:+$RUSTFLAGS }-C link-arg=-mmacosx-version-min=11.0"
-
-          # Set precision argument if building double precision
-          if [ "${{ matrix.precision }}" = "double" ]; then
-            PRECISION_ARG="precision=double"
-          fi
-
-          mkdir -p demo/addons/godot-dojo
-
-          scons $PLATFORM_ARG $ARCH_ARG target=template_debug $PRECISION_ARG -j2
-
-      - name: Upload binaries for this target
-        uses: actions/upload-artifact@v4
-        with:
-          name: bin-${{ matrix.precision }}-macos-${{ matrix.arch }}-debug
-          path: demo/addons/godot-dojo/
-          if-no-files-found: error
-
-  build-macos-debug-x86_64:
-    name: Build macOS-x86_64-${{ matrix.precision }}-debug
-    runs-on: macos-13 # x86_64 runner
-    needs: build-macos-editor-x86_64
-    if: needs.build-macos-editor-x86_64.result == 'success'
-    strategy:
-      fail-fast: false
-      matrix:
-        precision: [single, double]
-        arch: [x86_64]
-        rust_target: [x86_64-apple-darwin]
-
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-        with:
-          submodules: true
-          fetch-depth: 0
-
-      - name: Install build dependencies
-        run: brew install protobuf
-
-      - name: Download core artifacts
+      - name: Download core artifacts (release)
         uses: actions/download-artifact@v4
-        with: # Download only the artifacts needed for this job
-          name: core-target-macos-x86_64-debug
-          path: core-target-macos-x86_64-debug
-      - uses: actions/download-artifact@v4
         with:
-          name: core-bindings-macos-x86_64-debug
-          path: core-bindings-macos-x86_64-debug
-
-      - name: Restore downloaded artifacts
-        run: |
-          mv core-target-macos-x86_64-debug/target godot-dojo-core/
-          mv core-bindings-macos-x86_64-debug/bindings .
-
-      - name: Install scons
-        run: pip install scons
-
-      - name: Cache SCons and godot-cpp build artifacts
-        uses: actions/cache@v3
-        with:
-          path: |
-            .sconsign.dblite
-            demo/addons/godot-dojo/
-            external/godot-cpp/bin/
-            external/godot-cpp/.sconsign.dblite
-            external/godot-cpp/gen/
-            external/godot-cpp/__pycache__/
-          key: ${{ runner.os }}-scons-${{ matrix.precision }}-macos-${{ matrix.arch }}-debug-${{ hashFiles('**/*.cpp', '**/*.h', 'SConstruct', 'external/godot-cpp/**/*.cpp', 'external/godot-cpp/**/*.h') }}
-          restore-keys: |
-            ${{ runner.os }}-scons-${{ matrix.precision }}-macos-${{ matrix.arch }}-debug-
-            ${{ runner.os }}-scons-${{ matrix.precision }}-macos-${{ matrix.arch }}-
-
-      - name: Build
-        shell: bash
-        run: |
-          set -e
-          PLATFORM_ARG="platform=macos"
-          ARCH_ARG="arch=${{ matrix.arch }}"
-          PRECISION_ARG=""
-          export CARGO_BUILD_TARGET=${{ matrix.rust_target }}
-
-          export MACOSX_DEPLOYMENT_TARGET=10.13 # Min for x86_64
-          # Add deployment target to RUSTFLAGS
-          export RUSTFLAGS="${RUSTFLAGS:+$RUSTFLAGS }-C link-arg=-mmacosx-version-min=10.13"
-
-          # Set precision argument if building double precision
-          if [ "${{ matrix.precision }}" = "double" ]; then
-            PRECISION_ARG="precision=double"
-          fi
-
-          mkdir -p demo/addons/godot-dojo
-
-          scons $PLATFORM_ARG $ARCH_ARG target=template_debug $PRECISION_ARG -j2
-
-      - name: Upload binaries for this target
-        uses: actions/upload-artifact@v4
-        with:
-          name: bin-${{ matrix.precision }}-macos-${{ matrix.arch }}-debug
-          path: demo/addons/godot-dojo/
-          if-no-files-found: error
-
-  build-macos-release-arm64:
-    name: Build macOS-arm64-${{ matrix.precision }}-release
-    runs-on: macos-latest # arm64 runner
-    needs: build-macos-debug-arm64
-    if: needs.build-macos-debug-arm64.result == 'success'
-    strategy:
-      fail-fast: false
-      matrix:
-        precision: [single, double]
-        arch: [arm64]
-        rust_target: [aarch64-apple-darwin]
-
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-        with:
-          submodules: true
-          fetch-depth: 0
-
-      - name: Install build dependencies
-        run: brew install protobuf
-
-      - name: Download core artifacts
-        uses: actions/download-artifact@v4
-        with: # Download only the artifacts needed for this job
-          name: core-target-macos-arm64-release
+          pattern: core-target-macos-arm64-release
           path: core-target-macos-arm64-release
+          merge-multiple: true
       - uses: actions/download-artifact@v4
         with:
-          name: core-bindings-macos-arm64-release
+          pattern: core-bindings-macos-arm64-release
           path: core-bindings-macos-arm64-release
+          merge-multiple: true
 
-      - name: Restore downloaded artifacts
+      - name: Restore downloaded artifacts (debug)
         run: |
-          mv core-target-macos-arm64-release/target godot-dojo-core/
-          mv core-bindings-macos-arm64-release/bindings .
+          mkdir -p godot-dojo-core-debug/target && mv core-target-macos-arm64-debug/* godot-dojo-core-debug/target/
+          mv core-bindings-macos-arm64-debug/bindings bindings-debug
 
       - name: Install scons
         run: pip install scons
@@ -819,12 +677,11 @@ jobs:
             external/godot-cpp/.sconsign.dblite
             external/godot-cpp/gen/
             external/godot-cpp/__pycache__/
-          key: ${{ runner.os }}-scons-${{ matrix.precision }}-macos-${{ matrix.arch }}-release-${{ hashFiles('**/*.cpp', '**/*.h', 'SConstruct', 'external/godot-cpp/**/*.cpp', 'external/godot-cpp/**/*.h') }}
+          key: ${{ runner.os }}-scons-${{ matrix.precision }}-macos-${{ matrix.arch }}-templates-${{ hashFiles('**/*.cpp', '**/*.h', 'SConstruct', 'external/godot-cpp/**/*.cpp', 'external/godot-cpp/**/*.h') }}
           restore-keys: |
-            ${{ runner.os }}-scons-${{ matrix.precision }}-macos-${{ matrix.arch }}-release-
-            ${{ runner.os }}-scons-${{ matrix.precision }}-macos-${{ matrix.arch }}-
+            ${{ runner.os }}-scons-${{ matrix.precision }}-macos-${{ matrix.arch }}-templates-
 
-      - name: Build
+      - name: Build templates
         shell: bash
         run: |
           set -e
@@ -844,20 +701,30 @@ jobs:
 
           mkdir -p demo/addons/godot-dojo
 
+          # Build Debug Template (uses debug core)
+          mkdir -p godot-dojo-core-release/target && mv core-target-macos-arm64-release/* godot-dojo-core-release/target/
+          mv core-bindings-macos-arm64-release/bindings bindings-release
+          ln -sfn ../../godot-dojo-core-debug godot-dojo-core
+          ln -sfn ../../bindings-debug bindings
+          scons $PLATFORM_ARG $ARCH_ARG target=template_debug $PRECISION_ARG -j2
+
+          # Build Release Template (uses release core)
+          ln -sfn ../../godot-dojo-core-release godot-dojo-core
+          ln -sfn ../../bindings-release bindings
           scons $PLATFORM_ARG $ARCH_ARG target=template_release $PRECISION_ARG -j2
 
       - name: Upload binaries for this target
         uses: actions/upload-artifact@v4
         with:
-          name: bin-${{ matrix.precision }}-macos-${{ matrix.arch }}-release
+          name: bin-${{ matrix.precision }}-macos-${{ matrix.arch }}
           path: demo/addons/godot-dojo/
           if-no-files-found: error
 
-  build-macos-release-x86_64:
-    name: Build macOS-x86_64-${{ matrix.precision }}-release
+  build-macos-templates-x86_64:
+    name: Build macOS-x86_64-${{ matrix.precision }}-templates
     runs-on: macos-13 # x86_64 runner
-    needs: build-macos-debug-x86_64
-    if: needs.build-macos-debug-x86_64.result == 'success'
+    needs: [create_release, build-rust-core-macos-x86_64]
+    if: needs.create_release.result == 'success' && needs.build-rust-core-macos-x86_64.result == 'success'
     strategy:
       fail-fast: false
       matrix:
@@ -875,20 +742,34 @@ jobs:
       - name: Install build dependencies
         run: brew install protobuf
 
-      - name: Download core artifacts
+      - name: Download core artifacts (debug)
         uses: actions/download-artifact@v4
-        with: # Download only the artifacts needed for this job
-          name: core-target-macos-x86_64-release
-          path: core-target-macos-x86_64-release
+        with:
+          pattern: core-target-macos-x86_64-debug
+          path: core-target-macos-x86_64-debug
+          merge-multiple: true
       - uses: actions/download-artifact@v4
         with:
-          name: core-bindings-macos-x86_64-release
-          path: core-bindings-macos-x86_64-release
+          pattern: core-bindings-macos-x86_64-debug
+          path: core-bindings-macos-x86_64-debug
+          merge-multiple: true
 
-      - name: Restore downloaded artifacts
+      - name: Download core artifacts (release)
+        uses: actions/download-artifact@v4
+        with:
+          pattern: core-target-macos-x86_64-release
+          path: core-target-macos-x86_64-release
+          merge-multiple: true
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: core-bindings-macos-x86_64-release
+          path: core-bindings-macos-x86_64-release
+          merge-multiple: true
+
+      - name: Restore downloaded artifacts (debug)
         run: |
-          mv core-target-macos-x86_64-release/target godot-dojo-core/
-          mv core-bindings-macos-x86_64-release/bindings .
+          mkdir -p godot-dojo-core-debug/target && mv core-target-macos-x86_64-debug/* godot-dojo-core-debug/target/
+          mv core-bindings-macos-x86_64-debug/bindings bindings-debug
 
       - name: Install scons
         run: pip install scons
@@ -903,12 +784,11 @@ jobs:
             external/godot-cpp/.sconsign.dblite
             external/godot-cpp/gen/
             external/godot-cpp/__pycache__/
-          key: ${{ runner.os }}-scons-${{ matrix.precision }}-macos-${{ matrix.arch }}-release-${{ hashFiles('**/*.cpp', '**/*.h', 'SConstruct', 'external/godot-cpp/**/*.cpp', 'external/godot-cpp/**/*.h') }}
+          key: ${{ runner.os }}-scons-${{ matrix.precision }}-macos-${{ matrix.arch }}-templates-${{ hashFiles('**/*.cpp', '**/*.h', 'SConstruct', 'external/godot-cpp/**/*.cpp', 'external/godot-cpp/**/*.h') }}
           restore-keys: |
-            ${{ runner.os }}-scons-${{ matrix.precision }}-macos-${{ matrix.arch }}-release-
-            ${{ runner.os }}-scons-${{ matrix.precision }}-macos-${{ matrix.arch }}-
+            ${{ runner.os }}-scons-${{ matrix.precision }}-macos-${{ matrix.arch }}-templates-
 
-      - name: Build
+      - name: Build templates
         shell: bash
         run: |
           set -e
@@ -928,12 +808,22 @@ jobs:
 
           mkdir -p demo/addons/godot-dojo
 
+          # Build Debug Template (uses debug core)
+          mkdir -p godot-dojo-core-release/target && mv core-target-macos-x86_64-release/* godot-dojo-core-release/target/
+          mv core-bindings-macos-x86_64-release/bindings bindings-release
+          ln -sfn ../../godot-dojo-core-debug godot-dojo-core
+          ln -sfn ../../bindings-debug bindings
+          scons $PLATFORM_ARG $ARCH_ARG target=template_debug $PRECISION_ARG -j2
+
+          # Build Release Template (uses release core)
+          ln -sfn ../../godot-dojo-core-release godot-dojo-core
+          ln -sfn ../../bindings-release bindings
           scons $PLATFORM_ARG $ARCH_ARG target=template_release $PRECISION_ARG -j2
 
       - name: Upload binaries for this target
         uses: actions/upload-artifact@v4
         with:
-          name: bin-${{ matrix.precision }}-macos-${{ matrix.arch }}-release
+          name: bin-${{ matrix.precision }}-macos-${{ matrix.arch }}
           path: demo/addons/godot-dojo/
           if-no-files-found: error
 
@@ -1001,11 +891,11 @@ jobs:
           if-no-files-found: error
 
 
-  build-windows-debug:
-    name: Build Windows-x86_64-${{ matrix.precision }}-template-debug
+  build-windows-templates:
+    name: Build Windows-x86_64-${{ matrix.precision }}-templates
     runs-on: windows-latest
-    needs: build-windows-editor
-    if: needs.build-windows-editor.result == 'success'
+    needs: [create_release, build-rust-core-windows]
+    if: needs.create_release.result == 'success' && needs.build-rust-core-windows.result == 'success'
     strategy:
       fail-fast: false
       matrix:
@@ -1021,21 +911,35 @@ jobs:
       - name: Install build dependencies
         run: choco install protoc
 
-      - name: Download core artifacts
+      - name: Download core artifacts (debug)
         uses: actions/download-artifact@v4
-        with: # Download only the artifacts needed for this job
-          name: core-target-windows-debug
+        with:
+          pattern: core-target-windows-debug
           path: core-target-windows-debug
+          merge-multiple: true
       - uses: actions/download-artifact@v4
         with:
-          name: core-bindings-windows-debug
+          pattern: core-bindings-windows-debug
           path: core-bindings-windows-debug
+          merge-multiple: true
 
-      - name: Restore downloaded artifacts
+      - name: Download core artifacts (release)
+        uses: actions/download-artifact@v4
+        with:
+          pattern: core-target-windows-release
+          path: core-target-windows-release
+          merge-multiple: true
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: core-bindings-windows-release
+          path: core-bindings-windows-release
+          merge-multiple: true
+
+      - name: Restore downloaded artifacts (debug)
         shell: bash
         run: |
-          mv core-target-windows-debug/target godot-dojo-core/
-          mv core-bindings-windows-debug/bindings .
+          mkdir -p godot-dojo-core-debug/target && mv core-target-windows-debug/* godot-dojo-core-debug/target/
+          mv core-bindings-windows-debug/bindings bindings-debug
 
       - name: Install scons
         run: pip install scons
@@ -1050,13 +954,12 @@ jobs:
             external/godot-cpp/.sconsign.dblite
             external/godot-cpp/gen/
             external/godot-cpp/__pycache__/
-          key: ${{ runner.os }}-scons-${{ matrix.precision }}-windows-x86_64-debug-${{ hashFiles('**/*.cpp', '**/*.h', 'SConstruct', 'external/godot-cpp/**/*.cpp', 'external/godot-cpp/**/*.h') }}
+          key: ${{ runner.os }}-scons-${{ matrix.precision }}-windows-x86_64-templates-${{ hashFiles('**/*.cpp', '**/*.h', 'SConstruct', 'external/godot-cpp/**/*.cpp', 'external/godot-cpp/**/*.h') }}
           restore-keys: |
-            ${{ runner.os }}-scons-${{ matrix.precision }}-windows-x86_64-debug-
-            ${{ runner.os }}-scons-${{ matrix.precision }}-windows-x86_64-
-            ${{ runner.os }}-cargo-${{ matrix.precision }}-windows-
+            ${{ runner.os }}-scons-${{ matrix.precision }}-windows-x86_64-templates-
 
-      - name: Build debug
+
+      - name: Build templates
         shell: bash
         run: |
           set -e
@@ -1072,98 +975,25 @@ jobs:
 
           mkdir -p demo/addons/godot-dojo
 
-          # Debug
+          # Build Debug Template (uses debug core)
+          mkdir -p godot-dojo-core-release/target && mv core-target-windows-release/* godot-dojo-core-release/target/
+          mv core-bindings-windows-release/bindings bindings-release
+          ln -sfn ../../godot-dojo-core-debug godot-dojo-core
+          ln -sfn ../../bindings-debug bindings
           scons $PLATFORM_ARG $ARCH_ARG target=template_debug $PRECISION_ARG -j2
 
-      - name: Upload binaries for this target
-        uses: actions/upload-artifact@v4
-        with:
-          name: bin-${{ matrix.precision }}-windows-x86_64-debug-with-dll
-          path: |
-            demo/addons/godot-dojo/
-            godot-dojo-core/target/x86_64-pc-windows-msvc/debug/dojo_c.dll
-          if-no-files-found: error
-
-  build-windows-release:
-    name: Build Windows-x86_64-${{ matrix.precision }}-template-release
-    runs-on: windows-latest
-    needs: build-windows-debug
-    if: needs.build-windows-debug.result == 'success'
-    strategy:
-      fail-fast: false
-      matrix:
-        precision: [single, double]
-
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-        with:
-          submodules: true
-          fetch-depth: 0
-
-      - name: Install build dependencies
-        run: choco install protoc
-
-      - name: Download core artifacts
-        uses: actions/download-artifact@v4
-        with: # Download only the artifacts needed for this job
-          name: core-target-windows-release
-          path: core-target-windows-release
-      - uses: actions/download-artifact@v4
-        with:
-          name: core-bindings-windows-release
-          path: core-bindings-windows-release
-
-      - name: Restore downloaded artifacts
-        shell: bash
-        run: |
-          mv core-target-windows-release/target godot-dojo-core/
-          mv core-bindings-windows-release/bindings .
-
-      - name: Install scons
-        run: pip install scons
-
-      - name: Cache SCons and godot-cpp build artifacts
-        uses: actions/cache@v3
-        with:
-          path: |
-            .sconsign.dblite
-            demo/addons/godot-dojo/
-            external/godot-cpp/bin/
-            external/godot-cpp/.sconsign.dblite
-            external/godot-cpp/gen/
-            external/godot-cpp/__pycache__/
-          key: ${{ runner.os }}-scons-${{ matrix.precision }}-windows-x86_64-release-${{ hashFiles('**/*.cpp', '**/*.h', 'SConstruct', 'external/godot-cpp/**/*.cpp', 'external/godot-cpp/**/*.h') }}
-          restore-keys: |
-            ${{ runner.os }}-scons-${{ matrix.precision }}-windows-x86_64-release-
-            ${{ runner.os }}-scons-${{ matrix.precision }}-windows-x86_64-
-            ${{ runner.os }}-cargo-${{ matrix.precision }}-windows-
-
-      - name: Build release
-        shell: bash
-        run: |
-          set -e
-          PLATFORM_ARG="platform=windows"
-          ARCH_ARG="arch=x86_64"
-          PRECISION_ARG=""
-          export CARGO_BUILD_TARGET=x86_64-pc-windows-msvc
-
-          # Set precision argument if building double precision
-          if [ "${{ matrix.precision }}" = "double" ]; then
-            PRECISION_ARG="precision=double"
-          fi
-
-          mkdir -p demo/addons/godot-dojo
-
-          # Release
+          # Build Release Template (uses release core)
+          ln -sfn ../../godot-dojo-core-release godot-dojo-core
+          ln -sfn ../../bindings-release bindings
           scons $PLATFORM_ARG $ARCH_ARG target=template_release $PRECISION_ARG -j2
 
       - name: Upload binaries for this target
         uses: actions/upload-artifact@v4
         with:
-          name: bin-${{ matrix.precision }}-windows-x86_64-release-with-dll
+          name: bin-${{ matrix.precision }}-windows-x86_64-with-dll
           path: |
             demo/addons/godot-dojo/
+            godot-dojo-core/target/x86_64-pc-windows-msvc/debug/dojo_c.dll
             godot-dojo-core/target/x86_64-pc-windows-msvc/release/dojo_c.dll
           if-no-files-found: error
 
@@ -1189,19 +1019,22 @@ jobs:
 
       - name: Download core artifacts
         uses: actions/download-artifact@v4
-        with: # Download only the artifacts needed for this job
-          name: core-target-windows-debug
+        with:
+          pattern: core-target-windows-debug
           path: core-target-windows-debug
+          merge-multiple: true
       - uses: actions/download-artifact@v4
         with:
-          name: core-bindings-windows-debug
+          pattern: core-bindings-windows-debug
           path: core-bindings-windows-debug
+          merge-multiple: true
 
       - name: Restore downloaded artifacts
         shell: bash
         run: |
-          mv core-target-windows-debug/target godot-dojo-core/
-          mv core-bindings-windows-debug/bindings .
+          mkdir -p godot-dojo-core/target
+          mv core-target-windows-debug/* godot-dojo-core/target/
+          mv core-bindings-windows-debug/* .
 
       - name: Install scons
         run: pip install scons
@@ -1253,7 +1086,7 @@ jobs:
   package:
     name: Combine all binaries and create zip files
     runs-on: ubuntu-latest
-    needs: [create_release, build-linux, build-macos-release-arm64, build-macos-release-x86_64, build-windows-release, build-macos-editor-arm64, build-macos-editor-x86_64, build-windows-editor]
+    needs: [create_release, build-linux, build-macos-templates-arm64, build-macos-templates-x86_64, build-windows-templates, build-macos-editor-arm64, build-macos-editor-x86_64, build-windows-editor]
     if: needs.create_release.result == 'success'
 
     steps:
@@ -1279,16 +1112,16 @@ jobs:
 
           # Single precision binaries
           mkdir -p godot-dojo-bin/addons/godot-dojo/
-          find all_bins/bin-single-linux all_bins/bin-single-macos-* -name 'bin' -type d -exec cp -r {} godot-dojo-bin/addons/godot-dojo/ \;
+          find all_bins/bin-single-linux-x86_64 all_bins/bin-single-macos-* -name 'bin' -type d -exec cp -r {} godot-dojo-bin/addons/godot-dojo/ \;
           # Copy dojo_c.dll for windows to the correct bin folder (it's inside demo/addons/godot-dojo)
-          find all_bins/bin-single-windows-* -name 'bin' -type d -exec cp -r {} godot-dojo-bin/addons/godot-dojo/ \;
-          find all_bins/bin-single-windows-* -name 'dojo_c.dll' -exec cp {} godot-dojo-bin/addons/godot-dojo/bin/ \;
+          find all_bins/bin-single-windows-x86_64-with-dll -name 'bin' -type d -exec cp -r {} godot-dojo-bin/addons/godot-dojo/ \;
+          find all_bins/bin-single-windows-x86_64-with-dll -name 'dojo_c.dll' -exec cp {} godot-dojo-bin/addons/godot-dojo/bin/ \;
 
           # Double precision binaries
           mkdir -p godot-dojo-double-bin/addons/godot-dojo/
-          find all_bins/bin-double-linux all_bins/bin-double-macos-* -name 'bin' -type d -exec cp -r {} godot-dojo-double-bin/addons/godot-dojo/ \;
-          find all_bins/bin-double-windows-* -name 'bin' -type d -exec cp -r {} godot-dojo-double-bin/addons/godot-dojo/ \;
-          find all_bins/bin-double-windows-* -name 'dojo_c.dll' -exec cp {} godot-dojo-double-bin/addons/godot-dojo/bin/ \;
+          find all_bins/bin-double-linux-x86_64 all_bins/bin-double-macos-* -name 'bin' -type d -exec cp -r {} godot-dojo-double-bin/addons/godot-dojo/ \;
+          find all_bins/bin-double-windows-x86_64-with-dll -name 'bin' -type d -exec cp -r {} godot-dojo-double-bin/addons/godot-dojo/ \;
+          find all_bins/bin-double-windows-x86_64-with-dll -name 'dojo_c.dll' -exec cp {} godot-dojo-double-bin/addons/godot-dojo/bin/ \;
 
       - name: Package into zip files
         run: |
