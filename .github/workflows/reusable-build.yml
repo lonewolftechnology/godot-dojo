@@ -88,7 +88,7 @@ jobs:
             external/godot-cpp/.sconsign.dblite
             external/godot-cpp/gen/
             external/godot-cpp/__pycache__/
-          key: ${{ runner.os }}-${{ inputs.arch }}-scons-${{ inputs.precision }}-${{ inputs.build_target }}-${{ hashFiles('**/*.cpp', '**/*.h', 'SConstruct') }}
+          key: ${{ runner.os }}-${{ inputs.arch }}-scons-${{ inputs.precision }}-${{ inputs.build_target }}-${{ hashFiles('src/**/*.cpp', 'src/**/*.h', 'bindings/**/*.cpp', 'bindings/**/*.h', 'SConstruct') }}
           restore-keys: |
             ${{ runner.os }}-${{ inputs.arch }}-scons-${{ inputs.precision }}-${{ inputs.build_target }}-
 

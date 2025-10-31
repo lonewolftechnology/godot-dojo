@@ -197,7 +197,7 @@ jobs:
           path: |
             ~/.cargo/registry
             ~/.cargo/git
-          key: ${{ runner.os }}-cargo-deps-${{ hashFiles('**/Cargo.lock') }}
+          key: ${{ runner.os }}-cargo-deps-${{ hashFiles('godot-dojo-core/Cargo.lock') }}
           restore-keys: |
             ${{ runner.os }}-cargo-deps-
 
