@@ -5,9 +5,13 @@ compatibility_minimum = "${GODOT_MIN_REQUIREMENT}"
 reloadable = true
 [libraries]
 
-macos.debug = "res://addons/godot-dojo/bin/macos/debug/${PROJECT_NAME}.xcframework"
-macos.release = "res://addons/godot-dojo/bin/macos/release/${PROJECT_NAME}.xcframework"
-macos.editor.universal = "res://addons/godot-dojo/bin/macos/debug/${PROJECT_NAME}.macos.editor.universal.dylib"
+macos.editor.x86_64 = "res://addons/godot-dojo/bin/macos/debug/${PROJECT_NAME}.macos.editor.x86_64.dylib"
+macos.debug.x86_64 = "res://addons/godot-dojo/bin/macos/debug/${PROJECT_NAME}.macos.debug.x86_64.dylib"
+macos.release.x86_64 = "res://addons/godot-dojo/bin/macos/release/${PROJECT_NAME}.macos.release.x86_64.dylib"
+
+macos.editor.arm64 = "res://addons/godot-dojo/bin/macos/debug/${PROJECT_NAME}.macos.editor.arm64.dylib"
+macos.debug.arm64 = "res://addons/godot-dojo/bin/macos/debug/${PROJECT_NAME}.macos.debug.arm64.dylib"
+macos.release.arm64 = "res://addons/godot-dojo/bin/macos/release/${PROJECT_NAME}.macos.release.arm64.dylib"
 
 ios.debug = "res://addons/godot-dojo/bin/ios/debug/${PROJECT_NAME}.xcframework"
 ios.release = "res://addons/godot-dojo/bin/ios/release/${PROJECT_NAME}.xcframework"
