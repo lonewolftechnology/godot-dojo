@@ -131,22 +131,19 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
   build-rust-core:
-    name: Build Core Crate (${{ matrix.os_name }}-${{ matrix.arch }}-${{ matrix.profile }})
-    runs-on: ${{ matrix.os }}
+    name: Build Core Crate (${{ matrix.platform.os_name }}-${{ matrix.platform.arch }}-${{ matrix.profile }})
+    runs-on: ${{ matrix.platform.os }}
     needs: create_release
     if: needs.create_release.result == 'success'
     strategy:
       fail-fast: false
       matrix:
-        include:
-          - { os: ubuntu-latest,  os_name: linux,   arch: x86_64, target: x86_64-unknown-linux-gnu,   profile: debug }
-          - { os: ubuntu-latest,  os_name: linux,   arch: x86_64, target: x86_64-unknown-linux-gnu,   profile: release }
-          - { os: macos-latest,   os_name: macos,   arch: arm64,  target: aarch64-apple-darwin,       profile: debug }
-          - { os: macos-latest,   os_name: macos,   arch: arm64,  target: aarch64-apple-darwin,       profile: release }
-          - { os: macos-13,       os_name: macos,   arch: x86_64, target: x86_64-apple-darwin,        profile: debug }
-          - { os: macos-13,       os_name: macos,   arch: x86_64, target: x86_64-apple-darwin,        profile: release }
-          - { os: windows-latest, os_name: windows, arch: x86_64, target: x86_64-pc-windows-msvc,     profile: debug }
-          - { os: windows-latest, os_name: windows, arch: x86_64, target: x86_64-pc-windows-msvc,     profile: release }
+        platform:
+          - { os: ubuntu-latest,  os_name: linux,   arch: x86_64, target: x86_64-unknown-linux-gnu }
+          - { os: macos-latest,   os_name: macos,   arch: arm64,  target: aarch64-apple-darwin }
+          - { os: macos-13,       os_name: macos,   arch: x86_64, target: x86_64-apple-darwin }
+          - { os: windows-latest, os_name: windows, arch: x86_64, target: x86_64-pc-windows-msvc }
+        profile: [debug, release]
 
     steps:
       - name: Checkout code
@@ -156,20 +153,20 @@ jobs:
           fetch-depth: 0
 
       - name: Install Linux build dependencies
-        if: matrix.os_name == 'linux'
+        if: matrix.platform.os_name == 'linux'
         run: sudo apt-get update && sudo apt-get install -y build-essential pkg-config libdbus-1-dev protobuf-compiler libprotobuf-dev
 
       - name: Set up Rust nightly
         uses: dtolnay/rust-toolchain@nightly
         with:
-          targets: ${{ matrix.target }}
+          targets: ${{ matrix.platform.target }}
 
       - name: Install macOS build dependencies
-        if: matrix.os_name == 'macos'
+        if: matrix.platform.os_name == 'macos'
         run: brew install protobuf
 
       - name: Install Windows build dependencies
-        if: matrix.os_name == 'windows'
+        if: matrix.platform.os_name == 'windows'
         run: choco install protoc
 
       - name: Install uniffi-bindgen-cpp from source
@@ -194,20 +191,20 @@ jobs:
             BUILD_ARGS="--release"
           fi
           
-          cargo build $BUILD_ARGS --target ${{ matrix.target }}
+          cargo build $BUILD_ARGS --target ${{ matrix.platform.target }}
 
       - name: Upload core artifacts (target)
         uses: actions/upload-artifact@v4
         with:
           # For macOS, we add the target to the name to differentiate archs
-          name: core-target-${{ matrix.os_name }}-${{ matrix.os_name != 'macos' && matrix.profile || format('{0}-{1}', matrix.target, matrix.profile) }}
+          name: core-target-${{ matrix.platform.os_name }}-${{ matrix.platform.os_name != 'macos' && matrix.profile || format('{0}-{1}', matrix.platform.target, matrix.profile) }}
           path: godot-dojo-core/target
           if-no-files-found: error
 
       - name: Upload core artifacts (bindings)
         uses: actions/upload-artifact@v4
         with:
-          name: core-bindings-${{ matrix.os_name }}-${{ matrix.os_name != 'macos' && matrix.profile || format('{0}-{1}', matrix.target, matrix.profile) }}
+          name: core-bindings-${{ matrix.platform.os_name }}-${{ matrix.platform.os_name != 'macos' && matrix.profile || format('{0}-{1}', matrix.platform.target, matrix.profile) }}
           path: bindings
           if-no-files-found: error
 
