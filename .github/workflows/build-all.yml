@@ -1438,6 +1438,10 @@ jobs:
           cd godot-dojo-double-bin
           zip -r "../godot-dojo-double-${TAGNAME}.zip" .
           cd ..
+          
+          # Starter project zip
+          # Assuming dojo-starter-godot-project is at the root
+          zip -r "dojo-starter-godot-project.zip" "dojo-starter-godot-project"
 
       - name: Upload assets to release
         uses: softprops/action-gh-release@v2
@@ -1448,8 +1452,10 @@ jobs:
             ### Downloads
             - [Single Precision](https://github.com/${{ github.repository }}/releases/download/${{ github.ref_name }}/godot-dojo-${{ github.ref_name }}.zip)
             - [Double Precision](https://github.com/${{ github.repository }}/releases/download/${{ github.ref_name }}/godot-dojo-double-${{ github.ref_name }}.zip)
+            - [Starter Project](https://github.com/${{ github.repository }}/releases/download/${{ github.ref_name }}/dojo-starter-godot-project.zip)
           files: |
             godot-dojo-${{ github.ref_name }}.zip
             godot-dojo-double-${{ github.ref_name }}.zip
+            dojo-starter-godot-project.zip
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
