@@ -214,8 +214,13 @@ jobs:
 
       - name: Download core artifacts
         uses: actions/download-artifact@v4
+        with: # Download only the artifacts needed for this job
+          name: core-target-linux-debug
+          path: core-target-linux-debug
+      - uses: actions/download-artifact@v4
         with:
-          path: .
+          name: core-bindings-linux-debug
+          path: core-bindings-linux-debug
 
       - name: Restore downloaded artifacts
         run: |
@@ -289,8 +294,13 @@ jobs:
 
       - name: Download core artifacts
         uses: actions/download-artifact@v4
+        with: # Download only the artifacts needed for this job
+          name: core-target-linux-release
+          path: core-target-linux-release
+      - uses: actions/download-artifact@v4
         with:
-          path: .
+          name: core-bindings-linux-release
+          path: core-bindings-linux-release
 
       - name: Restore downloaded artifacts
         run: |
@@ -364,8 +374,13 @@ jobs:
 
       - name: Download core artifacts
         uses: actions/download-artifact@v4
+        with: # Download only the artifacts needed for this job
+          name: core-target-linux-debug
+          path: core-target-linux-debug
+      - uses: actions/download-artifact@v4
         with:
-          path: .
+          name: core-bindings-linux-debug
+          path: core-bindings-linux-debug
 
       - name: Restore downloaded artifacts
         run: |
@@ -508,8 +523,13 @@ jobs:
 
       - name: Download core artifacts
         uses: actions/download-artifact@v4
+        with: # Download only the artifacts needed for this job
+          name: core-target-macos-arm64-debug
+          path: core-target-macos-arm64-debug
+      - uses: actions/download-artifact@v4
         with:
-          path: .
+          name: core-bindings-macos-arm64-debug
+          path: core-bindings-macos-arm64-debug
 
       - name: Restore downloaded artifacts
         run: |
@@ -655,8 +675,13 @@ jobs:
 
       - name: Download core artifacts
         uses: actions/download-artifact@v4
+        with: # Download only the artifacts needed for this job
+          name: core-target-macos-x86_64-debug
+          path: core-target-macos-x86_64-debug
+      - uses: actions/download-artifact@v4
         with:
-          path: .
+          name: core-bindings-macos-x86_64-debug
+          path: core-bindings-macos-x86_64-debug
 
       - name: Restore downloaded artifacts
         run: |
@@ -735,8 +760,13 @@ jobs:
 
       - name: Download core artifacts
         uses: actions/download-artifact@v4
+        with: # Download only the artifacts needed for this job
+          name: core-target-macos-arm64-debug
+          path: core-target-macos-arm64-debug
+      - uses: actions/download-artifact@v4
         with:
-          path: .
+          name: core-bindings-macos-arm64-debug
+          path: core-bindings-macos-arm64-debug
 
       - name: Restore downloaded artifacts
         run: |
@@ -814,8 +844,13 @@ jobs:
 
       - name: Download core artifacts
         uses: actions/download-artifact@v4
+        with: # Download only the artifacts needed for this job
+          name: core-target-macos-x86_64-debug
+          path: core-target-macos-x86_64-debug
+      - uses: actions/download-artifact@v4
         with:
-          path: .
+          name: core-bindings-macos-x86_64-debug
+          path: core-bindings-macos-x86_64-debug
 
       - name: Restore downloaded artifacts
         run: |
@@ -893,8 +928,13 @@ jobs:
 
       - name: Download core artifacts
         uses: actions/download-artifact@v4
+        with: # Download only the artifacts needed for this job
+          name: core-target-macos-arm64-release
+          path: core-target-macos-arm64-release
+      - uses: actions/download-artifact@v4
         with:
-          path: .
+          name: core-bindings-macos-arm64-release
+          path: core-bindings-macos-arm64-release
 
       - name: Restore downloaded artifacts
         run: |
@@ -972,8 +1012,13 @@ jobs:
 
       - name: Download core artifacts
         uses: actions/download-artifact@v4
+        with: # Download only the artifacts needed for this job
+          name: core-target-macos-x86_64-release
+          path: core-target-macos-x86_64-release
+      - uses: actions/download-artifact@v4
         with:
-          path: .
+          name: core-bindings-macos-x86_64-release
+          path: core-bindings-macos-x86_64-release
 
       - name: Restore downloaded artifacts
         run: |
@@ -1113,8 +1158,13 @@ jobs:
 
       - name: Download core artifacts
         uses: actions/download-artifact@v4
+        with: # Download only the artifacts needed for this job
+          name: core-target-windows-debug
+          path: core-target-windows-debug
+      - uses: actions/download-artifact@v4
         with:
-          path: .
+          name: core-bindings-windows-debug
+          path: core-bindings-windows-debug
 
       - name: Restore downloaded artifacts
         shell: bash
@@ -1191,8 +1241,13 @@ jobs:
 
       - name: Download core artifacts
         uses: actions/download-artifact@v4
+        with: # Download only the artifacts needed for this job
+          name: core-target-windows-release
+          path: core-target-windows-release
+      - uses: actions/download-artifact@v4
         with:
-          path: .
+          name: core-bindings-windows-release
+          path: core-bindings-windows-release
 
       - name: Restore downloaded artifacts
         shell: bash
@@ -1269,8 +1324,13 @@ jobs:
 
       - name: Download core artifacts
         uses: actions/download-artifact@v4
+        with: # Download only the artifacts needed for this job
+          name: core-target-windows-debug
+          path: core-target-windows-debug
+      - uses: actions/download-artifact@v4
         with:
-          path: .
+          name: core-bindings-windows-debug
+          path: core-bindings-windows-debug
 
       - name: Restore downloaded artifacts
         shell: bash
