@@ -252,6 +252,10 @@ jobs:
             rust_target: x86_64-pc-windows-msvc
             macos_deployment_target: ""
     uses: ./.github/workflows/reusable-build.yml
+    steps:
+      - name: Install uniffi-bindgen-cpp from source
+        run: cargo install --git https://github.com/Larkooo/uniffi-bindgen-cpp --branch update-0.30 uniffi-bindgen-cpp
+
     with:
       os: ${{ matrix.os }}
       arch: ${{ matrix.arch }}
