@@ -188,9 +188,6 @@ jobs:
         with:
           targets: ${{ matrix.rust_target }}
 
-      - name: Install uniffi-bindgen-cpp from source
-        run: cargo install --git https://github.com/Larkooo/uniffi-bindgen-cpp --branch update-0.30 uniffi-bindgen-cpp
-
       - name: Cache Rust dependencies
         uses: actions/cache@v3
         with:
@@ -204,6 +201,8 @@ jobs:
       - name: Build godot-dojo-core
         shell: bash
         working-directory: godot-dojo-core
+        env:
+          SKIP_BINDINGS_GENERATION: 1
         run: |
           if [ "${{ runner.os }}" = "macOS" ]; then
             export MACOSX_DEPLOYMENT_TARGET=${{ matrix.macos_deployment_target }}
@@ -217,13 +216,6 @@ jobs:
         with:
           name: core-target-${{ matrix.os }}-${{ matrix.arch }}-release
           path: godot-dojo-core/target
-          if-no-files-found: error
-
-      - name: Upload core artifacts (bindings)
-        uses: actions/upload-artifact@v4
-        with:
-          name: core-bindings-${{ matrix.os }}-${{ matrix.arch }}-release
-          path: bindings
           if-no-files-found: error
 
   build-gdextension:

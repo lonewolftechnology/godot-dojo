@@ -342,12 +342,12 @@ else:
     env.Append(CXXFLAGS=['-fexceptions', '-std=c++20', '-Wno-template-id-cdtor'])
 
 # Link Rust libraries
-build_mode = "release" if is_release_build else "debug"
+rust_build_mode = "release" if is_release_build else "debug"
 
 # For macOS universal, rust_target was modified, so we handle it specially
 rust_lib_target_dir = "universal" if platform == "macos" and arch == "universal" else rust_target
 
-rust_lib_dir = f"godot-dojo-core/target/{rust_lib_target_dir}/{build_mode}"
+rust_lib_dir = f"godot-dojo-core/target/{rust_lib_target_dir}/{rust_build_mode}"
 
 rust_lib = ""
 
@@ -412,10 +412,14 @@ suffix_map = {
     "ios": f".ios.{target}.{arch}.dylib",
 }
 
-output_dir = f"demo/addons/godot-dojo/bin/{platform}/{build_mode}"
+target_out_dir = target
+if '_' in target:
+    target_out_dir = target.split('_', 1)[1]
+
+output_dir = f"demo/addons/godot-dojo/bin/{platform}/{target_out_dir}"
 lib_name = f"{output_dir}/{prefix}godot-dojo{suffix_map.get(platform, f'.{platform}.{target}.{arch}.so')}"
 library = env.SharedLibrary(target=lib_name, source=sources)
-env.Alias(f"godot-dojo-{platform}-{build_mode}", library)
+env.Alias(f"godot-dojo-{platform}-{target_out_dir}", library)
 
 # Generate .gdextension
 with open("plugin_template.gdextension.in", 'r') as f:

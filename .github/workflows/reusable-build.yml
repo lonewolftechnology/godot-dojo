@@ -53,12 +53,6 @@ jobs:
           name: core-target-${{ runner.os == 'Windows' && 'windows' || (runner.os == 'macOS' && 'macos' || 'linux') }}-${{ inputs.arch }}-release
           path: godot-dojo-core/target
 
-      - name: Download core artifacts (bindings)
-        uses: actions/download-artifact@v4
-        with:
-          name: core-bindings-${{ runner.os == 'Windows' && 'windows' || (runner.os == 'macOS' && 'macos' || 'linux') }}-${{ inputs.arch }}-release
-          path: bindings
-
       - name: Set up Rust nightly
         uses: dtolnay/rust-toolchain@nightly
         with:
