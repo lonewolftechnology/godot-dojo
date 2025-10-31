@@ -245,14 +245,14 @@ jobs:
           mkdir -p godot-dojo-core-debug/target
           # The files are directly in the download path, not in a nested 'target' dir
           mv core-target-linux-debug/* godot-dojo-core-debug/target/
-          mv core-bindings-linux-debug/bindings bindings-debug
+          mv core-bindings-linux-debug bindings-debug
 
       - name: Restore downloaded artifacts (release)
         run: |
           mkdir -p godot-dojo-core-release/target
           # The files are directly in the download path, not in a nested 'target' dir
           mv core-target-linux-release/* godot-dojo-core-release/target/
-          mv core-bindings-linux-release/bindings bindings-release
+          mv core-bindings-linux-release bindings-release
 
       - name: Install scons
         run: pip install scons
@@ -409,7 +409,7 @@ jobs:
           # For editor, we use debug profile of rust core
           mkdir -p godot-dojo-core/target
           mv core-target-macos-arm64-debug/* godot-dojo-core/target/
-          mv core-bindings-macos-arm64-debug/* .
+          mv core-bindings-macos-arm64-debug bindings
 
       - name: Install scons
         run: pip install scons
@@ -564,7 +564,7 @@ jobs:
           # For editor, we use debug profile of rust core
           mkdir -p godot-dojo-core/target
           mv core-target-macos-x86_64-debug/* godot-dojo-core/target/
-          mv core-bindings-macos-x86_64-debug/* .
+          mv core-bindings-macos-x86_64-debug bindings
 
       - name: Install scons
         run: pip install scons
@@ -662,7 +662,7 @@ jobs:
       - name: Restore downloaded artifacts (debug)
         run: |
           mkdir -p godot-dojo-core-debug/target && mv core-target-macos-arm64-debug/* godot-dojo-core-debug/target/
-          mv core-bindings-macos-arm64-debug/bindings bindings-debug
+          mv core-bindings-macos-arm64-debug bindings-debug
 
       - name: Install scons
         run: pip install scons
@@ -703,7 +703,7 @@ jobs:
 
           # Build Debug Template (uses debug core)
           mkdir -p godot-dojo-core-release/target && mv core-target-macos-arm64-release/* godot-dojo-core-release/target/
-          mv core-bindings-macos-arm64-release/bindings bindings-release
+          mv core-bindings-macos-arm64-release bindings-release
           ln -sfn ../../godot-dojo-core-debug godot-dojo-core
           ln -sfn ../../bindings-debug bindings
           scons $PLATFORM_ARG $ARCH_ARG target=template_debug $PRECISION_ARG -j2
@@ -769,7 +769,7 @@ jobs:
       - name: Restore downloaded artifacts (debug)
         run: |
           mkdir -p godot-dojo-core-debug/target && mv core-target-macos-x86_64-debug/* godot-dojo-core-debug/target/
-          mv core-bindings-macos-x86_64-debug/bindings bindings-debug
+          mv core-bindings-macos-x86_64-debug bindings-debug
 
       - name: Install scons
         run: pip install scons
@@ -810,7 +810,7 @@ jobs:
 
           # Build Debug Template (uses debug core)
           mkdir -p godot-dojo-core-release/target && mv core-target-macos-x86_64-release/* godot-dojo-core-release/target/
-          mv core-bindings-macos-x86_64-release/bindings bindings-release
+          mv core-bindings-macos-x86_64-release bindings-release
           ln -sfn ../../godot-dojo-core-debug godot-dojo-core
           ln -sfn ../../bindings-debug bindings
           scons $PLATFORM_ARG $ARCH_ARG target=template_debug $PRECISION_ARG -j2
@@ -939,7 +939,7 @@ jobs:
         shell: bash
         run: |
           mkdir -p godot-dojo-core-debug/target && mv core-target-windows-debug/* godot-dojo-core-debug/target/
-          mv core-bindings-windows-debug/bindings bindings-debug
+          mv core-bindings-windows-debug bindings-debug
 
       - name: Install scons
         run: pip install scons
@@ -977,7 +977,7 @@ jobs:
 
           # Build Debug Template (uses debug core)
           mkdir -p godot-dojo-core-release/target && mv core-target-windows-release/* godot-dojo-core-release/target/
-          mv core-bindings-windows-release/bindings bindings-release
+          mv core-bindings-windows-release bindings-release
           ln -sfn ../../godot-dojo-core-debug godot-dojo-core
           ln -sfn ../../bindings-debug bindings
           scons $PLATFORM_ARG $ARCH_ARG target=template_debug $PRECISION_ARG -j2
@@ -1034,7 +1034,7 @@ jobs:
         run: |
           mkdir -p godot-dojo-core/target
           mv core-target-windows-debug/* godot-dojo-core/target/
-          mv core-bindings-windows-debug/* .
+          mv core-bindings-windows-debug bindings
 
       - name: Install scons
         run: pip install scons
