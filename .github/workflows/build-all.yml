@@ -89,30 +89,22 @@ jobs:
         id: get_core_deps
         run: |
           cd godot-dojo-core
-          
-          # Install cargo-tree if not present
-          if ! command -v cargo-tree &> /dev/null
-          then
-              echo "cargo-tree not found, installing..."
-              cargo install cargo-tree
-          fi
-          
-          CORE_DEPS=$(cargo tree -e normal --depth 1 --prefix none | grep "git+" | sed 's/ (.*//' | sort -u | while read -r line; do
-            DEP_NAME=$(echo "$line" | awk '{print $1}')
-            REPO_URL=$(grep "$DEP_NAME" Cargo.toml | grep -o 'git = "[^"]*"' | sed 's/git = "//;s/"//' | head -n 1)
-          
-            if [[ "$REPO_URL" == *"dojo.c"* ]]; then
-              TAG=$(grep "$DEP_NAME" Cargo.toml | grep -o 'tag = "[^"]*"' | sed 's/tag = "//;s/"//' | head -n 1)
-              echo "- [dojo.c]($REPO_URL/releases/tag/$TAG) ($TAG)"
-            elif [[ "$REPO_URL" == *"controller.c"* ]]; then
-              REV=$(grep "$DEP_NAME" Cargo.toml | grep -o 'rev = "[^"]*"' | sed 's/rev = "//;s/"//' | head -n 1)
-              echo "- [controller.c]($REPO_URL/tree/$REV) (${REV:0:7})"
-            fi
-          done)
-          
-          echo "core_deps<<EOF" >> $GITHUB_OUTPUT
-          echo "$CORE_DEPS" >> $GITHUB_OUTPUT
-          echo "EOF" >> $GITHUB_OUTPUT
+
+          # Parse dojo-c from Cargo.toml
+          DOJO_C_LINE=$(grep 'dojo-c =' Cargo.toml)
+          DOJO_C_URL=$(echo "$DOJO_C_LINE" | grep -o 'git = "[^"]*"' | sed 's/git = "//;s/"//')
+          DOJO_C_TAG=$(echo "$DOJO_C_LINE" | grep -o 'tag = "[^"]*"' | sed 's/tag = "//;s/"//')
+
+          # Parse controller-uniffi from Cargo.toml
+          CONTROLLER_LINE=$(grep 'controller-uniffi =' Cargo.toml)
+          CONTROLLER_URL=$(echo "$CONTROLLER_LINE" | grep -o 'git = "[^"]*"' | sed 's/git = "//;s/"//')
+          CONTROLLER_REV=$(echo "$CONTROLLER_LINE" | grep -o 'rev = "[^"]*"' | sed 's/rev = "//;s/"//')
+          CONTROLLER_REV_SHORT=${CONTROLLER_REV:0:7}
+
+          # Set individual outputs for each dependency
+          echo "dojo_c_version=[dojo.c]($DOJO_C_URL/releases/tag/$DOJO_C_TAG) ($DOJO_C_TAG)" >> $GITHUB_OUTPUT
+          echo "controller_c_version=[controller.c]($CONTROLLER_URL/tree/$CONTROLLER_REV) ($CONTROLLER_REV_SHORT)" >> $GITHUB_OUTPUT
+
 
       - name: Create release
         id: create_release
@@ -128,8 +120,9 @@ jobs:
             ${{ steps.get_commits.outputs.commits }}
             
             ### Target dependecies:
-            ${{ steps.get_core_deps.outputs.core_deps }}
             - Godot ${{ steps.get_godotcpp_version.outputs.GODOTCPP_VERSION }}
+            - ${{ steps.get_core_deps.outputs.dojo_c_version }}
+            - ${{ steps.get_core_deps.outputs.controller_c_version }}
               note: Godot target is minimum version, so it should work with 4.3+
 
           draft: false
@@ -177,6 +170,10 @@ jobs:
         with:
           submodules: true
           fetch-depth: 0
+
+      - name: Install Linux build dependencies
+        if: matrix.os_name == 'linux'
+        run: sudo apt-get update && sudo apt-get install -y build-essential pkg-config libdbus-1-dev
 
       - name: Set up Rust nightly
         uses: dtolnay/rust-toolchain@nightly
@@ -230,8 +227,8 @@ jobs:
   build-linux-debug:
     name: Build Linux-x86_64-${{ matrix.precision }}-debug
     runs-on: ubuntu-latest
-    needs: [create_release, build-rust-core]
-    if: needs.create_release.result == 'success' && needs.build-rust-core.result == 'success'
+    needs: build-linux-editor
+    if: needs.build-linux-editor.result == 'success'
     strategy:
       fail-fast: false
       matrix:
@@ -305,8 +302,8 @@ jobs:
   build-linux-release:
     name: Build Linux-x86_64-${{ matrix.precision }}-release
     runs-on: ubuntu-latest
-    needs: [create_release, build-rust-core]
-    if: needs.create_release.result == 'success' && needs.build-rust-core.result == 'success'
+    needs: build-linux-debug
+    if: needs.build-linux-debug.result == 'success'
     strategy:
       fail-fast: false
       matrix:
@@ -533,8 +530,8 @@ jobs:
   build-macos-debug:
     name: Build macOS-universal-${{ matrix.precision }}-debug
     runs-on: macos-14
-    needs: [create_release, build-rust-core]
-    if: needs.create_release.result == 'success' && needs.build-rust-core.result == 'success'
+    needs: build-macos-editor
+    if: needs.build-macos-editor.result == 'success'
     strategy:
       fail-fast: false
       matrix:
@@ -610,8 +607,8 @@ jobs:
   build-macos-release:
     name: Build macOS-universal-${{ matrix.precision }}-release
     runs-on: macos-14
-    needs: [create_release, build-rust-core]
-    if: needs.create_release.result == 'success' && needs.build-rust-core.result == 'success'
+    needs: build-macos-debug
+    if: needs.build-macos-debug.result == 'success'
     strategy:
       fail-fast: false
       matrix:
@@ -687,8 +684,8 @@ jobs:
   build-windows-debug:
     name: Build Windows-x86_64-${{ matrix.precision }}-debug
     runs-on: windows-latest
-    needs: [create_release, build-rust-core]
-    if: needs.create_release.result == 'success' && needs.build-rust-core.result == 'success'
+    needs: build-windows-editor
+    if: needs.build-windows-editor.result == 'success'
     strategy:
       fail-fast: false
       matrix:
@@ -765,8 +762,8 @@ jobs:
   build-windows-release:
     name: Build Windows-x86_64-${{ matrix.precision }}-release
     runs-on: windows-latest
-    needs: [create_release, build-rust-core]
-    if: needs.create_release.result == 'success' && needs.build-rust-core.result == 'success'
+    needs: build-windows-debug
+    if: needs.build-windows-debug.result == 'success'
     strategy:
       fail-fast: false
       matrix:
