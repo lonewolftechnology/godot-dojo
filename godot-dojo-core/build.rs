@@ -68,7 +68,14 @@ fn handle_uniffi_dependency(dep_name: &str, udl_relative_path: &str, output_sub_
 }
 
 fn main(){
-
+    let key = "SKIP_BINDINGS_GENERATION";
+    match env::var(key) {
+        Ok(val) => {
+            info!("Skipping bindings generation because {} is set.", val);
+            return;
+        },
+        Err(e) => note!("{} {}", key, e),
+    };
     let manifest_dir = env::var("CARGO_MANIFEST_DIR").unwrap();
     note!("Source directory of 'godot-dojo-core': {}", manifest_dir);
 
