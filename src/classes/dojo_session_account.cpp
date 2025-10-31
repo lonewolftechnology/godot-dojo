@@ -36,7 +36,7 @@ namespace {
                 auto p = std::make_shared<controller::SessionPolicy>();
                 p->contract_address = contract_address.utf8().get_data();
                 p->entrypoint = String(entrypoints[j]).utf8().get_data();
-                c_policies.policies.push_back(std::move(p));
+                c_policies.policies.push_back(p);
             }
         }
         return c_policies;
@@ -48,19 +48,26 @@ void DojoSessionAccount::set_internal(std::shared_ptr<controller::SessionAccount
 }
 
 void DojoSessionAccount::create(const String &rpc_url, const String &private_key, const String &address,
-                                const String &owner_guid, const String &chain_id, const Dictionary &policies,
+                                const String &chain_id, const Dictionary &policies,
                                 uint64_t session_expiration) {
     try {
         controller::SessionPolicies c_policies = to_c_policies(policies);
+        controller::FieldElement owner_guid = controller::signer_to_guid(private_key.utf8().get_data());
         auto internal_account = controller::SessionAccount::init(
-            rpc_url.utf8().get_data(), private_key.utf8().get_data(), address.utf8().get_data(),
-            owner_guid.utf8().get_data(), chain_id.utf8().get_data(), c_policies,
+            rpc_url.utf8().get_data(),
+            private_key.utf8().get_data(),
+            address.utf8().get_data(),
+            owner_guid,
+            chain_id.utf8().get_data(),
+            c_policies,
             session_expiration
         );
         set_internal(internal_account);
+        // TODO: hacer controller_types.hpp para macro de esto
+        auto username_opt = internal_account->username();
+        Logger::debug_extra("DojoSessionAccount", "username", username_opt.value_or("N/A").c_str());
     } catch (const controller::ControllerError &e) {
         Logger::error("DojoSessionAccount.create failed:", e.what());
-        throw;
     }
 }
 
@@ -120,7 +127,7 @@ String DojoSessionAccount::execute(const TypedArray<Dictionary> &calls) {
         return "";
     }
 
-    std::vector<std::shared_ptr<controller::Call> > c_calls;
+    std::vector<std::shared_ptr<controller::Call>> c_calls;
     for (int i = 0; i < calls.size(); ++i) {
         Dictionary call_dict = calls[i];
         auto c = std::make_shared<controller::Call>();
@@ -131,7 +138,7 @@ String DojoSessionAccount::execute(const TypedArray<Dictionary> &calls) {
         for (int j = 0; j < calldata_array.size(); ++j) {
             c->calldata.push_back(calldata_array[j].operator String().utf8().get_data());
         }
-        c_calls.push_back(std::move(c));
+        c_calls.push_back(c);
     }
 
     try {
@@ -148,7 +155,7 @@ String DojoSessionAccount::execute_from_outside(const TypedArray<Dictionary> &ca
         return "";
     }
 
-    std::vector<std::shared_ptr<controller::Call> > c_calls;
+    std::vector<std::shared_ptr<controller::Call>> c_calls;
     for (int i = 0; i < calls.size(); ++i) {
         Dictionary call_dict = calls[i];
         auto c = std::make_shared<controller::Call>();
@@ -159,7 +166,7 @@ String DojoSessionAccount::execute_from_outside(const TypedArray<Dictionary> &ca
         for (int j = 0; j < calldata_array.size(); ++j) {
             c->calldata.push_back(calldata_array[j].operator String().utf8().get_data());
         }
-        c_calls.push_back(std::move(c));
+        c_calls.push_back(c);
     }
 
     try {
@@ -173,14 +180,19 @@ String DojoSessionAccount::execute_from_outside(const TypedArray<Dictionary> &ca
 String DojoSessionAccount::generate_private_key() {
     std::random_device rd;
     std::mt19937_64 gen(rd());
-    std::uniform_int_distribution<uint8_t> dis_first_nibble(1, 7); // [1, 7] to avoid a 0 key.
-    std::uniform_int_distribution<uint8_t> dis_other_nibbles(0, 15);
+    std::uniform_int_distribution<uint8_t> dis(0, 255);
 
-    String random_key = "0x";
-    random_key += String::num_int64(dis_first_nibble(gen), 16);
-
-    for (int i = 0; i < 63; i++) {
-        random_key += String::num_int64(dis_other_nibbles(gen), 16);
+    std::stringstream ss;
+    ss << "0x";
+    for (int i = 0; i < 32; i++) {
+        ss << std::hex << std::setw(2) << std::setfill('0') << (int)dis(gen);
     }
-    return random_key;
+    return ss.str().data();
+}
+
+bool DojoSessionAccount::is_expired() const {
+    if (!internal) {
+        return true;
+    }
+    return internal->is_expired();
 }

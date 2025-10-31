@@ -129,6 +129,8 @@ public:
 
     static bool is_valid_calldata(const Variant &calldata);
 
+    static String generate_private_key();
+
 
 protected:
     static DojoHelpers *singleton;
@@ -185,6 +187,8 @@ protected:
                                     &DojoHelpers::bytes_to_u128_string);
         ClassDB::bind_static_method("DojoHelpers", D_METHOD("bytes_to_u256_string", "bytes"),
                                     &DojoHelpers::bytes_to_u256_string);
+
+        ClassDB::bind_static_method("DojoHelpers", D_METHOD("generate_private_key"), &DojoHelpers::generate_private_key);
     }
 };
 

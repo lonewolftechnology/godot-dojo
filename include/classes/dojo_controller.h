@@ -8,7 +8,7 @@
 #include "godot_cpp/variant/typed_array.hpp"
 
 #include "classes/dojo_owner.h"
-#include "controller.hpp"
+#include "controller/controller.hpp"
 #include "tools/logger.h"
 
 using namespace godot;

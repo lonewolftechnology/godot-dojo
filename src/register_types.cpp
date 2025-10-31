@@ -14,6 +14,7 @@
 #include "editor/dojo_editor_plugin.h"
 #include "godot_cpp/core/defs.hpp"
 #include "godot_cpp/godot.hpp"
+#include "tools/dojo_http.h"
 #ifdef WEB_ENABLED
 #include <tools/dojo_bridge.h>
 #endif
@@ -24,7 +25,6 @@
 
 
 #include "classes/torii_client.h"
-#include "classes/controller_account.h"
 #include "classes/account.h"
 #include "tools/dojo_helper.h"
 
@@ -78,6 +78,7 @@ void initialize_dojoc_module(ModuleInitializationLevel p_level) {
 #endif
         // Tools
         GDREGISTER_CLASS(DojoHelpers);
+        GDREGISTER_CLASS(DojoHttp)
         // DojoTypes
         GDREGISTER_CLASS(DojoTy);
         GDREGISTER_CLASS(DojoPrimitive);
@@ -90,7 +91,6 @@ void initialize_dojoc_module(ModuleInitializationLevel p_level) {
         GDREGISTER_CLASS(U256);
         // Classes
         GDREGISTER_CLASS(ToriiClient);
-        GDREGISTER_CLASS(ControllerAccount);
         GDREGISTER_CLASS(Account);
         GDREGISTER_CLASS(DojoSessionAccount);
         GDREGISTER_CLASS(DojoOwner);

@@ -4,8 +4,10 @@ void DojoController::set_internal(std::shared_ptr<controller::Controller> p_inte
     internal = p_internal;
 }
 
-DojoController* DojoController::init(const String &app_id, const String &username, const String &class_hash, const String &rpc_url, const Ref<DojoOwner> &owner, const String &address, const String &chain_id) {
-    DojoController* dojo_controller;
+DojoController *DojoController::init(const String &app_id, const String &username, const String &class_hash,
+                                     const String &rpc_url, const Ref<DojoOwner> &owner, const String &address,
+                                     const String &chain_id) {
+    DojoController *dojo_controller = memnew(DojoController);
 
     try {
         auto internal_controller = controller::Controller::init(
@@ -26,8 +28,8 @@ DojoController* DojoController::init(const String &app_id, const String &usernam
     return dojo_controller;
 }
 
-DojoController* DojoController::from_storage(const String &app_id) {
-    DojoController* dojo_controller;
+DojoController *DojoController::from_storage(const String &app_id) {
+    DojoController *dojo_controller = memnew(DojoController);
 
     try {
         auto internal_controller = controller::Controller::from_storage(app_id.utf8().get_data());
@@ -70,7 +72,7 @@ String DojoController::execute(const TypedArray<Dictionary> &calls) {
         for (int j = 0; j < calldata_array.size(); ++j) {
             c->calldata.push_back(calldata_array[j].operator String().utf8().get_data());
         }
-        c_calls.push_back(std::move(c));
+        c_calls.push_back(c);
     }
 
     try {

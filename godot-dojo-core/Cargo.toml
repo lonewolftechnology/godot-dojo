@@ -9,10 +9,11 @@ crate-type = ["staticlib"]
 [dependencies]
 dojo-c = { git = "https://github.com/dojoengine/dojo.c", tag = "v1.8.7" }
 controller-uniffi = { git = "https://github.com/cartridge-gg/controller.c", rev = "a15fb31" }
+dojo-uniffi = { git = "https://github.com/dojoengine/dojo.c", tag = "v1.8.7" }
 
 [build-dependencies]
 dojo-uniffi = { git = "https://github.com/dojoengine/dojo.c", tag = "v1.8.7", artifact = "bin:uniffi-bindgen-cpp" }
-controller-uniffi = { git = "https://github.com/cartridge-gg/controller.c", rev = "a15fb31", lib = true, artifact = "bin:uniffi-bindgen-cpp" }
+controller-uniffi = { git = "https://github.com/cartridge-gg/controller.c", rev = "a15fb31", artifact = "bin:uniffi-bindgen-cpp" }
 cargo_metadata = "0.23.0"
 build-print = "1.0.1"
 

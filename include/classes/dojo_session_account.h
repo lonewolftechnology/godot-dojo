@@ -7,7 +7,7 @@
 #include "godot_cpp/variant/string.hpp"
 #include "godot_cpp/variant/typed_array.hpp"
 
-#include "controller.hpp"
+#include "controller/controller.hpp"
 #include "tools/dojo_helper.h"
 #include "tools/logger.h"
 
@@ -29,8 +29,8 @@ public:
     void create_from_subscribe(const String &_private_key, const Dictionary &_policies, const String &_rpc_url,
                                const String &_cartridge_api_url);
 
-    void create(const String &rpc_url, const String &private_key, const String &address, const String &owner_guid,
-                const String &chain_id, const Dictionary &policies, uint64_t session_expiration);
+    void create(const String &rpc_url, const String &private_key, const String &address,
+        const String &chain_id, const Dictionary &policies, uint64_t session_expiration);
 
     void set_private_key(const String &p_private_key);
 
@@ -54,6 +54,8 @@ public:
 
     String generate_private_key();
 
+    bool is_expired() const;
+
 protected:
     void set_internal(std::shared_ptr<controller::SessionAccount> p_internal);
 
@@ -61,7 +63,7 @@ protected:
         ClassDB::bind_method(D_METHOD("create_from_subscribe", "private_key", "policies", "rpc_url",
                                       "cartridge_api_url"),
                              &DojoSessionAccount::create_from_subscribe);
-        ClassDB::bind_method(D_METHOD("create", "rpc_url", "private_key", "address", "owner_guid", "chain_id",
+        ClassDB::bind_method(D_METHOD("create", "rpc_url", "private_key", "address", "chain_id",
                                       "policies", "session_expiration"), &DojoSessionAccount::create);
 
         ClassDB::bind_method(D_METHOD("generate_private_key"), &DojoSessionAccount::generate_private_key);
@@ -88,6 +90,8 @@ protected:
 
         ClassDB::bind_method(D_METHOD("execute", "calls"), &DojoSessionAccount::execute);
         ClassDB::bind_method(D_METHOD("execute_from_outside", "calls"), &DojoSessionAccount::execute_from_outside);
+        ClassDB::bind_method(D_METHOD("is_expired"), &DojoSessionAccount::is_expired);
+
     }
 };
 

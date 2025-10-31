@@ -592,6 +592,11 @@ bool DojoHelpers::is_valid_calldata(const Variant &calldata) {
     return true;
 }
 
+String DojoHelpers::generate_private_key() {
+    DOJO::FieldElement felt_key = DOJO::signing_key_new();
+    return FieldElement::get_as_string(&felt_key);
+}
+
 String DojoHelpers::bytes_to_i128_string(const PackedByteArray &bytes) {
     if (bytes.size() != 16) {
         Logger::error("Error: PackedByteArray must be 16 bytes for i128.");

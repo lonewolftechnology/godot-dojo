@@ -5,7 +5,7 @@
 #include "godot_cpp/core/class_db.hpp"
 #include "godot_cpp/variant/string.hpp"
 
-#include "controller.hpp"
+#include "controller/controller.hpp"
 
 using namespace godot;
 

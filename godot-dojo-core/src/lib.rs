@@ -1,3 +1,6 @@
-use controller_uniffi;
-use dojo_c;
-use dojo_uniffi;
+#[allow(unused_imports)]
+use {
+    controller_uniffi,
+    dojo_c,
+    dojo_uniffi,
+};
