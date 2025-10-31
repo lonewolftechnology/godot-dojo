@@ -46,25 +46,11 @@ jobs:
 
           if [ -z "$PREVIOUS_TAG" ]; then
             # If there's no previous tag, get all commits excluding those with '.idea' in the message
-            COMMITS_LOG=$(git log --pretty=format:"- %h %s (%an) <%ae>" --invert-grep --grep="\.idea" --invert-grep --grep="^ci:" $CURRENT_TAG)
+            COMMITS_LOG=$(git log --pretty=format:"- %h %s" --invert-grep --grep="\.idea" --invert-grep --grep="^ci:" $CURRENT_TAG)
           else
             # Get commits between the previous tag and the current tag, excluding those with '.idea' in the message
-            COMMITS_LOG=$(git log --pretty=format:"- %h %s (%an) <%ae>" --invert-grep --grep="\.idea" --invert-grep --grep="^ci:" $PREVIOUS_TAG..$CURRENT_TAG)
+            COMMITS_LOG=$(git log --pretty=format:"- %h %s" --invert-grep --grep="\.idea" --invert-grep --grep="^ci:" $PREVIOUS_TAG..$CURRENT_TAG)
           fi
-
-          FORMATTED_LOG=""
-          while IFS= read -r line; do
-            AUTHOR_EMAIL=$(echo "$line" | grep -o '<.*>' | tr -d '<>')
-            AUTHOR_NAME=$(echo "$line" | sed -E 's/.* \((.*)\) <.*>/\1/')
-            COMMIT_INFO=$(echo "$line" | sed -E 's/ \(.+ <.+>//')
-            if [[ "$AUTHOR_EMAIL" == *"+*@users.noreply.github.com" ]]; then
-              USERNAME=$(echo "$AUTHOR_EMAIL" | sed -E 's/^[0-9]+\+([^@]+)@.*/\1/')
-              FORMATTED_LOG+="$COMMIT_INFO ([$USERNAME](https://github.com/$USERNAME))"$'\n'
-            else
-              FORMATTED_LOG+="$COMMIT_INFO ($AUTHOR_NAME)"$'\n'
-            fi
-          done <<< "$COMMITS_LOG"
-          COMMITS_LOG=$(echo "$FORMATTED_LOG" | sed '/^$/d') # Remove empty lines
 
           COMMIT_COUNT=$(echo -n "$COMMITS_LOG" | grep -c '^')
 
