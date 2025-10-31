@@ -52,13 +52,17 @@ jobs:
             COMMITS_LOG=$(git log --pretty=format:"- %h %s" --invert-grep --grep="\.idea" --invert-grep --grep="^ci:" $PREVIOUS_TAG..$CURRENT_TAG)
           fi
 
-          COMMIT_COUNT=$(echo -n "$COMMITS_LOG" | grep -c '^')
-
-          if [ $COMMIT_COUNT -gt 10 ]; then
-            COMMITS=$(echo "$COMMITS_LOG" | head -n 10)
-            COMMITS="$COMMITS\\n\\n[See all commits](https://github.com/${{ github.repository }}/compare/$PREVIOUS_TAG...$CURRENT_TAG)"
+          if [ -z "$COMMITS_LOG" ]; then
+            COMMITS=""
           else
-            COMMITS="$COMMITS_LOG"
+            COMMIT_COUNT=$(echo -n "$COMMITS_LOG" | grep -c '^')
+
+            if [ $COMMIT_COUNT -gt 10 ]; then
+              COMMITS=$(echo "$COMMITS_LOG" | head -n 10)
+              COMMITS="$COMMITS\\n\\n[See all commits](https://github.com/${{ github.repository }}/compare/$PREVIOUS_TAG...$CURRENT_TAG)"
+            else
+              COMMITS="$COMMITS_LOG"
+            fi
           fi
 
           # Set output using multiline string
