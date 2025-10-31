@@ -137,11 +137,101 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
+  build-rust-core:
+    name: Build Core Crate (${{ matrix.os_name }}-${{ matrix.profile }})
+    runs-on: ${{ matrix.os }}
+    needs: create_release
+    if: needs.create_release.result == 'success'
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: ubuntu-latest
+            os_name: linux
+            target: x86_64-unknown-linux-gnu
+            profile: debug
+          - os: ubuntu-latest
+            os_name: linux
+            target: x86_64-unknown-linux-gnu
+            profile: release
+          - os: macos-14
+            os_name: macos
+            target: universal # Scons handles this, cargo will build for host
+            profile: debug
+          - os: macos-14
+            os_name: macos
+            target: universal
+            profile: release
+          - os: windows-latest
+            os_name: windows
+            target: x86_64-pc-windows-msvc
+            profile: debug
+          - os: windows-latest
+            os_name: windows
+            target: x86_64-pc-windows-msvc
+            profile: release
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          submodules: true
+          fetch-depth: 0
+
+      - name: Set up Rust nightly
+        uses: dtolnay/rust-toolchain@nightly
+        with:
+          toolchain: nightly
+          targets: ${{ matrix.target == 'universal' && '' || matrix.target }}
+
+      - name: Cache Rust dependencies
+        uses: actions/cache@v3
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+          key: ${{ runner.os }}-cargo-deps-${{ hashFiles('**/Cargo.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-cargo-deps-
+
+      - name: Build godot-dojo-core
+        shell: bash
+        working-directory: godot-dojo-core
+        run: |
+          BUILD_ARGS=""
+          if [ "${{ matrix.profile }}" = "release" ]; then
+            BUILD_ARGS="--release"
+          fi
+          
+          # For macOS universal builds, scons will call cargo twice.
+          # For other platforms, we can pre-build.
+          if [ "${{ matrix.target }}" != "universal" ]; then
+            cargo build $BUILD_ARGS --target ${{ matrix.target }}
+          else
+            # For macOS, we just run the build script to generate bindings
+            # scons will handle the actual compilation for each architecture
+            cargo build --no-default-features --features "build-bindings-only"
+          fi
+
+      - name: Upload core artifacts (target)
+        uses: actions/upload-artifact@v4
+        with:
+          name: core-target-${{ matrix.os_name }}-${{ matrix.profile }}
+          path: godot-dojo-core/target
+          if-no-files-found: error
+
+      - name: Upload core artifacts (bindings)
+        uses: actions/upload-artifact@v4
+        with:
+          name: core-bindings-${{ matrix.os_name }}-${{ matrix.profile }}
+          path: bindings
+          if-no-files-found: error
+
   build-linux-debug:
     name: Build Linux-x86_64-${{ matrix.precision }}-debug
     runs-on: ubuntu-latest
-    needs: build-linux-editor
-    if: needs.build-linux-editor.result == 'success'
+    needs: [create_release, build-rust-core]
+    if: needs.create_release.result == 'success' && needs.build-rust-core.result == 'success'
     strategy:
       fail-fast: false
       matrix:
@@ -157,24 +247,15 @@ jobs:
       - name: Install build dependencies
         run: sudo apt-get update && sudo apt-get install -y build-essential pkg-config dbus libdbus-1-dev protobuf-compiler libprotobuf-dev
 
-      - name: Set up Rust nightly
-        uses: dtolnay/rust-toolchain@nightly
+      - name: Download core artifacts
+        uses: actions/download-artifact@v4
         with:
-          toolchain: nightly
+          path: .
 
-      - name: Cache Rust dependencies
-        uses: actions/cache@v3
-        with:
-          path: |
-            ~/.cargo/registry
-            ~/.cargo/git
-            godot-dojo-core/target
-          key: ${{ runner.os }}-cargo-${{ matrix.precision }}-linux-x86_64-debug-${{ hashFiles('**/Cargo.lock') }}
-          restore-keys: |
-            ${{ runner.os }}-cargo-${{ matrix.precision }}-linux-x86_64-debug-
-            ${{ runner.os }}-cargo-${{ matrix.precision }}-linux-x86_64-
-            ${{ runner.os }}-cargo-${{ matrix.precision }}-linux-
-            ${{ runner.os }}-cargo-${{ matrix.precision }}-
+      - name: Restore downloaded artifacts
+        run: |
+          mv core-target-linux-debug/target godot-dojo-core/
+          mv core-bindings-linux-debug/* .
 
       - name: Install scons
         run: pip install scons
@@ -193,7 +274,7 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-scons-${{ matrix.precision }}-linux-x86_64-debug-
             ${{ runner.os }}-scons-${{ matrix.precision }}-linux-x86_64-
-            ${{ runner.os }}-scons-${{ matrix.precision }}-linux-
+            ${{ runner.os }}-cargo-${{ matrix.precision }}-linux-
 
       - name: Build debug
         shell: bash
@@ -224,8 +305,8 @@ jobs:
   build-linux-release:
     name: Build Linux-x86_64-${{ matrix.precision }}-release
     runs-on: ubuntu-latest
-    needs: build-linux-debug
-    if: needs.build-linux-debug.result == 'success'
+    needs: [create_release, build-rust-core]
+    if: needs.create_release.result == 'success' && needs.build-rust-core.result == 'success'
     strategy:
       fail-fast: false
       matrix:
@@ -241,24 +322,15 @@ jobs:
       - name: Install build dependencies
         run: sudo apt-get update && sudo apt-get install -y build-essential pkg-config dbus libdbus-1-dev protobuf-compiler libprotobuf-dev
 
-      - name: Set up Rust nightly
-        uses: dtolnay/rust-toolchain@nightly
+      - name: Download core artifacts
+        uses: actions/download-artifact@v4
         with:
-          toolchain: nightly
+          path: .
 
-      - name: Cache Rust dependencies
-        uses: actions/cache@v3
-        with:
-          path: |
-            ~/.cargo/registry
-            ~/.cargo/git
-            godot-dojo-core/target
-          key: ${{ runner.os }}-cargo-${{ matrix.precision }}-linux-x86_64-release-${{ hashFiles('**/Cargo.lock') }}
-          restore-keys: |
-            ${{ runner.os }}-cargo-${{ matrix.precision }}-linux-x86_64-release-
-            ${{ runner.os }}-cargo-${{ matrix.precision }}-linux-x86_64-
-            ${{ runner.os }}-cargo-${{ matrix.precision }}-linux-
-            ${{ runner.os }}-cargo-${{ matrix.precision }}-
+      - name: Restore downloaded artifacts
+        run: |
+          mv core-target-linux-release/target godot-dojo-core/
+          mv core-bindings-linux-release/* .
 
       - name: Install scons
         run: pip install scons
@@ -277,7 +349,7 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-scons-${{ matrix.precision }}-linux-x86_64-release-
             ${{ runner.os }}-scons-${{ matrix.precision }}-linux-x86_64-
-            ${{ runner.os }}-scons-${{ matrix.precision }}-linux-
+            ${{ runner.os }}-cargo-${{ matrix.precision }}-linux-
 
       - name: Build release
         shell: bash
@@ -308,8 +380,8 @@ jobs:
   build-linux-editor:
     name: Build Linux-x86_64-${{ matrix.precision }}-editor
     runs-on: ubuntu-latest
-    needs: create_release
-    if: needs.create_release.result == 'success'
+    needs: [create_release, build-rust-core]
+    if: needs.create_release.result == 'success' && needs.build-rust-core.result == 'success'
     strategy:
       fail-fast: false
       matrix:
@@ -325,24 +397,15 @@ jobs:
       - name: Install build dependencies
         run: sudo apt-get update && sudo apt-get install -y build-essential pkg-config dbus libdbus-1-dev protobuf-compiler libprotobuf-dev
 
-      - name: Set up Rust nightly
-        uses: dtolnay/rust-toolchain@nightly
+      - name: Download core artifacts
+        uses: actions/download-artifact@v4
         with:
-          toolchain: nightly
+          path: .
 
-      - name: Cache Rust dependencies
-        uses: actions/cache@v3
-        with:
-          path: |
-            ~/.cargo/registry
-            ~/.cargo/git
-            godot-dojo-core/target
-          key: ${{ runner.os }}-cargo-${{ matrix.precision }}-linux-x86_64-editor-${{ hashFiles('**/Cargo.lock') }}
-          restore-keys: |
-            ${{ runner.os }}-cargo-${{ matrix.precision }}-linux-x86_64-editor-
-            ${{ runner.os }}-cargo-${{ matrix.precision }}-linux-x86_64-
-            ${{ runner.os }}-cargo-${{ matrix.precision }}-linux-
-            ${{ runner.os }}-cargo-${{ matrix.precision }}-
+      - name: Restore downloaded artifacts
+        run: |
+          mv core-target-linux-debug/target godot-dojo-core/
+          mv core-bindings-linux-debug/* .
 
       - name: Install scons
         run: pip install scons
@@ -361,7 +424,7 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-scons-${{ matrix.precision }}-linux-x86_64-editor-
             ${{ runner.os }}-scons-${{ matrix.precision }}-linux-x86_64-
-            ${{ runner.os }}-scons-${{ matrix.precision }}-linux-
+            ${{ runner.os }}-cargo-${{ matrix.precision }}-linux-
 
       - name: Build editor
         shell: bash
@@ -392,8 +455,8 @@ jobs:
   build-macos-editor:
     name: Build macOS-universal-${{ matrix.precision }}-editor
     runs-on: macos-14
-    needs: create_release
-    if: needs.create_release.result == 'success'
+    needs: [create_release, build-rust-core]
+    if: needs.create_release.result == 'success' && needs.build-rust-core.result == 'success'
     strategy:
       fail-fast: false
       matrix:
@@ -409,22 +472,16 @@ jobs:
       - name: Install build dependencies
         run: brew install protobuf
 
-      - name: Set up Rust nightly
-        uses: dtolnay/rust-toolchain@nightly
+      - name: Download core artifacts
+        uses: actions/download-artifact@v4
         with:
-          toolchain: nightly
+          path: .
 
-      - name: Cache Rust dependencies
-        uses: actions/cache@v3
-        with:
-          path: |
-            ~/.cargo/registry
-            ~/.cargo/git
-            godot-dojo-core/target
-          key: ${{ runner.os }}-cargo-${{ matrix.precision }}-macos-universal-editor-${{ hashFiles('**/Cargo.lock') }}
-          restore-keys: |
-            ${{ runner.os }}-cargo-${{ matrix.precision }}-macos-universal-editor-
-            ${{ runner.os }}-cargo-${{ matrix.precision }}-macos-
+      - name: Restore downloaded artifacts
+        run: |
+          # For editor, we use debug profile of rust core
+          mv core-target-macos-debug/target godot-dojo-core/
+          mv core-bindings-macos-debug/* .
 
       - name: Install scons
         run: pip install scons
@@ -476,8 +533,8 @@ jobs:
   build-macos-debug:
     name: Build macOS-universal-${{ matrix.precision }}-debug
     runs-on: macos-14
-    needs: build-macos-editor
-    if: needs.build-macos-editor.result == 'success'
+    needs: [create_release, build-rust-core]
+    if: needs.create_release.result == 'success' && needs.build-rust-core.result == 'success'
     strategy:
       fail-fast: false
       matrix:
@@ -493,22 +550,15 @@ jobs:
       - name: Install build dependencies
         run: brew install protobuf
 
-      - name: Set up Rust nightly
-        uses: dtolnay/rust-toolchain@nightly
+      - name: Download core artifacts
+        uses: actions/download-artifact@v4
         with:
-          toolchain: nightly
+          path: .
 
-      - name: Cache Rust dependencies
-        uses: actions/cache@v3
-        with:
-          path: |
-            ~/.cargo/registry
-            ~/.cargo/git
-            godot-dojo-core/target
-          key: ${{ runner.os }}-cargo-${{ matrix.precision }}-macos-universal-debug-${{ hashFiles('**/Cargo.lock') }}
-          restore-keys: |
-            ${{ runner.os }}-cargo-${{ matrix.precision }}-macos-universal-debug-
-            ${{ runner.os }}-cargo-${{ matrix.precision }}-macos-
+      - name: Restore downloaded artifacts
+        run: |
+          mv core-target-macos-debug/target godot-dojo-core/
+          mv core-bindings-macos-debug/* .
 
       - name: Install scons
         run: pip install scons
@@ -560,8 +610,8 @@ jobs:
   build-macos-release:
     name: Build macOS-universal-${{ matrix.precision }}-release
     runs-on: macos-14
-    needs: build-macos-debug
-    if: needs.build-macos-debug.result == 'success'
+    needs: [create_release, build-rust-core]
+    if: needs.create_release.result == 'success' && needs.build-rust-core.result == 'success'
     strategy:
       fail-fast: false
       matrix:
@@ -577,22 +627,15 @@ jobs:
       - name: Install build dependencies
         run: brew install protobuf
 
-      - name: Set up Rust nightly
-        uses: dtolnay/rust-toolchain@nightly
+      - name: Download core artifacts
+        uses: actions/download-artifact@v4
         with:
-          toolchain: nightly
+          path: .
 
-      - name: Cache Rust dependencies
-        uses: actions/cache@v3
-        with:
-          path: |
-            ~/.cargo/registry
-            ~/.cargo/git
-            godot-dojo-core/target
-          key: ${{ runner.os }}-cargo-${{ matrix.precision }}-macos-universal-release-${{ hashFiles('**/Cargo.lock') }}
-          restore-keys: |
-            ${{ runner.os }}-cargo-${{ matrix.precision }}-macos-universal-release-
-            ${{ runner.os }}-cargo-${{ matrix.precision }}-macos-
+      - name: Restore downloaded artifacts
+        run: |
+          mv core-target-macos-release/target godot-dojo-core/
+          mv core-bindings-macos-release/* .
 
       - name: Install scons
         run: pip install scons
@@ -644,8 +687,8 @@ jobs:
   build-windows-debug:
     name: Build Windows-x86_64-${{ matrix.precision }}-debug
     runs-on: windows-latest
-    needs: build-windows-editor
-    if: needs.build-windows-editor.result == 'success'
+    needs: [create_release, build-rust-core]
+    if: needs.create_release.result == 'success' && needs.build-rust-core.result == 'success'
     strategy:
       fail-fast: false
       matrix:
@@ -661,24 +704,16 @@ jobs:
       - name: Install build dependencies
         run: choco install protoc
 
-      - name: Set up Rust nightly
-        uses: dtolnay/rust-toolchain@nightly
+      - name: Download core artifacts
+        uses: actions/download-artifact@v4
         with:
-          toolchain: nightly
+          path: .
 
-      - name: Cache Rust dependencies
-        uses: actions/cache@v3
-        with:
-          path: |
-            ~/.cargo/registry
-            ~/.cargo/git
-            godot-dojo-core/target
-          key: ${{ runner.os }}-cargo-${{ matrix.precision }}-windows-x86_64-debug-${{ hashFiles('**/Cargo.lock') }}
-          restore-keys: |
-            ${{ runner.os }}-cargo-${{ matrix.precision }}-windows-x86_64-debug-
-            ${{ runner.os }}-cargo-${{ matrix.precision }}-windows-x86_64-
-            ${{ runner.os }}-cargo-${{ matrix.precision }}-windows-
-            ${{ runner.os }}-cargo-${{ matrix.precision }}-
+      - name: Restore downloaded artifacts
+        shell: bash
+        run: |
+          mv core-target-windows-debug/target godot-dojo-core/
+          mv core-bindings-windows-debug/* .
 
       - name: Install scons
         run: pip install scons
@@ -697,7 +732,7 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-scons-${{ matrix.precision }}-windows-x86_64-debug-
             ${{ runner.os }}-scons-${{ matrix.precision }}-windows-x86_64-
-            ${{ runner.os }}-scons-${{ matrix.precision }}-windows-
+            ${{ runner.os }}-cargo-${{ matrix.precision }}-windows-
 
       - name: Build debug
         shell: bash
@@ -730,8 +765,8 @@ jobs:
   build-windows-release:
     name: Build Windows-x86_64-${{ matrix.precision }}-release
     runs-on: windows-latest
-    needs: build-windows-debug
-    if: needs.build-windows-debug.result == 'success'
+    needs: [create_release, build-rust-core]
+    if: needs.create_release.result == 'success' && needs.build-rust-core.result == 'success'
     strategy:
       fail-fast: false
       matrix:
@@ -747,24 +782,16 @@ jobs:
       - name: Install build dependencies
         run: choco install protoc
 
-      - name: Set up Rust nightly
-        uses: dtolnay/rust-toolchain@nightly
+      - name: Download core artifacts
+        uses: actions/download-artifact@v4
         with:
-          toolchain: nightly
+          path: .
 
-      - name: Cache Rust dependencies
-        uses: actions/cache@v3
-        with:
-          path: |
-            ~/.cargo/registry
-            ~/.cargo/git
-            godot-dojo-core/target
-          key: ${{ runner.os }}-cargo-${{ matrix.precision }}-windows-x86_64-release-${{ hashFiles('**/Cargo.lock') }}
-          restore-keys: |
-            ${{ runner.os }}-cargo-${{ matrix.precision }}-windows-x86_64-release-
-            ${{ runner.os }}-cargo-${{ matrix.precision }}-windows-x86_64-
-            ${{ runner.os }}-cargo-${{ matrix.precision }}-windows-
-            ${{ runner.os }}-cargo-${{ matrix.precision }}-
+      - name: Restore downloaded artifacts
+        shell: bash
+        run: |
+          mv core-target-windows-release/target godot-dojo-core/
+          mv core-bindings-windows-release/* .
 
       - name: Install scons
         run: pip install scons
@@ -783,7 +810,7 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-scons-${{ matrix.precision }}-windows-x86_64-release-
             ${{ runner.os }}-scons-${{ matrix.precision }}-windows-x86_64-
-            ${{ runner.os }}-scons-${{ matrix.precision }}-windows-
+            ${{ runner.os }}-cargo-${{ matrix.precision }}-windows-
 
       - name: Build release
         shell: bash
@@ -816,8 +843,8 @@ jobs:
   build-windows-editor:
     name: Build Windows-x86_64-${{ matrix.precision }}-editor
     runs-on: windows-latest
-    needs: create_release
-    if: needs.create_release.result == 'success'
+    needs: [create_release, build-rust-core]
+    if: needs.create_release.result == 'success' && needs.build-rust-core.result == 'success'
     strategy:
       fail-fast: false
       matrix:
@@ -833,24 +860,16 @@ jobs:
       - name: Install build dependencies
         run: choco install protoc
 
-      - name: Set up Rust nightly
-        uses: dtolnay/rust-toolchain@nightly
+      - name: Download core artifacts
+        uses: actions/download-artifact@v4
         with:
-          toolchain: nightly
+          path: .
 
-      - name: Cache Rust dependencies
-        uses: actions/cache@v3
-        with:
-          path: |
-            ~/.cargo/registry
-            ~/.cargo/git
-            godot-dojo-core/target
-          key: ${{ runner.os }}-cargo-${{ matrix.precision }}-windows-x86_64-editor-${{ hashFiles('**/Cargo.lock') }}
-          restore-keys: |
-            ${{ runner.os }}-cargo-${{ matrix.precision }}-windows-x86_64-editor-
-            ${{ runner.os }}-cargo-${{ matrix.precision }}-windows-x86_64-
-            ${{ runner.os }}-cargo-${{ matrix.precision }}-windows-
-            ${{ runner.os }}-cargo-${{ matrix.precision }}-
+      - name: Restore downloaded artifacts
+        shell: bash
+        run: |
+          mv core-target-windows-debug/target godot-dojo-core/
+          mv core-bindings-windows-debug/* .
 
       - name: Install scons
         run: pip install scons
@@ -869,7 +888,7 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-scons-${{ matrix.precision }}-windows-x86_64-editor-
             ${{ runner.os }}-scons-${{ matrix.precision }}-windows-x86_64-
-            ${{ runner.os }}-scons-${{ matrix.precision }}-windows-
+            ${{ runner.os }}-cargo-${{ matrix.precision }}-windows-
 
       - name: Build editor
         shell: bash
@@ -902,7 +921,7 @@ jobs:
   package:
     name: Combine all binaries and create zip files
     runs-on: ubuntu-latest
-    needs: [create_release, build-linux-debug, build-linux-release, build-linux-editor, build-macos-release, build-windows-debug, build-windows-release, build-windows-editor]
+    needs: [create_release, build-linux-debug, build-linux-release, build-linux-editor, build-macos-debug, build-macos-release, build-macos-editor, build-windows-debug, build-windows-release, build-windows-editor]
     if: needs.create_release.result == 'success'
 
     steps:
