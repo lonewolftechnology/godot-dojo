@@ -90,13 +90,13 @@ jobs:
         run: |
           cd godot-dojo-core
 
-          # Parse dojo-c from Cargo.toml
-          DOJO_C_LINE=$(grep 'dojo-c =' Cargo.toml)
+          # Parse dojo-c from [dependencies] in Cargo.toml
+          DOJO_C_LINE=$(awk '/\[dependencies\]/{f=1;next} /\[/{f=0} f && /dojo-c =/' Cargo.toml)
           DOJO_C_URL=$(echo "$DOJO_C_LINE" | grep -o 'git = "[^"]*"' | sed 's/git = "//;s/"//')
           DOJO_C_TAG=$(echo "$DOJO_C_LINE" | grep -o 'tag = "[^"]*"' | sed 's/tag = "//;s/"//')
 
-          # Parse controller-uniffi from Cargo.toml
-          CONTROLLER_LINE=$(grep 'controller-uniffi =' Cargo.toml)
+          # Parse controller-uniffi from [dependencies] in Cargo.toml
+          CONTROLLER_LINE=$(awk '/\[dependencies\]/{f=1;next} /\[/{f=0} f && /controller-uniffi =/' Cargo.toml)
           CONTROLLER_URL=$(echo "$CONTROLLER_LINE" | grep -o 'git = "[^"]*"' | sed 's/git = "//;s/"//')
           CONTROLLER_REV=$(echo "$CONTROLLER_LINE" | grep -o 'rev = "[^"]*"' | sed 's/rev = "//;s/"//')
           CONTROLLER_REV_SHORT=${CONTROLLER_REV:0:7}
@@ -180,6 +180,9 @@ jobs:
         with:
           toolchain: nightly
           targets: ${{ matrix.target == 'universal' && '' || matrix.target }}
+
+      - name: Install uniffi-bindgen-cpp from source
+        run: cargo install --git https://github.com/Larkooo/uniffi-bindgen-cpp --branch update-0.30 uniffi-bindgen-cpp
 
       - name: Cache Rust dependencies
         uses: actions/cache@v3
