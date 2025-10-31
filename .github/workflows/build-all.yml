@@ -185,6 +185,8 @@ jobs:
 
       - name: Set up Rust nightly
         uses: dtolnay/rust-toolchain@nightly
+        with:
+          targets: ${{ matrix.target }}
 
       - name: Install macOS build dependencies
         if: matrix.os_name == 'macos'
@@ -193,9 +195,6 @@ jobs:
       - name: Install Windows build dependencies
         if: matrix.os_name == 'windows'
         run: choco install protoc
-
-        with:
-          targets: ${{ matrix.target }}
 
       - name: Install uniffi-bindgen-cpp from source
         run: cargo install --git https://github.com/Larkooo/uniffi-bindgen-cpp --branch update-0.30 uniffi-bindgen-cpp
