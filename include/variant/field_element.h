@@ -10,7 +10,7 @@
 #include "godot_cpp/classes/ref_counted.hpp"
 
 // #include "variant/ty.h"
-
+//TODO: operators para comparar
 using namespace godot;
 
 class FieldElement : public RefCounted {

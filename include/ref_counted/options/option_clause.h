@@ -78,6 +78,7 @@ class DojoOptionClause : public DojoOption
         case DOJO::Primitive_Tag::ContractAddress:
         case DOJO::Primitive_Tag::EthAddress:
             {
+            //TODO: volver a FieldElement
                 DOJO::U256 u256_val = DojoHelpers::string_to_u256(str_val);
                 memcpy(primitive.felt252.data, u256_val.data, 32);
                 break;
