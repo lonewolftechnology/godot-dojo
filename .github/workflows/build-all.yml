@@ -25,9 +25,6 @@ jobs:
           fetch-depth: 0
           submodules: true
 
-      - name: Fetch submodule tags
-        run: git submodule foreach --recursive git fetch --tags
-
       - name: Extract latest changelog entries
         id: changelog
         run: |
@@ -82,23 +79,40 @@ jobs:
             echo "is_prerelease=true" >> $GITHUB_OUTPUT
           fi
 
-      - name: Get dojo.c version
-        id: get_dojoc_version
-        run: |
-          DOJOC_VERSION=$(cd external/dojo.c && (git describe --tags --abbrev=0 2>/dev/null || git rev-parse --short HEAD))
-          echo "DOJOC_VERSION=$DOJOC_VERSION" >> $GITHUB_OUTPUT
-
       - name: Get godot-cpp version
         id: get_godotcpp_version
         run: |
           GODOTCPP_VERSION=$(cd external/godot-cpp && (git describe --tags --abbrev=0 2>/dev/null || git rev-parse --short HEAD))
           echo "GODOTCPP_VERSION=$GODOTCPP_VERSION" >> $GITHUB_OUTPUT
 
-      - name: Get controller.c version
-        id: get_controllerc_version
+      - name: Get Core Dependencies versions
+        id: get_core_deps
         run: |
-          CONTROLLERC_VERSION=$(cd external/controller.c && (git describe --tags --abbrev=0 2>/dev/null || git rev-parse --short HEAD))
-          echo "CONTROLLERC_VERSION=$CONTROLLERC_VERSION" >> $GITHUB_OUTPUT
+          cd godot-dojo-core
+          
+          # Install cargo-tree if not present
+          if ! command -v cargo-tree &> /dev/null
+          then
+              echo "cargo-tree not found, installing..."
+              cargo install cargo-tree
+          fi
+          
+          CORE_DEPS=$(cargo tree -e normal --depth 1 --prefix none | grep "git+" | sed 's/ (.*//' | sort -u | while read -r line; do
+            DEP_NAME=$(echo "$line" | awk '{print $1}')
+            REPO_URL=$(grep "$DEP_NAME" Cargo.toml | grep -o 'git = "[^"]*"' | sed 's/git = "//;s/"//' | head -n 1)
+          
+            if [[ "$REPO_URL" == *"dojo.c"* ]]; then
+              TAG=$(grep "$DEP_NAME" Cargo.toml | grep -o 'tag = "[^"]*"' | sed 's/tag = "//;s/"//' | head -n 1)
+              echo "- [dojo.c]($REPO_URL/releases/tag/$TAG) ($TAG)"
+            elif [[ "$REPO_URL" == *"controller.c"* ]]; then
+              REV=$(grep "$DEP_NAME" Cargo.toml | grep -o 'rev = "[^"]*"' | sed 's/rev = "//;s/"//' | head -n 1)
+              echo "- [controller.c]($REPO_URL/tree/$REV) (${REV:0:7})"
+            fi
+          done)
+          
+          echo "core_deps<<EOF" >> $GITHUB_OUTPUT
+          echo "$CORE_DEPS" >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
 
       - name: Create release
         id: create_release
@@ -114,8 +128,7 @@ jobs:
             ${{ steps.get_commits.outputs.commits }}
             
             ### Target dependecies:
-            - Dojo.c ${{ steps.get_dojoc_version.outputs.DOJOC_VERSION }} 
-            - Controller.c ${{ steps.get_controllerc_version.outputs.CONTROLLERC_VERSION }} 
+            ${{ steps.get_core_deps.outputs.core_deps }}
             - Godot ${{ steps.get_godotcpp_version.outputs.GODOTCPP_VERSION }}
               note: Godot target is minimum version, so it should work with 4.3+
 
@@ -132,7 +145,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        precision: [standard, double]
+        precision: [single, double]
 
     steps:
       - name: Checkout code
@@ -144,10 +157,10 @@ jobs:
       - name: Install build dependencies
         run: sudo apt-get update && sudo apt-get install -y build-essential pkg-config dbus libdbus-1-dev protobuf-compiler libprotobuf-dev
 
-      - name: Set up Rust stable
-        uses: dtolnay/rust-toolchain@stable
+      - name: Set up Rust nightly
+        uses: dtolnay/rust-toolchain@nightly
         with:
-          toolchain: stable
+          toolchain: nightly
 
       - name: Cache Rust dependencies
         uses: actions/cache@v3
@@ -155,7 +168,7 @@ jobs:
           path: |
             ~/.cargo/registry
             ~/.cargo/git
-            external/dojo.c/target
+            godot-dojo-core/target
           key: ${{ runner.os }}-cargo-${{ matrix.precision }}-linux-x86_64-debug-${{ hashFiles('**/Cargo.lock') }}
           restore-keys: |
             ${{ runner.os }}-cargo-${{ matrix.precision }}-linux-x86_64-debug-
@@ -216,7 +229,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        precision: [standard, double]
+        precision: [single, double]
 
     steps:
       - name: Checkout code
@@ -228,10 +241,10 @@ jobs:
       - name: Install build dependencies
         run: sudo apt-get update && sudo apt-get install -y build-essential pkg-config dbus libdbus-1-dev protobuf-compiler libprotobuf-dev
 
-      - name: Set up Rust stable
-        uses: dtolnay/rust-toolchain@stable
+      - name: Set up Rust nightly
+        uses: dtolnay/rust-toolchain@nightly
         with:
-          toolchain: stable
+          toolchain: nightly
 
       - name: Cache Rust dependencies
         uses: actions/cache@v3
@@ -239,7 +252,7 @@ jobs:
           path: |
             ~/.cargo/registry
             ~/.cargo/git
-            external/dojo.c/target
+            godot-dojo-core/target
           key: ${{ runner.os }}-cargo-${{ matrix.precision }}-linux-x86_64-release-${{ hashFiles('**/Cargo.lock') }}
           restore-keys: |
             ${{ runner.os }}-cargo-${{ matrix.precision }}-linux-x86_64-release-
@@ -300,7 +313,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        precision: [standard, double]
+        precision: [single, double]
 
     steps:
       - name: Checkout code
@@ -312,10 +325,10 @@ jobs:
       - name: Install build dependencies
         run: sudo apt-get update && sudo apt-get install -y build-essential pkg-config dbus libdbus-1-dev protobuf-compiler libprotobuf-dev
 
-      - name: Set up Rust stable
-        uses: dtolnay/rust-toolchain@stable
+      - name: Set up Rust nightly
+        uses: dtolnay/rust-toolchain@nightly
         with:
-          toolchain: stable
+          toolchain: nightly
 
       - name: Cache Rust dependencies
         uses: actions/cache@v3
@@ -323,7 +336,7 @@ jobs:
           path: |
             ~/.cargo/registry
             ~/.cargo/git
-            external/dojo.c/target
+            godot-dojo-core/target
           key: ${{ runner.os }}-cargo-${{ matrix.precision }}-linux-x86_64-editor-${{ hashFiles('**/Cargo.lock') }}
           restore-keys: |
             ${{ runner.os }}-cargo-${{ matrix.precision }}-linux-x86_64-editor-
@@ -384,7 +397,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        precision: [standard, double]
+        precision: [single, double]
 
     steps:
       - name: Checkout code
@@ -396,10 +409,10 @@ jobs:
       - name: Install build dependencies
         run: brew install protobuf
 
-      - name: Set up Rust stable
-        uses: dtolnay/rust-toolchain@stable
+      - name: Set up Rust nightly
+        uses: dtolnay/rust-toolchain@nightly
         with:
-          toolchain: stable
+          toolchain: nightly
 
       - name: Cache Rust dependencies
         uses: actions/cache@v3
@@ -407,7 +420,7 @@ jobs:
           path: |
             ~/.cargo/registry
             ~/.cargo/git
-            external/dojo.c/target
+            godot-dojo-core/target
           key: ${{ runner.os }}-cargo-${{ matrix.precision }}-macos-universal-editor-${{ hashFiles('**/Cargo.lock') }}
           restore-keys: |
             ${{ runner.os }}-cargo-${{ matrix.precision }}-macos-universal-editor-
@@ -468,7 +481,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        precision: [standard, double]
+        precision: [single, double]
 
     steps:
       - name: Checkout code
@@ -480,10 +493,10 @@ jobs:
       - name: Install build dependencies
         run: brew install protobuf
 
-      - name: Set up Rust stable
-        uses: dtolnay/rust-toolchain@stable
+      - name: Set up Rust nightly
+        uses: dtolnay/rust-toolchain@nightly
         with:
-          toolchain: stable
+          toolchain: nightly
 
       - name: Cache Rust dependencies
         uses: actions/cache@v3
@@ -491,7 +504,7 @@ jobs:
           path: |
             ~/.cargo/registry
             ~/.cargo/git
-            external/dojo.c/target
+            godot-dojo-core/target
           key: ${{ runner.os }}-cargo-${{ matrix.precision }}-macos-universal-debug-${{ hashFiles('**/Cargo.lock') }}
           restore-keys: |
             ${{ runner.os }}-cargo-${{ matrix.precision }}-macos-universal-debug-
@@ -552,7 +565,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        precision: [standard, double]
+        precision: [single, double]
 
     steps:
       - name: Checkout code
@@ -564,10 +577,10 @@ jobs:
       - name: Install build dependencies
         run: brew install protobuf
 
-      - name: Set up Rust stable
-        uses: dtolnay/rust-toolchain@stable
+      - name: Set up Rust nightly
+        uses: dtolnay/rust-toolchain@nightly
         with:
-          toolchain: stable
+          toolchain: nightly
 
       - name: Cache Rust dependencies
         uses: actions/cache@v3
@@ -575,7 +588,7 @@ jobs:
           path: |
             ~/.cargo/registry
             ~/.cargo/git
-            external/dojo.c/target
+            godot-dojo-core/target
           key: ${{ runner.os }}-cargo-${{ matrix.precision }}-macos-universal-release-${{ hashFiles('**/Cargo.lock') }}
           restore-keys: |
             ${{ runner.os }}-cargo-${{ matrix.precision }}-macos-universal-release-
@@ -636,7 +649,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        precision: [standard, double]
+        precision: [single, double]
 
     steps:
       - name: Checkout code
@@ -648,10 +661,10 @@ jobs:
       - name: Install build dependencies
         run: choco install protoc
 
-      - name: Set up Rust stable
-        uses: dtolnay/rust-toolchain@stable
+      - name: Set up Rust nightly
+        uses: dtolnay/rust-toolchain@nightly
         with:
-          toolchain: stable
+          toolchain: nightly
 
       - name: Cache Rust dependencies
         uses: actions/cache@v3
@@ -659,7 +672,7 @@ jobs:
           path: |
             ~/.cargo/registry
             ~/.cargo/git
-            external/dojo.c/target
+            godot-dojo-core/target
           key: ${{ runner.os }}-cargo-${{ matrix.precision }}-windows-x86_64-debug-${{ hashFiles('**/Cargo.lock') }}
           restore-keys: |
             ${{ runner.os }}-cargo-${{ matrix.precision }}-windows-x86_64-debug-
@@ -708,11 +721,10 @@ jobs:
       - name: Upload binaries for this target
         uses: actions/upload-artifact@v4
         with:
-          name: bin-${{ matrix.precision }}-windows-x86_64-debug
-          path: demo/addons/godot-dojo/
-          # Also include the dojo.c DLL from the Rust build target directory
-          # This is needed at runtime on Windows
-          # external/dojo.c/target/x86_64-pc-windows-msvc/debug/dojo_c.dll
+          name: bin-${{ matrix.precision }}-windows-x86_64-debug-with-dll
+          path: |
+            demo/addons/godot-dojo/
+            godot-dojo-core/target/x86_64-pc-windows-msvc/debug/dojo_c.dll
           if-no-files-found: error
 
   build-windows-release:
@@ -723,7 +735,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        precision: [standard, double]
+        precision: [single, double]
 
     steps:
       - name: Checkout code
@@ -735,10 +747,10 @@ jobs:
       - name: Install build dependencies
         run: choco install protoc
 
-      - name: Set up Rust stable
-        uses: dtolnay/rust-toolchain@stable
+      - name: Set up Rust nightly
+        uses: dtolnay/rust-toolchain@nightly
         with:
-          toolchain: stable
+          toolchain: nightly
 
       - name: Cache Rust dependencies
         uses: actions/cache@v3
@@ -746,7 +758,7 @@ jobs:
           path: |
             ~/.cargo/registry
             ~/.cargo/git
-            external/dojo.c/target
+            godot-dojo-core/target
           key: ${{ runner.os }}-cargo-${{ matrix.precision }}-windows-x86_64-release-${{ hashFiles('**/Cargo.lock') }}
           restore-keys: |
             ${{ runner.os }}-cargo-${{ matrix.precision }}-windows-x86_64-release-
@@ -795,11 +807,10 @@ jobs:
       - name: Upload binaries for this target
         uses: actions/upload-artifact@v4
         with:
-          name: bin-${{ matrix.precision }}-windows-x86_64-release
-          path: demo/addons/godot-dojo/
-          # Also include the dojo.c DLL from the Rust build target directory
-          # This is needed at runtime on Windows
-          # external/dojo.c/target/x86_64-pc-windows-msvc/release/dojo_c.dll
+          name: bin-${{ matrix.precision }}-windows-x86_64-release-with-dll
+          path: |
+            demo/addons/godot-dojo/
+            godot-dojo-core/target/x86_64-pc-windows-msvc/release/dojo_c.dll
           if-no-files-found: error
 
   build-windows-editor:
@@ -810,7 +821,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        precision: [standard, double]
+        precision: [single, double]
 
     steps:
       - name: Checkout code
@@ -822,10 +833,10 @@ jobs:
       - name: Install build dependencies
         run: choco install protoc
 
-      - name: Set up Rust stable
-        uses: dtolnay/rust-toolchain@stable
+      - name: Set up Rust nightly
+        uses: dtolnay/rust-toolchain@nightly
         with:
-          toolchain: stable
+          toolchain: nightly
 
       - name: Cache Rust dependencies
         uses: actions/cache@v3
@@ -833,7 +844,7 @@ jobs:
           path: |
             ~/.cargo/registry
             ~/.cargo/git
-            external/dojo.c/target
+            godot-dojo-core/target
           key: ${{ runner.os }}-cargo-${{ matrix.precision }}-windows-x86_64-editor-${{ hashFiles('**/Cargo.lock') }}
           restore-keys: |
             ${{ runner.os }}-cargo-${{ matrix.precision }}-windows-x86_64-editor-
@@ -882,11 +893,10 @@ jobs:
       - name: Upload binaries for this target
         uses: actions/upload-artifact@v4
         with:
-          name: bin-${{ matrix.precision }}-windows-x86_64-editor
-          path: demo/addons/godot-dojo/
-          # Also include the dojo.c DLL from the Rust build target directory
-          # This is needed at runtime on Windows
-          # external/dojo.c/target/x86_64-pc-windows-msvc/debug/dojo_c.dll
+          name: bin-${{ matrix.precision }}-windows-x86_64-editor-with-dll
+          path: |
+            demo/addons/godot-dojo/
+            godot-dojo-core/target/x86_64-pc-windows-msvc/debug/dojo_c.dll
           if-no-files-found: error
 
   package:
@@ -916,22 +926,22 @@ jobs:
           find all_bins -name 'godot-dojo.gdextension' -print -quit | xargs -I {} cp {} godot-dojo-bin/addons/godot-dojo/
           find all_bins -name 'godot-dojo.gdextension' -print -quit | xargs -I {} cp {} godot-dojo-double-bin/addons/godot-dojo/
 
-          # Standard precision binaries
+          # Single precision binaries
           mkdir -p godot-dojo-bin/addons/godot-dojo/
-          find all_bins/bin-standard-* -name 'bin' -type d -exec cp -r {} godot-dojo-bin/addons/godot-dojo/ \;
-          # Copy dojo_c.dll for windows to the correct bin folder
-          find all_bins/bin-standard-windows-* -name 'dojo_c.dll' -exec cp --parents {} godot-dojo-bin/addons/godot-dojo/ \;
+          find all_bins/bin-single-* -name 'bin' -type d -exec cp -r {} godot-dojo-bin/addons/godot-dojo/ \;
+          # Copy dojo_c.dll for windows to the correct bin folder (it's inside demo/addons/godot-dojo)
+          find all_bins/bin-single-windows-* -name 'dojo_c.dll' -exec cp {} godot-dojo-bin/addons/godot-dojo/bin/ \;
 
           # Double precision binaries
           mkdir -p godot-dojo-double-bin/addons/godot-dojo/
           find all_bins/bin-double-* -name 'bin' -type d -exec cp -r {} godot-dojo-double-bin/addons/godot-dojo/ \;
-          find all_bins/bin-double-windows-* -name 'dojo_c.dll' -exec cp --parents {} godot-dojo-double-bin/addons/godot-dojo/ \;
+          find all_bins/bin-double-windows-* -name 'dojo_c.dll' -exec cp {} godot-dojo-double-bin/addons/godot-dojo/bin/ \;
 
       - name: Package into zip files
         run: |
           TAGNAME=${GITHUB_REF##*/}
 
-          # Standard precision zip
+          # Single precision zip
           cd godot-dojo-bin
           zip -r "../godot-dojo-${TAGNAME}.zip" .
           cd ..
@@ -948,7 +958,7 @@ jobs:
           body: |
 
             ### Downloads
-            - [Standard Precision](https://github.com/${{ github.repository }}/releases/download/${{ github.ref_name }}/godot-dojo-${{ github.ref_name }}.zip)
+            - [Single Precision](https://github.com/${{ github.repository }}/releases/download/${{ github.ref_name }}/godot-dojo-${{ github.ref_name }}.zip)
             - [Double Precision](https://github.com/${{ github.repository }}/releases/download/${{ github.ref_name }}/godot-dojo-double-${{ github.ref_name }}.zip)
           files: |
             godot-dojo-${{ github.ref_name }}.zip
