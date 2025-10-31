@@ -14,7 +14,7 @@
 #include "editor/dojo_editor_plugin.h"
 #include "godot_cpp/core/defs.hpp"
 #include "godot_cpp/godot.hpp"
-#include "tools/dojo_http.h"
+// #include "tools/dojo_http.h"
 #ifdef WEB_ENABLED
 #include <tools/dojo_bridge.h>
 #endif
@@ -78,7 +78,7 @@ void initialize_dojoc_module(ModuleInitializationLevel p_level) {
 #endif
         // Tools
         GDREGISTER_CLASS(DojoHelpers);
-        GDREGISTER_CLASS(DojoHttp)
+        // GDREGISTER_CLASS(DojoHttp)
         // DojoTypes
         GDREGISTER_CLASS(DojoTy);
         GDREGISTER_CLASS(DojoPrimitive);
