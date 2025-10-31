@@ -84,6 +84,7 @@ jobs:
           ARCH_ARG="arch=${{ inputs.arch }}"
           PRECISION_ARG="precision=${{ inputs.precision }}"
           export CARGO_BUILD_TARGET=${{ inputs.rust_target }}
+          export FORCE_RUST_RELEASE=1
 
           if [ "${{ runner.os }}" = "macOS" ]; then
             export MACOSX_DEPLOYMENT_TARGET=${{ inputs.macos_deployment_target }}

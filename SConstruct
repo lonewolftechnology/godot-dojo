@@ -314,9 +314,11 @@ def _compile_rust_library(lib_name, lib_path, is_release, cargo_flags=None, rust
     print(f"{Y}Running cargo command for {lib_name}: {' '.join(base_cmd)}{X}")
     subprocess.run(base_cmd, check=True, cwd=lib_path, env=env_vars)
 
-is_release_build = target == "template_release"
+# Determine if we should use the release build of the Rust crate.
+# This is true if the SCons target is 'template_release' OR if we force it via an environment variable.
+force_rust_release = os.environ.get("FORCE_RUST_RELEASE", "0") == "1"
+is_release_build = target == "template_release" or force_rust_release
 
-# Standard compilation for all non-web platforms
 _compile_rust_library("godot_dojo_core", "godot-dojo-core", is_release_build)
 
 apply_patches()
@@ -340,7 +342,7 @@ else:
     env.Append(CXXFLAGS=['-fexceptions', '-std=c++20', '-Wno-template-id-cdtor'])
 
 # Link Rust libraries
-build_mode = "release" if target == "template_release" else "debug"
+build_mode = "release" if is_release_build else "debug"
 
 # For macOS universal, rust_target was modified, so we handle it specially
 rust_lib_target_dir = "universal" if platform == "macos" and arch == "universal" else rust_target
