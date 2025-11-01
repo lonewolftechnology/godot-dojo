@@ -330,7 +330,6 @@ if platform == "windows":
         # For MSVC, we link against the static .lib library
         rust_lib = f"{rust_lib_dir}/godot_dojo_core.lib"
         env.Append(LINKFLAGS=['/NODEFAULTLIB:MSVCRT'])
-    env.Append(LIBS=['ws2_32', 'advapi32', 'ntdll'])
         env.Append(LIBS=['ws2_32', 'advapi32', 'ntdll'])
 elif platform == "linux":
     rust_lib = f"{rust_lib_dir}/libgodot_dojo_core.a"

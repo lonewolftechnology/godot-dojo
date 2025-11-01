@@ -64,6 +64,54 @@ fn handle_uniffi_dependency(dep_name: &str, udl_relative_path: &str, output_sub_
         error!("uniffi-bindgen-cpp for '{}' failed:\n{}", dep_name, stderr);
         panic!();
     }
+    
+    // For controller.hpp, inject the std::endian polyfill for C++17 compilers.
+    if output_sub_dir == "controller" {
+        let hpp_path = output_dir.join("controller.hpp");
+        note!("Attempting to patch file with std::endian polyfill: {}", hpp_path.display());
+
+        if hpp_path.exists() {
+            let mut hpp_content = fs::read_to_string(&hpp_path)
+                .expect("Failed to read generated controller.hpp for patching.");
+
+            let polyfill = r#"
+
+// Polyfill for std::endian (C++20) when using C++17 or older.
+// UniFFI-generated code requires this.
+#if __cplusplus < 202002L
+#include <cstdint>
+namespace std {
+    enum class endian {
+#if defined(_WIN32) || defined(__LITTLE_ENDIAN__) || (defined(__BYTE_ORDER__) && __BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__)
+        little = 0,
+        big = 1,
+        native = little
+#elif defined(__BIG_ENDIAN__) || (defined(__BYTE_ORDER__) && __BYTE_ORDER__ == __ORDER_BIG_ENDIAN__)
+        little = 1,
+        big = 0,
+        native = big
+#else
+#  error "Cannot determine endianness"
+#endif
+    };
+}
+#endif
+
+"#;
+            let insertion_hook = "namespace controller {";
+            if let Some(pos) = hpp_content.find(insertion_hook) {
+                hpp_content.insert_str(pos, polyfill);
+                fs::write(&hpp_path, hpp_content)
+                    .expect("Failed to write patched controller.hpp");
+                custom_println!("PATCHED", green, "Injected std::endian polyfill into {}", hpp_path.display());
+            } else {
+                warn!("Could not find insertion point for std::endian polyfill in {}.", hpp_path.display());
+            }
+        } else {
+            warn!("controller.hpp not found for patching at {}", hpp_path.display());
+        }
+    }
+
     custom_println!("DONE", green, "of {}\n", dep_name);
 }
 
