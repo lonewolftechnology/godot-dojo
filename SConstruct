@@ -215,57 +215,6 @@ except subprocess.CalledProcessError as e:
     print(f"{R}{cross} Failed to check or install Rust target: {e}{X}")
     # Continue anyway, as cargo will show a more specific error if needed
 
-def apply_patches():
-    # Checks for and applies all .patch files found in the 'patches' directory
-    patches_dir = "patches"
-    if not os.path.isdir(patches_dir):
-        print(f"{B}Patch directory '{patches_dir}' not found, skipping.{X}")
-        return
-
-    patch_files = sorted(glob.glob(os.path.join(patches_dir, '*.patch')))
-    if not patch_files:
-        print(f"{B}No .patch files found in '{patches_dir}', skipping.{X}")
-        return
-
-    print(f"{Y}{clipboard} Applying patches from '{patches_dir}' directory...{X}")
-
-    # Check if 'patch' is available.
-    if not shutil.which("patch"):
-        print(f"{R}{cross} Error: The 'patch' command was not found in your system's PATH.{X}")
-        print(f"{Y}This is required to apply a necessary fix to a dependency.{X}")
-        print(f"{B}On Windows, the easiest way to get it is by installing 'Git for Windows':{X}")
-        print(f"{G}https://git-scm.com/download/win{X}")
-        print(f"{Y}Please install it and make sure its tools are added to your PATH, then try again.{X}")
-        Exit(1) # Exit if patch command is not available.
-
-    for patch_file in patch_files:
-        print(f"{Y}Applying patch: {os.path.basename(patch_file)}...{X}")
-        result = subprocess.run(
-            ['patch', '-p1', '-N', '--dry-run', '-i', os.path.abspath(patch_file)],
-            capture_output=True, text=True
-        )
-
-        already_applied = (
-            "previously applied" in result.stdout or
-            "hunk ignored" in result.stdout or
-            "hunk ignored" in result.stderr
-        )
-
-        if already_applied:
-            print(f"{G}{check} Patch {os.path.basename(patch_file)} already applied, skipping.{X}")
-            continue
-
-        if result.returncode == 0:
-            apply_result = subprocess.run(['patch', '-p1', '-N', '-i', os.path.abspath(patch_file)], check=False, capture_output=True, text=True)
-            print(f"{G}{check} Patch {os.path.basename(patch_file)} applied successfully.{X}")
-        else:
-            print(f"{R}{cross} Failed to apply patch {os.path.basename(patch_file)}.{X}")
-            if result.stdout:
-                print(f"{B}--- stdout ---\n{result.stdout}{X}")
-            if result.stderr:
-                print(f"{R}--- stderr ---\n{result.stderr}{X}")
-            Exit(1)
-
 def _compile_rust_library(lib_name, lib_path, is_release, cargo_flags=None, rustc_flags=None):
     """Compiles a Rust library, handling normal, universal, and web builds."""
     lib_version = _get_git_submodule_version(lib_path) or "unknown"
@@ -340,7 +289,6 @@ is_release_build = target == "template_release" or force_rust_release
 
 _compile_rust_library("godot_dojo_core", "godot-dojo-core", is_release_build)
 
-apply_patches()
 # Configure library
 env['SHLIBPREFIX'] = ''
 prefix = env.subst('$SHLIBPREFIX')
@@ -383,6 +331,7 @@ if platform == "windows":
         rust_lib = f"{rust_lib_dir}/godot_dojo_core.lib"
         env.Append(LINKFLAGS=['/NODEFAULTLIB:MSVCRT'])
     env.Append(LIBS=['ws2_32', 'advapi32', 'ntdll'])
+        env.Append(LIBS=['ws2_32', 'advapi32', 'ntdll'])
 elif platform == "linux":
     rust_lib = f"{rust_lib_dir}/libgodot_dojo_core.a"
     # Use pkg-config to add proper include/lib flags for dbus-1 and ensure correct link order.
@@ -396,16 +345,14 @@ else:
     rust_lib = f"{rust_lib_dir}/libgodot_dojo_core.a"
 
 if rust_lib:
-    # For static libraries, we need to tell the linker to include all symbols,
-    # as external C++ code (like the UniFFI bindings) will depend on them.
-    # This solves "undefined symbol" errors for symbols inside the Rust static lib.
     if platform in ["linux", "macos", "ios"] or use_mingw:
-        # For GCC/Clang based toolchains
-        # Use --start-group and --end-group to correctly link symbols from the static Rust
-        # library. This is more robust than --whole-archive, which can cause "multiple
-        # definition" errors if the static library contains duplicate internal symbols
-        # (e.g., from vendored dependencies like `ring`).
-        env.Append(LINKFLAGS=["-Wl,--start-group", File(rust_lib), "-Wl,--end-group"])
+        if platform == "windows" and use_mingw:
+            # For MinGW, we must include the system libraries Rust depends on *inside* the group.
+            win_libs = ['-lws2_32', '-ladvapi32', '-lntdll']
+            env.Append(_LIBFLAGS=['-Wl,--start-group', rust_lib] + win_libs + ['-Wl,--end-group'])
+        else:
+            # For other platforms like Linux/macOS
+            env.Append(_LIBFLAGS=['-Wl,--start-group', rust_lib, '-Wl,--end-group'])
     elif platform == "windows" and not use_mingw:
         # For MSVC
         env.Append(LINKFLAGS=[f"/WHOLEARCHIVE:{os.path.basename(rust_lib)}"])
