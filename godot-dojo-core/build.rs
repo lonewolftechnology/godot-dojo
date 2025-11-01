@@ -68,14 +68,20 @@ fn handle_uniffi_dependency(dep_name: &str, udl_relative_path: &str, output_sub_
 }
 
 fn main(){
+    // FORCE REBUILD
+    env::set_var("REBUILD", format!("{:?}", std::time::Instant::now()));
+    println!("cargo:rerun-if-env-changed=REBUILD");
     let key = "SKIP_BINDINGS_GENERATION";
     match env::var(key) {
         Ok(val) => {
-            info!("Skipping bindings generation because {} is set.", val);
-            return;
+            if val == "1"{
+                info!("Skipping bindings generation because {} is set.", val);
+                return;
+            }
         },
         Err(e) => note!("{} {}", key, e),
     };
+
     let manifest_dir = env::var("CARGO_MANIFEST_DIR").unwrap();
     note!("Source directory of 'godot-dojo-core': {}", manifest_dir);
 
@@ -106,4 +112,6 @@ fn main(){
     fs::copy(&source_header_path, &dest_header_path)
         .unwrap_or_else(|e| panic!("Failed to copy dojo.h: {}", e));
     info!("Copied dojo.h successfully\n");
+
+
 }
