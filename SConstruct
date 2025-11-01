@@ -216,7 +216,7 @@ except subprocess.CalledProcessError as e:
     # Continue anyway, as cargo will show a more specific error if needed
 
 def apply_patches():
-    """Checks for and applies all .patch files found in the 'patches' directory."""
+    # Checks for and applies all .patch files found in the 'patches' directory
     patches_dir = "patches"
     if not os.path.isdir(patches_dir):
         print(f"{B}Patch directory '{patches_dir}' not found, skipping.{X}")
@@ -229,7 +229,7 @@ def apply_patches():
 
     print(f"{Y}{clipboard} Applying patches from '{patches_dir}' directory...{X}")
 
-    # Verificar si el comando 'patch' está disponible.
+    # Check if 'patch' is available.
     if not shutil.which("patch"):
         print(f"{R}{cross} Error: The 'patch' command was not found in your system's PATH.{X}")
         print(f"{Y}This is required to apply a necessary fix to a dependency.{X}")
@@ -240,11 +240,30 @@ def apply_patches():
 
     for patch_file in patch_files:
         print(f"{Y}Applying patch: {os.path.basename(patch_file)}...{X}")
-        try:
-            subprocess.run(['patch', '-p1', '-i', os.path.abspath(patch_file)], check=True)
+        result = subprocess.run(
+            ['patch', '-p1', '-N', '--dry-run', '-i', os.path.abspath(patch_file)],
+            capture_output=True, text=True
+        )
+
+        already_applied = (
+            "previously applied" in result.stdout or
+            "hunk ignored" in result.stdout or
+            "hunk ignored" in result.stderr
+        )
+
+        if already_applied:
+            print(f"{G}{check} Patch {os.path.basename(patch_file)} already applied, skipping.{X}")
+            continue
+
+        if result.returncode == 0:
+            apply_result = subprocess.run(['patch', '-p1', '-N', '-i', os.path.abspath(patch_file)], check=False, capture_output=True, text=True)
             print(f"{G}{check} Patch {os.path.basename(patch_file)} applied successfully.{X}")
-        except subprocess.CalledProcessError as e:
-            print(f"{R}{cross} Failed to apply patch {os.path.basename(patch_file)}: {e}{X}")
+        else:
+            print(f"{R}{cross} Failed to apply patch {os.path.basename(patch_file)}.{X}")
+            if result.stdout:
+                print(f"{B}--- stdout ---\n{result.stdout}{X}")
+            if result.stderr:
+                print(f"{R}--- stderr ---\n{result.stderr}{X}")
             Exit(1)
 
 def _compile_rust_library(lib_name, lib_path, is_release, cargo_flags=None, rustc_flags=None):
@@ -336,10 +355,14 @@ if platform == "macos":
 # Enable C++ exceptions for try/catch blocks
 if env["platform"] == "windows" and not env.get("use_mingw"):
     # For MSVC
-    env.Append(CXXFLAGS=['/EHsc', '/std:c++20'])
+    # Use /std:c++17 to avoid issues with std::uniform_int_distribution
+    # and char types in C++20.
+    env.Append(CXXFLAGS=['/EHsc', '/std:c++17'])
 else:
     # For GCC/Clang
-    env.Append(CXXFLAGS=['-fexceptions', '-std=c++20', '-Wno-template-id-cdtor'])
+    # Using C++17 for consistency and to avoid breaking changes from C++20.
+    # -Wno-template-id-cdtor suppresses warnings from godot-cpp templates.
+    env.Append(CXXFLAGS=['-fexceptions', '-std=c++17', '-Wno-template-id-cdtor'])
 
 # Link Rust libraries
 rust_build_mode = "release" if is_release_build else "debug"
@@ -378,7 +401,11 @@ if rust_lib:
     # This solves "undefined symbol" errors for symbols inside the Rust static lib.
     if platform in ["linux", "macos", "ios"] or use_mingw:
         # For GCC/Clang based toolchains
-        env.Append(LINKFLAGS=["-Wl,--whole-archive", File(rust_lib), "-Wl,--no-whole-archive"])
+        # Use --start-group and --end-group to correctly link symbols from the static Rust
+        # library. This is more robust than --whole-archive, which can cause "multiple
+        # definition" errors if the static library contains duplicate internal symbols
+        # (e.g., from vendored dependencies like `ring`).
+        env.Append(LINKFLAGS=["-Wl,--start-group", File(rust_lib), "-Wl,--end-group"])
     elif platform == "windows" and not use_mingw:
         # For MSVC
         env.Append(LINKFLAGS=[f"/WHOLEARCHIVE:{os.path.basename(rust_lib)}"])
