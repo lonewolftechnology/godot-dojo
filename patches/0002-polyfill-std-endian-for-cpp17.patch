@@ -1,0 +1,38 @@
+Subject: [PATCH] binding
+---
+Index: bindings/controller/controller.hpp
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/bindings/controller/controller.hpp b/bindings/controller/controller.hpp
+--- a/bindings/controller/controller.hpp	(revision 6da257f7f730f0180361077ee673253eb70bc735)
++++ b/bindings/controller/controller.hpp	(date 1762020360523)
+@@ -19,6 +19,27 @@
+ 
+ #include "controller_scaffolding.hpp"
+ 
++// Polyfill for std::endian (C++20) when using C++17 or older.
++// UniFFI-generated code requires this.
++#if __cplusplus < 202002L
++#include <cstdint>
++namespace std {
++    enum class endian {
++#if defined(_WIN32) || defined(__LITTLE_ENDIAN__) || (defined(__BYTE_ORDER__) && __BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__)
++        little = 0,
++        big = 1,
++        native = little
++#elif defined(__BIG_ENDIAN__) || (defined(__BYTE_ORDER__) && __BYTE_ORDER__ == __ORDER_BIG_ENDIAN__)
++        little=1,
++        big=0,
++        native= big
++#else
++#  error "Cannot determine endianness"
++#endif
++    };
++}
++#endif
++
+ namespace controller {
+ struct Controller;
+ struct Owner;
