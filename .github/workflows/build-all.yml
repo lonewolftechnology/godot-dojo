@@ -139,6 +139,7 @@ jobs:
     runs-on: ${{ matrix.os_image }}
     needs: create_release
     if: needs.create_release.result == 'success'
+    continue-on-error: ${{ matrix.os == 'windows' }}
     strategy:
       fail-fast: false
       matrix:
@@ -163,6 +164,11 @@ jobs:
             arch: x86_64
             rust_target: x86_64-pc-windows-msvc
             macos_deployment_target: ""
+          - os: windows-gnu
+            os_image: ubuntu-latest
+            arch: x86_64
+            rust_target: x86_64-pc-windows-gnu
+            macos_deployment_target: ""
 
     steps:
       - name: Checkout code
@@ -173,7 +179,7 @@ jobs:
 
       - name: Install dependencies (Linux)
         if: runner.os == 'Linux'
-        run: sudo apt-get update && sudo apt-get install -y build-essential pkg-config libdbus-1-dev protobuf-compiler libprotobuf-dev
+        run: sudo apt-get update && sudo apt-get install -y build-essential pkg-config libdbus-1-dev protobuf-compiler libprotobuf-dev mingw-w64
 
       - name: Install dependencies (macOS)
         if: runner.os == 'macOS'
@@ -218,7 +224,7 @@ jobs:
           path: godot-dojo-core/target
           if-no-files-found: error
 
-  build-gdextension:
+  build-gdextension-non-windows:
     needs: [create_release, build-rust-core]
     if: needs.create_release.result == 'success' && needs.build-rust-core.result == 'success'
     strategy:
@@ -239,6 +245,25 @@ jobs:
             arch: x86_64
             rust_target: x86_64-apple-darwin
             macos_deployment_target: "10.13"
+    uses: ./.github/workflows/reusable-build.yml
+    with:
+      os: ${{ matrix.os }}
+      arch: ${{ matrix.arch }}
+      rust_target: ${{ matrix.rust_target }}
+      precision: ${{ matrix.precision }}
+      build_target: ${{ matrix.build_target }}
+      macos_deployment_target: ${{ matrix.macos_deployment_target }}
+
+  build-gdextension-windows:
+    needs: [create_release, build-rust-core]
+    if: needs.create_release.result == 'success' && needs.build-rust-core.result == 'success'
+    continue-on-error: true
+    strategy:
+      fail-fast: false
+      matrix:
+        precision: [single, double]
+        build_target: [editor, templates]
+        include:
           - os: windows-latest
             arch: x86_64
             rust_target: x86_64-pc-windows-msvc
@@ -252,11 +277,48 @@ jobs:
       build_target: ${{ matrix.build_target }}
       macos_deployment_target: ${{ matrix.macos_deployment_target }}
 
+  build-gdextension-windows-fallback:
+    name: Build GDExtension Windows Fallback (GNU)
+    runs-on: ubuntu-latest
+    needs: [create_release, build-rust-core, build-gdextension-windows]
+    if: needs.create_release.result == 'success' && needs.build-rust-core.result == 'success' && needs.build-gdextension-windows.result == 'failure'
+    strategy:
+      fail-fast: false
+      matrix:
+        precision: [single, double]
+        build_target: [editor, templates]
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          submodules: true
+      - name: Install dependencies
+        run: sudo apt-get update && sudo apt-get install -y scons build-essential mingw-w64
+      - name: Set up Rust nightly
+        uses: dtolnay/rust-toolchain@nightly
+        with:
+          targets: x86_64-pc-windows-gnu
+      - name: Download core artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: core-target-windows-gnu-x86_64-release
+          path: godot-dojo-core/target
+      - name: Build GDExtension
+        run: |
+          cd godot-dojo-gdextension
+          scons platform=windows target=${{ matrix.build_target }} precision=${{ matrix.precision }} custom_godot_string_build_path=../godot-dojo-core
+      - name: Upload GDExtension artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: bin-${{ matrix.precision }}-windows-x86_64
+          path: godot-dojo-gdextension/bin/
+          if-no-files-found: error
+
   package:
     name: Combine all binaries and create zip files
     runs-on: ubuntu-latest
-    needs: [create_release, build-gdextension]
-    if: needs.create_release.result == 'success'
+    needs: [create_release, build-gdextension-non-windows, build-gdextension-windows, build-gdextension-windows-fallback]
+    if: always() && needs.create_release.result == 'success' && needs.build-gdextension-non-windows.result == 'success' && (needs.build-gdextension-windows.result == 'success' || needs.build-gdextension-windows-fallback.result == 'success')
 
     steps:
       - name: Checkout code
