@@ -460,7 +460,7 @@ jobs:
 
       - name: Install dependencies
         if: steps.check_failure.outcome == 'success'
-        run: sudo apt-get update && sudo apt-get install -y scons build-essential mingw-w64 protobuf-compiler
+        run: sudo apt-get update && sudo apt-get install -y scons build-essential mingw-w64 protobuf-compiler libdbus-1-dev
 
       - name: Set up Rust nightly
         if: steps.check_failure.outcome == 'success'
