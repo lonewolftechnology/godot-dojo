@@ -135,36 +135,36 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
   build-rust-core:
-    name: Build Core Crate (${{ matrix.os }}-${{ matrix.arch }})
+    name: Build Core Crate (${{ matrix.platform_id }}-${{ matrix.arch }})
     runs-on: ${{ matrix.os_image }}
     needs: create_release
     if: needs.create_release.result == 'success'
-    continue-on-error: ${{ matrix.os == 'windows' }}
+    continue-on-error: ${{ matrix.platform_id == 'windows' }}
     strategy:
       fail-fast: false
       matrix:
         include:
-          - os: linux
+          - platform_id: linux
             os_image: ubuntu-latest
             arch: x86_64
             rust_target: x86_64-unknown-linux-gnu
             macos_deployment_target: ""
-          - os: macos
+          - platform_id: macos
             os_image: macos-latest # arm64
             arch: arm64
             rust_target: aarch64-apple-darwin
             macos_deployment_target: "11.0"
-          - os: macos
+          - platform_id: macos
             os_image: macos-13 # x86_64
             arch: x86_64
             rust_target: x86_64-apple-darwin
             macos_deployment_target: "10.13"
-          - os: windows
+          - platform_id: windows
             os_image: windows-latest
             arch: x86_64
             rust_target: x86_64-pc-windows-msvc
             macos_deployment_target: ""
-          - os: windows-gnu
+          - platform_id: windows-gnu
             os_image: ubuntu-latest
             arch: x86_64
             rust_target: x86_64-pc-windows-gnu
@@ -200,9 +200,9 @@ jobs:
           path: |
             ~/.cargo/registry
             ~/.cargo/git
-          key: ${{ runner.os }}-cargo-deps-${{ hashFiles('godot-dojo-core/Cargo.lock') }}
+          key: ${{ matrix.platform_id }}-${{ matrix.arch }}-cargo-deps-${{ hashFiles('godot-dojo-core/Cargo.lock') }}
           restore-keys: |
-            ${{ runner.os }}-cargo-deps-
+            ${{ matrix.platform_id }}-${{ matrix.arch }}-cargo-deps-
 
       - name: Build godot-dojo-core
         shell: bash
@@ -220,12 +220,12 @@ jobs:
       - name: Upload core artifacts (target)
         uses: actions/upload-artifact@v4
         with:
-          name: core-target-${{ matrix.os }}-${{ matrix.arch }}-release
+          name: core-target-${{ matrix.platform_id }}-${{ matrix.arch }}-release
           path: godot-dojo-core/target
           if-no-files-found: error
 
   build-gdextension-non-windows:
-    name: Build GDExtension (${{ matrix.os_name }}-${{ matrix.arch }}-${{ matrix.precision }}-${{ matrix.build_target }})
+    name: Build GDExtension (${{ matrix.platform_id }}-${{ matrix.arch }}-${{ matrix.precision }}-${{ matrix.build_target }})
     needs: [create_release, build-rust-core]
     if: needs.create_release.result == 'success' && needs.build-rust-core.result == 'success'
     runs-on: ${{ matrix.os }}
@@ -235,18 +235,18 @@ jobs:
         precision: [single, double]
         build_target: [editor, templates]
         include:
-          - os: ubuntu-latest
-            os_name: linux
+          - platform_id: linux
+            os: ubuntu-latest
             arch: x86_64
             rust_target: x86_64-unknown-linux-gnu
             macos_deployment_target: ""
-          - os: macos-latest
-            os_name: macos
+          - platform_id: macos
+            os: macos-latest
             arch: arm64
             rust_target: aarch64-apple-darwin
             macos_deployment_target: "11.0"
-          - os: macos-13
-            os_name: macos
+          - platform_id: macos
+            os: macos-13
             arch: x86_64
             rust_target: x86_64-apple-darwin
             macos_deployment_target: "10.13"
@@ -268,13 +268,34 @@ jobs:
       - name: Download core artifacts (target)
         uses: actions/download-artifact@v4
         with:
-          name: core-target-${{ matrix.os_name }}-${{ matrix.arch }}-release
+          name: core-target-${{ matrix.platform_id }}-${{ matrix.arch }}-release
           path: godot-dojo-core/target
 
       - name: Set up Rust nightly
         uses: dtolnay/rust-toolchain@nightly
         with:
           targets: ${{ matrix.rust_target }}
+
+      - name: Cache Rust dependencies
+        uses: actions/cache@v3
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+          key: ${{ matrix.platform_id }}-${{ matrix.arch }}-cargo-deps-${{ hashFiles('godot-dojo-core/Cargo.lock') }}
+          restore-keys: |
+            ${{ matrix.platform_id }}-${{ matrix.arch }}-cargo-deps-
+
+      - name: Cache uniffi-bindgen-cpp
+        id: cache-uniffi-bindgen-cpp
+        uses: actions/cache@v3
+        with:
+          path: ~/.cargo/bin/uniffi-bindgen-cpp
+          key: ${{ runner.os }}-uniffi-bindgen-cpp-Larkooo-0.30
+
+      - name: Install uniffi-bindgen-cpp from source
+        if: steps.cache-uniffi-bindgen-cpp.outputs.cache-hit != 'true'
+        run: cargo install --git https://github.com/Larkooo/uniffi-bindgen-cpp --branch update-0.30 uniffi-bindgen-cpp
 
       - name: Install scons
         run: pip install scons
@@ -283,7 +304,7 @@ jobs:
         shell: bash
         run: |
           set -e
-          PLATFORM_ARG="platform=${{ matrix.os_name }}"
+          PLATFORM_ARG="platform=${{ matrix.platform_id }}"
           ARCH_ARG="arch=${{ matrix.arch }}"
           PRECISION_ARG="precision=${{ matrix.precision }}"
           export CARGO_BUILD_TARGET=${{ matrix.rust_target }}
@@ -306,7 +327,7 @@ jobs:
       - name: Upload binaries
         uses: actions/upload-artifact@v4
         with:
-          name: bin-${{ matrix.precision }}-${{ matrix.os_name }}-${{ matrix.arch }}-${{ matrix.build_target }}
+          name: bin-${{ matrix.precision }}-${{ matrix.platform_id }}-${{ matrix.arch }}-${{ matrix.build_target }}
           path: demo/addons/godot-dojo/
           if-no-files-found: error
 
@@ -321,8 +342,10 @@ jobs:
       matrix:
         precision: [single, double]
         build_target: [editor, templates]
-        arch: [x86_64]
-        rust_target: [x86_64-pc-windows-msvc]
+        include:
+          - platform_id: windows
+            arch: x86_64
+            rust_target: x86_64-pc-windows-msvc
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -336,13 +359,34 @@ jobs:
       - name: Download core artifacts (target)
         uses: actions/download-artifact@v4
         with:
-          name: core-target-windows-${{ matrix.arch }}-release
+          name: core-target-${{ matrix.platform_id }}-${{ matrix.arch }}-release
           path: godot-dojo-core/target
 
       - name: Set up Rust nightly
         uses: dtolnay/rust-toolchain@nightly
         with:
           targets: ${{ matrix.rust_target }}
+
+      - name: Cache Rust dependencies
+        uses: actions/cache@v3
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+          key: ${{ matrix.platform_id }}-${{ matrix.arch }}-cargo-deps-${{ hashFiles('godot-dojo-core/Cargo.lock') }}
+          restore-keys: |
+            ${{ matrix.platform_id }}-${{ matrix.arch }}-cargo-deps-
+
+      - name: Cache uniffi-bindgen-cpp
+        id: cache-uniffi-bindgen-cpp
+        uses: actions/cache@v3
+        with:
+          path: ~/.cargo/bin/uniffi-bindgen-cpp
+          key: ${{ runner.os }}-uniffi-bindgen-cpp-Larkooo-0.30
+
+      - name: Install uniffi-bindgen-cpp from source
+        if: steps.cache-uniffi-bindgen-cpp.outputs.cache-hit != 'true'
+        run: cargo install --git https://github.com/Larkooo/uniffi-bindgen-cpp --branch update-0.30 uniffi-bindgen-cpp
 
       - name: Install scons
         run: pip install scons
@@ -385,6 +429,10 @@ jobs:
       matrix:
         precision: [single, double]
         build_target: [editor, templates]
+        include:
+          - platform_id: windows-gnu
+            arch: x86_64
+            rust_target: x86_64-pc-windows-gnu
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -395,20 +443,43 @@ jobs:
       - name: Set up Rust nightly
         uses: dtolnay/rust-toolchain@nightly
         with:
-          targets: x86_64-pc-windows-gnu
+          targets: ${{ matrix.rust_target }}
+
+      - name: Cache Rust dependencies
+        uses: actions/cache@v3
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+          key: ${{ matrix.platform_id }}-${{ matrix.arch }}-cargo-deps-${{ hashFiles('godot-dojo-core/Cargo.lock') }}
+          restore-keys: |
+            ${{ matrix.platform_id }}-${{ matrix.arch }}-cargo-deps-
+
       - name: Download core artifacts
         uses: actions/download-artifact@v4
         with:
-          name: core-target-windows-gnu-x86_64-release
+          name: core-target-${{ matrix.platform_id }}-${{ matrix.arch }}-release
           path: godot-dojo-core/target
+
+      - name: Cache uniffi-bindgen-cpp
+        id: cache-uniffi-bindgen-cpp
+        uses: actions/cache@v3
+        with:
+          path: ~/.cargo/bin/uniffi-bindgen-cpp
+          key: ${{ runner.os }}-uniffi-bindgen-cpp-Larkooo-0.30
+
+      - name: Install uniffi-bindgen-cpp from source
+        if: steps.cache-uniffi-bindgen-cpp.outputs.cache-hit != 'true'
+        run: cargo install --git https://github.com/Larkooo/uniffi-bindgen-cpp --branch update-0.30 uniffi-bindgen-cpp
+
       - name: Build GDExtension
         shell: bash
         run: |
           set -e
           PLATFORM_ARG="platform=windows"
-          ARCH_ARG="arch=x86_64"
+          ARCH_ARG="arch=${{ matrix.arch }}"
           PRECISION_ARG="precision=${{ matrix.precision }}"
-          export CARGO_BUILD_TARGET=x86_64-pc-windows-gnu
+          export CARGO_BUILD_TARGET=${{ matrix.rust_target }}
           export FORCE_RUST_RELEASE=1
 
           mkdir -p demo/addons/godot-dojo
@@ -423,7 +494,7 @@ jobs:
       - name: Upload GDExtension artifact
         uses: actions/upload-artifact@v4
         with:
-          name: bin-${{ matrix.precision }}-windows-x86_64-${{ matrix.build_target }}
+          name: bin-${{ matrix.precision }}-windows-${{ matrix.arch }}-${{ matrix.build_target }}
           path: |
             demo/addons/godot-dojo/
             godot-dojo-core/target/x86_64-pc-windows-gnu/release/dojo_c.dll
