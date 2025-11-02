@@ -11,7 +11,7 @@ import sys
 # into the global namespace at runtime. Import them when available and
 # provide safe fallbacks otherwise so IDEs stop warning.
 try:
-    from SCons.Script import GetOption, Return, Exit, File, SConscript  # type: ignore
+    from SCons.Script import GetOption, Return, Exit, File, SConscript, Glob  # type: ignore
 except Exception:
     def GetOption(name: str):
         return None
@@ -45,6 +45,9 @@ except Exception:
                 return args[0] if args else None
 
         return _Env()
+
+    def Glob(pattern: str):
+        return glob.glob(pattern)
 
 # Colors
 G, B, R, Y, X = '\033[92m', '\033[94m', '\033[91m', '\033[1;33m', '\033[0m'
