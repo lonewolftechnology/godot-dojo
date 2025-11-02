@@ -309,8 +309,11 @@ if env["platform"] == "windows" and not env.get("use_mingw"):
 else:
     # For GCC/Clang
     # Using C++17 for consistency and to avoid breaking changes from C++20.
-    # -Wno-template-id-cdtor suppresses warnings from godot-cpp templates.
-    env.Append(CXXFLAGS=['-fexceptions', '-std=c++17', '-Wno-template-id-cdtor'])
+    cxx_flags = ['-fexceptions', '-std=c++17']
+    if env["platform"] != "macos":
+        # -Wno-template-id-cdtor suppresses warnings from godot-cpp templates, but is not supported by clang.
+        cxx_flags.append('-Wno-template-id-cdtor')
+    env.Append(CXXFLAGS=cxx_flags)
 
 # Link Rust libraries
 rust_build_mode = "release" if is_release_build else "debug"
