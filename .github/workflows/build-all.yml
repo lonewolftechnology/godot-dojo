@@ -225,8 +225,10 @@ jobs:
           if-no-files-found: error
 
   build-gdextension-non-windows:
+    name: Build GDExtension (${{ matrix.os_name }}-${{ matrix.arch }}-${{ matrix.precision }}-${{ matrix.build_target }})
     needs: [create_release, build-rust-core]
     if: needs.create_release.result == 'success' && needs.build-rust-core.result == 'success'
+    runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
       matrix:
@@ -234,48 +236,144 @@ jobs:
         build_target: [editor, templates]
         include:
           - os: ubuntu-latest
+            os_name: linux
             arch: x86_64
             rust_target: x86_64-unknown-linux-gnu
             macos_deployment_target: ""
-          - os: macos-latest # arm64
+          - os: macos-latest
+            os_name: macos
             arch: arm64
             rust_target: aarch64-apple-darwin
             macos_deployment_target: "11.0"
-          - os: macos-13 # x86_64
+          - os: macos-13
+            os_name: macos
             arch: x86_64
             rust_target: x86_64-apple-darwin
             macos_deployment_target: "10.13"
-    uses: ./.github/workflows/reusable-build.yml
-    with:
-      os: ${{ matrix.os }}
-      arch: ${{ matrix.arch }}
-      rust_target: ${{ matrix.rust_target }}
-      precision: ${{ matrix.precision }}
-      build_target: ${{ matrix.build_target }}
-      macos_deployment_target: ${{ matrix.macos_deployment_target }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          submodules: true
+          fetch-depth: 0
+
+      - name: Install dependencies (Linux)
+        if: runner.os == 'Linux'
+        run: sudo apt-get update && sudo apt-get install -y build-essential pkg-config dbus libdbus-1-dev protobuf-compiler libprotobuf-dev
+
+      - name: Install dependencies (macOS)
+        if: runner.os == 'macOS'
+        run: brew install protobuf
+
+      - name: Download core artifacts (target)
+        uses: actions/download-artifact@v4
+        with:
+          name: core-target-${{ matrix.os_name }}-${{ matrix.arch }}-release
+          path: godot-dojo-core/target
+
+      - name: Set up Rust nightly
+        uses: dtolnay/rust-toolchain@nightly
+        with:
+          targets: ${{ matrix.rust_target }}
+
+      - name: Install scons
+        run: pip install scons
+
+      - name: Build GDExtension
+        shell: bash
+        run: |
+          set -e
+          PLATFORM_ARG="platform=${{ matrix.os_name }}"
+          ARCH_ARG="arch=${{ matrix.arch }}"
+          PRECISION_ARG="precision=${{ matrix.precision }}"
+          export CARGO_BUILD_TARGET=${{ matrix.rust_target }}
+          export FORCE_RUST_RELEASE=1
+
+          if [ "${{ runner.os }}" = "macOS" ]; then
+            export MACOSX_DEPLOYMENT_TARGET=${{ matrix.macos_deployment_target }}
+            export RUSTFLAGS="${RUSTFLAGS:+$RUSTFLAGS }-C link-arg=-mmacosx-version-min=${{ matrix.macos_deployment_target }}"
+          fi
+
+          mkdir -p demo/addons/godot-dojo
+
+          if [ "${{ matrix.build_target }}" = "templates" ]; then
+            scons $PLATFORM_ARG $ARCH_ARG target=template_debug $PRECISION_ARG -j2
+            scons $PLATFORM_ARG $ARCH_ARG target=template_release $PRECISION_ARG -j2
+          else
+            scons $PLATFORM_ARG $ARCH_ARG target=${{ matrix.build_target }} $PRECISION_ARG -j2
+          fi
+
+      - name: Upload binaries
+        uses: actions/upload-artifact@v4
+        with:
+          name: bin-${{ matrix.precision }}-${{ matrix.os_name }}-${{ matrix.arch }}-${{ matrix.build_target }}
+          path: demo/addons/godot-dojo/
+          if-no-files-found: error
 
   build-gdextension-windows:
+    name: Build GDExtension (windows-${{ matrix.arch }}-${{ matrix.precision }}-${{ matrix.build_target }})
     needs: [create_release, build-rust-core]
     if: needs.create_release.result == 'success' && needs.build-rust-core.result == 'success'
+    runs-on: windows-latest
     continue-on-error: true
     strategy:
       fail-fast: false
       matrix:
         precision: [single, double]
         build_target: [editor, templates]
-        include:
-          - os: windows-latest
-            arch: x86_64
-            rust_target: x86_64-pc-windows-msvc
-            macos_deployment_target: ""
-    uses: ./.github/workflows/reusable-build.yml
-    with:
-      os: ${{ matrix.os }}
-      arch: ${{ matrix.arch }}
-      rust_target: ${{ matrix.rust_target }}
-      precision: ${{ matrix.precision }}
-      build_target: ${{ matrix.build_target }}
-      macos_deployment_target: ${{ matrix.macos_deployment_target }}
+        arch: [x86_64]
+        rust_target: [x86_64-pc-windows-msvc]
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          submodules: true
+          fetch-depth: 0
+
+      - name: Install dependencies (Windows)
+        run: choco install protoc
+
+      - name: Download core artifacts (target)
+        uses: actions/download-artifact@v4
+        with:
+          name: core-target-windows-${{ matrix.arch }}-release
+          path: godot-dojo-core/target
+
+      - name: Set up Rust nightly
+        uses: dtolnay/rust-toolchain@nightly
+        with:
+          targets: ${{ matrix.rust_target }}
+
+      - name: Install scons
+        run: pip install scons
+
+      - name: Build GDExtension
+        shell: bash
+        run: |
+          set -e
+          PLATFORM_ARG="platform=windows"
+          ARCH_ARG="arch=${{ matrix.arch }}"
+          PRECISION_ARG="precision=${{ matrix.precision }}"
+          export CARGO_BUILD_TARGET=${{ matrix.rust_target }}
+          export FORCE_RUST_RELEASE=1
+
+          mkdir -p demo/addons/godot-dojo
+
+          if [ "${{ matrix.build_target }}" = "templates" ]; then
+            scons $PLATFORM_ARG $ARCH_ARG target=template_debug $PRECISION_ARG -j2
+            scons $PLATFORM_ARG $ARCH_ARG target=template_release $PRECISION_ARG -j2
+          else
+            scons $PLATFORM_ARG $ARCH_ARG target=${{ matrix.build_target }} $PRECISION_ARG -j2
+          fi
+
+      - name: Upload binaries
+        uses: actions/upload-artifact@v4
+        with:
+          name: bin-${{ matrix.precision }}-windows-${{ matrix.arch }}-${{ matrix.build_target }}
+          path: |
+            demo/addons/godot-dojo/
+            ${{ format('godot-dojo-core/target/{0}/release/dojo_c.dll', matrix.rust_target) }}
+          if-no-files-found: error
 
   build-gdextension-windows-fallback:
     name: Build GDExtension Windows Fallback (GNU)
@@ -293,7 +391,7 @@ jobs:
         with:
           submodules: true
       - name: Install dependencies
-        run: sudo apt-get update && sudo apt-get install -y scons build-essential mingw-w64
+        run: sudo apt-get update && sudo apt-get install -y scons build-essential mingw-w64 protobuf-compiler
       - name: Set up Rust nightly
         uses: dtolnay/rust-toolchain@nightly
         with:
@@ -304,14 +402,31 @@ jobs:
           name: core-target-windows-gnu-x86_64-release
           path: godot-dojo-core/target
       - name: Build GDExtension
+        shell: bash
         run: |
-          cd godot-dojo-gdextension
-          scons platform=windows target=${{ matrix.build_target }} precision=${{ matrix.precision }} custom_godot_string_build_path=../godot-dojo-core
+          set -e
+          PLATFORM_ARG="platform=windows"
+          ARCH_ARG="arch=x86_64"
+          PRECISION_ARG="precision=${{ matrix.precision }}"
+          export CARGO_BUILD_TARGET=x86_64-pc-windows-gnu
+          export FORCE_RUST_RELEASE=1
+
+          mkdir -p demo/addons/godot-dojo
+
+          if [ "${{ matrix.build_target }}" = "templates" ]; then
+            scons $PLATFORM_ARG $ARCH_ARG target=template_debug $PRECISION_ARG -j2 use_mingw=true
+            scons $PLATFORM_ARG $ARCH_ARG target=template_release $PRECISION_ARG -j2 use_mingw=true
+          else
+            scons $PLATFORM_ARG $ARCH_ARG target=${{ matrix.build_target }} $PRECISION_ARG -j2 use_mingw=true
+          fi
+
       - name: Upload GDExtension artifact
         uses: actions/upload-artifact@v4
         with:
-          name: bin-${{ matrix.precision }}-windows-x86_64
-          path: godot-dojo-gdextension/bin/
+          name: bin-${{ matrix.precision }}-windows-x86_64-${{ matrix.build_target }}
+          path: |
+            demo/addons/godot-dojo/
+            godot-dojo-core/target/x86_64-pc-windows-gnu/release/dojo_c.dll
           if-no-files-found: error
 
   package:
