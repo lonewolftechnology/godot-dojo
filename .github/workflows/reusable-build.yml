@@ -88,12 +88,13 @@ jobs:
 
       - name: Build GDExtension
         shell: bash
+        env:
+          CARGO_BUILD_TARGET: ${{ inputs.rust_target }}
         run: |
           set -e
           PLATFORM_ARG="platform=${{ runner.os == 'Windows' && 'windows' || (runner.os == 'macOS' && 'macos' || 'linux') }}"
           ARCH_ARG="arch=${{ inputs.arch }}"
           PRECISION_ARG="precision=${{ inputs.precision }}"
-          export CARGO_BUILD_TARGET=${{ inputs.rust_target }}
           export FORCE_RUST_RELEASE=1
 
           if [ "${{ runner.os }}" = "macOS" ]; then

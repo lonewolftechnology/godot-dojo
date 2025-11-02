@@ -231,6 +231,7 @@ def _compile_rust_library(lib_name, lib_path, is_release, cargo_flags=None, rust
     current_rustflags = env_vars.get("RUSTFLAGS", "")
     if rustc_flags:
         current_rustflags += " " + " ".join(rustc_flags)
+
     env_vars["RUSTFLAGS"] = current_rustflags.strip()
 
     if is_release:
@@ -254,10 +255,13 @@ def _compile_rust_library(lib_name, lib_path, is_release, cargo_flags=None, rust
             if is_release:
                 cargo_cmd.append("--release")
 
-            env_vars["MACOSX_DEPLOYMENT_TARGET"] = "14.0"
+            deployment_target = os.environ.get("MACOSX_DEPLOYMENT_TARGET", "14.0")
+            env_vars["MACOSX_DEPLOYMENT_TARGET"] = deployment_target
             rustflags = env_vars.get("RUSTFLAGS", "")
-            if rustflags: rustflags += " "
-            rustflags += "-C link-arg=-mmacosx-version-min=14.0"
+            if f"-mmacosx-version-min={deployment_target}" not in rustflags:
+                if rustflags:
+                    rustflags += " "
+                rustflags += f"-C link-arg=-mmacosx-version-min={deployment_target}"
             env_vars["RUSTFLAGS"] = rustflags
 
             subprocess.run(cargo_cmd, check=True, cwd=lib_path, env=env_vars)
@@ -275,12 +279,15 @@ def _compile_rust_library(lib_name, lib_path, is_release, cargo_flags=None, rust
 
     # Standard build for other platforms
     if platform == "macos":
-        print(f"{Y}Setting macOS deployment target to 14.0 for {lib_name}...{X}")
-        env_vars["MACOSX_DEPLOYMENT_TARGET"] = "14.0"
+        deployment_target = os.environ.get("MACOSX_DEPLOYMENT_TARGET", "14.0")
+        print(f"{Y}Setting macOS deployment target to {deployment_target} for {lib_name}...{X}")
+        env_vars['MACOSX_DEPLOYMENT_TARGET'] = deployment_target
         rustflags = env_vars.get("RUSTFLAGS", "")
-        if rustflags: rustflags += " "
-        rustflags += "-C link-arg=-mmacosx-version-min=14.0"
-        env_vars["RUSTFLAGS"] = rustflags
+        if f"-mmacosx-version-min={deployment_target}" not in rustflags:
+            if rustflags:
+                rustflags += " "
+            rustflags += f"-C link-arg=-mmacosx-version-min={deployment_target}"
+            env_vars["RUSTFLAGS"] = rustflags
 
     print(f"{Y}Running cargo command for {lib_name}: {' '.join(base_cmd)}{X}")
     subprocess.run(base_cmd, check=True, cwd=lib_path, env=env_vars)
@@ -297,11 +304,12 @@ env['SHLIBPREFIX'] = ''
 prefix = env.subst('$SHLIBPREFIX')
 env.Append(CPPPATH=["src/", "include/", "bindings/", "external/boost/include"])
 if platform == "macos":
+    deployment_target = os.environ.get("MACOSX_DEPLOYMENT_TARGET", "14.0")
     # Set macOS deployment target for C++ compilation
-    print(f"{Y}Setting macOS deployment target for C++ compilation to 14.0...{X}")
-    env['ENV']['MACOSX_DEPLOYMENT_TARGET'] = '14.0'
-    env.Append(CCFLAGS=['-mmacosx-version-min=14.0'])
-    env.Append(LINKFLAGS=['-mmacosx-version-min=14.0'])
+    print(f"{Y}Setting macOS deployment target for C++ compilation to {deployment_target}...{X}")
+    env['ENV']['MACOSX_DEPLOYMENT_TARGET'] = deployment_target
+    env.Append(CCFLAGS=[f'-mmacosx-version-min={deployment_target}'])
+    env.Append(LINKFLAGS=[f'-mmacosx-version-min={deployment_target}'])
 
 # Enable C++ exceptions for try/catch blocks
 if env["platform"] == "windows" and not env.get("use_mingw"):
