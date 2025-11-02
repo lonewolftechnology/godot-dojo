@@ -180,7 +180,7 @@ String DojoSessionAccount::execute_from_outside(const TypedArray<Dictionary> &ca
 String DojoSessionAccount::generate_private_key() {
     std::random_device rd;
     std::mt19937_64 gen(rd());
-    std::uniform_int_distribution<uint8_t> dis(0, 255);
+    std::uniform_int_distribution<unsigned int> dis(0, 255);
 
     std::stringstream ss;
     ss << "0x";
