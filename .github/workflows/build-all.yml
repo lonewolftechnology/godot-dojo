@@ -419,11 +419,22 @@ jobs:
             ${{ format('godot-dojo-core/target/{0}/release/dojo_c.dll', matrix.rust_target) }}
           if-no-files-found: error
 
+      - name: Create failure marker
+        if: failure()
+        run: echo "Windows MSVC build failed" > windows-build-failure.txt
+
+      - name: Upload failure marker
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: windows-build-failed
+          path: windows-build-failure.txt
+
   build-gdextension-windows-fallback:
     name: Build GDExtension Windows Fallback (GNU)
     runs-on: ubuntu-latest
     needs: [create_release, build-rust-core, build-gdextension-windows]
-    if: needs.create_release.result == 'success' && needs.build-rust-core.result == 'success' && needs.build-gdextension-windows.result == 'failure'
+    if: always() && needs.create_release.result == 'success' && needs.build-rust-core.result == 'success'
     strategy:
       fail-fast: false
       matrix:
@@ -434,18 +445,31 @@ jobs:
             arch: x86_64
             rust_target: x86_64-pc-windows-gnu
     steps:
+      - name: Check for MSVC build failure
+        id: check_failure
+        uses: actions/download-artifact@v4
+        with:
+          name: windows-build-failed
+        continue-on-error: true
+
       - name: Checkout code
+        if: steps.check_failure.outcome == 'success'
         uses: actions/checkout@v4
         with:
           submodules: true
+
       - name: Install dependencies
+        if: steps.check_failure.outcome == 'success'
         run: sudo apt-get update && sudo apt-get install -y scons build-essential mingw-w64 protobuf-compiler
+
       - name: Set up Rust nightly
+        if: steps.check_failure.outcome == 'success'
         uses: dtolnay/rust-toolchain@nightly
         with:
           targets: ${{ matrix.rust_target }}
 
       - name: Cache Rust dependencies
+        if: steps.check_failure.outcome == 'success'
         uses: actions/cache@v3
         with:
           path: |
@@ -456,12 +480,14 @@ jobs:
             ${{ matrix.platform_id }}-${{ matrix.arch }}-cargo-deps-
 
       - name: Download core artifacts
+        if: steps.check_failure.outcome == 'success'
         uses: actions/download-artifact@v4
         with:
           name: core-target-${{ matrix.platform_id }}-${{ matrix.arch }}-release
           path: godot-dojo-core/target
 
       - name: Cache uniffi-bindgen-cpp
+        if: steps.check_failure.outcome == 'success'
         id: cache-uniffi-bindgen-cpp
         uses: actions/cache@v3
         with:
@@ -469,10 +495,11 @@ jobs:
           key: ${{ runner.os }}-uniffi-bindgen-cpp-Larkooo-0.30
 
       - name: Install uniffi-bindgen-cpp from source
-        if: steps.cache-uniffi-bindgen-cpp.outputs.cache-hit != 'true'
+        if: steps.check_failure.outcome == 'success' && steps.cache-uniffi-bindgen-cpp.outputs.cache-hit != 'true'
         run: cargo install --git https://github.com/Larkooo/uniffi-bindgen-cpp --branch update-0.30 uniffi-bindgen-cpp
 
       - name: Build GDExtension
+        if: steps.check_failure.outcome == 'success'
         shell: bash
         run: |
           set -e
@@ -492,6 +519,7 @@ jobs:
           fi
 
       - name: Upload GDExtension artifact
+        if: steps.check_failure.outcome == 'success'
         uses: actions/upload-artifact@v4
         with:
           name: bin-${{ matrix.precision }}-windows-${{ matrix.arch }}-${{ matrix.build_target }}
@@ -504,7 +532,7 @@ jobs:
     name: Combine all binaries and create zip files
     runs-on: ubuntu-latest
     needs: [create_release, build-gdextension-non-windows, build-gdextension-windows, build-gdextension-windows-fallback]
-    if: always() && needs.create_release.result == 'success' && needs.build-gdextension-non-windows.result == 'success' && (needs.build-gdextension-windows.result == 'success' || needs.build-gdextension-windows-fallback.result == 'success')
+    if: always() && needs.create_release.result == 'success' && needs.build-gdextension-non-windows.result == 'success'
 
     steps:
       - name: Checkout code
@@ -519,6 +547,7 @@ jobs:
 
       - name: Prepare folders for binaries
         run: |
+          set -e
           # Create base directories for packaging
           mkdir -p godot-dojo-bin/addons/godot-dojo
           mkdir -p godot-dojo-double-bin/addons/godot-dojo
