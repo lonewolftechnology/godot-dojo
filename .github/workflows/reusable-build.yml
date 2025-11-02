@@ -51,7 +51,7 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: core-target-${{ runner.os == 'Windows' && 'windows' || (runner.os == 'macOS' && 'macos' || 'linux') }}-${{ inputs.arch }}-release
-          path: godot-dojo-core/target
+          path: godot-dojo/godot-dojo-core/target
 
       - name: Set up Rust nightly
         uses: dtolnay/rust-toolchain@nightly
@@ -76,12 +76,12 @@ jobs:
         uses: actions/cache@v3
         with:
           path: |
-            .sconsign.dblite
-            demo/addons/godot-dojo/
-            external/godot-cpp/bin/
-            external/godot-cpp/.sconsign.dblite
-            external/godot-cpp/gen/
-            external/godot-cpp/__pycache__/
+            godot-dojo/.sconsign.dblite
+            godot-dojo/demo/addons/godot-dojo/
+            godot-dojo/external/godot-cpp/bin/
+            godot-dojo/external/godot-cpp/.sconsign.dblite
+            godot-dojo/external/godot-cpp/gen/
+            godot-dojo/external/godot-cpp/__pycache__/
           key: ${{ runner.os }}-${{ inputs.arch }}-scons-${{ inputs.precision }}-${{ inputs.build_target }}-${{ hashFiles('src/**/*.cpp', 'src/**/*.h', 'bindings/**/*.cpp', 'bindings/**/*.h', 'SConstruct') }}
           restore-keys: |
             ${{ runner.os }}-${{ inputs.arch }}-scons-${{ inputs.precision }}-${{ inputs.build_target }}-
@@ -101,7 +101,9 @@ jobs:
             export RUSTFLAGS="${RUSTFLAGS:+$RUSTFLAGS }-C link-arg=-mmacosx-version-min=${{ inputs.macos_deployment_target }}"
           fi
 
-          mkdir -p demo/addons/godot-dojo
+          mkdir -p godot-dojo/demo/addons/godot-dojo
+
+          cd godot-dojo
 
           if [ "${{ inputs.build_target }}" = "templates" ]; then
             scons $PLATFORM_ARG $ARCH_ARG target=template_debug $PRECISION_ARG -j2
@@ -115,6 +117,6 @@ jobs:
         with:
           name: bin-${{ inputs.precision }}-${{ runner.os == 'Windows' && 'windows' || (runner.os == 'macOS' && 'macos' || 'linux') }}-${{ inputs.arch }}-${{ inputs.build_target }}
           path: |
-            demo/addons/godot-dojo/
-            ${{ runner.os == 'Windows' && format('godot-dojo-core/target/{0}/release/dojo_c.dll', inputs.rust_target) || '' }}
+            godot-dojo/demo/addons/godot-dojo/
+            ${{ runner.os == 'Windows' && format('godot-dojo/godot-dojo-core/target/{0}/release/dojo_c.dll', inputs.rust_target) || '' }}
           if-no-files-found: error
