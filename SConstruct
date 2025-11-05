@@ -300,7 +300,8 @@ is_release_build = target == "template_release" or force_rust_release
 _compile_rust_library("godot_dojo_core", "godot-dojo-core", is_release_build)
 
 # Configure library
-env['SHLIBPREFIX'] = ''
+if env["platform"] != "android":
+    env['SHLIBPREFIX'] = ''
 prefix = env.subst('$SHLIBPREFIX')
 env.Append(CPPPATH=["src/", "include/", "bindings/", "external/boost/include"])
 if platform == "macos":
@@ -321,8 +322,8 @@ else:
     # For GCC/Clang
     # Using C++17 for consistency and to avoid breaking changes from C++20.
     cxx_flags = ['-fexceptions', '-std=c++17']
-    if env["platform"] != "macos":
-        # -Wno-template-id-cdtor suppresses warnings from godot-cpp templates, but is not supported by clang.
+    # -Wno-template-id-cdtor suppresses warnings from godot-cpp templates with GCC, but is not supported by Clang.
+    if env["platform"] not in ["macos", "android", "ios"]:
         cxx_flags.append('-Wno-template-id-cdtor')
     env.Append(CXXFLAGS=cxx_flags)
 
