@@ -359,7 +359,7 @@ else:
     rust_lib = f"{rust_lib_dir}/libgodot_dojo_core.a"
 
 if rust_lib:
-    if platform in ["linux", "ios"] or use_mingw:
+    if platform in ["linux", "android", "ios"] or use_mingw:
         if platform == "windows" and use_mingw:
             # For MinGW, we must include the system libraries Rust depends on *inside* the group.
             win_libs = ['-lws2_32', '-ladvapi32', '-lntdll']
