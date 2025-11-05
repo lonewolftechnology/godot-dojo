@@ -1,8 +1,65 @@
-[gd_scene load_steps=2 format=3 uid="uid://cg5802c6ndrom"]
+[gd_scene load_steps=4 format=3 uid="uid://cg5802c6ndrom"]
 
 [ext_resource type="Script" uid="uid://c3a48nnb14ty" path="res://node_2d.gd" id="1_wtcfe"]
 
+[sub_resource type="DojoOptionClause" id="DojoOptionClause_wtcfe"]
+
+[sub_resource type="EntitySubscription" id="EntitySubscription_0e48y"]
+clause = SubResource("DojoOptionClause_wtcfe")
+
 [node name="Node2D" type="Node"]
 script = ExtResource("1_wtcfe")
+entity_sub = SubResource("EntitySubscription_0e48y")
+
+[node name="ToriiClient" type="ToriiClient" parent="."]
+torii_url = "https://api.cartridge.gg/x/godot-demo-rookie/torii"
 
 [node name="DojoSessionAccount" type="DojoSessionAccount" parent="."]
+
+[node name="CanvasLayer" type="CanvasLayer" parent="."]
+
+[node name="PanelContainer" type="PanelContainer" parent="CanvasLayer"]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="CenterContainer" type="CenterContainer" parent="CanvasLayer/PanelContainer"]
+layout_mode = 2
+
+[node name="HBoxContainer" type="HBoxContainer" parent="CanvasLayer/PanelContainer/CenterContainer"]
+layout_mode = 2
+
+[node name="VBoxContainer" type="VBoxContainer" parent="CanvasLayer/PanelContainer/CenterContainer/HBoxContainer"]
+layout_mode = 2
+
+[node name="LoginBtn" type="Button" parent="CanvasLayer/PanelContainer/CenterContainer/HBoxContainer/VBoxContainer"]
+layout_mode = 2
+text = "Login"
+
+[node name="SessionBtn" type="Button" parent="CanvasLayer/PanelContainer/CenterContainer/HBoxContainer/VBoxContainer"]
+layout_mode = 2
+text = "Create Session"
+
+[node name="PolicyBtn" type="Button" parent="CanvasLayer/PanelContainer/CenterContainer/HBoxContainer/VBoxContainer"]
+layout_mode = 2
+text = "Test Policy"
+
+[node name="VBoxContainer2" type="VBoxContainer" parent="CanvasLayer/PanelContainer/CenterContainer/HBoxContainer"]
+visible = false
+layout_mode = 2
+
+[node name="LoginStatus" type="ColorRect" parent="CanvasLayer/PanelContainer/CenterContainer/HBoxContainer/VBoxContainer2"]
+custom_minimum_size = Vector2(30, 0)
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="SessionStatus" type="ColorRect" parent="CanvasLayer/PanelContainer/CenterContainer/HBoxContainer/VBoxContainer2"]
+custom_minimum_size = Vector2(30, 0)
+layout_mode = 2
+size_flags_vertical = 3
+
+[connection signal="pressed" from="CanvasLayer/PanelContainer/CenterContainer/HBoxContainer/VBoxContainer/LoginBtn" to="." method="_on_login_btn_pressed"]
+[connection signal="pressed" from="CanvasLayer/PanelContainer/CenterContainer/HBoxContainer/VBoxContainer/SessionBtn" to="." method="_on_session_btn_pressed"]
+[connection signal="pressed" from="CanvasLayer/PanelContainer/CenterContainer/HBoxContainer/VBoxContainer/PolicyBtn" to="." method="_on_policy_btn_pressed"]
