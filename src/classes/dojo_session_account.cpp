@@ -124,15 +124,12 @@ String DojoSessionAccount::execute(const TypedArray<Dictionary> &calls) const {
     std::vector<std::shared_ptr<controller::Call> > c_calls;
     for (int i = 0; i < calls.size(); ++i) {
         Dictionary call_dict = calls[i];
-        auto c = std::make_shared<controller::Call>();
-        c->contract_address = call_dict["contract_address"].operator String().utf8().get_data();
-        c->entrypoint = call_dict["entrypoint"].operator String().utf8().get_data();
+        auto cpp_call = std::make_shared<controller::Call>();
+        cpp_call->contract_address = call_dict["contract_address"].operator String().utf8().get_data();
+        cpp_call->entrypoint = call_dict["entrypoint"].operator String().utf8().get_data();
 
-        Array calldata_array = call_dict["calldata"];
-        for (int j = 0; j < calldata_array.size(); ++j) {
-            c->calldata.push_back(calldata_array[j].operator String().utf8().get_data());
-        }
-        c_calls.push_back(c);
+        cpp_call->calldata = ControllerHelper::prepare_calldata(call_dict["calldata"]);
+        c_calls.push_back(cpp_call);
     }
 
     try {

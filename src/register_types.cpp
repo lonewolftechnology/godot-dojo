@@ -78,6 +78,7 @@ void initialize_dojoc_module(ModuleInitializationLevel p_level) {
 #endif
         // Tools
         GDREGISTER_CLASS(DojoHelpers);
+        GDREGISTER_CLASS(ControllerHelper);
         // GDREGISTER_CLASS(DojoHttp)
         // DojoTypes
         GDREGISTER_CLASS(DojoTy);
