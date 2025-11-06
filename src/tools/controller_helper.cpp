@@ -1,13 +1,12 @@
 #include "tools/controller_helper.h"
 
 #include "godot_cpp/classes/ref_counted.hpp"
-#include "godot_cpp/variant/vector2.hpp"
-#include "godot_cpp/variant/vector2i.hpp"
-#include "godot_cpp/variant/vector3.hpp"
-#include "godot_cpp/variant/vector3i.hpp"
+#include "tools/dojo_helper.h"
 #include <iomanip>
+#include <types/big_int.h>
 #include <random>
 #include <deque>
+
 
 bool ControllerHelper::has_storage(const String &app_id) {
     return controller::controller_has_storage(app_id.utf8().get_data());
@@ -42,102 +41,121 @@ String ControllerHelper::generate_private_key() {
     return ss.str().data();
 }
 
-std::vector<std::string> ControllerHelper::prepare_calldata(const Array &args) {
-    std::vector<std::string> calldata_felts;
-    std::deque<Variant> worklist;
+std::vector<std::shared_ptr<controller::Call>> ControllerHelper::prepare_calls(const TypedArray<Dictionary> &calls) {
+    std::vector<std::shared_ptr<controller::Call>> prepared_calls;
 
-    for (int i = 0; i < args.size(); ++i) {
-        worklist.push_back(args[i]);
-    }
-
-    while (!worklist.empty()) {
-        Variant arg = worklist.front();
-        worklist.pop_front();
-
-        switch (arg.get_type()) {
-            case Variant::Type::ARRAY: {
-                Array inner_array = arg;
-                for (int i = inner_array.size() - 1; i >= 0; --i) {
-                    worklist.push_front(inner_array[i]);
-                }
-                continue;
-            }
-            case Variant::Type::FLOAT: {
-                // Assuming DojoHelpers is available for this conversion
-                // If not, this logic needs to be implemented here as well.
-                // worklist.push_front(DojoHelpers::double_to_variant_fp(arg, DojoHelpers::get_setting("dojo/config/fixed_point/default")));
-                // For now, let's just convert to int, which is a common case for non-fp numbers
-                calldata_felts.push_back(String::num_int64(static_cast<int64_t>(static_cast<double>(arg))).utf8().get_data());
-                break;
-            }
-            case Variant::Type::VECTOR2: {
-                Vector2 vec = arg;
-                worklist.push_front(vec.y);
-                worklist.push_front(vec.x);
-                continue;
-            }
-            case Variant::Type::VECTOR2I: {
-                Vector2i vec = arg;
-                worklist.push_front(static_cast<int64_t>(vec.y));
-                worklist.push_front(static_cast<int64_t>(vec.x));
-                continue;
-            }
-            case Variant::Type::VECTOR3: {
-                Vector3 vec = arg;
-                worklist.push_front(vec.z);
-                worklist.push_front(vec.y);
-                worklist.push_front(vec.x);
-                continue;
-            }
-            case Variant::Type::VECTOR3I: {
-                Vector3i vec = arg;
-                worklist.push_front(static_cast<int64_t>(vec.z));
-                worklist.push_front(static_cast<int64_t>(vec.y));
-                worklist.push_front(static_cast<int64_t>(vec.x));
-                continue;
-            }
-            case Variant::Type::BOOL:
-                calldata_felts.push_back(String::num_int64(static_cast<bool>(arg) ? 1 : 0).utf8().get_data());
-                break;
-            case Variant::Type::INT: {
-                calldata_felts.push_back(String::num_int64(arg).utf8().get_data());
-                break;
-            }
-            case Variant::Type::PACKED_BYTE_ARRAY: {
-                PackedByteArray arr = arg;
-                String hex_str = "0x";
-                for (int i = 0; i < arr.size(); ++i) {
-                    hex_str += String::num_uint64(arr[i], 16).lpad(2, "0");
-                }
-                calldata_felts.push_back(hex_str.utf8().get_data());
-                break;
-            }
-            case Variant::Type::STRING:
-                calldata_felts.push_back(static_cast<String>(arg).utf8().get_data());
-                break;
-            case Variant::Type::OBJECT: {
-                Ref<RefCounted> obj = arg;
-                if (obj.is_valid()) {
-                    // This part is simplified. For U256, etc., you'd need to include
-                    // the relevant headers and logic from dojo_helper.
-                    // For now, we'll just log a warning.
-                    // Example for a hypothetical "as_calldata_array" method:
-                    // if (obj->has_method("as_calldata_array")) {
-                    //     Array obj_calldata = obj->call("as_calldata_array");
-                    //     for (int i = obj_calldata.size() - 1; i >= 0; --i) {
-                    //         worklist.push_front(obj_calldata[i]);
-                    //     }
-                    //     continue;
-                    // }
-                }
-                // Logger::warning("prepare_calldata: Unsupported object type in calldata: " + obj->get_class());
-                break;
-            }
-            default:
-                // Logger::warning("prepare_calldata: Unsupported variant type in calldata: " + Variant::get_type_name(arg.get_type()));
-                break;
+    for (int i = 0; i < calls.size(); ++i) {
+        Dictionary call_dict = calls[i];
+        if (!call_dict.has("to") || !call_dict.has("selector") || !call_dict.has("args")) {
+            // Omitir llamada inválida o lanzar error
+            continue;
         }
+
+        auto current_call = std::make_shared<controller::Call>();
+        current_call->contract_address = static_cast<String>(call_dict["contract_address"]).utf8().get_data();
+        current_call->entrypoint = static_cast<String>(call_dict["entrypoint"]).utf8().get_data();
+
+        Array args = call_dict["calldata"];
+        std::deque<Variant> worklist;
+        for (int j = 0; j < args.size(); ++j) {
+            worklist.push_back(args[j]);
+        }
+
+        while (!worklist.empty()) {
+            Variant arg = worklist.front();
+            worklist.pop_front();
+
+            switch (arg.get_type()) {
+                case Variant::Type::ARRAY: {
+                    Array inner_array = arg;
+                    for (int k = inner_array.size() - 1; k >= 0; --k) {
+                        worklist.push_front(inner_array[k]);
+                    }
+                    continue;
+                }
+                case Variant::Type::FLOAT: {
+                    worklist.push_front(DojoHelpers::double_to_variant_fp(arg, DojoHelpers::get_dojo_setting("fixed_point/default")));
+                    continue;
+                }
+                case Variant::Type::VECTOR2: {
+                    Vector2 vec = arg;
+                    worklist.push_front(vec.y);
+                    worklist.push_front(vec.x);
+                    continue;
+                }
+                case Variant::Type::VECTOR2I: {
+                    Vector2i vec = arg;
+                    worklist.push_front(static_cast<int64_t>(vec.y));
+                    worklist.push_front(static_cast<int64_t>(vec.x));
+                    continue;
+                }
+                case Variant::Type::VECTOR3: {
+                    Vector3 vec = arg;
+                    worklist.push_front(vec.z);
+                    worklist.push_front(vec.y);
+                    worklist.push_front(vec.x);
+                    continue;
+                }
+                case Variant::Type::VECTOR3I: {
+                    Vector3i vec = arg;
+                    worklist.push_front(static_cast<int64_t>(vec.z));
+                    worklist.push_front(static_cast<int64_t>(vec.y));
+                    worklist.push_front(static_cast<int64_t>(vec.x));
+                    continue;
+                }
+                case Variant::Type::BOOL:
+                    current_call->calldata.push_back(static_cast<bool>(arg) ? "0x1" : "0x0");
+                    break;
+                case Variant::Type::INT: {
+                    current_call->calldata.push_back(String::num_int64(arg).utf8().get_data());
+                    break;
+                }
+                case Variant::Type::PACKED_BYTE_ARRAY: {
+                    PackedByteArray arr = arg;
+                    String hex_str = "0x";
+                    for (int k = 0; k < arr.size(); ++k) {
+                        hex_str += String::num_uint64(arr[k], 16).lpad(2, "0");
+                    }
+                    current_call->calldata.push_back(hex_str.utf8().get_data());
+                    break;
+                }
+                case Variant::Type::STRING:
+                    current_call->calldata.push_back(static_cast<String>(arg).utf8().get_data());
+                    break;
+                case Variant::Type::OBJECT: {
+                    Ref<RefCounted> obj = arg;
+                    if (obj.is_valid()) {
+                        if (obj->is_class("U256")) {
+                            Ref<U256> u256 = obj;
+                            current_call->calldata.push_back(u256->to_string().utf8().get_data());
+                            continue;
+                        }
+                        if (obj->is_class("U128")) {
+                            Ref<U128> u128 = obj;
+                            current_call->calldata.push_back(u128->to_string().utf8().get_data());
+                            continue;
+                        }
+                        if (obj->is_class("I128")) {
+                            Ref<I128> i128 = obj;
+                            current_call->calldata.push_back(i128->to_string().utf8().get_data());
+                            continue;
+                        }
+                        if (obj->is_class("FieldElement")) {
+                            Ref<FieldElement> felt = obj;
+                            current_call->calldata.push_back(felt->to_string().utf8().get_data());
+                            continue;
+                        }
+                    }
+                    // Logger::warning("prepare_calldata: Unsupported object type in calldata: " + obj->get_class());
+                    break;
+                }
+                default:
+                    // Logger::warning("prepare_calldata: Unsupported variant type in calldata: " + Variant::get_type_name(arg.get_type()));
+                    break;
+            }
+        }
+        prepared_calls.push_back(current_call);
     }
 
-    return calldata_felts;
+    return prepared_calls;
 }

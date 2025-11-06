@@ -71,6 +71,5 @@ protected:
                                     &DojoSessionAccount::generate_session_request_url, DEFVAL(String()), DEFVAL(String()));
     }
 };
-VARIANT_ENUM_CAST(controller::SignerType);
-
+//VARIANT_ENUM_CAST(controller::SignerType);
 #endif //DOJO_SESSION_ACCOUNT_H

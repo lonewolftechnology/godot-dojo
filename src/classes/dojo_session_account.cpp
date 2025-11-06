@@ -121,16 +121,7 @@ String DojoSessionAccount::execute(const TypedArray<Dictionary> &calls) const {
         return "";
     }
 
-    std::vector<std::shared_ptr<controller::Call> > c_calls;
-    for (int i = 0; i < calls.size(); ++i) {
-        Dictionary call_dict = calls[i];
-        auto cpp_call = std::make_shared<controller::Call>();
-        cpp_call->contract_address = call_dict["contract_address"].operator String().utf8().get_data();
-        cpp_call->entrypoint = call_dict["entrypoint"].operator String().utf8().get_data();
-
-        cpp_call->calldata = ControllerHelper::prepare_calldata(call_dict["calldata"]);
-        c_calls.push_back(cpp_call);
-    }
+    std::vector<std::shared_ptr<controller::Call> > c_calls = ControllerHelper::prepare_calls(calls);
 
     try {
         String tx_hash = String(internal->execute(c_calls).c_str());
@@ -148,20 +139,7 @@ String DojoSessionAccount::execute_from_outside(const TypedArray<Dictionary> &ca
         return "";
     }
 
-    std::vector<std::shared_ptr<controller::Call> > c_calls;
-    for (int i = 0; i < calls.size(); ++i) {
-        Dictionary call_dict = calls[i];
-        auto c = std::make_shared<controller::Call>();
-        c->contract_address = call_dict["contract_address"].operator String().utf8().get_data();
-        c->entrypoint = call_dict["entrypoint"].operator String().utf8().get_data();
-
-        Array calldata_array = call_dict["calldata"];
-        for (int j = 0; j < calldata_array.size(); ++j) {
-            c->calldata.push_back(calldata_array[j].operator String().utf8().get_data());
-        }
-        c_calls.push_back(c);
-    }
-
+    const std::vector<std::shared_ptr<controller::Call>> c_calls = ControllerHelper::prepare_calls(calls);
     try {
         String tx_hash = String(internal->execute_from_outside(c_calls).c_str());
         Logger::success_extra("DojoSessionAccount", "Execute from outside successful. Tx hash:", tx_hash);

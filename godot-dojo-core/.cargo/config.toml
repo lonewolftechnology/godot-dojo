@@ -1,4 +1,5 @@
-# Esto le dice a Cargo que use la característica inestable 'bindeps'.
-# A diferencia de 'rustflags', esto se aplica al comando 'cargo' y no a 'rustc'.
 [unstable]
 bindeps = true
+
+#[target.wasm32-unknown-unknown]
+#rustflags = ["--cfg", "tokio_unstable"]

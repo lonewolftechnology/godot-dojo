@@ -2,8 +2,8 @@
 #define CONTROLLER_HELPER_H
 
 #include "godot_cpp/classes/object.hpp"
-#include "godot_cpp/variant/array.hpp"
 #include "godot_cpp/core/class_db.hpp"
+#include "godot_cpp/variant/typed_array.hpp"
 #include "godot_cpp/variant/string.hpp"
 #include "controller/controller.hpp"
 #include <vector>
@@ -22,8 +22,8 @@ public:
     static String get_public_key(const String &private_key);
     static String signer_to_guid(const String &private_key);
     static bool validate_felt(const String &felt);
-    static String generate_private_key();
-    static std::vector<std::string> prepare_calldata(const Array &args);
+	static String generate_private_key();
+	static std::vector<std::shared_ptr<controller::Call>>  prepare_calls(const TypedArray<Dictionary> &calls);
 
     enum SignerType {
         Webauthn = 1,
