@@ -228,6 +228,13 @@ Dictionary DojoSessionAccount::get_info() const {
     return info;
 }
 
+bool DojoSessionAccount::is_valid() const {
+    if (!internal) {
+        return false;
+    }
+    return true;
+}
+
 String DojoSessionAccount::generate_session_request_url(const String &base_url, const String &public_key,
                                                         const Dictionary &policies, const String &rpc_url,
                                                         const String &redirect_uri, const String &redirect_query_name) {
