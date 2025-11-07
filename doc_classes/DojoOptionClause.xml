@@ -1,10 +1,8 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="OptionClause" inherits="DojoOption" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://raw.githubusercontent.com/godotengine/godot/master/doc/class.xsd">
+<class name="DojoOptionClause" inherits="DojoOption" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://raw.githubusercontent.com/godotengine/godot/master/doc/class.xsd">
 	<brief_description>
-		Represents a clause for a Dojo query.
 	</brief_description>
 	<description>
-		This class is used to build complex query clauses to filter entities. It can represent a single condition or a composite clause with logical operators.
 	</description>
 	<tutorials>
 	</tutorials>
@@ -12,176 +10,149 @@
 		<method name="get_clauses" qualifiers="const">
 			<return type="Array" />
 			<description>
-				Returns the sub-clauses of a composite clause.
 			</description>
 		</method>
 		<method name="get_comparison_operator" qualifiers="const">
 			<return type="int" enum="dojo_bindings.ComparisonOperator" />
 			<description>
-				Returns the comparison operator for a member clause.
 			</description>
 		</method>
 		<method name="get_hashed_keys" qualifiers="const">
 			<return type="String[]" />
 			<description>
-				Returns the hashed keys for a keys clause.
 			</description>
 		</method>
 		<method name="get_keys" qualifiers="const">
 			<return type="Array" />
 			<description>
-				Returns the keys for a keys clause.
 			</description>
 		</method>
 		<method name="get_logical_operator" qualifiers="const">
 			<return type="int" enum="dojo_bindings.LogicalOperator" />
 			<description>
-				Returns the logical operator for a composite clause.
 			</description>
 		</method>
 		<method name="get_member" qualifiers="const">
 			<return type="String" />
 			<description>
-				Returns the member name for a member clause.
 			</description>
 		</method>
 		<method name="get_member_tag" qualifiers="const">
 			<return type="int" enum="dojo_bindings.MemberValue_Tag" />
 			<description>
-				Returns the tag for the member value type.
 			</description>
 		</method>
 		<method name="get_model" qualifiers="const">
 			<return type="String" />
 			<description>
-				Returns the model name for a member clause.
 			</description>
 		</method>
 		<method name="get_models" qualifiers="const">
 			<return type="String[]" />
 			<description>
-				Returns the model names for a composite clause.
 			</description>
 		</method>
 		<method name="get_pattern_matching" qualifiers="const">
 			<return type="int" enum="dojo_bindings.PatternMatching" />
 			<description>
-				Returns the pattern matching type for a keys clause.
 			</description>
 		</method>
 		<method name="get_primitive_tag" qualifiers="const">
 			<return type="int" enum="dojo_bindings.Primitive_Tag" />
 			<description>
-				Returns the tag for the primitive value type.
 			</description>
 		</method>
 		<method name="get_tag" qualifiers="const">
 			<return type="int" enum="dojo_bindings.Clause_Tag" />
 			<description>
-				Returns the tag for the clause type.
 			</description>
 		</method>
 		<method name="get_value" qualifiers="const">
 			<return type="Variant" />
 			<description>
-				Returns the value for a member clause.
 			</description>
 		</method>
 		<method name="set_clauses">
 			<return type="void" />
 			<param index="0" name="p_clauses" type="Array" />
 			<description>
-				Sets the sub-clauses for a composite clause.
 			</description>
 		</method>
 		<method name="set_comparison_operator">
 			<return type="void" />
 			<param index="0" name="p_op" type="int" enum="dojo_bindings.ComparisonOperator" />
 			<description>
-				Sets the comparison operator for a member clause.
 			</description>
 		</method>
 		<method name="set_hashed_keys">
 			<return type="void" />
 			<param index="0" name="p_keys" type="String[]" />
 			<description>
-				Sets the hashed keys for a keys clause.
 			</description>
 		</method>
 		<method name="set_keys">
 			<return type="void" />
 			<param index="0" name="p_keys" type="Array" />
 			<description>
-				Sets the keys for a keys clause.
 			</description>
 		</method>
 		<method name="set_logical_operator">
 			<return type="void" />
 			<param index="0" name="p_op" type="int" enum="dojo_bindings.LogicalOperator" />
 			<description>
-				Sets the logical operator for a composite clause.
 			</description>
 		</method>
 		<method name="set_member">
 			<return type="void" />
 			<param index="0" name="p_member" type="String" />
 			<description>
-				Sets the member name for a member clause.
 			</description>
 		</method>
 		<method name="set_member_tag">
 			<return type="void" />
 			<param index="0" name="p_tag" type="int" enum="dojo_bindings.MemberValue_Tag" />
 			<description>
-				Sets the tag for the member value type.
 			</description>
 		</method>
 		<method name="set_model">
 			<return type="void" />
 			<param index="0" name="p_model" type="String" />
 			<description>
-				Sets the model name for a member clause.
 			</description>
 		</method>
 		<method name="set_models">
 			<return type="void" />
 			<param index="0" name="p_models" type="String[]" />
 			<description>
-				Sets the model names for a composite clause.
 			</description>
 		</method>
 		<method name="set_pattern_matching">
 			<return type="void" />
 			<param index="0" name="p_pm" type="int" enum="dojo_bindings.PatternMatching" />
 			<description>
-				Sets the pattern matching type for a keys clause.
 			</description>
 		</method>
 		<method name="set_primitive_tag">
 			<return type="void" />
 			<param index="0" name="p_tag" type="int" enum="dojo_bindings.Primitive_Tag" />
 			<description>
-				Sets the tag for the primitive value type.
 			</description>
 		</method>
 		<method name="set_tag">
 			<return type="void" />
 			<param index="0" name="p_tag" type="int" enum="dojo_bindings.Clause_Tag" />
 			<description>
-				Sets the tag for the clause type.
 			</description>
 		</method>
 		<method name="set_value">
 			<return type="void" />
 			<param index="0" name="p_value" type="Variant" />
 			<description>
-				Sets the value for a member clause.
 			</description>
 		</method>
 		<method name="to_json" qualifiers="const">
 			<return type="Dictionary" />
 			<description>
-				Converts the clause to a JSON-representable dictionary.
 			</description>
 		</method>
 	</methods>

@@ -9,7 +9,7 @@
 	<tutorials>
 	</tutorials>
 	<members>
-		<member name="clause" type="OptionClause" setter="set_clause" getter="get_clause">
+		<member name="clause" type="DojoOptionClause" setter="set_clause" getter="get_clause">
 			The [OptionClause] to filter entities.
 		</member>
 		<member name="name" type="String" setter="set_name" getter="get_name" overrides="DojoSubscription" default="&quot;EntitySubscription&quot;" />

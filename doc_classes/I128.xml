@@ -16,6 +16,16 @@
 				Creates a new [I128] instance from a [Variant]. The [Variant] can be an [int] or a [String] representing the integer.
 			</description>
 		</method>
+		<method name="get_int64" qualifiers="const">
+			<return type="int" />
+			<description>
+			</description>
+		</method>
+		<method name="get_width" qualifiers="const">
+			<return type="int" />
+			<description>
+			</description>
+		</method>
 		<method name="init_from_int">
 			<return type="void" />
 			<param index="0" name="value" type="int" />

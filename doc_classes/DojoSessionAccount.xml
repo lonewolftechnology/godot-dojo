@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="DojoSessionAccount" inherits="Node" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://raw.githubusercontent.com/godotengine/godot/master/doc/class.xsd">
+	<brief_description>
+	</brief_description>
+	<description>
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="create">
+			<return type="void" />
+			<param index="0" name="rpc_url" type="String" />
+			<param index="1" name="private_key" type="String" />
+			<param index="2" name="address" type="String" />
+			<param index="3" name="chain_id" type="String" />
+			<param index="4" name="policies" type="Dictionary" />
+			<param index="5" name="session_expiration" type="int" />
+			<description>
+			</description>
+		</method>
+		<method name="create_from_subscribe">
+			<return type="void" />
+			<param index="0" name="private_key" type="String" />
+			<param index="1" name="policies" type="Dictionary" />
+			<param index="2" name="rpc_url" type="String" />
+			<param index="3" name="cartridge_api_url" type="String" />
+			<description>
+			</description>
+		</method>
+		<method name="execute" qualifiers="const">
+			<return type="String" />
+			<param index="0" name="calls" type="Dictionary[]" />
+			<description>
+			</description>
+		</method>
+		<method name="execute_from_outside" qualifiers="const">
+			<return type="String" />
+			<param index="0" name="calls" type="Dictionary[]" />
+			<description>
+			</description>
+		</method>
+		<method name="generate_session_request_url" qualifiers="static">
+			<return type="String" />
+			<param index="0" name="base_url" type="String" />
+			<param index="1" name="public_key" type="String" />
+			<param index="2" name="policies" type="Dictionary" />
+			<param index="3" name="rpc_url" type="String" />
+			<param index="4" name="redirect_uri" type="String" default="&quot;&quot;" />
+			<param index="5" name="redirect_query_name" type="String" default="&quot;&quot;" />
+			<description>
+			</description>
+		</method>
+		<method name="get_address" qualifiers="const">
+			<return type="String" />
+			<description>
+			</description>
+		</method>
+		<method name="get_chain_id" qualifiers="const">
+			<return type="String" />
+			<description>
+			</description>
+		</method>
+		<method name="get_expires_at" qualifiers="const">
+			<return type="int" />
+			<description>
+			</description>
+		</method>
+		<method name="get_info" qualifiers="const">
+			<return type="Dictionary" />
+			<description>
+			</description>
+		</method>
+		<method name="is_expired" qualifiers="const">
+			<return type="bool" />
+			<description>
+			</description>
+		</method>
+		<method name="is_revoked" qualifiers="const">
+			<return type="bool" />
+			<description>
+			</description>
+		</method>
+	</methods>
+</class>
