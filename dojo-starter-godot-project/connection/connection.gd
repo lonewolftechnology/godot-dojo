@@ -22,7 +22,6 @@ const torii_url = "https://api.cartridge.gg/x/godot-demo-rookie/torii"
 @onready var session_account: DojoSessionAccount = $DojoSessionAccount
 
 @onready var _client_status: DojoStatusIndicator = %ClientStatus
-@onready var _provider_status: DojoStatusIndicator = %ProviderStatus
 @onready var _session_account_status: DojoStatusIndicator = %DojoSessionAccountStatus
 
 @onready var _events_status: DojoStatusIndicator = %EventUpdatesStatus
@@ -31,6 +30,7 @@ const torii_url = "https://api.cartridge.gg/x/godot-demo-rookie/torii"
 @export_placeholder("0x0") var priv_key:String
 
 @onready var url_open:bool = false
+
 
 var policies:Dictionary = {
 		"max_fee": "0x100000",
@@ -96,9 +96,6 @@ func _on_session_account_controller_disconnected() -> void:
 	if not _session_account_status: return
 	_session_account_status.set_status(false)
 
-func _on_session_account_provider_status_updated(success: bool) -> void:
-	_provider_status.set_status(success)
-
 func _on_torii_client_subscription_created(subscription_name: String) -> void:
 	if subscription_name == "entity_state_update":
 		_entities_status.set_status(true)
@@ -133,8 +130,7 @@ func get_session_url() -> String:
 					}
 				]
 			}
-		},
-		"verified": false
+		}
 	}
 
 	var session_url = DojoSessionAccount.generate_session_request_url(

@@ -1,7 +1,8 @@
-[gd_scene load_steps=7 format=3 uid="uid://b75yggsnay1mo"]
+[gd_scene load_steps=8 format=3 uid="uid://b75yggsnay1mo"]
 
 [ext_resource type="Script" uid="uid://bx5rlh0opi80k" path="res://connection/connection.gd" id="1_c7jwa"]
 [ext_resource type="PackedScene" uid="uid://b5vmo8llucetx" path="res://ui/status_indicator.tscn" id="3_bya50"]
+[ext_resource type="Script" path="res://tools/http_pinger.gd" id="3_erpqw"]
 
 [sub_resource type="DojoQuery" id="DojoQuery_erpqw"]
 
@@ -62,11 +63,6 @@ unique_name_in_owner = true
 layout_mode = 2
 type_name = "Session"
 
-[node name="ProviderStatus" parent="CanvasLayer/PanelStatus/HBoxContainer" instance=ExtResource("3_bya50")]
-unique_name_in_owner = true
-layout_mode = 2
-type_name = "Provider"
-
 [node name="VSeparator" type="VSeparator" parent="CanvasLayer/PanelStatus/HBoxContainer"]
 layout_mode = 2
 
@@ -79,6 +75,10 @@ type_name = "EventUpdates"
 unique_name_in_owner = true
 layout_mode = 2
 type_name = "EntityUpdates"
+
+[node name="HttpPinger" type="HTTPRequest" parent="."]
+script = ExtResource("3_erpqw")
+metadata/_custom_type_script = "uid://cibg6qwsaeyq6"
 
 [connection signal="client_connected" from="ToriiClient" to="." method="_on_torii_client_client_connected"]
 [connection signal="client_disconnected" from="ToriiClient" to="." method="_on_torii_client_client_disconnected"]
