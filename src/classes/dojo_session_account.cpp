@@ -105,7 +105,7 @@ void DojoSessionAccount::create_from_subscribe(const String &_private_key, const
 String DojoSessionAccount::get_address() const {
     if (!internal) {
         Logger::error("DojoSessionAccount is not initialized.");
-        return "";
+        return "0x0";
     }
     return {internal->address().c_str()};
 }
@@ -124,7 +124,7 @@ String DojoSessionAccount::execute(const TypedArray<Dictionary> &calls) const {
         return tx_hash;
     } catch (const controller::ControllerError &e) {
         Logger::error("DojoSessionAccount.execute failed:", e.what());
-        return "";
+        return e.what();
     }
 }
 
@@ -134,14 +134,15 @@ String DojoSessionAccount::execute_from_outside(const TypedArray<Dictionary> &ca
         return "";
     }
 
-    const std::vector<std::shared_ptr<controller::Call>> c_calls = ControllerHelper::prepare_calls(calls);
+    std::vector<std::shared_ptr<controller::Call>> c_calls = ControllerHelper::prepare_calls(calls);
+
     try {
         String tx_hash = String(internal->execute_from_outside(c_calls).c_str());
         Logger::success_extra("DojoSessionAccount", "Execute from outside successful. Tx hash:", tx_hash);
         return tx_hash;
     } catch (const controller::ControllerError &e) {
         Logger::error("DojoSessionAccount.execute_from_outside failed:", e.what());
-        return "";
+        return e.what();
     }
 }
 
