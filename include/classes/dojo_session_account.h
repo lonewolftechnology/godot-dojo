@@ -39,6 +39,7 @@ public:
     String get_owner_guid() const;
     String get_session_id() const;
     String get_username() const;
+    Dictionary get_info() const;
 
     static String generate_session_request_url(const String &base_url, const String &public_key,
                                                const Dictionary &policies,
@@ -64,6 +65,7 @@ protected:
         ClassDB::bind_method(D_METHOD("is_expired"), &DojoSessionAccount::is_expired);
         ClassDB::bind_method(D_METHOD("is_revoked"), &DojoSessionAccount::is_revoked);
         ClassDB::bind_method(D_METHOD("get_chain_id"), &DojoSessionAccount::get_chain_id);
+        ClassDB::bind_method(D_METHOD("get_info"), &DojoSessionAccount::get_info);
 
         ClassDB::bind_static_method("DojoSessionAccount",
                                     D_METHOD("generate_session_request_url", "base_url", "public_key", "policies",

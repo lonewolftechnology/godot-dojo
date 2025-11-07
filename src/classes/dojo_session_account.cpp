@@ -1,6 +1,7 @@
 #include "classes/dojo_session_account.h"
 
 #include <godot_cpp/classes/json.hpp>
+#include <utility>
 
 namespace {
     controller::SessionPolicies to_c_policies(const Dictionary &policies) {
@@ -32,13 +33,12 @@ namespace {
 
             String contract_address = policy_group["contract_address"];
             Array entrypoints = policy_group["entrypoints"];
-
+            Logger::debug_extra("Policy", "Contract", contract_address);
             for (int j = 0; j < entrypoints.size(); ++j) {
                 auto p = std::make_shared<controller::SessionPolicy>();
                 p->contract_address = contract_address.utf8().get_data();
                 p->entrypoint = String(entrypoints[j]).utf8().get_data();
-                Logger::debug_extra("DojoSessionAccount", "policy", p->contract_address.c_str());
-                Logger::debug_extra("DojoSessionAccount", "policy", p->entrypoint.c_str());
+                Logger::debug_extra("Policy", "Entrypoint", p->entrypoint.c_str());
                 c_policies.policies.push_back(p);
             }
         }
@@ -47,7 +47,7 @@ namespace {
 }
 
 void DojoSessionAccount::set_internal(std::shared_ptr<controller::SessionAccount> p_internal) {
-    internal = p_internal;
+    internal = std::move(p_internal);
 }
 
 void DojoSessionAccount::create(const String &rpc_url, const String &private_key, const String &address,
@@ -70,7 +70,6 @@ void DojoSessionAccount::create(const String &rpc_url, const String &private_key
             session_expiration
         );
         set_internal(internal_account);
-        // TODO: hacer controller_types.hpp para macro de esto
         auto username_opt = internal_account->username();
         if (username_opt.has_value()) {
             Logger::debug_extra("DojoSessionAccount", "username", username_opt.value().c_str());
@@ -96,10 +95,6 @@ void DojoSessionAccount::create_from_subscribe(const String &_private_key, const
             _cartridge_api_url.utf8().get_data()
         );
         Logger::success_extra("DojoSessionAccount", "Session account created successfully");
-        Logger::debug_extra("DojoSessionAccount", "session_id", internal_account->session_id().value_or("N/A").c_str());
-        Logger::debug_extra("DojoSessionAccount", "username", internal_account->username().value_or("N/A").c_str());
-        Logger::debug_extra("DojoSessionAccount", "address", internal_account->address().c_str());
-        Logger::debug_extra("DojoSessionAccount", "app_id", internal_account->app_id().value_or("N/A").c_str());
         set_internal(internal_account);
     } catch (const controller::ControllerError &e) {
         Logger::error("DojoSessionAccount.create_from_subscribe failed:", e.what());
@@ -112,7 +107,7 @@ String DojoSessionAccount::get_address() const {
         Logger::error("DojoSessionAccount is not initialized.");
         return "";
     }
-    return String(internal->address().c_str());
+    return {internal->address().c_str()};
 }
 
 String DojoSessionAccount::execute(const TypedArray<Dictionary> &calls) const {
@@ -177,7 +172,7 @@ String DojoSessionAccount::get_owner_guid() const {
         Logger::error("DojoSessionAccount is not initialized.");
         return "";
     }
-    return String(internal->owner_guid().c_str());
+    return {internal->owner_guid().c_str()};
 }
 
 String DojoSessionAccount::get_session_id() const {
@@ -203,7 +198,7 @@ String DojoSessionAccount::get_chain_id() const {
         Logger::error("DojoSessionAccount is not initialized.");
         return "";
     }
-    return String(internal->chain_id().c_str());
+    return {internal->chain_id().c_str()};
 }
 
 String DojoSessionAccount::get_app_id() const {
@@ -214,6 +209,25 @@ String DojoSessionAccount::get_app_id() const {
     return internal->app_id().has_value() ? String(internal->app_id().value().c_str()) : "";
 }
 
+Dictionary DojoSessionAccount::get_info() const {
+    if (!internal) {
+        Logger::error("DojoSessionAccount is not initialized.");
+        return {};
+    }
+
+    Dictionary info;
+    info["address"] = get_address();
+    info["chain_id"] = get_chain_id();
+    info["app_id"] = get_app_id();
+    info["expires_at"] = get_expires_at();
+    info["is_expired"] = is_expired();
+    info["is_revoked"] = is_revoked();
+    info["owner_guid"] = get_owner_guid();
+    info["session_id"] = get_session_id();
+    info["username"] = get_username();
+    return info;
+}
+
 String DojoSessionAccount::generate_session_request_url(const String &base_url, const String &public_key,
                                                         const Dictionary &policies, const String &rpc_url,
                                                         const String &redirect_uri, const String &redirect_query_name) {
@@ -222,8 +236,8 @@ String DojoSessionAccount::generate_session_request_url(const String &base_url, 
         return "";
     }
 
-    String policies_json_string = JSON::stringify(policies);
-    String encoded_policies = policies_json_string.uri_encode();
+    const String policies_json_string = JSON::stringify(policies);
+    const String encoded_policies = policies_json_string.uri_encode();
 
     String url = String("{0}?public_key={1}&policies={2}&rpc_url={3}").format(
         Array::make(base_url, public_key, encoded_policies, rpc_url.uri_encode()));
