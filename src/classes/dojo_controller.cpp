@@ -230,3 +230,19 @@ String DojoController::username() {
         return "";
     }
 }
+
+Dictionary DojoController::get_info() {
+    if (!internal) {
+        Logger::error("DojoController is not initialized.");
+        return Dictionary();
+    }
+
+    Dictionary info;
+    info["address"] = address();
+    info["app_id"] = app_id();
+    info["chain_id"] = chain_id();
+    info["delegate_account"] = delegate_account();
+    info["username"] = username();
+
+    return info;
+}

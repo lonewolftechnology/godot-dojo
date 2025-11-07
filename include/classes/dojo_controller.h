@@ -41,6 +41,7 @@ public:
     void switch_chain(const String &rpc_url);
     String transfer(const String &recipient, const String &amount);
     String username();
+    Dictionary get_info();
 
 
 protected:
@@ -61,6 +62,7 @@ protected:
         ClassDB::bind_method(D_METHOD("switch_chain", "rpc_url"), &DojoController::switch_chain);
         ClassDB::bind_method(D_METHOD("transfer", "recipient", "amount"), &DojoController::transfer);
         ClassDB::bind_method(D_METHOD("username"), &DojoController::username);
+        ClassDB::bind_method(D_METHOD("get_info"), &DojoController::get_info);
     }
 };
 
