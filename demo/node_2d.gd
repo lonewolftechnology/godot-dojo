@@ -2,6 +2,10 @@ extends Node
 @onready var dojo_session_account: DojoSessionAccount = $DojoSessionAccount
 @onready var torii_client:ToriiClient = $ToriiClient
 
+@onready var user_info:UserInfo = %UserInfo
+@onready var custom_priv_key:LineEdit = %PrivateKeyCustom
+@onready var output_box:RichTextLabel = %OutputBox
+
 @export var entity_sub: EntitySubscription
 @export var message_sub: MessageSubscription
 
@@ -24,6 +28,12 @@ var policies:Dictionary = {
 			]
 		}]
 	}
+
+var spawn_call:Dictionary = { 
+		"contract_address": CONTRACT,
+		"entrypoint": "spawn",
+		"calldata": []
+		}
 	
 var calldata:Array = [
 		{
@@ -71,7 +81,7 @@ var calldata:Array = [
 		"calldata": [U256.from_variant(-4)]
 		}
 	]
-@onready var priv_key = DojoHelpers.generate_private_key()
+@onready var priv_key:String = "0x32dea665f6a6e6cff5c10e0d98beaf6cd9352c80eac59ac2881de9fa2e3bdc"
 
 func callback(data):
 	print_rich("[color=RED]SUB Callback[/color] %s" % [data])
@@ -86,8 +96,14 @@ func _ready() -> void:
 		callback,
 		message_sub
 	)
+	if priv_key.is_empty():
+		priv_key = DojoHelpers.generate_private_key()
+		
+	custom_priv_key.text = priv_key
 
 func _on_session_btn_pressed() -> void:
+	if custom_priv_key.text != priv_key:
+		priv_key = custom_priv_key.text
 	#dojo_session_account.create(
 	#		"https://api.cartridge.gg/x/godot-demo-rookie/katana", 
 	#		priv_key, 
@@ -102,7 +118,7 @@ func _on_session_btn_pressed() -> void:
 		RPC_URL,
 		"https://api.cartridge.gg"
 	)
-	
+	_on_info_btn_pressed()
 			
 func _on_login_btn_pressed() -> void:
 	get_session_url()
@@ -157,10 +173,26 @@ func get_session_url():
 
 
 func _on_info_btn_pressed() -> void:
-	push_warning(dojo_session_account.get_info())
+	user_info.update_info(dojo_session_account.get_info())
 
 func _on_call_btn_pressed() -> void:
-	for _call in calldata:
-		prints("CURRENT CALL",_call)
-		print_rich("[color=green]EXECUTE[/color] %s" % [dojo_session_account.execute([_call])])
-		#print_rich("[color=green]EXECUTE OUTSIDE[/color] %s" % [dojo_session_account.execute_from_outside([_call])])
+	prints("CURRENT CALL",spawn_call)
+	var result = dojo_session_account.execute([spawn_call])
+	add_entry_to_output("EXECUTE SPAWN", result)
+
+
+func _on_call_outside_btn_pressed() -> void:
+	prints("CURRENT CALL",spawn_call)
+	var result = dojo_session_account.execute_from_outside([spawn_call])
+	add_entry_to_output("EXECUTE OUTSIDE SPAWN", result)
+
+func add_entry_to_output(_identifier:String, _entry:String) -> void:
+	var final_text = "[color=green]%s[/color] %s\n" % [_identifier,_entry]
+	output_box.call_deferred("append_text",final_text)
+#	print_rich(final_text)
+
+
+func _on_refresh_key_pressed() -> void:
+	priv_key = DojoHelpers.generate_private_key()
+	custom_priv_key.text = priv_key
+	

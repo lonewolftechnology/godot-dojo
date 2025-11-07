@@ -1,6 +1,8 @@
-[gd_scene load_steps=4 format=3 uid="uid://cg5802c6ndrom"]
+[gd_scene load_steps=6 format=3 uid="uid://cg5802c6ndrom"]
 
 [ext_resource type="Script" uid="uid://c3a48nnb14ty" path="res://node_2d.gd" id="1_wtcfe"]
+[ext_resource type="PackedScene" uid="uid://bctooef6mvfds" path="res://user_info.tscn" id="2_0e48y"]
+[ext_resource type="Texture2D" uid="uid://bl01x1ru2lkp3" path="res://assets/retry-svgrepo-com.svg" id="2_epypp"]
 
 [sub_resource type="EntitySubscription" id="EntitySubscription_0e48y"]
 world_addresses = Array[String](["0x03a7e28319f3617da4135893c711c79a1306adcd87cca4fbd0ceda50ae397683"])
@@ -12,8 +14,6 @@ world_addresses = Array[String](["0x03a7e28319f3617da4135893c711c79a1306adcd87cc
 script = ExtResource("1_wtcfe")
 entity_sub = SubResource("EntitySubscription_0e48y")
 message_sub = SubResource("MessageSubscription_wtcfe")
-
-[node name="DojoController" type="DojoController" parent="."]
 
 [node name="ToriiClient" type="ToriiClient" parent="."]
 
@@ -28,14 +28,36 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 
-[node name="CenterContainer" type="CenterContainer" parent="CanvasLayer/PanelContainer"]
+[node name="CenterContainer" type="MarginContainer" parent="CanvasLayer/PanelContainer"]
 layout_mode = 2
+theme_override_constants/margin_left = 8
+theme_override_constants/margin_top = 8
+theme_override_constants/margin_right = 8
+theme_override_constants/margin_bottom = 8
 
 [node name="HBoxContainer" type="HBoxContainer" parent="CanvasLayer/PanelContainer/CenterContainer"]
 layout_mode = 2
 
 [node name="VBoxContainer" type="VBoxContainer" parent="CanvasLayer/PanelContainer/CenterContainer/HBoxContainer"]
 layout_mode = 2
+alignment = 1
+
+[node name="HBoxContainer" type="HBoxContainer" parent="CanvasLayer/PanelContainer/CenterContainer/HBoxContainer/VBoxContainer"]
+layout_mode = 2
+
+[node name="PrivateKeyCustom" type="LineEdit" parent="CanvasLayer/PanelContainer/CenterContainer/HBoxContainer/VBoxContainer/HBoxContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+placeholder_text = "Private Key"
+
+[node name="RefreshKey" type="Button" parent="CanvasLayer/PanelContainer/CenterContainer/HBoxContainer/VBoxContainer/HBoxContainer"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(32, 32)
+layout_mode = 2
+icon = ExtResource("2_epypp")
+icon_alignment = 1
+expand_icon = true
 
 [node name="LoginBtn" type="Button" parent="CanvasLayer/PanelContainer/CenterContainer/HBoxContainer/VBoxContainer"]
 layout_mode = 2
@@ -52,11 +74,20 @@ text = "Test Policy"
 
 [node name="CallBtn" type="Button" parent="CanvasLayer/PanelContainer/CenterContainer/HBoxContainer/VBoxContainer"]
 layout_mode = 2
-text = "Execute Call"
+text = "Execute"
+
+[node name="CallOutsideBtn" type="Button" parent="CanvasLayer/PanelContainer/CenterContainer/HBoxContainer/VBoxContainer"]
+layout_mode = 2
+text = "Execute from outside"
 
 [node name="InfoBtn" type="Button" parent="CanvasLayer/PanelContainer/CenterContainer/HBoxContainer/VBoxContainer"]
 layout_mode = 2
-text = "Print Info"
+text = "Print User Info"
+
+[node name="UserInfo" parent="CanvasLayer/PanelContainer/CenterContainer/HBoxContainer/VBoxContainer" instance=ExtResource("2_0e48y")]
+unique_name_in_owner = true
+layout_mode = 2
+alignment = 1
 
 [node name="VBoxContainer2" type="VBoxContainer" parent="CanvasLayer/PanelContainer/CenterContainer/HBoxContainer"]
 visible = false
@@ -72,8 +103,31 @@ custom_minimum_size = Vector2(30, 0)
 layout_mode = 2
 size_flags_vertical = 3
 
+[node name="Output" type="VBoxContainer" parent="CanvasLayer/PanelContainer/CenterContainer/HBoxContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="Label" type="Label" parent="CanvasLayer/PanelContainer/CenterContainer/HBoxContainer/Output"]
+layout_mode = 2
+text = "Execute output"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="ScrollContainer" type="ScrollContainer" parent="CanvasLayer/PanelContainer/CenterContainer/HBoxContainer/Output"]
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="OutputBox" type="RichTextLabel" parent="CanvasLayer/PanelContainer/CenterContainer/HBoxContainer/Output/ScrollContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+bbcode_enabled = true
+
+[connection signal="pressed" from="CanvasLayer/PanelContainer/CenterContainer/HBoxContainer/VBoxContainer/HBoxContainer/RefreshKey" to="." method="_on_refresh_key_pressed"]
 [connection signal="pressed" from="CanvasLayer/PanelContainer/CenterContainer/HBoxContainer/VBoxContainer/LoginBtn" to="." method="_on_login_btn_pressed"]
 [connection signal="pressed" from="CanvasLayer/PanelContainer/CenterContainer/HBoxContainer/VBoxContainer/SessionBtn" to="." method="_on_session_btn_pressed"]
 [connection signal="pressed" from="CanvasLayer/PanelContainer/CenterContainer/HBoxContainer/VBoxContainer/PolicyBtn" to="." method="_on_policy_btn_pressed"]
 [connection signal="pressed" from="CanvasLayer/PanelContainer/CenterContainer/HBoxContainer/VBoxContainer/CallBtn" to="." method="_on_call_btn_pressed"]
+[connection signal="pressed" from="CanvasLayer/PanelContainer/CenterContainer/HBoxContainer/VBoxContainer/CallOutsideBtn" to="." method="_on_call_outside_btn_pressed"]
 [connection signal="pressed" from="CanvasLayer/PanelContainer/CenterContainer/HBoxContainer/VBoxContainer/InfoBtn" to="." method="_on_info_btn_pressed"]
