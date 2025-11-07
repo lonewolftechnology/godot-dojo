@@ -24,7 +24,7 @@ var _player_address : String = ""
 func _ready() -> void:
 	OS.set_environment("RUST_BACKTRACE", "full")
 	OS.set_environment("RUST_LOG", "debug")
-	connection.controller_account.current_user_info.connect(_on_controller_current_user_info)
+	connection.session_created.connect(_on_controller_current_user_info)
 
 func _on_controller_current_user_info(data:Dictionary) -> void:
 	var address : String = data['address']
@@ -59,7 +59,13 @@ func _handle_callback(args:Dictionary) -> void:
 			label_moves.text = "Moves: %s" % moves_model['remaining']
 
 func spawn() -> void:
-	connection.controller_account.execute_from_outside(connection.ACTIONS_CONTRACT, "spawn")
+	var spawn_call = {
+		"contract_address": connection.ACTIONS_CONTRACT,
+		"entrypoint": "spawn",
+		"calldata": []
+	}
+	connection.session_account.execute([spawn_call])
+#	connection.session_account.execute_from_outside([spawn_call])
 
 func _on_start_screen_entered() -> void:
 	start()
@@ -145,8 +151,12 @@ func _update_entities(parsed_entities:Dictionary) -> void:
 			controllers_manager.move_controller(id,position)
 
 func _move(dir:Directions) -> void:
-	var calldata:Array = [dir]
-	connection.controller_account.execute_from_outside(connection.ACTIONS_CONTRACT, "move", calldata)
+	var spawn_call = {
+		"contract_address": connection.ACTIONS_CONTRACT,
+		"entrypoint": "move",
+		"calldata": [dir]
+	}
+	connection.session_account.execute([spawn_call])
 
 func _on_arrow_left_pressed() -> void:
 	_move(Directions.LEFT)
