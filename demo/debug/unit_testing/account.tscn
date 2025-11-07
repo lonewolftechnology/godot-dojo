@@ -18,6 +18,8 @@ script = ExtResource("1_t46s5")
 event_message_sub = SubResource("MessageSubscription_t46s5")
 txn_sub = SubResource("TransactionSubscription_t46s5")
 
+[node name="DojoController" type="DojoController" parent="."]
+
 [node name="Account" type="Account" parent="."]
 
 [node name="ToriiClient" type="ToriiClient" parent="."]

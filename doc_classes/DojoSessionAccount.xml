@@ -80,5 +80,10 @@
 			<description>
 			</description>
 		</method>
+		<method name="is_valid" qualifiers="const">
+			<return type="bool" />
+			<description>
+			</description>
+		</method>
 	</methods>
 </class>
