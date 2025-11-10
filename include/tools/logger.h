@@ -3,6 +3,7 @@
 //
 #ifndef DEBUG_MACROS_H
 #define DEBUG_MACROS_H
+#include "godot_cpp/classes/project_settings.hpp"
 #include "godot_cpp/variant/utility_functions.hpp"
 using namespace godot;
 
@@ -46,10 +47,28 @@ namespace logger_internal
 
 class Logger
 {
+private:
+	static bool is_enabled()
+	{
+		static bool initialized = false;
+		static bool enabled = true;
+
+		if (!initialized)
+		{
+			if (ProjectSettings::get_singleton()->has_setting("dojo/config/enable_extra_logs"))
+			{
+				enabled = ProjectSettings::get_singleton()->get_setting("dojo/config/enable_extra_logs");
+			}
+			initialized = true;
+		}
+		return enabled;
+	}
+
 public:
     template <typename... Args>
     static void error(Args... args)
     {
+        if (!is_enabled()) { return; }
         String message = logger_internal::concat_all(args...);
         UtilityFunctions::push_error(message);
     }
@@ -57,6 +76,7 @@ public:
     template <typename... Args>
     static Dictionary error_dict(Args... args)
     {
+        if (!is_enabled()) { return {}; }
         String message = logger_internal::concat_all(args...);
         Dictionary result = {};
         result["error"] = message;
@@ -67,6 +87,7 @@ public:
     template <typename... Args>
     static void warning(Args... args)
     {
+        if (!is_enabled()) { return; }
         String message = logger_internal::concat_all(args...);
         UtilityFunctions::push_warning(message);
     }
@@ -75,6 +96,7 @@ public:
     static void log_color(const String& color, Args... args)
     {
 #ifdef DEBUG_ENABLED
+        if (!is_enabled()) { return; }
         String message = logger_internal::concat_all(args...);
         String formatted = "[color=" + color + "]" + message + "[/color]";
         UtilityFunctions::print_rich(formatted);
@@ -85,6 +107,7 @@ public:
     static void typed_log_color(const String& color, const String& type, Args... args)
     {
 #ifdef DEBUG_ENABLED
+        if (!is_enabled()) { return; }
         String message = logger_internal::concat_all(args...);
         String formatted = "[color=" + color + "][b][" + type + "][/b][/color] " + message;
 #ifdef WEB_ENABLED
@@ -128,6 +151,7 @@ public:
     static void success_extra(const String& type, Args... args)
     {
 #ifdef DEBUG_ENABLED
+        if (!is_enabled()) { return; }
         String message = logger_internal::concat_all(args...);
         String formatted = "[color=green][b][" + type + "][/b][/color] " + message;
 #ifdef WEB_ENABLED
@@ -141,6 +165,7 @@ public:
     static void debug_extra(const String& type, Args... args)
     {
 #ifdef DEBUG_ENABLED
+        if (!is_enabled()) { return; }
         String message = logger_internal::concat_all(args...);
         String formatted = "[color=cyan][b][" + type + "][/b][/color] " + message;
 #ifdef WEB_ENABLED
@@ -152,6 +177,7 @@ public:
 
     static void empty_line()
     {
+        if (!is_enabled()) { return; }
         UtilityFunctions::print_rich("\n");
     }
 };
