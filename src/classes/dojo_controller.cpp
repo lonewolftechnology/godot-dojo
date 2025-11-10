@@ -11,6 +11,11 @@ DojoController *DojoController::init(const String &app_id, const String &usernam
                                      const String &chain_id) {
     DojoController *dojo_controller = memnew(DojoController);
 
+    if (!owner.is_valid()) {
+        Logger::error("DojoController.init failed: owner is null.");
+        return nullptr;
+    }
+
     try {
         auto internal_controller = controller::Controller::init(
             app_id.utf8().get_data(),
@@ -46,6 +51,11 @@ DojoController *DojoController::from_storage(const String &app_id) {
 
 DojoController *DojoController::new_headless(const String &app_id, const String &username, const String &class_hash, const String &rpc_url, const Ref<DojoOwner> &owner, const String &chain_id) {
     DojoController *dojo_controller = memnew(DojoController);
+
+    if (!owner.is_valid()) {
+        Logger::error("DojoController.new_headless failed: owner is null.");
+        return nullptr;
+    }
 
     try {
         auto internal_controller = controller::Controller::new_headless(
@@ -234,7 +244,7 @@ String DojoController::username() {
 Dictionary DojoController::get_info() {
     if (!internal) {
         Logger::error("DojoController is not initialized.");
-        return Dictionary();
+        return {};
     }
 
     Dictionary info;
@@ -245,4 +255,12 @@ Dictionary DojoController::get_info() {
     info["username"] = username();
 
     return info;
+}
+
+bool DojoController::is_valid() {
+    if (!internal) {
+        return false;
+    }
+    return true;
+
 }

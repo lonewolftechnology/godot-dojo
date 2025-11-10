@@ -14,17 +14,6 @@ class ControllerHelper : public Object {
     GDCLASS(ControllerHelper, Object)
 
 public:
-    ControllerHelper() = default;
-    ~ControllerHelper() override = default;
-
-    static bool has_storage(const String &app_id);
-    static String get_controller_class_hash(int version);
-    static String get_public_key(const String &private_key);
-    static String signer_to_guid(const String &private_key);
-    static bool validate_felt(const String &felt);
-	static String generate_private_key();
-	static std::vector<std::shared_ptr<controller::Call>>  prepare_calls(const TypedArray<Dictionary> &calls);
-
     enum SignerType {
         Webauthn = 1,
         Starknet = 2
@@ -40,6 +29,19 @@ public:
         V109 = 6,
         Latest = 7
     };
+
+    ControllerHelper() = default;
+    ~ControllerHelper() override = default;
+
+    static bool has_storage(const String &app_id);
+    static String get_controller_class_hash(int version);
+    static String get_public_key(const String &private_key);
+    static String signer_to_guid(const String &private_key);
+    static bool validate_felt(const String &felt);
+	static String generate_private_key();
+	static std::vector<std::shared_ptr<controller::Call>>  prepare_calls(const TypedArray<Dictionary> &calls);
+
+
 
 protected:
     static void _bind_methods() {

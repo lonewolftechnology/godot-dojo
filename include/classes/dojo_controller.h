@@ -42,6 +42,7 @@ public:
     String transfer(const String &recipient, const String &amount);
     String username();
     Dictionary get_info();
+    bool is_valid();
 
 
 protected:
@@ -63,6 +64,7 @@ protected:
         ClassDB::bind_method(D_METHOD("transfer", "recipient", "amount"), &DojoController::transfer);
         ClassDB::bind_method(D_METHOD("username"), &DojoController::username);
         ClassDB::bind_method(D_METHOD("get_info"), &DojoController::get_info);
+        ClassDB::bind_method(D_METHOD("is_valid"), &DojoController::is_valid);
     }
 };
 
