@@ -11,8 +11,8 @@ const slot_torii_url = "https://api.cartridge.gg/x/godot-demo-rookie/torii"
 
 const contract_namespace = "dojo_starter"
 
-const slot_contract_address = "0x01d18853e41a1607c1bd80c2e80c34db3a59999a038b54a2424fae4ac71278da"
-const local_contract_address = "0x0509fe72ac9512081b7dcbfc673b18ea3a323b164e45008fa774376031f88521"
+const slot_contract_address = "0x023b0d96f2617d1be29e5ee6ec4b7b4da312d0eb28d6c83f5ef1c2ba254f3a6f"
+const local_contract_address = "0x023b0d96f2617d1be29e5ee6ec4b7b4da312d0eb28d6c83f5ef1c2ba254f3a6f"
 const starter_contract = "0x06b71e9a3aa5198aa78f7d8c407024d863e1d1263e735081c824deea349d3852" #Plain Starter
 
 const slot_world_address = "0x03a7e28319f3617da4135893c711c79a1306adcd87cca4fbd0ceda50ae397683"
@@ -132,10 +132,9 @@ func _ready() -> void:
 	call_response_scroll.scrolling.connect(_on_scrolling.bind(call_response_scroll,call_result_scroll))
 	call_result_scroll.scrolling.connect(_on_scrolling.bind(call_result_scroll,call_response_scroll))
 	
-	torii_client.world_address = world_address
 	var env = "Slot" if use_slot else "Local"
 	print_rich("[color=yellow]Using %s[/color]" % env)
-	
+	event_message_sub.world_addresses.append(world_address)
 	torii_client.torii_url = torii_url
 	
 	torii_client.create_client()
@@ -257,10 +256,11 @@ func _on_account_transaction_failed(error_message: Dictionary) -> void:
 	var regex = RegEx.new()
 	regex.compile("\\(([^\\)]+)\\)")
 	var regex_result = regex.search_all(error)
-	var error_msg = "[color=red]%s[/color]\n" % [regex_result[-1].get_string()]
-	#push_warning(stripped_error[-1].get_string())
 	output_text.append_text(selector_data)
-	sub_output.append_text(error_msg)
+	if not regex_result.is_empty():
+		var error_msg = "[color=red]%s[/color]\n" % [regex_result[-1].get_string()]
+		#push_warning(stripped_error[-1].get_string())
+		sub_output.append_text(error_msg)
 
 
 func _on_account_transaction_executed(success_message: Dictionary) -> void:

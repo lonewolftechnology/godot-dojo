@@ -5,12 +5,19 @@ extends Node
 @onready var user_info:UserInfo = %UserInfo
 @onready var custom_priv_key:LineEdit = %PrivateKeyCustom
 @onready var output_box:RichTextLabel = %OutputBox
+@onready var main_container:BoxContainer = %MainContainer
+@onready var menu_container:VBoxContainer = %MenuContainer
+@onready var dojo_controller:DojoController = $DojoController
 
 @export var entity_sub: EntitySubscription
 @export var message_sub: MessageSubscription
 
-const CONTRACT = "0x01d18853e41a1607c1bd80c2e80c34db3a59999a038b54a2424fae4ac71278da"
+const CONTRACT = "0x023b0d96f2617d1be29e5ee6ec4b7b4da312d0eb28d6c83f5ef1c2ba254f3a6f"
+
+const WORLD = "0x026d5777eccca1861a23303ee0ba48c0e8349e849d0377a21c3801ef1d0f8cef"
+#const RPC_URL = "http://localhost:5050"
 const RPC_URL = "https://api.cartridge.gg/x/godot-demo-rookie/katana"
+#const TORII_URL = "http://localhost:8080"
 const TORII_URL = "https://api.cartridge.gg/x/godot-demo-rookie/torii"
 
 
@@ -81,13 +88,22 @@ var calldata:Array = [
 		"calldata": [U256.from_variant(-4)]
 		}
 	]
-@onready var priv_key:String = "0x32dea665f6a6e6cff5c10e0d98beaf6cd9352c80eac59ac2881de9fa2e3bdc"
+@onready var priv_key:String = "0x3f9f6b16ddc141157d2712176d389e43acb016f7de1744ff544e91287e8e"
 
 func callback(data):
 	print_rich("[color=RED]SUB Callback[/color] %s" % [data])
 
 func _ready() -> void:
+	entity_sub.world_addresses.append(WORLD)
+	message_sub.world_addresses.append(WORLD)
+	if OS.has_feature("android"):
+		main_container.vertical = true
+		menu_container.size_flags_vertical = Control.SIZE_EXPAND_FILL
+		DisplayServer.screen_set_orientation(DisplayServer.ScreenOrientation.SCREEN_PORTRAIT)
+		priv_key = ""
+		
 	torii_client.create_client(TORII_URL)
+	
 	torii_client.on_entity_state_update(
 		callback,
 		entity_sub
@@ -100,6 +116,7 @@ func _ready() -> void:
 		priv_key = DojoHelpers.generate_private_key()
 		
 	custom_priv_key.text = priv_key
+
 
 func _on_session_btn_pressed() -> void:
 	if custom_priv_key.text != priv_key:
@@ -118,8 +135,9 @@ func _on_session_btn_pressed() -> void:
 		RPC_URL,
 		"https://api.cartridge.gg"
 	)
-	_on_info_btn_pressed()
-			
+	if (dojo_session_account.is_valid()):
+		_on_info_btn_pressed()
+		
 func _on_login_btn_pressed() -> void:
 	get_session_url()
 	
@@ -130,7 +148,7 @@ func get_session_url():
 	var redirect_uri = "about:blank"
 	var redirect_query_name = "startapp"
 	
-	var policies = {
+	var _policies = {
 		"contracts": {
 			CONTRACT: {
 				"methods": [
@@ -163,7 +181,7 @@ func get_session_url():
 	var session_url = DojoSessionAccount.generate_session_request_url(
 		base_url, 
 		public_key, 
-		policies, 
+		_policies, 
 		rpc_url, 
 #		redirect_uri, # Optional
 #		redirect_query_name # Optional
@@ -196,3 +214,32 @@ func _on_refresh_key_pressed() -> void:
 	priv_key = DojoHelpers.generate_private_key()
 	custom_priv_key.text = priv_key
 	
+
+
+func _on_dojo_controller_btn_pressed() -> void:
+	var dojo_owner:DojoOwner = DojoOwner.init(priv_key)
+	dojo_controller = DojoController.new_headless(
+	"https://x.cartridge.gg/", 
+	"hazel", 
+	ControllerHelper.get_controller_class_hash(7), 
+	RPC_URL, 
+	dojo_owner, 
+	"DTO_LOCAL"
+	)
+#	push_warning(dojo_controller.username())
+
+
+func _on_torii_client_entities_received(entities: Array[Dictionary]) -> void:
+	push_warning("_on_torii_client_entities_recei,entitiesved")
+
+
+func _on_torii_client_entity_updated(entity_data: Dictionary) -> void:
+	push_warning("_on_torii_client_entity_updated,entity_data")
+
+
+func _on_torii_client_event_received(event_data: Dictionary) -> void:
+	push_warning("_on_torii_client_event_receive,event_datad")
+
+
+func _on_torii_client_message_published(message_hash: String) -> void:
+	push_warning("_on_torii_client_message_published",message_hash)
