@@ -97,6 +97,11 @@ if GetOption('clean'):
     shutil.rmtree("demo/dist", ignore_errors=True)
     print(f"{G}     {check} Distribution directory deleted.{X}")
 
+    # Eliminar xcframework
+    print(f"{B}  -> Deleting XCFramework directory: demo/dist/godot-dojo.xcframework{X}")
+    shutil.rmtree("demo/dist/godot-dojo.xcframework", ignore_errors=True)
+    print(f"{G}     {check} XCFramework directory deleted.{X}")
+
     # Limpiar submódulo godot-cpp
     print(f"{B}  -> Cleaning godot-cpp submodule...{X}")
     subprocess.run(["scons", "-C", "external/godot-cpp", "--clean"], check=False, capture_output=False)
@@ -181,7 +186,9 @@ targets = {
     ("macos", "universal"): ["x86_64-apple-darwin", "aarch64-apple-darwin"],
     ("web", "wasm32"): "wasm32-unknown-unknown",
     ("android", "arm64"): "aarch64-linux-android",
-    ("ios", "arm64"): "aarch64-apple-ios",
+    ("ios", "arm64"): "aarch64-apple-ios" if not env['ios_simulator'] else "aarch64-apple-ios-sim",
+    ("ios", "x86_64"): "x86_64-apple-ios",
+    ("ios", "universal"): ["x86_64-apple-ios", "aarch64-apple-ios-sim"],
 }
 # Use CARGO_BUILD_TARGET from environment if set, otherwise use the target from the platform/arch
 rust_target = os.environ.get("CARGO_BUILD_TARGET", targets.get((platform, arch), "x86_64-unknown-linux-gnu"))
@@ -240,12 +247,12 @@ def _compile_rust_library(lib_name, lib_path, is_release, cargo_flags=None, rust
         base_cmd.extend(cargo_flags)
 
     # Always specify the target unless it's a universal macOS build (handled separately)
-    if not (platform == "macos" and arch == "universal"):
+    if not (platform in ["macos", "ios"] and arch == "universal"):
         base_cmd.extend(["--target", rust_target])
 
-    # Special handling for macOS universal builds
-    if platform == "macos" and arch == "universal":
-        print(f"{Y}Starting universal build for {lib_name}...{X}")
+    # Special handling for universal builds (macOS and iOS Simulator)
+    if platform in ["macos", "ios"] and arch == "universal":
+        print(f"{Y}Starting universal build for {lib_name} on {platform}...{X}")
         rust_targets_for_lipo = targets.get((platform, arch))
         libs_to_lipo = []
 
@@ -255,14 +262,15 @@ def _compile_rust_library(lib_name, lib_path, is_release, cargo_flags=None, rust
             if is_release:
                 cargo_cmd.append("--release")
 
-            deployment_target = os.environ.get("MACOSX_DEPLOYMENT_TARGET", "14.0")
-            env_vars["MACOSX_DEPLOYMENT_TARGET"] = deployment_target
-            rustflags = env_vars.get("RUSTFLAGS", "")
-            if f"-mmacosx-version-min={deployment_target}" not in rustflags:
-                if rustflags:
-                    rustflags += " "
-                rustflags += f"-C link-arg=-mmacosx-version-min={deployment_target}"
-            env_vars["RUSTFLAGS"] = rustflags
+            if platform == "macos":
+                deployment_target = os.environ.get("MACOSX_DEPLOYMENT_TARGET", "14.0")
+                env_vars["MACOSX_DEPLOYMENT_TARGET"] = deployment_target
+                rustflags = env_vars.get("RUSTFLAGS", "")
+                if f"-mmacosx-version-min={deployment_target}" not in rustflags:
+                    if rustflags:
+                        rustflags += " "
+                    rustflags += f"-C link-arg=-mmacosx-version-min={deployment_target}"
+                env_vars["RUSTFLAGS"] = rustflags
 
             subprocess.run(cargo_cmd, check=True, cwd=lib_path, env=env_vars)
             libs_to_lipo.append(f"{lib_path}/target/{rt}/{build_mode}/lib{lib_name}.a")
@@ -331,7 +339,10 @@ else:
 rust_build_mode = "release" if is_release_build else "debug"
 
 # For macOS universal, rust_target was modified, so we handle it specially
-rust_lib_target_dir = "universal" if platform == "macos" and arch == "universal" else rust_target
+if platform in ["macos", "ios"] and arch == "universal":
+    rust_lib_target_dir = "universal"
+else:
+    rust_lib_target_dir = rust_target
 
 rust_lib_dir = f"godot-dojo-core/target/{rust_lib_target_dir}/{rust_build_mode}"
 
@@ -359,7 +370,7 @@ else:
     rust_lib = f"{rust_lib_dir}/libgodot_dojo_core.a"
 
 if rust_lib:
-    if platform in ["linux", "android", "ios"] or use_mingw:
+    if platform in ["linux", "android"] or use_mingw:
         if platform == "windows" and use_mingw:
             # For MinGW, we must include the system libraries Rust depends on *inside* the group.
             win_libs = ['-lws2_32', '-ladvapi32', '-lntdll']
@@ -367,9 +378,12 @@ if rust_lib:
         else:
             # For other platforms like Linux/macOS
             env.Append(_LIBFLAGS=['-Wl,--start-group', rust_lib, '-Wl,--end-group'])
-    elif platform == "macos":
+    elif platform in ["macos", "ios"]:
         # For macOS, we just add the library directly without the group flags.
         env.Append(_LIBFLAGS=[rust_lib])
+        # The iana_time_zone crate (a dependency) requires the CoreFoundation framework on Apple platforms.
+        if platform in ["macos", "ios"]:
+            env.Append(LINKFLAGS=['-framework', 'CoreFoundation'])
     elif platform == "windows" and not use_mingw:
         # For MSVC
         env.Append(LINKFLAGS=[f"/WHOLEARCHIVE:{os.path.basename(rust_lib)}"])
@@ -400,15 +414,26 @@ suffix_map = {
     "linux": f".linux.{target}.{arch}.so",
     "windows": f".windows.{target}.{arch}.dll",
     "macos": f".macos.{target}.{arch}.dylib",
-    "ios": f".ios.{target}.{arch}.dylib",
+    "ios": f".ios.{target}.{arch}.dylib" if not env['ios_simulator'] else f".ios.{target}.simulator.{arch}.dylib" ,
 }
 
-target_out_dir = target
-if '_' in target:
-    target_out_dir = target.split('_', 1)[1]
+if platform == "ios" and '_' in target:
+    target_out_dir = target.split('_', 1)[1]  # "debug" or "release"
+else:
+    target_out_dir = target # "template_debug", "template_release", "editor"
 
-output_dir = f"demo/addons/godot-dojo/bin/{platform}/{target_out_dir}"
+if platform == "ios":
+    # Para iOS, los binarios se construyen en un directorio intermedio `build/`
+    # antes de ser empaquetados en un XCFramework.
+    output_dir = f"build/ios/{target_out_dir}"
+else:
+    output_dir = f"demo/addons/godot-dojo/bin/{platform}/{target_out_dir}"
+
+# Ensure the output directory exists
+os.makedirs(output_dir, exist_ok=True)
+
 lib_name = f"{output_dir}/{prefix}godot-dojo{suffix_map.get(platform, f'.{platform}.{target}.{arch}.so')}"
+
 library = env.SharedLibrary(target=lib_name, source=sources)
 env.Alias(f"godot-dojo-{platform}-{target_out_dir}", library)
 
@@ -425,12 +450,97 @@ gdext = gdext.replace("${GODOT_MIN_REQUIREMENT}", _godot_min)
 with open("demo/addons/godot-dojo/godot-dojo.gdextension", 'w') as f:
     f.write(gdext)
 
-
 def build_complete_callback(target, source, env):
-    print(f"{G}{party} Build complete!{X}")
+    print(f"{G}{party} Build complete for {str(target[0])}!{X}")
     return None
 
-
 env.AddPostAction(library, build_complete_callback)
-
 env.Default(library)
+
+# --- XCFramework Post-Action Logic ---
+def create_xcframework_action(target, source, env):
+    """
+    Custom builder function to create an XCFramework using xcodebuild.
+    'source' is a list of library nodes. This function will identify device and simulator
+    libraries, merge simulator libraries into a universal binary if needed, and then
+    create the XCFramework.
+    """
+    xcframework_path = str(target[0])
+    source_paths = [str(s) for s in source if os.path.exists(str(s))]
+
+    if not source_paths:
+        print(f"{R}{cross} No libraries found to create XCFramework. Aborting.{X}")
+        return 1
+
+    device_libs = [p for p in source_paths if "simulator" not in p]
+    simulator_libs = [p for p in source_paths if "simulator" in p]
+
+    final_libs = device_libs
+
+    # If we have multiple simulator libraries, merge them with lipo.
+    if len(simulator_libs) > 1:
+        print(f"{Y}Merging simulator libraries with lipo...{X}")
+        # Define a path for the merged universal simulator library
+        output_dir = os.path.dirname(simulator_libs[0])
+        universal_sim_lib_path = os.path.join(output_dir, "godot-dojo.ios.universal.simulator.dylib")
+
+        # Filter out any pre-existing universal library from the input list to avoid conflicts.
+        lipo_inputs = [lib for lib in simulator_libs if "universal" not in os.path.basename(lib)]
+
+        # Ensure the old universal lib is gone before creating a new one.
+        if os.path.exists(universal_sim_lib_path):
+            os.remove(universal_sim_lib_path)
+
+        lipo_cmd = ["lipo", "-create", "-output", universal_sim_lib_path] + lipo_inputs
+        subprocess.run(lipo_cmd, check=True)
+        final_libs.append(universal_sim_lib_path)
+        print(f"{G}{check} Universal simulator library created at: {universal_sim_lib_path}{X}")
+    elif simulator_libs:
+        final_libs.extend(simulator_libs)
+
+    cmd = ["xcodebuild", "-create-xcframework"]
+    print(f"{Y}{package} Creating XCFramework at {xcframework_path} from:{X}")
+    for lib_path in final_libs:
+        print(f"{Y}  -> Found library: {lib_path}{X}")
+        cmd.extend(["-library", lib_path])
+
+    cmd.extend(["-output", xcframework_path])
+
+    try:
+        subprocess.run(cmd, check=True, text=True, capture_output=False)
+        print(f"{G}{check} XCFramework created successfully at: {xcframework_path}{X}")
+    except subprocess.CalledProcessError as e:
+        print(f"{R}{cross} Failed to create XCFramework.{X}")
+        return e.returncode
+
+# Define an alias to build the XCFramework.
+# This only runs if `scons platform=ios xcframework` is invoked.
+if platform == "ios":
+    # We need to know the target ('template_debug' or 'template_release')
+    target_out_dir = target.split('_', 1)[1] # "debug" or "release"
+    output_base = f"build/ios/{target_out_dir}"
+    target_dir = f"demo/addons/godot-dojo/bin/ios/{target_out_dir}/godot-dojo.xcframework"
+
+    # Clean up previous framework
+    if os.path.exists(target_dir):
+        shutil.rmtree(target_dir)
+
+    # Create a custom builder for the XCFramework
+    xcframework_builder = env.Builder(
+        action=create_xcframework_action,
+        suffix='.xcframework',
+        source_factory=lambda files: [File(f) for f in files] # Allow strings as source
+    )
+
+    # Create the target node for the XCFramework
+    xcframework_target = xcframework_builder(
+        env,
+        target=env.Dir(target_dir),
+        # Use Glob to dynamically find which libraries were actually built.
+        # This prevents SCons from trying to build a source that might not exist for the current arch.
+        source=Glob(f"{output_base}/*.dylib")
+    )
+
+    # Create an alias so we can call it from the command line.
+    # This alias now depends on the xcframework target.
+    env.Alias("xcframework", xcframework_target)
