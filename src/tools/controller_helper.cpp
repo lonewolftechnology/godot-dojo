@@ -7,6 +7,8 @@
 #include <random>
 #include <deque>
 
+#include "tools/logger.h"
+
 
 bool ControllerHelper::has_storage(const String &app_id) {
     return controller::controller_has_storage(app_id.utf8().get_data());
@@ -46,15 +48,19 @@ std::vector<std::shared_ptr<controller::Call>> ControllerHelper::prepare_calls(c
 
     for (int i = 0; i < calls.size(); ++i) {
         Dictionary call_dict = calls[i];
-        if (!call_dict.has("to") || !call_dict.has("selector") || !call_dict.has("args")) {
-            // Omitir llamada inválida o lanzar error
+        if (!call_dict.has("contract_address") || !call_dict.has("entrypoint")) {
+            Logger::info("Skipping a call due to missing 'contract_address' or 'entrypoint'.");
             continue;
         }
 
         auto current_call = std::make_shared<controller::Call>();
         current_call->contract_address = static_cast<String>(call_dict["contract_address"]).utf8().get_data();
         current_call->entrypoint = static_cast<String>(call_dict["entrypoint"]).utf8().get_data();
-
+        
+        if (!call_dict.has("calldata") || call_dict["calldata"].get_type() != Variant::ARRAY) {
+            prepared_calls.push_back(current_call);
+            continue;
+        }
         Array args = call_dict["calldata"];
         std::deque<Variant> worklist;
         for (int j = 0; j < args.size(); ++j) {
