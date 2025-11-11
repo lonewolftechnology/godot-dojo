@@ -16,42 +16,7 @@ FieldElement::FieldElement()
 FieldElement::FieldElement(const String& hex_str, size_t max_bytes)
 {
     felt = new DOJO::FieldElement();
-    memset(felt->data, 0, 32);
-    // Skip "0x" prefix if present
-    size_t start_idx = (hex_str.substr(0, 2) == "0x") ? 2 : 0;
-
-    // Calculate actual string length without prefix
-    size_t hex_length = hex_str.length() - start_idx;
-
-    // Each hex char is 4 bits, so 2 chars form a byte.
-    size_t num_bytes = (hex_length + 1) / 2;
-
-    // Ensure we don't overflow the output buffer
-    if (num_bytes > max_bytes)
-    {
-        Logger::error("Input hex string is too long for the output buffer.");
-        return;
-    }
-
-    // Calculate the starting position in the output buffer for right-alignment (big-endian)
-    size_t out_start_idx = max_bytes - num_bytes;
-
-    // If the hex string has an odd number of characters, treat the first char as a single nibble.
-    size_t in_idx = start_idx;
-    if (hex_length % 2 != 0)
-    {
-        String nibble_str = hex_str.substr(static_cast<int64_t>(in_idx), 1);
-        felt->data[out_start_idx] = static_cast<uint8_t>(nibble_str.hex_to_int());
-        in_idx++;
-        out_start_idx++;
-    }
-
-    for (size_t i = out_start_idx; i < max_bytes; ++i)
-    {
-        String byte_str = hex_str.substr(static_cast<int64_t>(in_idx), 2);
-        felt->data[i] = static_cast<uint8_t>(byte_str.hex_to_int());
-        in_idx += 2;
-    }
+    *felt = from_string(hex_str);
 }
 
 FieldElement::FieldElement(int enum_value)
@@ -119,27 +84,17 @@ PackedByteArray FieldElement::to_packed_array(const void* data, const int size)
 DOJO::FieldElement FieldElement::from_string(const String& hex_str, size_t max_bytes)
 {
     DOJO::FieldElement result = {};
-
+    memset(result.data, 0, 32);
     size_t start_idx = (hex_str.substr(0, 2) == "0x") ? 2 : 0;
     size_t hex_length = hex_str.length() - start_idx;
     bool is_odd = hex_length % 2 != 0;
-    size_t num_bytes = (hex_length + is_odd) / 2;
-
-    if (num_bytes > max_bytes)
-    {
-        Logger::error("Hex string too long for FieldElement", hex_str);
-        return result;
-    }
-
     size_t out_idx = 0;
-    if (is_odd)
-    {
+    if (is_odd) {
         String nibble = hex_str.substr(static_cast<int64_t>(start_idx), 1);
         result.data[out_idx++] = static_cast<uint8_t>(nibble.hex_to_int());
     }
 
-    for (size_t i = is_odd ? 1 : 0; i < hex_length; i += 2)
-    {
+    for (size_t i = is_odd ? 1 : 0; i < hex_length; i += 2) {
         String byte_str = hex_str.substr(static_cast<int64_t>(start_idx + i), 2);
         result.data[out_idx++] = static_cast<uint8_t>(byte_str.hex_to_int());
     }
@@ -172,16 +127,34 @@ PackedByteArray FieldElement::as_packed_array() const
     return to_packed_array(felt->data);
 }
 
+// Helper function to convert FieldElement data to a hex string, trimming leading zeros.
+static String get_as_string_impl(const uint8_t* data)
+{
+    PackedByteArray bytes;
+    bytes.resize(32);
+    memcpy(bytes.ptrw(), data, 32);
+    String hex_full = bytes.hex_encode();
+
+    int first_non_zero_char = -1;
+    for (int i = 0; i < hex_full.length(); ++i) {
+        if (hex_full[i] != '0') {
+            first_non_zero_char = i;
+            break;
+        }
+    }
+
+    if (first_non_zero_char == -1) {
+        return "0x0";
+    }
+
+    // If the first non-zero char is at an odd position, we need to keep the preceding '0'
+    // to form a valid byte representation. e.g., "07" from "0007".
+    return "0x" + hex_full.substr(first_non_zero_char);
+}
+
 String FieldElement::to_string() const
 {
-    String ret = "0x";
-    for (unsigned char i : felt->data)
-    {
-        String byte_str = String::num_int64(i, 16, false);
-        ret += byte_str.pad_zeros(2);
-    };
-
-    return ret;
+    return get_as_string_impl(felt->data);
 }
 
 DOJO::FieldElement FieldElement::from_enum(int enum_value)
@@ -232,25 +205,12 @@ String FieldElement::get_as_string(DOJO::FieldElement* _felt)
         Logger::error("get_as_string called with a null pointer");
         return "0x0";
     }
-    String ret = "0x";
-    for (unsigned char i : _felt->data)
-    {
-        ret += String::num_int64(i, 16, false);
-    };
-
-    return ret;
+    return get_as_string_impl(_felt->data);
 }
 
 String FieldElement::get_as_string_no_ptr(DOJO::FieldElement _felt)
 {
-
-    String ret = "0x";
-    for (unsigned char i : _felt.data)
-    {
-        ret += String::num_int64(i, 16, false);
-    };
-
-    return ret;
+    return get_as_string_impl(_felt.data);
 }
 
 DOJO::CArrayFieldElement FieldElement::bytearray_serialize(const String& msg)
