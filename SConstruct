@@ -308,29 +308,18 @@ def _compile_rust_library(lib_name, lib_path, is_release, cargo_flags=None, rust
     print(f"{Y}Running cargo command for {lib_name}: {' '.join(base_cmd)}{X}")
     subprocess.run(base_cmd, check=True, cwd=lib_path, env=env_vars)
 
-def build_rust_library_action(target, source, env):
-    """SCons Action to compile the Rust library."""
-    lib_name = env['RUST_LIB_NAME']
-    lib_path = env['RUST_LIB_PATH']
-    is_release = env['IS_RELEASE_BUILD']
-
-    # The 'target' here is the SCons node for the output file.
-    # We can ignore it and just run our compilation logic.
-    _compile_rust_library(lib_name, lib_path, is_release)
-    return None # Success
-
 # Determine if we should use the release build of the Rust crate.
 # This is true if the SCons target is 'template_release' OR if we force it via an environment variable.
 force_rust_release = os.environ.get("FORCE_RUST_RELEASE", "0") == "1"
 is_release_build = target == "template_release" or force_rust_release
 
-# Create a custom builder for our Rust library
-rust_builder = env.Builder(
-    action=build_rust_library_action,
-    # This tells SCons that this builder creates the file specified in 'target'
-    emitter=lambda target, source, env: (target, source)
-)
-env.Append(BUILDERS={'RustLibrary': rust_builder})
+# By default, SCons compiles the Rust library.
+# To prevent this (e.g., in CI where a separate 'cargo build' step is used),
+# set the environment variable SKIP_RUST_BUILD=1.
+if os.environ.get("SKIP_RUST_BUILD", "0") == "1":
+    print(f"{Y}Skipping Rust library compilation from SCons because SKIP_RUST_BUILD is set.{X}")
+else:
+    _compile_rust_library('godot_dojo_core', 'godot-dojo-core', is_release_build)
 
 # Configure library
 if env["platform"] != "android":
@@ -380,15 +369,6 @@ if platform == "windows":
         rust_lib_path = f"{rust_lib_base_path}/godot_dojo_core.lib"
 else:
     rust_lib_path = f"{rust_lib_base_path}/libgodot_dojo_core.a"
-
-# Define the Rust library as a build target
-rust_lib_target = env.RustLibrary(
-    target=rust_lib_path,
-    source=[], # No source files needed, the action knows what to do
-    RUST_LIB_NAME='godot_dojo_core',
-    RUST_LIB_PATH='godot-dojo-core',
-    IS_RELEASE_BUILD=is_release_build
-)
 
 if platform == "windows":
     if use_mingw:
@@ -456,11 +436,12 @@ suffix_map = {
     "ios": f".ios.{target}.{arch}.dylib" if not env['ios_simulator'] else f".ios.{target}.simulator.{arch}.dylib" ,
 }
 
-target_out_dir = target.split('_', 1)[1]  # "debug" or "release"
+target_out_dir = target
+
+if not target_out_dir == "editor":
+    target_out_dir = target.split('_', 1)[1]  # "debug" or "release"
 
 if platform == "ios":
-    # Para iOS, los binarios se construyen en un directorio intermedio `build/`
-    # antes de ser empaquetados en un XCFramework.
     output_dir = f"build/ios/{target_out_dir}"
 else:
     output_dir = f"demo/addons/godot-dojo/bin/{platform}/{target_out_dir}"
@@ -471,9 +452,7 @@ os.makedirs(output_dir, exist_ok=True)
 lib_name = f"{output_dir}/{prefix}godot-dojo{suffix_map.get(platform, f'.{platform}.{target}.{arch}.so')}"
 
 library = env.SharedLibrary(target=lib_name, source=sources)
-# Explicitly declare that the C++ library depends on the Rust library.
-# This ensures SCons builds the Rust code before attempting to link the C++ library.
-env.Depends(library, rust_lib_target)
+
 env.Alias(f"godot-dojo-{platform}-{target_out_dir}", library)
 
 # Generate .gdextension
@@ -563,7 +542,7 @@ if platform == "ios":
         output_base = f"build/ios/{target_out_dir}"
         is_simulator = env.get('ios_simulator', False)
         # The output path is always the same. The action will handle deletion to force recreation.
-        target_dir = f"demo/addons/godot-dojo/bin/ios/{target_out_dir}/godot-dojo.xcframework"
+        target_dir = f"build/ios/{target_out_dir}/godot-dojo.xcframework"
         # Always delete the existing XCFramework to force recreation.
         if os.path.exists(target_dir):
             print(f"{Y}{broom} Deleting existing XCFramework to ensure a clean build: {target_dir}{X}")

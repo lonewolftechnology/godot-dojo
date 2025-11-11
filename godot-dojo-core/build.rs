@@ -116,18 +116,9 @@ namespace std {
 }
 
 fn main(){
-    // FORCE REBUILD
-    env::set_var("REBUILD", format!("{:?}", std::time::Instant::now()));
-    println!("cargo:rerun-if-env-changed=REBUILD");
-    let key = "SKIP_BINDINGS_GENERATION";
-    match env::var(key) {
-        Ok(val) => {
-            if val == "1"{
-                info!("Skipping bindings generation because {} is set.", val);
-                return;
-            }
-        },
-        Err(e) => note!("{} {}", key, e),
+    if env::var("SKIP_BINDINGS_GENERATION").as_deref() == Ok("1") {
+        info!("Skipping bindings generation because SKIP_BINDINGS_GENERATION is set to 1.");
+        return;
     };
 
     let manifest_dir = env::var("CARGO_MANIFEST_DIR").unwrap();
