@@ -71,6 +71,11 @@
 			<description>
 			</description>
 		</method>
+		<method name="is_valid">
+			<return type="bool" />
+			<description>
+			</description>
+		</method>
 		<method name="new_headless" qualifiers="static">
 			<return type="DojoController" />
 			<param index="0" name="app_id" type="String" />
