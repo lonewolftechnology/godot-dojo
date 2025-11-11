@@ -25,6 +25,14 @@ on:
         required: false
         type: string
         default: ""
+      current_tag:
+        required: false
+        type: string
+        default: ''
+      previous_tag:
+        required: false
+        type: string
+        default: ''
 
 jobs:
   build:
@@ -37,6 +45,12 @@ jobs:
         with:
           submodules: true
           fetch-depth: 0
+
+      - name: Download generated bindings
+        uses: actions/download-artifact@v4
+        with:
+          name: generated-bindings
+          path: bindings/
 
       - name: Install dependencies (Linux)
         if: runner.os == 'Linux'
@@ -52,104 +66,106 @@ jobs:
 
       - name: Install Android NDK
         if: inputs.platform_id == 'android'
+        id: setup-ndk
         uses: nttld/setup-ndk@v1
         with:
           ndk-version: r23c
           add-to-path: true
 
+      - name: Configure Cargo for Android
+        if: inputs.platform_id == 'android'
+        shell: bash
+        run: |
+          NDK_TOOLCHAIN_PATH="${{ steps.setup-ndk.outputs.ndk-path }}/toolchains/llvm/prebuilt/linux-x86_64/bin"
+          echo "PATH=$NDK_TOOLCHAIN_PATH:$PATH" >> $GITHUB_ENV
+          echo "ANDROID_NDK_ROOT=${{ steps.setup-ndk.outputs.ndk-path }}" >> $GITHUB_ENV
+
+          echo "CARGO_TARGET_AARCH64_LINUX_ANDROID_LINKER=aarch64-linux-android29-clang" >> $GITHUB_ENV
+          echo "CC_aarch64_linux_android=aarch64-linux-android29-clang" >> $GITHUB_ENV
+          echo "CXX_aarch64_linux_android=aarch64-linux-android29-clang++" >> $GITHUB_ENV
+          echo "AR_aarch64_linux_android=llvm-ar" >> $GITHUB_ENV
+
+      - name: Install SCons
+        run: pip install scons
+
       - name: Download core artifacts (target)
         uses: actions/download-artifact@v4
         with:
-          name: core-target-${{ inputs.platform_id }}-${{ inputs.arch }}-release
-          path: godot-dojo/godot-dojo-core/target
-
-      - name: Set up Rust nightly
-        uses: dtolnay/rust-toolchain@nightly
-        with:
-          targets: ${{ inputs.rust_target }}
-
-      - name: Cache uniffi-bindgen-cpp
-        id: cache-uniffi-bindgen-cpp
-        uses: actions/cache@v3
-        with:
-          path: ~/.cargo/bin/uniffi-bindgen-cpp
-          key: ${{ runner.os }}-uniffi-bindgen-cpp-Larkooo-0.30
-
-      - name: Install uniffi-bindgen-cpp from source
-        if: steps.cache-uniffi-bindgen-cpp.outputs.cache-hit != 'true'
-        run: cargo install --git https://github.com/Larkooo/uniffi-bindgen-cpp --branch update-0.30 uniffi-bindgen-cpp
-
-      - name: Install scons
-        run: pip install scons
+          name: core-build-${{ inputs.platform_id }}${{ inputs.platform_id == 'ios' && '-universal' || format('-{0}-release', inputs.arch) }}
+          path: godot-dojo-core/target
 
       - name: Cache SCons and godot-cpp build artifacts
         uses: actions/cache@v3
         with:
-          path: |
-            godot-dojo/.sconsign.dblite
-            godot-dojo/demo/addons/godot-dojo/
-            godot-dojo/external/godot-cpp/bin/
-            godot-dojo/external/godot-cpp/.sconsign.dblite
-            godot-dojo/external/godot-cpp/gen/
-            godot-dojo/external/godot-cpp/__pycache__/
-          key: ${{ runner.os }}-${{ inputs.arch }}-scons-${{ inputs.precision }}-${{ inputs.build_target }}-${{ hashFiles('src/**/*.cpp', 'src/**/*.h', 'bindings/**/*.cpp', 'bindings/**/*.h', 'SConstruct') }}
+          path: | # Note: These paths are relative to the checkout directory
+            .sconsign.dblite
+            demo/addons/godot-dojo/
+            external/godot-cpp/bin/
+            external/godot-cpp/.sconsign.dblite
+            external/godot-cpp/gen/
+            external/godot-cpp/__pycache__/
+          key: ${{ runner.os }}-${{ inputs.arch }}-scons-${{ inputs.precision }}-${{ inputs.build_target }}-${{ inputs.current_tag }}
           restore-keys: |
-            ${{ runner.os }}-${{ inputs.arch }}-scons-${{ inputs.precision }}-${{ inputs.build_target }}-
+            ${{ runner.os }}-${{ inputs.arch }}-scons-${{ inputs.precision }}-${{ inputs.build_target }}-${{ inputs.previous_tag }}
 
       - name: Build GDExtension
         shell: bash
-        env:
-          CARGO_BUILD_TARGET: ${{ inputs.rust_target }}
         run: |
           set -e
 
-          # Set Android environment variables for SCons
-          if [ "${{ inputs.platform_id }}" = "android" ]; then
-            export ANDROID_NDK_ROOT=$ANDROID_NDK_HOME
-            SCONS_ANDROID_OPTS="android_ndk_path=$ANDROID_NDK_HOME"
-          fi
-
-          PLATFORM_ARG="platform=${{ inputs.platform_id }}"
-          ARCH_ARG="arch=${{ inputs.arch }}"
-          PRECISION_ARG="precision=${{ inputs.precision }}"
           export FORCE_RUST_RELEASE=1
-
-          if [ "${{ runner.os }}" = "macOS" ]; then
+          export SKIP_RUST_BUILD=1
+          export SKIP_BINDINGS_GENERATION=1
+          
+          if [ "${{ runner.os }}" = "macOS" ] && [ -n "${{ inputs.macos_deployment_target }}" ]; then
             export MACOSX_DEPLOYMENT_TARGET=${{ inputs.macos_deployment_target }}
             export RUSTFLAGS="${RUSTFLAGS:+$RUSTFLAGS }-C link-arg=-mmacosx-version-min=${{ inputs.macos_deployment_target }}"
           fi
 
-          mkdir -p godot-dojo/demo/addons/godot-dojo
-
-          cd godot-dojo
-
-          if [ "${{ inputs.platform_id }}" = "ios" ]; then
-            echo "Building iOS libraries for XCFramework (debug)..."
-            scons platform=ios arch=arm64 target=template_debug $PRECISION_ARG -j2
-            scons platform=ios arch=arm64 ios_simulator=yes target=template_debug $PRECISION_ARG -j2
-            scons platform=ios arch=x86_64 ios_simulator=yes target=template_debug $PRECISION_ARG -j2
-            scons platform=ios assemble-ios target=template_debug $PRECISION_ARG
-
-            echo "Building iOS libraries for XCFramework (release)..."
-            scons platform=ios arch=arm64 target=template_release $PRECISION_ARG -j2
-            scons platform=ios arch=arm64 ios_simulator=yes target=template_release $PRECISION_ARG -j2
-            scons platform=ios arch=x86_64 ios_simulator=yes target=template_release $PRECISION_ARG -j2
-            scons platform=ios assemble-ios target=template_release $PRECISION_ARG
-          else
+          mkdir -p demo/addons/godot-dojo
+          
+          # Non-iOS builds
+          if [ "${{ inputs.platform_id }}" != "ios" ]; then
+            PLATFORM_ARG="platform=${{ inputs.platform_id }}"
+            ARCH_ARG="arch=${{ inputs.arch }}"
+            PRECISION_ARG="precision=${{ inputs.precision }}"
             if [ "${{ inputs.build_target }}" = "templates" ]; then
-              scons $PLATFORM_ARG $ARCH_ARG target=template_debug $PRECISION_ARG -j2 $SCONS_ANDROID_OPTS
-              scons $PLATFORM_ARG $ARCH_ARG target=template_release $PRECISION_ARG -j2 $SCONS_ANDROID_OPTS
+              scons $PLATFORM_ARG $ARCH_ARG target=template_debug $PRECISION_ARG -j2
+              scons $PLATFORM_ARG $ARCH_ARG target=template_release $PRECISION_ARG -j2
             else
-              scons $PLATFORM_ARG $ARCH_ARG target=${{ inputs.build_target }} $PRECISION_ARG -j2 $SCONS_ANDROID_OPTS
+              scons $PLATFORM_ARG $ARCH_ARG target=${{ inputs.build_target }} $PRECISION_ARG -j2
             fi
           fi
 
+      - name: Build for iOS Device (arm64)
+        if: inputs.platform_id == 'ios'
+        run: |
+          scons platform=ios arch=arm64 target=template_debug precision=${{ inputs.precision }} -j2
+          scons platform=ios arch=arm64 target=template_release precision=${{ inputs.precision }} -j2
+
+      - name: Build for iOS Simulator (arm64)
+        if: inputs.platform_id == 'ios'
+        run: |
+          scons platform=ios arch=arm64 ios_simulator=yes target=template_debug precision=${{ inputs.precision }} -j2
+          scons platform=ios arch=arm64 ios_simulator=yes target=template_release precision=${{ inputs.precision }} -j2
+
+      - name: Build for iOS Simulator (x86_64)
+        if: inputs.platform_id == 'ios'
+        run: |
+          scons platform=ios arch=x86_64 ios_simulator=yes target=template_debug precision=${{ inputs.precision }} -j2
+          scons platform=ios arch=x86_64 ios_simulator=yes target=template_release precision=${{ inputs.precision }} -j2
+
+      - name: Assemble iOS XCFrameworks
+        if: inputs.platform_id == 'ios'
+        run: |
+          scons platform=ios arch=universal assemble-ios target=template_debug precision=${{ inputs.precision }}
+          scons platform=ios arch=universal assemble-ios target=template_release precision=${{ inputs.precision }}
 
       - name: Upload binaries
         uses: actions/upload-artifact@v4
         with:
           name: bin-${{ inputs.precision }}-${{ inputs.platform_id }}-${{ inputs.arch }}-${{ inputs.build_target }}
           path: |
-            godot-dojo/demo/addons/godot-dojo/
-            ${{ runner.os == 'Windows' && format('godot-dojo/godot-dojo-core/target/{0}/release/dojo_c.dll', inputs.rust_target) || '' }}
+            ${{ inputs.platform_id == 'ios' && 'build/' || 'demo/addons/godot-dojo/' }}
+            ${{ runner.os == 'Windows' && format('godot-dojo-core/target/{0}/release/dojo_c.dll', inputs.rust_target) || '' }}
           if-no-files-found: error

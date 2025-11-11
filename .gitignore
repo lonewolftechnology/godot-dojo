@@ -110,7 +110,7 @@ cmake-*
 # General cache directory
 .cache/
 
-# Rust target directory (external/dojo.c is handled separately)
+# Rust
 target/
 
 # ============================================================================
@@ -163,15 +163,6 @@ $RECYCLE.BIN/
 # Linux
 *~
 .directory
-
-# ============================================================================
-# RUST SPECIFIC (for external/dojo.c)
-# ============================================================================
-
-# Rust compilation artifacts in external projects are handled by their own .gitignore
-# But we ignore any that might leak to root
-Cargo.lock
-!external/*/Cargo.lock
 
 # ============================================================================
 # GODOT SPECIFIC

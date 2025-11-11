@@ -17,6 +17,8 @@ jobs:
       upload_url: ${{ steps.create_release.outputs.upload_url }}
       changelog_content: ${{ steps.changelog.outputs.content }}
       commits_log: ${{ steps.get_commits.outputs.commits }}
+      current_tag: ${{ steps.get_commits.outputs.current_tag }}
+      previous_tag: ${{ steps.get_commits.outputs.previous_tag }}
 
     steps:
       - name: Checkout code
@@ -46,10 +48,10 @@ jobs:
 
           if [ -z "$PREVIOUS_TAG" ]; then
             # If there's no previous tag, get all commits excluding those with '.idea' in the message
-            COMMITS_LOG=$(git log --pretty=format:"- %h %s" --invert-grep --grep="\.idea" --invert-grep --grep="^ci:" $CURRENT_TAG)
+            COMMITS_LOG=$(git log --pretty=format:"- %h %s" --invert-grep --grep="\.idea" --invert-grep --grep="^ci:" --invert-grep --grep="^Merge branch" $CURRENT_TAG)
           else
             # Get commits between the previous tag and the current tag, excluding those with '.idea' in the message
-            COMMITS_LOG=$(git log --pretty=format:"- %h %s" --invert-grep --grep="\.idea" --invert-grep --grep="^ci:" $PREVIOUS_TAG..$CURRENT_TAG)
+            COMMITS_LOG=$(git log --pretty=format:"- %h %s" --invert-grep --grep="\.idea" --invert-grep --grep="^ci:" --invert-grep --grep="^Merge branch" $PREVIOUS_TAG..$CURRENT_TAG)
           fi
 
           if [ -z "$COMMITS_LOG" ]; then
@@ -71,6 +73,8 @@ jobs:
           echo "commits<<EOF" >> $GITHUB_OUTPUT
           echo -e "$COMMITS" >> $GITHUB_OUTPUT
           echo "EOF" >> $GITHUB_OUTPUT
+          echo "current_tag=$CURRENT_TAG" >> $GITHUB_OUTPUT
+          echo "previous_tag=$PREVIOUS_TAG" >> $GITHUB_OUTPUT
 
       - name: Check if tag is from main branch
         id: check_branch
@@ -136,21 +140,83 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
+  build-rust-core-primary:
+    name: Build Core Crate (linux-x86_64) & Generate Bindings
+    runs-on: ubuntu-latest
+    needs: create_release
+    if: needs.create_release.result == 'success'
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          submodules: true
+          fetch-depth: 0
+
+      - name: Install dependencies (Linux)
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y build-essential pkg-config libdbus-1-dev protobuf-compiler libprotobuf-dev
+
+      - name: Set up Rust nightly
+        uses: dtolnay/rust-toolchain@nightly
+        with:
+          targets: x86_64-unknown-linux-gnu
+
+      - name: Cache Rust dependencies
+        uses: actions/cache@v3
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+          key: linux-x86_64-cargo-deps${{ needs.create_release.outputs.current_tag && format('-{0}', needs.create_release.outputs.current_tag) || '' }}
+          restore-keys: linux-x86_64-cargo-deps${{ needs.create_release.outputs.previous_tag && format('-{0}', needs.create_release.outputs.previous_tag) || '' }}
+
+      - name: Cache uniffi-bindgen-cpp
+        id: cache-uniffi-bindgen-cpp
+        uses: actions/cache@v3
+        with:
+          path: ~/.cargo/bin/uniffi-bindgen-cpp
+          key: ${{ runner.os }}-uniffi-bindgen-cpp-Larkooo-update-0.30
+
+      - name: Install uniffi-bindgen-cpp from source
+        if: steps.cache-uniffi-bindgen-cpp.outputs.cache-hit != 'true'
+        run: cargo install --git https://github.com/Larkooo/uniffi-bindgen-cpp --branch update-0.30 uniffi-bindgen-cpp
+
+      - name: Cache Rust build artifacts (target)
+        uses: actions/cache@v3
+        with:
+          path: godot-dojo-core/target
+          key: linux-x86_64-cargo-build-${{ hashFiles('godot-dojo-core/Cargo.lock') }}
+          restore-keys: linux-x86_64-cargo-build-
+
+      - name: Build godot-dojo-core and generate bindings
+        shell: bash
+        working-directory: godot-dojo-core
+        run: cargo build --release --target x86_64-unknown-linux-gnu
+
+      - name: Upload generated bindings
+        uses: actions/upload-artifact@v4
+        with:
+          name: generated-bindings
+          path: bindings/
+          if-no-files-found: error
+
+      - name: Upload core artifacts (target)
+        uses: actions/upload-artifact@v4
+        with:
+          name: core-build-linux-x86_64-release
+          path: godot-dojo-core/target
+          if-no-files-found: error
+
   build-rust-core:
     name: Build Core Crate (${{ matrix.platform_id }}-${{ matrix.arch }})
     runs-on: ${{ matrix.os_image }}
-    needs: create_release
-    if: needs.create_release.result == 'success'
-    continue-on-error: ${{ matrix.platform_id == 'windows' }}
+    needs: [create_release, build-rust-core-primary]
+    if: needs.create_release.result == 'success' && needs.build-rust-core-primary.result == 'success'
     strategy:
       fail-fast: false
       matrix:
         include:
-          - platform_id: linux
-            os_image: ubuntu-latest
-            arch: x86_64
-            rust_target: x86_64-unknown-linux-gnu
-            macos_deployment_target: ""
           - platform_id: macos
             os_image: macos-latest # arm64
             arch: arm64
@@ -161,11 +227,6 @@ jobs:
             arch: x86_64
             rust_target: x86_64-apple-darwin
             macos_deployment_target: "14.0"
-          - platform_id: windows
-            os_image: windows-latest
-            arch: x86_64
-            rust_target: x86_64-pc-windows-msvc
-            macos_deployment_target: ""
           - platform_id: windows-gnu
             os_image: ubuntu-latest
             arch: x86_64
@@ -176,6 +237,12 @@ jobs:
             arch: arm64
             rust_target: aarch64-linux-android
             macos_deployment_target: ""
+          - platform_id: ios
+            os_image: macos-latest
+            arch: universal
+            rust_target: 'aarch64-apple-ios' # Base target, SConstruct handles the rest
+            macos_deployment_target: ""
+
 
     steps:
       - name: Checkout code
@@ -184,9 +251,21 @@ jobs:
           submodules: true
           fetch-depth: 0
 
+      - name: Download generated bindings
+        uses: actions/download-artifact@v4
+        with:
+          name: generated-bindings
+          path: bindings/
+
       - name: Install dependencies (Linux)
         if: runner.os == 'Linux'
-        run: sudo apt-get update && sudo apt-get install -y build-essential pkg-config libdbus-1-dev protobuf-compiler libprotobuf-dev mingw-w64
+        run: |
+          sudo apt-get update
+          PACKAGES="build-essential pkg-config libdbus-1-dev protobuf-compiler libprotobuf-dev"
+          if [ "${{ matrix.platform_id }}" = "windows-gnu" ]; then
+            PACKAGES="$PACKAGES mingw-w64"
+          fi
+          sudo apt-get install -y $PACKAGES
 
       - name: Install dependencies (macOS)
         if: runner.os == 'macOS'
@@ -206,14 +285,15 @@ jobs:
         if: matrix.platform_id == 'android'
         shell: bash
         run: |
-          echo "CARGO_TARGET_AARCH64_LINUX_ANDROID_LINKER=${ANDROID_NDK_HOME}/toolchains/llvm/prebuilt/linux-x86_64/bin/aarch64-linux-android21-clang" >> $GITHUB_ENV
-          echo "CC_aarch64_linux_android=${ANDROID_NDK_HOME}/toolchains/llvm/prebuilt/linux-x86_64/bin/aarch64-linux-android21-clang" >> $GITHUB_ENV
-          echo "CXX_aarch64_linux_android=${ANDROID_NDK_HOME}/toolchains/llvm/prebuilt/linux-x86_64/bin/aarch64-linux-android21-clang++" >> $GITHUB_ENV
+          echo "CARGO_TARGET_AARCH64_LINUX_ANDROID_LINKER=${ANDROID_NDK_HOME}/toolchains/llvm/prebuilt/linux-x86_64/bin/aarch64-linux-android29-clang" >> $GITHUB_ENV
+          echo "CC_aarch64_linux_android=${ANDROID_NDK_HOME}/toolchains/llvm/prebuilt/linux-x86_64/bin/aarch64-linux-android29-clang" >> $GITHUB_ENV
+          echo "CXX_aarch64_linux_android=${ANDROID_NDK_HOME}/toolchains/llvm/prebuilt/linux-x86_64/bin/aarch64-linux-android29-clang++" >> $GITHUB_ENV
+          echo "AR_aarch64_linux_android=${ANDROID_NDK_HOME}/toolchains/llvm/prebuilt/linux-x86_64/bin/llvm-ar" >> $GITHUB_ENV
 
       - name: Set up Rust nightly
         uses: dtolnay/rust-toolchain@nightly
         with:
-          targets: ${{ matrix.rust_target }}
+          targets: ${{ matrix.platform_id == 'ios' && 'aarch64-apple-ios,x86_64-apple-ios,aarch64-apple-ios-sim' || matrix.rust_target }}
 
       - name: Cache Rust dependencies
         uses: actions/cache@v3
@@ -221,34 +301,56 @@ jobs:
           path: |
             ~/.cargo/registry
             ~/.cargo/git
-          key: ${{ matrix.platform_id }}-${{ matrix.arch }}-cargo-deps-${{ hashFiles('godot-dojo-core/Cargo.lock') }}
-          restore-keys: |
-            ${{ matrix.platform_id }}-${{ matrix.arch }}-cargo-deps-
+          key: ${{ matrix.platform_id }}-${{ matrix.arch }}-cargo-deps${{ needs.create_release.outputs.current_tag && format('-{0}', needs.create_release.outputs.current_tag) || '' }}
+          restore-keys: ${{ matrix.platform_id }}-${{ matrix.arch }}-cargo-deps${{ needs.create_release.outputs.previous_tag && format('-{0}', needs.create_release.outputs.previous_tag) || '' }}
+
+      - name: Cache Rust build artifacts (target)
+        uses: actions/cache@v3
+        with:
+          path: godot-dojo-core/target
+          key: ${{ matrix.platform_id }}-${{ matrix.arch }}-cargo-build-${{ hashFiles('godot-dojo-core/Cargo.lock') }}
+          restore-keys: ${{ matrix.platform_id }}-${{ matrix.arch }}-cargo-build-
 
       - name: Build godot-dojo-core
         shell: bash
         working-directory: godot-dojo-core
         env:
-          SKIP_BINDINGS_GENERATION: 1
+          SKIP_BINDINGS_GENERATION: "1"
+
         run: |
-          if [ "${{ runner.os }}" = "macOS" ]; then
+          if [ "${{ runner.os }}" = "macOS" ] && [ -n "${{ matrix.macos_deployment_target }}" ]; then
             export MACOSX_DEPLOYMENT_TARGET=${{ matrix.macos_deployment_target }}
-            export RUSTFLAGS="${RUSTFLAGS:+$RUSTFLAGS }-C link-arg=-mmacosx-version-min=${{ matrix.macos_deployment_target }}"
+            export RUSTFLAGS="${RUSTFLAGS}-C link-arg=-mmacosx-version-min=${{ matrix.macos_deployment_target }}"
           fi
 
-          cargo build --release --target ${{ matrix.rust_target }}
+          if [ "${{ matrix.platform_id }}" = "ios" ]; then
+            cargo build --release --target aarch64-apple-ios
+            cargo build --release --target x86_64-apple-ios
+            cargo build --release --target aarch64-apple-ios-sim
+          else
+            cargo build --release --target ${{ matrix.rust_target }}
+          fi
 
       - name: Upload core artifacts (target)
+        if: matrix.platform_id != 'ios'
         uses: actions/upload-artifact@v4
         with:
-          name: core-target-${{ matrix.platform_id }}-${{ matrix.arch }}-release
+          name: core-build-${{ matrix.platform_id }}-${{ matrix.arch }}-release
+          path: godot-dojo-core/target
+          if-no-files-found: error
+
+      - name: Upload core artifacts (iOS)
+        if: matrix.platform_id == 'ios'
+        uses: actions/upload-artifact@v4
+        with:
+          name: core-build-ios-universal
           path: godot-dojo-core/target
           if-no-files-found: error
 
   build-gdextension-android:
     name: Build GDExtension (android-${{ matrix.arch }}-${{ matrix.precision }}-${{ matrix.build_target }})
-    needs: [create_release, build-rust-core]
-    if: needs.create_release.result == 'success' && needs.build-rust-core.result == 'success'
+    needs: [create_release, build-rust-core, build-rust-core-primary]
+    if: needs.create_release.result == 'success' && needs.build-rust-core.result == 'success' && needs.build-rust-core-primary.result == 'success'
     uses: ./.github/workflows/reusable-build.yml
     strategy:
       fail-fast: false
@@ -269,9 +371,11 @@ jobs:
       platform_id: ${{ matrix.platform_id }}
       macos_deployment_target: ''
 
+      current_tag: ${{ needs.create_release.outputs.current_tag }}
+      previous_tag: ${{ needs.create_release.outputs.previous_tag }}
   build-gdextension-ios:
     name: Build GDExtension (ios-${{ matrix.arch }}-${{ matrix.precision }}-${{ matrix.build_target }})
-    needs: [create_release, build-rust-core]
+    needs: [create_release, build-rust-core, build-rust-core-primary]
     if: success()
     uses: ./.github/workflows/reusable-build.yml
     strategy:
@@ -287,302 +391,74 @@ jobs:
       platform_id: ios
       macos_deployment_target: ''
 
-  # To keep the file smaller, I've removed the other build-gdextension-* jobs.
-  # They should be converted to use the reusable workflow as well, like this:
-  #
-  # build-gdextension-linux:
-  #   name: Build GDExtension (linux-${{ matrix.arch }}-${{ matrix.precision }}-${{ matrix.build_target }})
-  #   needs: [create_release, build-rust-core]
-  #   if: needs.create_release.result == 'success' && needs.build-rust-core.result == 'success'
-  #   uses: ./.github/workflows/reusable-build.yml
-  #   with:
-  #     ... (parameters for linux)
-
+      current_tag: ${{ needs.create_release.outputs.current_tag }}
+      previous_tag: ${{ needs.create_release.outputs.previous_tag }}
 
   build-gdextension-linux:
     name: Build GDExtension (linux-${{ matrix.arch }}-${{ matrix.precision }}-${{ matrix.build_target }})
-    needs: [create_release, build-rust-core]
-    if: needs.create_release.result == 'success' && needs.build-rust-core.result == 'success'
-    runs-on: ubuntu-latest
+    needs: [create_release, build-rust-core-primary]
+    if: needs.create_release.result == 'success' && needs.build-rust-core-primary.result == 'success'
+    uses: ./.github/workflows/reusable-build.yml
     strategy:
       fail-fast: false
       matrix:
         precision: [single, double]
         build_target: [editor, templates]
         include:
-          - arch: x86_64
+          - os: ubuntu-latest
+            arch: x86_64
             rust_target: x86_64-unknown-linux-gnu
             platform_id: linux
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-        with:
-          submodules: true
-          fetch-depth: 0
+    with:
+      os: ${{ matrix.os }}
+      arch: ${{ matrix.arch }}
+      rust_target: ${{ matrix.rust_target }}
+      precision: ${{ matrix.precision }}
+      build_target: ${{ matrix.build_target }}
+      platform_id: ${{ matrix.platform_id }}
+      macos_deployment_target: ''
 
-      - name: Install dependencies
-        run: sudo apt-get update && sudo apt-get install -y build-essential pkg-config dbus libdbus-1-dev protobuf-compiler libprotobuf-dev
-
-      - name: Download core artifacts (target)
-        uses: actions/download-artifact@v4
-        with:
-          name: core-target-${{ matrix.platform_id }}-${{ matrix.arch }}-release
-          path: godot-dojo-core/target
-
-      - name: Set up Rust nightly
-        uses: dtolnay/rust-toolchain@nightly
-        with:
-          targets: ${{ matrix.rust_target }}
-
-      - name: Cache Rust dependencies
-        uses: actions/cache@v3
-        with:
-          path: |
-            ~/.cargo/registry
-            ~/.cargo/git
-          key: ${{ matrix.platform_id }}-${{ matrix.arch }}-cargo-deps-${{ hashFiles('godot-dojo-core/Cargo.lock') }}
-          restore-keys: |
-            ${{ matrix.platform_id }}-${{ matrix.arch }}-cargo-deps-
-
-      - name: Cache uniffi-bindgen-cpp
-        id: cache-uniffi-bindgen-cpp
-        uses: actions/cache@v3
-        with:
-          path: ~/.cargo/bin/uniffi-bindgen-cpp
-          key: ${{ runner.os }}-uniffi-bindgen-cpp-Larkooo-0.30
-
-      - name: Install uniffi-bindgen-cpp from source
-        if: steps.cache-uniffi-bindgen-cpp.outputs.cache-hit != 'true'
-        run: cargo install --git https://github.com/Larkooo/uniffi-bindgen-cpp --branch update-0.30 uniffi-bindgen-cpp
-
-      - name: Install scons
-        run: pip install scons
-
-      - name: Build GDExtension
-        shell: bash
-        run: |
-          set -e
-          PLATFORM_ARG="platform=${{ matrix.platform_id }}"
-          ARCH_ARG="arch=${{ matrix.arch }}"
-          PRECISION_ARG="precision=${{ matrix.precision }}"
-          export CARGO_BUILD_TARGET=${{ matrix.rust_target }}
-          export FORCE_RUST_RELEASE=1
-
-          mkdir -p demo/addons/godot-dojo
-
-          if [ "${{ matrix.build_target }}" = "templates" ]; then
-            scons $PLATFORM_ARG $ARCH_ARG target=template_debug $PRECISION_ARG -j2
-            scons $PLATFORM_ARG $ARCH_ARG target=template_release $PRECISION_ARG -j2
-          else
-            scons $PLATFORM_ARG $ARCH_ARG target=${{ matrix.build_target }} $PRECISION_ARG -j2
-          fi
-
-      - name: Upload binaries
-        uses: actions/upload-artifact@v4
-        with:
-          name: bin-${{ matrix.precision }}-${{ matrix.platform_id }}-${{ matrix.arch }}-${{ matrix.build_target }}
-          path: demo/addons/godot-dojo/
-          if-no-files-found: error
+      current_tag: ${{ needs.create_release.outputs.current_tag }}
+      previous_tag: ${{ needs.create_release.outputs.previous_tag }}
 
   build-gdextension-macos:
     name: Build GDExtension (macos-${{ matrix.arch }}-${{ matrix.precision }}-${{ matrix.build_target }})
-    needs: [create_release, build-rust-core]
-    if: needs.create_release.result == 'success' && needs.build-rust-core.result == 'success'
-    runs-on: ${{ matrix.os }}
+    needs: [create_release, build-rust-core, build-rust-core-primary]
+    if: needs.create_release.result == 'success' && needs.build-rust-core.result == 'success' && needs.build-rust-core-primary.result == 'success'
+    uses: ./.github/workflows/reusable-build.yml
     strategy:
       fail-fast: false
       matrix:
         precision: [single, double]
         build_target: [editor, templates]
         include:
-          - os: macos-latest
-            arch: arm64
-            rust_target: aarch64-apple-darwin
-            macos_deployment_target: "14.0"
-            platform_id: macos
-          - os: macos-latest
-            arch: x86_64
-            rust_target: x86_64-apple-darwin
-            macos_deployment_target: "14.0"
-            platform_id: macos
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-        with:
-          submodules: true
-          fetch-depth: 0
+           - os: macos-latest
+             arch: arm64
+             rust_target: aarch64-apple-darwin
+             macos_deployment_target: "14.0"
+             platform_id: macos
+           - os: macos-latest
+             arch: x86_64
+             rust_target: x86_64-apple-darwin
+             macos_deployment_target: "14.0"
+             platform_id: macos
+    with:
+      os: ${{ matrix.os }}
+      arch: ${{ matrix.arch }}
+      rust_target: ${{ matrix.rust_target }}
+      precision: ${{ matrix.precision }}
+      build_target: ${{ matrix.build_target }}
+      platform_id: ${{ matrix.platform_id }}
+      macos_deployment_target: ${{ matrix.macos_deployment_target }}
 
-      - name: Install dependencies
-        run: brew install protobuf
-
-      - name: Download core artifacts (target)
-        uses: actions/download-artifact@v4
-        with:
-          name: core-target-${{ matrix.platform_id }}-${{ matrix.arch }}-release
-          path: godot-dojo-core/target
-
-      - name: Set up Rust nightly
-        uses: dtolnay/rust-toolchain@nightly
-        with:
-          targets: ${{ matrix.rust_target }}
-
-      - name: Cache Rust dependencies
-        uses: actions/cache@v3
-        with:
-          path: |
-            ~/.cargo/registry
-            ~/.cargo/git
-          key: ${{ matrix.platform_id }}-${{ matrix.arch }}-cargo-deps-${{ hashFiles('godot-dojo-core/Cargo.lock') }}
-          restore-keys: |
-            ${{ matrix.platform_id }}-${{ matrix.arch }}-cargo-deps-
-
-      - name: Cache uniffi-bindgen-cpp
-        id: cache-uniffi-bindgen-cpp
-        uses: actions/cache@v3
-        with:
-          path: ~/.cargo/bin/uniffi-bindgen-cpp
-          key: ${{ runner.os }}-uniffi-bindgen-cpp-Larkooo-0.30
-
-      - name: Install uniffi-bindgen-cpp from source
-        if: steps.cache-uniffi-bindgen-cpp.outputs.cache-hit != 'true'
-        run: cargo install --git https://github.com/Larkooo/uniffi-bindgen-cpp --branch update-0.30 uniffi-bindgen-cpp
-
-      - name: Install scons
-        run: pip install scons
-
-      - name: Build GDExtension
-        shell: bash
-        run: |
-          set -e
-          PLATFORM_ARG="platform=${{ matrix.platform_id }}"
-          ARCH_ARG="arch=${{ matrix.arch }}"
-          PRECISION_ARG="precision=${{ matrix.precision }}"
-          export CARGO_BUILD_TARGET=${{ matrix.rust_target }}
-          export FORCE_RUST_RELEASE=1
-
-          export MACOSX_DEPLOYMENT_TARGET=${{ matrix.macos_deployment_target }}
-          export RUSTFLAGS="${RUSTFLAGS:+$RUSTFLAGS }-C link-arg=-mmacosx-version-min=${{ matrix.macos_deployment_target }}"
-
-          mkdir -p demo/addons/godot-dojo
-
-          if [ "${{ matrix.build_target }}" = "templates" ]; then
-            scons $PLATFORM_ARG $ARCH_ARG target=template_debug $PRECISION_ARG -j2
-            scons $PLATFORM_ARG $ARCH_ARG target=template_release $PRECISION_ARG -j2
-          else
-            scons $PLATFORM_ARG $ARCH_ARG target=${{ matrix.build_target }} $PRECISION_ARG -j2
-          fi
-
-      - name: Upload binaries
-        uses: actions/upload-artifact@v4
-        with:
-          name: bin-${{ matrix.precision }}-${{ matrix.platform_id }}-${{ matrix.arch }}-${{ matrix.build_target }}
-          path: demo/addons/godot-dojo/
-          if-no-files-found: error
+      current_tag: ${{ needs.create_release.outputs.current_tag }}
+      previous_tag: ${{ needs.create_release.outputs.previous_tag }}
 
   build-gdextension-windows:
-    name: Build GDExtension (windows-${{ matrix.arch }}-${{ matrix.precision }}-${{ matrix.build_target }})
-    needs: [create_release, build-rust-core]
-    if: needs.create_release.result == 'success' && needs.build-rust-core.result == 'success'
-    runs-on: windows-latest
-    continue-on-error: true
-    strategy:
-      fail-fast: false
-      matrix:
-        precision: [single, double]
-        build_target: [editor, templates]
-        include:
-          - platform_id: windows
-            arch: x86_64
-            rust_target: x86_64-pc-windows-msvc
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-        with:
-          submodules: true
-          fetch-depth: 0
-
-      - name: Install dependencies (Windows)
-        run: choco install protoc
-
-      - name: Download core artifacts (target)
-        uses: actions/download-artifact@v4
-        with:
-          name: core-target-${{ matrix.platform_id }}-${{ matrix.arch }}-release
-          path: godot-dojo-core/target
-
-      - name: Set up Rust nightly
-        uses: dtolnay/rust-toolchain@nightly
-        with:
-          targets: ${{ matrix.rust_target }}
-
-      - name: Cache Rust dependencies
-        uses: actions/cache@v3
-        with:
-          path: |
-            ~/.cargo/registry
-            ~/.cargo/git
-          key: ${{ matrix.platform_id }}-${{ matrix.arch }}-cargo-deps-${{ hashFiles('godot-dojo-core/Cargo.lock') }}
-          restore-keys: |
-            ${{ matrix.platform_id }}-${{ matrix.arch }}-cargo-deps-
-
-      - name: Cache uniffi-bindgen-cpp
-        id: cache-uniffi-bindgen-cpp
-        uses: actions/cache@v3
-        with:
-          path: ~/.cargo/bin/uniffi-bindgen-cpp
-          key: ${{ runner.os }}-uniffi-bindgen-cpp-Larkooo-0.30
-
-      - name: Install uniffi-bindgen-cpp from source
-        if: steps.cache-uniffi-bindgen-cpp.outputs.cache-hit != 'true'
-        run: cargo install --git https://github.com/Larkooo/uniffi-bindgen-cpp --branch update-0.30 uniffi-bindgen-cpp
-
-      - name: Install scons
-        run: pip install scons
-
-      - name: Build GDExtension
-        shell: bash
-        run: |
-          set -e
-          PLATFORM_ARG="platform=windows"
-          ARCH_ARG="arch=${{ matrix.arch }}"
-          PRECISION_ARG="precision=${{ matrix.precision }}"
-          export CARGO_BUILD_TARGET=${{ matrix.rust_target }}
-          export FORCE_RUST_RELEASE=1
-
-          mkdir -p demo/addons/godot-dojo
-
-          if [ "${{ matrix.build_target }}" = "templates" ]; then
-            scons $PLATFORM_ARG $ARCH_ARG target=template_debug $PRECISION_ARG -j2
-            scons $PLATFORM_ARG $ARCH_ARG target=template_release $PRECISION_ARG -j2
-          else
-            scons $PLATFORM_ARG $ARCH_ARG target=${{ matrix.build_target }} $PRECISION_ARG -j2
-          fi
-
-      - name: Upload binaries
-        uses: actions/upload-artifact@v4
-        with:
-          name: bin-${{ matrix.precision }}-windows-${{ matrix.arch }}-${{ matrix.build_target }}
-          path: |
-            demo/addons/godot-dojo/
-            ${{ format('godot-dojo-core/target/{0}/release/dojo_c.dll', matrix.rust_target) }}
-          if-no-files-found: error
-
-      - name: Create failure marker
-        if: failure()
-        run: echo "Windows MSVC build failed" > windows-build-failure.txt
-
-      - name: Upload failure marker
-        if: failure()
-        uses: actions/upload-artifact@v4
-        with:
-          name: windows-build-failed
-          path: windows-build-failure.txt
-
-  build-gdextension-windows-fallback:
-    name: Build GDExtension Windows Fallback (GNU)
+    name: Build GDExtension (windows-gnu-${{ matrix.arch }}-${{ matrix.precision }}-${{ matrix.build_target }})
     runs-on: ubuntu-latest
-    needs: [create_release, build-rust-core, build-gdextension-windows]
-    if: always() && needs.create_release.result == 'success' && needs.build-rust-core.result == 'success'
+    needs: [create_release, build-rust-core, build-rust-core-primary]
+    if: needs.create_release.result == 'success' && needs.build-rust-core.result == 'success' && needs.build-rust-core-primary.result == 'success'
     strategy:
       fail-fast: false
       matrix:
@@ -593,61 +469,41 @@ jobs:
             arch: x86_64
             rust_target: x86_64-pc-windows-gnu
     steps:
-      - name: Check for MSVC build failure
-        id: check_failure
-        uses: actions/download-artifact@v4
-        with:
-          name: windows-build-failed
-        continue-on-error: true
-
       - name: Checkout code
-        if: steps.check_failure.outcome == 'success'
         uses: actions/checkout@v4
         with:
           submodules: true
 
+      - name: Download generated bindings
+        uses: actions/download-artifact@v4
+        with:
+          name: generated-bindings
+          path: bindings/
+
       - name: Install dependencies
-        if: steps.check_failure.outcome == 'success'
         run: sudo apt-get update && sudo apt-get install -y scons build-essential mingw-w64 protobuf-compiler libdbus-1-dev
 
-      - name: Set up Rust nightly
-        if: steps.check_failure.outcome == 'success'
-        uses: dtolnay/rust-toolchain@nightly
+      - name: Download core artifacts
+        uses: actions/download-artifact@v4
         with:
-          targets: ${{ matrix.rust_target }}
+          name: core-build-${{ matrix.platform_id }}-${{ matrix.arch }}-release
+          path: godot-dojo-core/target
 
-      - name: Cache Rust dependencies
-        if: steps.check_failure.outcome == 'success'
+      - name: Cache SCons and godot-cpp build artifacts
         uses: actions/cache@v3
         with:
           path: |
-            ~/.cargo/registry
-            ~/.cargo/git
-          key: ${{ matrix.platform_id }}-${{ matrix.arch }}-cargo-deps-${{ hashFiles('godot-dojo-core/Cargo.lock') }}
+            .sconsign.dblite
+            demo/addons/godot-dojo/
+            external/godot-cpp/bin/
+            external/godot-cpp/.sconsign.dblite
+            external/godot-cpp/gen/
+            external/godot-cpp/__pycache__/
+          key: ${{ runner.os }}-${{ matrix.arch }}-scons-${{ matrix.precision }}-${{ matrix.build_target }}-${{ needs.create_release.outputs.current_tag }}
           restore-keys: |
-            ${{ matrix.platform_id }}-${{ matrix.arch }}-cargo-deps-
-
-      - name: Download core artifacts
-        if: steps.check_failure.outcome == 'success'
-        uses: actions/download-artifact@v4
-        with:
-          name: core-target-${{ matrix.platform_id }}-${{ matrix.arch }}-release
-          path: godot-dojo-core/target
-
-      - name: Cache uniffi-bindgen-cpp
-        if: steps.check_failure.outcome == 'success'
-        id: cache-uniffi-bindgen-cpp
-        uses: actions/cache@v3
-        with:
-          path: ~/.cargo/bin/uniffi-bindgen-cpp
-          key: ${{ runner.os }}-uniffi-bindgen-cpp-Larkooo-0.30
-
-      - name: Install uniffi-bindgen-cpp from source
-        if: steps.check_failure.outcome == 'success' && steps.cache-uniffi-bindgen-cpp.outputs.cache-hit != 'true'
-        run: cargo install --git https://github.com/Larkooo/uniffi-bindgen-cpp --branch update-0.30 uniffi-bindgen-cpp
+            ${{ runner.os }}-${{ matrix.arch }}-scons-${{ matrix.precision }}-${{ matrix.build_target }}-${{ needs.create_release.outputs.previous_tag }}
 
       - name: Build GDExtension
-        if: steps.check_failure.outcome == 'success'
         shell: bash
         run: |
           set -e
@@ -656,6 +512,8 @@ jobs:
           PRECISION_ARG="precision=${{ matrix.precision }}"
           export CARGO_BUILD_TARGET=${{ matrix.rust_target }}
           export FORCE_RUST_RELEASE=1
+          export SKIP_RUST_BUILD=1
+          export SKIP_BINDINGS_GENERATION=1
 
           mkdir -p demo/addons/godot-dojo
 
@@ -667,7 +525,6 @@ jobs:
           fi
 
       - name: Upload GDExtension artifact
-        if: steps.check_failure.outcome == 'success'
         uses: actions/upload-artifact@v4
         with:
           name: bin-${{ matrix.precision }}-windows-${{ matrix.arch }}-${{ matrix.build_target }}
@@ -679,8 +536,8 @@ jobs:
   package:
     name: Combine all binaries and create zip files
     runs-on: ubuntu-latest
-    needs: [create_release, build-gdextension-android, build-gdextension-linux, build-gdextension-macos, build-gdextension-windows, build-gdextension-windows-fallback, build-gdextension-ios]
-    if: always() && needs.create_release.result == 'success' && needs.build-gdextension-linux.result == 'success' && needs.build-gdextension-macos.result == 'success'
+    needs: [create_release, build-gdextension-android, build-gdextension-linux, build-gdextension-macos, build-gdextension-windows, build-gdextension-ios, build-rust-core-primary]
+    if: always() && needs.create_release.result == 'success' && (needs.build-gdextension-windows.result == 'success' || needs.build-gdextension-windows.result == 'skipped') && needs.build-gdextension-linux.result == 'success' && needs.build-gdextension-macos.result == 'success' && needs.build-rust-core-primary.result == 'success'
 
     steps:
       - name: Checkout code
