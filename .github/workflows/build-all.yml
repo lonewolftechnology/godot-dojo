@@ -196,6 +196,12 @@ jobs:
         if: runner.os == 'Windows'
         run: choco install protoc
 
+      - name: Install Android NDK
+        if: matrix.platform_id == 'android'
+        uses: nttld/setup-ndk@v1
+        with:
+          ndk-version: r23c
+
       - name: Set up Rust nightly
         uses: dtolnay/rust-toolchain@nightly
         with:
