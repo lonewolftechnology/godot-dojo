@@ -12,13 +12,17 @@ extends Node
 @export var entity_sub: EntitySubscription
 @export var message_sub: MessageSubscription
 
-const CONTRACT = "0x023b0d96f2617d1be29e5ee6ec4b7b4da312d0eb28d6c83f5ef1c2ba254f3a6f"
-
-const WORLD = "0x026d5777eccca1861a23303ee0ba48c0e8349e849d0377a21c3801ef1d0f8cef"
+#const CONTRACT = "0x01ae76ae877518f905b73b643d96731e71e6b848ba68824adb4f1a77760fc3c7" # Dojo Starter
+const CONTRACT: String = "0x023b0d96f2617d1be29e5ee6ec4b7b4da312d0eb28d6c83f5ef1c2ba254f3a6f"
+#
+const WORLD: String = "0x026d5777eccca1861a23303ee0ba48c0e8349e849d0377a21c3801ef1d0f8cef"
 #const RPC_URL = "http://localhost:5050"
-const RPC_URL = "https://api.cartridge.gg/x/godot-demo-rookie/katana"
+const RPC_URL: String = "https://api.cartridge.gg/x/godot-gdextension/katana"
+#const RPC_URL = "https://api.cartridge.gg/x/godot-demo-rookie/katana"
 #const TORII_URL = "http://localhost:8080"
-const TORII_URL = "https://api.cartridge.gg/x/godot-demo-rookie/torii"
+const TORII_URL: String = "https://api.cartridge.gg/x/godot-gdextension/torii"
+
+@onready var priv_key: String = "0x3a141f4c5d6165f4fad527186d3fdb329dc355d8dfe773f22438c19a123d"
 
 
 var policies:Dictionary = {
@@ -88,7 +92,6 @@ var calldata:Array = [
 		"calldata": [U256.from_variant(-4)]
 		}
 	]
-@onready var priv_key:String = "0x3f9f6b16ddc141157d2712176d389e43acb016f7de1744ff544e91287e8e"
 
 func callback(data):
 	print_rich("[color=RED]SUB Callback[/color] %s" % [data])
