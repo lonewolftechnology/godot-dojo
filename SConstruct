@@ -456,10 +456,7 @@ suffix_map = {
     "ios": f".ios.{target}.{arch}.dylib" if not env['ios_simulator'] else f".ios.{target}.simulator.{arch}.dylib" ,
 }
 
-if platform == "ios" and '_' in target:
-    target_out_dir = target.split('_', 1)[1]  # "debug" or "release"
-else:
-    target_out_dir = target # "template_debug", "template_release", "editor"
+target_out_dir = target.split('_', 1)[1]  # "debug" or "release"
 
 if platform == "ios":
     # Para iOS, los binarios se construyen en un directorio intermedio `build/`
