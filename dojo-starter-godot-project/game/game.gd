@@ -64,8 +64,8 @@ func spawn() -> void:
 		"entrypoint": "spawn",
 		"calldata": []
 	}
-	connection.session_account.execute([spawn_call])
-#	connection.session_account.execute_from_outside([spawn_call])
+#	connection.session_account.execute([spawn_call])
+	connection.session_account.execute_from_outside([spawn_call])
 
 func _on_start_screen_entered() -> void:
 	start()
@@ -116,8 +116,8 @@ func get_entities() -> Dictionary:
 						if entry.has("vec"):
 							v = entry["vec"]
 							
-						elif entry.has("Vector2Signed"):
-							v = entry["Vector2Signed"]
+						elif entry.has("Vector2"):
+							v = entry["Vector2"]
 						var x := v["x"] as float
 						var y := v["y"] as float
 						position = Vector2(x,y)
@@ -151,12 +151,12 @@ func _update_entities(parsed_entities:Dictionary) -> void:
 			controllers_manager.move_controller(id,position)
 
 func _move(dir:Directions) -> void:
-	var spawn_call = {
+	var move_call = {
 		"contract_address": connection.ACTIONS_CONTRACT,
 		"entrypoint": "move",
 		"calldata": [dir]
 	}
-	connection.session_account.execute([spawn_call])
+	connection.session_account.execute([move_call])
 
 func _on_arrow_left_pressed() -> void:
 	_move(Directions.LEFT)
@@ -172,7 +172,7 @@ func _on_arrow_right_pressed() -> void:
 
 
 func _on_disconnect_pressed() -> void:
-	connection.controller_account.disconnect_controller()
+	connection.session_account.queue_free()
 	controllers_manager.clear()
 	await get_tree().process_frame	
 	get_tree().reload_current_scene()

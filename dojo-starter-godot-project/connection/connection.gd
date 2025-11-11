@@ -6,13 +6,13 @@ signal session_created(_data:Dictionary)
 # As of time of writing, September 1 2025
 # This are from our contract deployend on slot (https://github.com/dannroda/dojo-starter) Dojo v1.7.0-alpha.3
 # But it should work with official starter (https://github.com/dojoengine/dojo-starter), Dojo v1.6.2
-const WORLD_CONTRACT = "0x03a7e28319f3617da4135893c711c79a1306adcd87cca4fbd0ceda50ae397683"
-const ACTIONS_CONTRACT = "0x01d18853e41a1607c1bd80c2e80c34db3a59999a038b54a2424fae4ac71278da"
+const WORLD_CONTRACT = "0x026d5777eccca1861a23303ee0ba48c0e8349e849d0377a21c3801ef1d0f8cef"
+const ACTIONS_CONTRACT = "0x023b0d96f2617d1be29e5ee6ec4b7b4da312d0eb28d6c83f5ef1c2ba254f3a6f"
 
 #TODO: Make not neccesary to setup ToriiClient/ControllearAccount through editor, so can be easily updated with code.
 # The chain_id can be obtained using a burner Account
-const rpc_url = "https://api.cartridge.gg/x/godot-demo-rookie/katana"
-const torii_url = "https://api.cartridge.gg/x/godot-demo-rookie/torii"
+const rpc_url = "https://api.cartridge.gg/x/godot-gdextension/katana"
+const torii_url = "https://api.cartridge.gg/x/godot-gdextension/torii"
 
 @export var query:DojoQuery
 @export var entity_sub:EntitySubscription
