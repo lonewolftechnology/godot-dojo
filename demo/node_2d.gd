@@ -22,7 +22,7 @@ const RPC_URL: String = "https://api.cartridge.gg/x/godot-gdextension/katana"
 #const TORII_URL = "http://localhost:8080"
 const TORII_URL: String = "https://api.cartridge.gg/x/godot-gdextension/torii"
 
-@onready var priv_key: String = "0x3a141f4c5d6165f4fad527186d3fdb329dc355d8dfe773f22438c19a123d"
+@onready var priv_key: String = "0x46b7bc23fc1a1ad414004df3eaf4fe104ceb2c948d80b1f42a85ee713920ee6"
 
 
 var policies:Dictionary = {
@@ -94,7 +94,7 @@ var calldata:Array = [
 	]
 
 func callback(data):
-	print_rich("[color=RED]SUB Callback[/color] %s" % [data])
+	add_entry_to_output("CALLBACK", data)
 
 func _ready() -> void:
 	entity_sub.world_addresses.append(WORLD)
@@ -207,7 +207,7 @@ func _on_call_outside_btn_pressed() -> void:
 	var result = dojo_session_account.execute_from_outside([spawn_call])
 	add_entry_to_output("EXECUTE OUTSIDE SPAWN", result)
 
-func add_entry_to_output(_identifier:String, _entry:String) -> void:
+func add_entry_to_output(_identifier:String, _entry) -> void:
 	var final_text = "[color=green]%s[/color] %s\n" % [_identifier,_entry]
 	output_box.call_deferred("append_text",final_text)
 #	print_rich(final_text)
