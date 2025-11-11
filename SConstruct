@@ -11,7 +11,7 @@ import sys
 # into the global namespace at runtime. Import them when available and
 # provide safe fallbacks otherwise so IDEs stop warning.
 try:
-    from SCons.Script import GetOption, Return, Exit, File, SConscript  # type: ignore
+    from SCons.Script import GetOption, Return, Exit, File, SConscript, Glob, COMMAND_LINE_TARGETS  # type: ignore
 except Exception:
     def GetOption(name: str):
         return None
@@ -46,6 +46,11 @@ except Exception:
 
         return _Env()
 
+    def Glob(pattern: str):
+        return glob.glob(pattern)
+
+    COMMAND_LINE_TARGETS = sys.argv
+
 # Colors
 G, B, R, Y, X = '\033[92m', '\033[94m', '\033[91m', '\033[1;33m', '\033[0m'
 
@@ -74,15 +79,37 @@ print(f"{B}{rocket} Building godot-dojo{X}")
 
 # Cleanup
 if GetOption('clean'):
-    print(f"{Y}{broom} Cleaning...{X}")
+    print(f"{Y}{broom} Starting cleanup process...{X}")
+
+    # Limpiar proyecto Rust godot-dojo-core
+    print(f"{B}  -> Cleaning Rust project: godot-dojo-core{X}")
     try:
-        subprocess.run(["cargo", "clean"], cwd="external/dojo.c", check=True)
-        shutil.rmtree("demo/addons/godot-dojo", ignore_errors=True)
-        shutil.rmtree("demo/dist", ignore_errors=True)
-        subprocess.run(["scons", "-C", "external/godot-cpp", "--clean"], check=False)
-    except:
-        pass
-    print(f"{G}{check} Cleanup complete{X}")
+        subprocess.run(["cargo", "clean"], cwd="godot-dojo-core", check=True, capture_output=False, text=True)
+        print(f"{G}     {check} godot-dojo-core cleanup complete.{X}")
+    except subprocess.CalledProcessError as e:
+        print(f"{R}     {cross} godot-dojo-core cleanup failed: {e.stderr}{X}")
+
+    # Eliminar directorio del addon
+    print(f"{B}  -> Deleting addon directory: demo/addons/godot-dojo{X}")
+    shutil.rmtree("demo/addons/godot-dojo", ignore_errors=True)
+    print(f"{G}     {check} Addon directory deleted.{X}")
+
+    # Eliminar directorio de distribución
+    print(f"{B}  -> Deleting distribution directory: demo/dist{X}")
+    shutil.rmtree("demo/dist", ignore_errors=True)
+    print(f"{G}     {check} Distribution directory deleted.{X}")
+
+    # Eliminar xcframework
+    print(f"{B}  -> Deleting XCFramework directory: demo/dist/godot-dojo.xcframework{X}")
+    shutil.rmtree("demo/dist/godot-dojo.xcframework", ignore_errors=True)
+    print(f"{G}     {check} XCFramework directory deleted.{X}")
+
+    # Limpiar submódulo godot-cpp
+    print(f"{B}  -> Cleaning godot-cpp submodule...{X}")
+    subprocess.run(["scons", "-C", "external/godot-cpp", "--clean"], check=False, capture_output=False)
+    print(f"{G}     {check} godot-cpp cleanup complete.{X}")
+
+    print(f"\n{G}{check} Cleanup process finished.{X}")
     Return()
 
 # Setup
@@ -91,6 +118,12 @@ os.makedirs("demo/addons/godot-dojo", exist_ok=True)
 # Initialize the godot-cpp build environment
 env = SConscript("external/godot-cpp/SConstruct")
 platform, arch, target = env["platform"], env["arch"], env.get("target", "template_debug")
+
+# Validate that 'assemble-ios' is used with 'platform=ios'
+if "assemble-ios" in COMMAND_LINE_TARGETS and platform != "ios":
+    print(f"{R}{cross} The 'assemble-ios' target requires 'platform=ios'. Please run the command as 'scons platform=ios assemble-ios'.{X}")
+    Exit(1)
+
 
 build_info = f"{platform} ({arch}) - {target}"
 if env.get("precision") == "double":
@@ -161,7 +194,9 @@ targets = {
     ("macos", "universal"): ["x86_64-apple-darwin", "aarch64-apple-darwin"],
     ("web", "wasm32"): "wasm32-unknown-unknown",
     ("android", "arm64"): "aarch64-linux-android",
-    ("ios", "arm64"): "aarch64-apple-ios",
+    ("ios", "arm64"): "aarch64-apple-ios" if not env['ios_simulator'] else "aarch64-apple-ios-sim",
+    ("ios", "x86_64"): "x86_64-apple-ios",
+    ("ios", "universal"): ["aarch64-apple-ios", "x86_64-apple-ios", "aarch64-apple-ios-sim"],
 }
 # Use CARGO_BUILD_TARGET from environment if set, otherwise use the target from the platform/arch
 rust_target = os.environ.get("CARGO_BUILD_TARGET", targets.get((platform, arch), "x86_64-unknown-linux-gnu"))
@@ -192,256 +227,216 @@ try:
 
     # Ensure targets are also available in the submodule directory context
     for rt in targets_to_check:
-        subprocess.run(["rustup", "target", "add", rt], check=False, cwd="external/dojo.c")
+        subprocess.run(["rustup", "target", "add", rt], check=False, cwd="godot-dojo-core", capture_output=False)
 
 except subprocess.CalledProcessError as e:
     print(f"{R}{cross} Failed to check or install Rust target: {e}{X}")
     # Continue anyway, as cargo will show a more specific error if needed
 
-dojoc_version = _get_git_submodule_version("external/dojo.c") or "unknown"
-print(f"{Y}{package} Compiling dojo.c ({dojoc_version})...{X}")
-cmd = ["cargo", "build", "--target", rust_target]
+def _compile_rust_library(lib_name, lib_path, is_release, cargo_flags=None, rustc_flags=None):
+    """Logic to compile a Rust library, handling normal, universal, and web builds."""
+    lib_version = _get_git_submodule_version(lib_path) or "unknown"
+    print(f"{Y}{package} Compiling {lib_name} ({lib_version})...{X}")
 
-# Special handling for macOS universal builds
-if platform == "macos" and arch == "universal":
-    print(f"{Y}Starting universal build for macOS...{X}")
-    build_mode = "release" if target == "template_release" else "debug"
-    rust_targets = targets.get((platform, arch))
-    libs_to_lipo = []
+    build_mode = "release" if is_release else "debug"
+    base_cmd = ["cargo", "build"]
 
-    for rt in rust_targets:
-        print(f"{Y}Compiling for target: {rt}...{X}")
-        cargo_cmd = ["cargo", "build", "--target", rt]
-        if build_mode == "release":
-            cargo_cmd.append("--release")
+    # Prepare environment variables
+    env_vars = os.environ.copy()
+    current_rustflags = env_vars.get("RUSTFLAGS", "")
+    if rustc_flags:
+        current_rustflags += " " + " ".join(rustc_flags)
 
-        env_vars = os.environ.copy()
-        env_vars["MACOSX_DEPLOYMENT_TARGET"] = "14.0"
+    env_vars["RUSTFLAGS"] = current_rustflags.strip()
+
+    if is_release:
+        base_cmd.append("--release")
+    if cargo_flags:
+        base_cmd.extend(cargo_flags)
+
+    # Always specify the target unless it's a universal macOS build (handled separately)
+    if not (platform in ["macos", "ios"] and arch == "universal"):
+        base_cmd.extend(["--target", rust_target])
+
+    # Special handling for universal builds (macOS and iOS Simulator)
+    if platform in ["macos", "ios"] and arch == "universal":
+        print(f"{Y}Starting universal build for {lib_name} on {platform}...{X}")
+        rust_targets_for_lipo = targets.get((platform, arch))
+        libs_to_lipo = []
+
+        for rt in rust_targets_for_lipo:
+            print(f"{Y}Compiling {lib_name} for target: {rt}...{X}")
+            cargo_cmd = ["cargo", "build", "--target", rt]
+            if is_release:
+                cargo_cmd.append("--release")
+
+            if platform == "macos":
+                deployment_target = os.environ.get("MACOSX_DEPLOYMENT_TARGET", "14.0")
+                env_vars["MACOSX_DEPLOYMENT_TARGET"] = deployment_target
+                rustflags = env_vars.get("RUSTFLAGS", "")
+                if f"-mmacosx-version-min={deployment_target}" not in rustflags:
+                    if rustflags:
+                        rustflags += " "
+                    rustflags += f"-C link-arg=-mmacosx-version-min={deployment_target}"
+                env_vars["RUSTFLAGS"] = rustflags
+
+            subprocess.run(cargo_cmd, check=True, cwd=lib_path, env=env_vars)
+            libs_to_lipo.append(f"{lib_path}/target/{rt}/{build_mode}/lib{lib_name}.a")
+
+        print(f"{Y}Creating universal library for {lib_name} with lipo...{X}")
+        universal_dir = f"{lib_path}/target/universal/{build_mode}"
+        os.makedirs(universal_dir, exist_ok=True)
+        universal_lib_path = f"{universal_dir}/lib{lib_name}.a"
+
+        lipo_cmd = ["lipo", "-create"] + libs_to_lipo + ["-output", universal_lib_path]
+        subprocess.run(lipo_cmd, check=True)
+        print(f"{G}{check} Universal library for {lib_name} created at: {universal_lib_path}{X}")
+        return # Handled
+
+    # Standard build for other platforms
+    if platform == "macos":
+        deployment_target = os.environ.get("MACOSX_DEPLOYMENT_TARGET", "14.0")
+        print(f"{Y}Setting macOS deployment target to {deployment_target} for {lib_name}...{X}")
+        env_vars['MACOSX_DEPLOYMENT_TARGET'] = deployment_target
         rustflags = env_vars.get("RUSTFLAGS", "")
-        if rustflags:
-            rustflags += " "
-        rustflags += "-C link-arg=-mmacosx-version-min=14.0"
-        env_vars["RUSTFLAGS"] = rustflags
-
-        subprocess.run(cargo_cmd, check=True, cwd="external/dojo.c", env=env_vars)
-        libs_to_lipo.append(f"external/dojo.c/target/{rt}/{build_mode}/libdojo_c.a")
-
-    print(f"{Y}Creating universal library with lipo...{X}")
-    universal_dir = f"external/dojo.c/target/universal/{build_mode}"
-    os.makedirs(universal_dir, exist_ok=True)
-    universal_lib_path = f"{universal_dir}/libdojo_c.a"
-
-    lipo_cmd = ["lipo", "-create"] + libs_to_lipo + ["-output", universal_lib_path]
-    subprocess.run(lipo_cmd, check=True)
-
-    print(f"{G}{check} Universal library created at: {universal_lib_path}{X}")
-    # Set rust_target to 'universal' to adjust library path later
-    rust_target = "universal"
-    cmd = [] # Command already executed
-
-
-def apply_patches():
-    """Checks for and applies all .patch files found in the 'patches' directory."""
-    patches_dir = 'patches'
-    if not os.path.isdir(patches_dir):
-        print(f"{B}Directorio de parches '{patches_dir}' no encontrado, omitiendo.{X}")
-        return
-
-    patch_files = sorted(glob.glob(os.path.join(patches_dir, '*.patch')))
-    if not patch_files:
-        print(f"{B}No se encontraron archivos .patch en '{patches_dir}', omitiendo.{X}")
-        return
-
-    print(f"{Y}{clipboard} Aplicando parches desde el directorio '{patches_dir}'...{X}")
-
-    # Verificar si el comando 'patch' está disponible.
-    if not shutil.which("patch"):
-        print(f"{R}{cross} Error: The 'patch' command was not found in your system's PATH.{X}")
-        print(f"{Y}This is required to apply a necessary fix to a dependency.{X}")
-        print(f"{B}On Windows, the easiest way to get it is by installing 'Git for Windows':{X}")
-        print(f"{G}https://git-scm.com/download/win{X}")
-        print(f"{Y}Please install it and make sure its tools are added to your PATH, then try again.{X}")
-        Exit(1) # Salir si el comando patch no está disponible.
-
-    for patch_file in patch_files:
-        print(f"{Y}Aplicando parche: {os.path.basename(patch_file)}...{X}")
-        try:
-            subprocess.run(['patch', '-p1', '-i', os.path.abspath(patch_file)], check=True)
-            print(f"{G}{check} Parche {os.path.basename(patch_file)} aplicado con éxito.{X}")
-        except subprocess.CalledProcessError as e:
-            print(f"{R}{cross} Falló la aplicación del parche {os.path.basename(patch_file)}: {e}{X}")
-            Exit(1)
-
-
-# Environment variables for WebAssembly
-if env["platform"] == "web":
-    # For the web build, we need to do two things:
-    # 1. Build the dojo.c library with wasm-bindgen to create the JS interface.
-    #    This build must NOT use `-C relocation-model=pic`.
-    # 2. Build the dojo.c library as an rlib with `-C relocation-model=pic`
-    #    so scons can link it into the final GDExtension .wasm file.
-
-    # Step 1: Build for wasm-bindgen
-    print(f"{Y}Building dojo.c for wasm-bindgen...{X}")
-    if target == "template_release":
-        cmd.append("--release")
-
-    bindgen_env = os.environ.copy()
-    bindgen_env["RUSTFLAGS"] = "-C target-feature=+atomics,+bulk-memory,+mutable-globals"
-    subprocess.run(cmd, check=True, cwd="external/dojo.c", env=bindgen_env)
-
-    # Apply patch immediately after Rust compilation
-    apply_patches()
-
-    # Step 2: Run wasm-bindgen
-    print(f"{Y}Running wasm-bindgen...{X}")
-    build_mode = "release" if target == "template_release" else "debug"
-    wasm_input_path = f"external/dojo.c/target/{rust_target}/{build_mode}/dojo_c.wasm"
-    out_dir = "demo/addons/godot-dojo/"
-    os.makedirs(out_dir, exist_ok=True)
-    out_name = f"dojo_c_{build_mode}"
-
-    bindgen_cmd = [
-        "wasm-bindgen", wasm_input_path,
-        "--out-dir", out_dir,
-        "--out-name", out_name,
-        "--target", "web",
-        "--no-typescript"
-    ]
-    try:
-        subprocess.run(bindgen_cmd, check=True)
-        print(f"{G}{check} wasm-bindgen finished. Output in {out_dir}{X}")
-    except subprocess.CalledProcessError as e:
-        print(
-            f"{R}{cross} wasm-bindgen failed. This might be due to incompatible Rust flags or wasm-bindgen version.{X}")
-        print(f"{R}Error: {e}{X}")
-        Exit(1)
-else:
-    if cmd: # Only run if not a universal macOS build (which has its own logic)
-        if target == "template_release":
-            cmd.append("--release")
-
-        env_vars = os.environ.copy()
-        # Explicitly set RUSTUP_TOOLCHAIN to ensure the correct toolchain is used
-        if platform == "macos":
-            # Set macOS deployment target to 14.0 to ensure compatibility
-            print(f"{Y}Setting macOS deployment target to 14.0...{X}")
-            env_vars["MACOSX_DEPLOYMENT_TARGET"] = "14.0"
-
-            # Add deployment target to RUSTFLAGS
-            rustflags = env_vars.get("RUSTFLAGS", "")
-            if rustflags:  # Add a space if RUSTFLAGS is not empty
+        if f"-mmacosx-version-min={deployment_target}" not in rustflags:
+            if rustflags:
                 rustflags += " "
-            rustflags += "-C link-arg=-mmacosx-version-min=14.0"
+            rustflags += f"-C link-arg=-mmacosx-version-min={deployment_target}"
             env_vars["RUSTFLAGS"] = rustflags
 
-        # Print the command and environment for debugging
-        print(f"{Y}Running cargo command: {' '.join(cmd)}{X}")
-        print(f"{Y}With target: {rust_target}{X}")
-        if platform == "macos":
-            print(f"{Y}With MACOSX_DEPLOYMENT_TARGET: {env_vars.get('MACOSX_DEPLOYMENT_TARGET', 'not set')}{X}")
-            print(f"{Y}With RUSTFLAGS: {env_vars.get('RUSTFLAGS', 'not set')}{X}")
+    print(f"{Y}Running cargo command for {lib_name}: {' '.join(base_cmd)}{X}")
+    subprocess.run(base_cmd, check=True, cwd=lib_path, env=env_vars)
 
-        subprocess.run(cmd, check=True, cwd="external/dojo.c", env=env_vars)
-    # Apply patch immediately after Rust compilation
-    apply_patches()
+def build_rust_library_action(target, source, env):
+    """SCons Action to compile the Rust library."""
+    lib_name = env['RUST_LIB_NAME']
+    lib_path = env['RUST_LIB_PATH']
+    is_release = env['IS_RELEASE_BUILD']
 
+    # The 'target' here is the SCons node for the output file.
+    # We can ignore it and just run our compilation logic.
+    _compile_rust_library(lib_name, lib_path, is_release)
+    return None # Success
+
+# Determine if we should use the release build of the Rust crate.
+# This is true if the SCons target is 'template_release' OR if we force it via an environment variable.
+force_rust_release = os.environ.get("FORCE_RUST_RELEASE", "0") == "1"
+is_release_build = target == "template_release" or force_rust_release
+
+# Create a custom builder for our Rust library
+rust_builder = env.Builder(
+    action=build_rust_library_action,
+    # This tells SCons that this builder creates the file specified in 'target'
+    emitter=lambda target, source, env: (target, source)
+)
+env.Append(BUILDERS={'RustLibrary': rust_builder})
 
 # Configure library
-if platform != "android":
-    # Android build requires lib prefix
+if env["platform"] != "android":
+    # For Android, the prefix is 'lib', which is standard. For other platforms,
+    # we remove it to have a consistent naming scheme (e.g., 'godot-dojo.windows.dll').
     env['SHLIBPREFIX'] = ''
 prefix = env.subst('$SHLIBPREFIX')
-env.Append(CPPPATH=["src/", "include/", "external/dojo.c", "external/boost/include"])
+env.Append(CPPPATH=["src/", "include/", "bindings/", "external/boost/include"])
 if platform == "macos":
+    deployment_target = os.environ.get("MACOSX_DEPLOYMENT_TARGET", "14.0")
     # Set macOS deployment target for C++ compilation
-    print(f"{Y}Setting macOS deployment target for C++ compilation to 14.0...{X}")
-    env['ENV']['MACOSX_DEPLOYMENT_TARGET'] = '14.0'
-    env.Append(CCFLAGS=['-mmacosx-version-min=14.0'])
-    env.Append(LINKFLAGS=['-mmacosx-version-min=14.0'])
+    print(f"{Y}Setting macOS deployment target for C++ compilation to {deployment_target}...{X}")
+    env['ENV']['MACOSX_DEPLOYMENT_TARGET'] = deployment_target
+    env.Append(CCFLAGS=[f'-mmacosx-version-min={deployment_target}'])
+    env.Append(LINKFLAGS=[f'-mmacosx-version-min={deployment_target}'])
 
-# List to hold the targets for the Android plugin files.
-android_plugin_targets = []
-
-# --- Android Plugin Setup ---
-# This section runs only when building for Android. It prepares the Kotlin
-# plugin files and places them in the structure Godot's build system expects.
-if platform == "android":
-    print(f"{Y}{package} Building Android plugin with Gradle...{X}")
-    gradlew_cmd = "gradlew.bat" if is_host_windows else "./gradlew"
-    try:
-        # Execute the gradle build command in the 'android' directory.
-        # We run both assembleDebug and assembleRelease to get both AARs.
-        subprocess.run([gradlew_cmd, ":plugin:assembleDebug", ":plugin:assembleRelease"], cwd="android", check=True)
-        print(f"{G}{check} Android plugin built successfully.{X}")
-
-        # Copy the generated AAR files to the correct addon location
-        print(f"{Y}{clipboard} Copying Android plugin artifacts...{X}")
-        plugin_name = "GodotDojoAndroidPlugin" # Must match pluginName in build.gradle.kts
-        aar_source_dir = f"android/plugin/build/outputs/aar/"
-        
-        # Copy Debug AAR
-        debug_aar_src = f"{aar_source_dir}/{plugin_name}-debug.aar"
-        debug_aar_dest_dir = "demo/addons/godot-dojo/bin/android/debug"
-        os.makedirs(debug_aar_dest_dir, exist_ok=True)
-        shutil.copy(debug_aar_src, debug_aar_dest_dir)
-
-        # Copy Release AAR
-        release_aar_src = f"{aar_source_dir}/{plugin_name}-release.aar"
-        release_aar_dest_dir = "demo/addons/godot-dojo/bin/android/release"
-        os.makedirs(release_aar_dest_dir, exist_ok=True)
-        shutil.copy(release_aar_src, release_aar_dest_dir)
-
-        print(f"{G}{check} Android artifacts copied to demo/addons/godot-dojo/bin/android/{X}")
-    except subprocess.CalledProcessError as e:
-        print(f"{R}{cross} Gradle build failed: {e}{X}")
-        Exit(1)
-
+# Enable C++ exceptions for try/catch blocks
+if env["platform"] == "windows" and not env.get("use_mingw"):
+    # For MSVC
+    # Use /std:c++17 to avoid issues with std::uniform_int_distribution
+    # and char types in C++20.
+    env.Append(CXXFLAGS=['/EHsc', '/std:c++17'])
+else:
+    # For GCC/Clang
+    # Using C++17 for consistency and to avoid breaking changes from C++20.
+    cxx_flags = ['-fexceptions', '-std=c++17']
+    # -Wno-template-id-cdtor suppresses warnings from godot-cpp templates with GCC, but is not supported by Clang.
+    if env["platform"] not in ["macos", "android", "ios"]:
+        cxx_flags.append('-Wno-template-id-cdtor')
+    env.Append(CXXFLAGS=cxx_flags)
 
 # Link Rust libraries
-build_mode = "release" if target == "template_release" else "debug"
-rust_lib_dir = f"external/dojo.c/target/{rust_target}/{build_mode}"
+rust_build_mode = "release" if is_release_build else "debug"
+
+# For macOS universal, rust_target was modified, so we handle it specially
+if platform in ["macos", "ios"] and arch == "universal":
+    rust_lib_target_dir = "universal"
+else:
+    rust_lib_target_dir = rust_target
+
+rust_lib_base_path = f"godot-dojo-core/target/{rust_lib_target_dir}/{rust_build_mode}"
 
 if platform == "windows":
+    if use_mingw:
+        rust_lib_path = f"{rust_lib_base_path}/libgodot_dojo_core.a"
+    else:
+        rust_lib_path = f"{rust_lib_base_path}/godot_dojo_core.lib"
+else:
+    rust_lib_path = f"{rust_lib_base_path}/libgodot_dojo_core.a"
 
+# Define the Rust library as a build target
+rust_lib_target = env.RustLibrary(
+    target=rust_lib_path,
+    source=[], # No source files needed, the action knows what to do
+    RUST_LIB_NAME='godot_dojo_core',
+    RUST_LIB_PATH='godot-dojo-core',
+    IS_RELEASE_BUILD=is_release_build
+)
+
+if platform == "windows":
     if use_mingw:
         # For MinGW, we link against the static .a library
-        rust_lib = f"{rust_lib_dir}/libdojo_c.a"
+        rust_lib = rust_lib_path
     elif is_host_windows:
         # For MSVC, we link against the static .lib library
-        rust_lib = f"{rust_lib_dir}/dojo_c.lib"
+        rust_lib = rust_lib_path
         env.Append(LINKFLAGS=['/NODEFAULTLIB:MSVCRT'])
-    else:
-        rust_lib = ""  # Should not happen
-
-    # Link our library first, then the system libraries it depends on.
-    env.Append(LIBS=[File(rust_lib)])
-    env.Append(LIBS=['ws2_32', 'advapi32', 'ntdll'])
+        env.Append(LIBS=['ws2_32', 'advapi32', 'ntdll'])
 elif platform == "linux":
-    rust_lib = f"{rust_lib_dir}/libdojo_c.a"
-    env.Append(LIBS=[File(rust_lib)])
+    rust_lib = rust_lib_path
     # Use pkg-config to add proper include/lib flags for dbus-1 and ensure correct link order.
     # It's important to add this *after* our own library which depends on it.
     try:
         env.ParseConfig('pkg-config --cflags --libs dbus-1')
-    except Exception:
+    except Exception: # Fallback if pkg-config is not available
         env.Append(LIBS=['dbus-1'])
-elif platform == "web":
-    print(f"{Y}{clipboard} Web export doesn't link to anything.{X}")
-#     rust_lib = f"{rust_lib_dir}/libdojo_c.rlib"
-#     env.Append(LIBS=[File(rust_lib)])
-elif platform in ["linux", "macos", "android", "ios"]:
-    rust_lib = f"{rust_lib_dir}/libdojo_c.a"
-    env.Append(LIBS=[File(rust_lib)])
 else:
-    print(f"{R}{cross} Rust library not found for platform {platform}{X}")
+    # Default for other platforms like macos (non-universal), android, ios
+    rust_lib = rust_lib_path
+
+if rust_lib:
+    if platform in ["linux", "android"] or use_mingw:
+        if platform == "windows" and use_mingw:
+            # For MinGW, we must include the system libraries Rust depends on *inside* the group.
+            win_libs = ['-lws2_32', '-ladvapi32', '-lntdll']
+            env.Append(_LIBFLAGS=['-Wl,--start-group', rust_lib] + win_libs + ['-Wl,--end-group'])
+        else:
+            # For other platforms like Linux/macOS
+            env.Append(_LIBFLAGS=['-Wl,--start-group', rust_lib, '-Wl,--end-group'])
+    elif platform in ["macos", "ios"]:
+        # For macOS, we just add the library directly without the group flags.
+        env.Append(_LIBFLAGS=[rust_lib])
+        # The iana_time_zone crate (a dependency) requires the CoreFoundation framework on Apple platforms.
+        if platform in ["macos", "ios"]:
+            env.Append(LINKFLAGS=['-framework', 'CoreFoundation'])
+    elif platform == "windows" and not use_mingw:
+        # For MSVC
+        env.Append(LINKFLAGS=[f"/WHOLEARCHIVE:{os.path.basename(rust_lib)}"])
+        env.Append(LIBPATH=[os.path.dirname(rust_lib)])
+else:
+    print(f"{R}{cross} Could not determine Rust library paths for platform {platform}{X}")
     Exit(1)
 
-if platform != "web" and not os.path.exists(rust_lib):
-    print(f"{R}{cross} Rust library not found: {rust_lib}{X}")
-    Exit(1)
-
-sources = sorted(glob.glob("src/**/*.cpp", recursive=True))
+sources = sorted(glob.glob("src/**/*.cpp", recursive=True)) + [
+    "bindings/controller/controller.cpp",
+]
 _godot_min = _detect_godot_min_requirement()
 _godot_tag = _get_git_submodule_version("external/godot-cpp")
 print(f"{Y}{clipboard} Building with {_godot_tag}.{X}")
@@ -458,14 +453,28 @@ suffix_map = {
     "linux": f".linux.{target}.{arch}.so",
     "windows": f".windows.{target}.{arch}.dll",
     "macos": f".macos.{target}.{arch}.dylib",
-    "ios": f".ios.{target}.{arch}.dylib",
-    "web": f".web.{target}.wasm32.wasm"
+    "ios": f".ios.{target}.{arch}.dylib" if not env['ios_simulator'] else f".ios.{target}.simulator.{arch}.dylib" ,
 }
 
-output_dir = f"demo/addons/godot-dojo/bin/{platform}/{build_mode}"
+target_out_dir = target.split('_', 1)[1]  # "debug" or "release"
+
+if platform == "ios":
+    # Para iOS, los binarios se construyen en un directorio intermedio `build/`
+    # antes de ser empaquetados en un XCFramework.
+    output_dir = f"build/ios/{target_out_dir}"
+else:
+    output_dir = f"demo/addons/godot-dojo/bin/{platform}/{target_out_dir}"
+
+# Ensure the output directory exists
+os.makedirs(output_dir, exist_ok=True)
+
 lib_name = f"{output_dir}/{prefix}godot-dojo{suffix_map.get(platform, f'.{platform}.{target}.{arch}.so')}"
+
 library = env.SharedLibrary(target=lib_name, source=sources)
-env.Alias(f"godot-dojo-{platform}-{build_mode}", library)
+# Explicitly declare that the C++ library depends on the Rust library.
+# This ensures SCons builds the Rust code before attempting to link the C++ library.
+env.Depends(library, rust_lib_target)
+env.Alias(f"godot-dojo-{platform}-{target_out_dir}", library)
 
 # Generate .gdextension
 with open("plugin_template.gdextension.in", 'r') as f:
@@ -480,57 +489,124 @@ gdext = gdext.replace("${GODOT_MIN_REQUIREMENT}", _godot_min)
 with open("demo/addons/godot-dojo/godot-dojo.gdextension", 'w') as f:
     f.write(gdext)
 
-
-def copy_web_artifacts(target, source, env):
-    print(f"{Y}{clipboard} Preparing web export files...{X}")
-    build_mode = "release" if env.get("target", "template_debug") == "template_release" else "debug"
-
-    addon_dir = "demo/addons/godot-dojo"
-    out_name = f"dojo_c_{build_mode}"
-
-    js_path = f"{addon_dir}/{out_name}.js"
-    wasm_bg_path = f"{addon_dir}/{out_name}_bg.wasm"
-    wasm_final_path = f"{addon_dir}/{out_name}.wasm"
-
-    # 1. Rename the wasm file (e.g., dojo_c_release_bg.wasm -> dojo_c_release.wasm)
-    print(f"{Y}Renaming {os.path.basename(wasm_bg_path)} to {os.path.basename(wasm_final_path)}...{X}")
-    shutil.move(wasm_bg_path, wasm_final_path)
-
-    # 2. Patch the JS file to load the renamed wasm file
-    print(f"{Y}Patching {os.path.basename(js_path)} to load the new wasm file...{X}")
-    with open(js_path, 'r+') as f:
-        content = f.read()
-        # Replace the old wasm filename with the new one
-        content = content.replace(f"'{out_name}_bg.wasm'", f"'{out_name}.wasm'")
-        f.seek(0)
-        f.write(content)
-        f.truncate()
-
-    print(f"{G}{check} Web artifacts prepared in {addon_dir}{X}")
-
-    # Copy the custom HTML template to the addon directory
-    template_html_src = "web/godot-template.html"
-    shutil.copy(template_html_src, f"{addon_dir}/godot-template.html")
-    print(f"{G}{check} Custom HTML template copied to {addon_dir}{X}")
-
-    print(f"")
-    print(f"{Y}********************************************************************************{X}")
-    print(f"{Y}** {clipboard} ACTION REQUIRED: Configure Godot Web Export                        **{X}")
-    print(f"{Y}********************************************************************************{X}")
-    print(f"{B}To complete the web export, you MUST configure the Godot export preset:{X}")
-    print(f"{B}1. Go to {G}Project -> Export...{X} and select the {G}Web{X} preset.{X}")
-    print(f"{B}2. In the options, find {G}Shell -> Custom HTML Shell{X}.{X}")
-    print(f"{B}3. Select the file: {G}res://addons/godot-dojo/godot-template.html{X}{X}")
-    print(f"{Y}********************************************************************************{X}")
-
-
 def build_complete_callback(target, source, env):
-    print(f"{G}{party} Build complete!{X}")
-    if env["platform"] == "web":
-        copy_web_artifacts(target, source, env)
+    print(f"{G}{party} Build complete for {str(target[0])}!{X}")
     return None
 
-
 env.AddPostAction(library, build_complete_callback)
-
 env.Default(library)
+
+# --- XCFramework Post-Action Logic ---
+def create_xcframework_action(target, source, env):
+    """
+    Custom builder function to create an XCFramework using xcodebuild.
+    'source' is a list of library nodes. This function will identify device and simulator
+    libraries, merge simulator libraries into a universal binary if needed, and then
+    create the XCFramework.
+    """
+    xcframework_path = str(target[0])
+    source_paths = [str(s) for s in source if os.path.exists(str(s))]
+
+    if not source_paths:
+        print(f"{R}{cross} No libraries found to create XCFramework. Aborting.{X}")
+        return 1
+
+    device_libs = [p for p in source_paths if "simulator" not in p]
+    simulator_libs = [p for p in source_paths if "simulator" in p]
+
+    final_libs = device_libs
+
+    # If we have multiple simulator libraries, merge them with lipo.
+    if len(simulator_libs) > 1:
+        print(f"{Y}Merging simulator libraries with lipo...{X}")
+        # Define a path for the merged universal simulator library
+        output_dir = os.path.dirname(simulator_libs[0])
+        universal_sim_lib_path = os.path.join(output_dir, "godot-dojo.ios.universal.simulator.dylib")
+
+        # Filter out any pre-existing universal library from the input list to avoid conflicts.
+        lipo_inputs = [lib for lib in simulator_libs if "universal" not in os.path.basename(lib)]
+
+        # Ensure the old universal lib is gone before creating a new one.
+        if os.path.exists(universal_sim_lib_path):
+            os.remove(universal_sim_lib_path)
+
+        lipo_cmd = ["lipo", "-create", "-output", universal_sim_lib_path] + lipo_inputs
+        subprocess.run(lipo_cmd, check=True)
+        final_libs.append(universal_sim_lib_path)
+        print(f"{G}{check} Universal simulator library created at: {universal_sim_lib_path}{X}")
+    elif simulator_libs:
+        final_libs.extend(simulator_libs)
+
+    cmd = ["xcodebuild", "-create-xcframework"]
+    print(f"{Y}{package} Creating XCFramework at {xcframework_path} from:{X}")
+    for lib_path in final_libs:
+        print(f"{Y}  -> Found library: {lib_path}{X}")
+        cmd.extend(["-library", lib_path])
+
+    cmd.extend(["-output", xcframework_path])
+
+    try:
+        subprocess.run(cmd, check=True, text=True, capture_output=False)
+        print(f"{G}{check} XCFramework created successfully at: {xcframework_path}{X}")
+    except subprocess.CalledProcessError as e:
+        print(f"{R}{cross} Failed to create XCFramework.{X}")
+        return e.returncode
+
+# Define an alias to build the XCFramework.
+# This only runs if `scons platform=ios xcframework` is invoked.
+if platform == "ios":
+    # We need to know the target ('template_debug' or 'template_release')
+    target_out_dir = target.split('_', 1)[1]  # "debug" or "release"
+
+    # Only define the 'assemble-ios' alias and its dependencies if it's actually requested.
+    if "assemble-ios" in COMMAND_LINE_TARGETS:
+        output_base = f"build/ios/{target_out_dir}"
+        is_simulator = env.get('ios_simulator', False)
+        # The output path is always the same. The action will handle deletion to force recreation.
+        target_dir = f"demo/addons/godot-dojo/bin/ios/{target_out_dir}/godot-dojo.xcframework"
+        # Always delete the existing XCFramework to force recreation.
+        if os.path.exists(target_dir):
+            print(f"{Y}{broom} Deleting existing XCFramework to ensure a clean build: {target_dir}{X}")
+            shutil.rmtree(target_dir)
+
+        # Dynamically determine which libraries to build based on command-line arguments.
+        # This allows for building a single architecture (e.g., for testing) or all of them (for release).
+        libs_to_package = []
+
+        # If 'arch' is not specified or is 'universal', build all libraries.
+        if arch == "universal":
+            print(f"{Y}Gathering all architectures for iOS XCFramework...{X}")
+            libs_to_package.append(f"{output_base}/godot-dojo.ios.{target}.arm64.dylib")
+            libs_to_package.append(f"{output_base}/godot-dojo.ios.{target}.simulator.x86_64.dylib")
+            libs_to_package.append(f"{output_base}/godot-dojo.ios.{target}.simulator.arm64.dylib")
+        else:
+            # Build only the specified architecture.
+            if is_simulator:
+                print(f"{Y}Gathering for iOS Simulator ({arch}) only...{X}")
+                libs_to_package.append(f"{output_base}/godot-dojo.ios.{target}.simulator.{arch}.dylib")
+            else:
+                print(f"{Y}Gathering for iOS Device ({arch}) only...{X}")
+                libs_to_package.append(f"{output_base}/godot-dojo.ios.{target}.{arch}.dylib")
+
+        if not libs_to_package:
+            print(f"{R}{cross} No valid iOS libraries to build for the specified configuration. Aborting.{X}")
+            Exit(1)
+
+        # The action will be called *after* the dependencies are built.
+        # It receives the target directory and the list of source files.
+        package_action = env.Action(
+            lambda target, source, env: create_xcframework_action(target, source, env),
+            "Packaging iOS libraries into XCFramework..."
+        )
+
+        # Create a target for the final XCFramework directory.
+        # This target depends on the individual libraries being built.
+        xcframework_package = env.Command(target_dir, libs_to_package, package_action)
+
+        # Create an alias so we can call it from the command line.
+        # This alias now depends on the final package.
+        env.Alias("assemble-ios", xcframework_package)
+
+        # When 'assemble-ios' is called, we don't want to build the default library for the host.
+        # We clear the default target to prevent this.
+        env.Default(None)

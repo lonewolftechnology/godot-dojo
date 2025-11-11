@@ -8,9 +8,13 @@
 #include "dojo_c_gdextension.h"
 
 #include "gdextension_interface.h"
+#include "classes/dojo_owner.h"
+#include "classes/dojo_controller.h"
+#include "classes/dojo_session_account.h"
 #include "editor/dojo_editor_plugin.h"
 #include "godot_cpp/core/defs.hpp"
 #include "godot_cpp/godot.hpp"
+// #include "tools/dojo_http.h"
 #ifdef WEB_ENABLED
 #include <tools/dojo_bridge.h>
 #endif
@@ -21,7 +25,6 @@
 
 
 #include "classes/torii_client.h"
-#include "classes/controller_account.h"
 #include "classes/account.h"
 #include "tools/dojo_helper.h"
 
@@ -73,8 +76,10 @@ void initialize_dojoc_module(ModuleInitializationLevel p_level) {
 #ifdef WEB_ENABLED
         GDREGISTER_CLASS(DojoBridge);
 #endif
-
+        // Tools
         GDREGISTER_CLASS(DojoHelpers);
+        GDREGISTER_CLASS(ControllerHelper);
+        // GDREGISTER_CLASS(DojoHttp)
         // DojoTypes
         GDREGISTER_CLASS(DojoTy);
         GDREGISTER_CLASS(DojoPrimitive);
@@ -87,18 +92,20 @@ void initialize_dojoc_module(ModuleInitializationLevel p_level) {
         GDREGISTER_CLASS(U256);
         // Classes
         GDREGISTER_CLASS(ToriiClient);
-        GDREGISTER_CLASS(ControllerAccount);
         GDREGISTER_CLASS(Account);
+        GDREGISTER_CLASS(DojoSessionAccount);
+        GDREGISTER_CLASS(DojoOwner);
+        GDREGISTER_CLASS(DojoController);
         // RefCounted
         GDREGISTER_CLASS(DojoOption);
-        GDREGISTER_CLASS(OptionU32);
-        GDREGISTER_CLASS(OptionU64);
-        GDREGISTER_CLASS(OptionChar);
-        GDREGISTER_CLASS(OptionU256);
-        GDREGISTER_CLASS(OptionFieldElement);
-        GDREGISTER_CLASS(OptionClause);
-        GDREGISTER_CLASS(OptionTransactionFilter);
-        GDREGISTER_CLASS(OptionArrayFieldElement);
+        GDREGISTER_CLASS(DojoOptionU32);
+        GDREGISTER_CLASS(DojoOptionU64);
+        GDREGISTER_CLASS(DojoOptionChar);
+        GDREGISTER_CLASS(DojoOptionU256);
+        GDREGISTER_CLASS(DojoOptionFieldElement);
+        GDREGISTER_CLASS(DojoOptionClause);
+        GDREGISTER_CLASS(DojoOptionTransactionFilter);
+        GDREGISTER_CLASS(DojoOptionArrayFieldElement);
         // Resources
         // Queries
         GDREGISTER_CLASS(DojoQueryBase);

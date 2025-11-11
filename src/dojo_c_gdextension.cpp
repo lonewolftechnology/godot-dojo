@@ -35,6 +35,7 @@ void DojoC::init_config(bool reset)
 {
     if (Engine::get_singleton()->is_editor_hint())
     {
+        set_setting("dojo/config/enable_extra_logs", false, reset);
         set_setting("dojo/config/disconnect_controller_on_exit", false, reset);
         set_setting("dojo/config/katana_url", "http://localhost:5050", reset);
         set_setting("dojo/config/contract_address", "0x0", reset);

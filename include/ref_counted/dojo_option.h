@@ -8,7 +8,6 @@
 #include "godot_cpp/classes/resource.hpp"
 #include "godot_cpp/core/class_db.hpp"
 #include "godot_cpp/variant/variant.hpp"
-#include "godot_cpp/core/version.hpp"
 #include "godot_cpp/variant/dictionary.hpp"
 
 using namespace godot;

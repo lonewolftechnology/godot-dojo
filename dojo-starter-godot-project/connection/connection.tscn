@@ -1,0 +1,85 @@
+[gd_scene load_steps=8 format=3 uid="uid://b75yggsnay1mo"]
+
+[ext_resource type="Script" uid="uid://bx5rlh0opi80k" path="res://connection/connection.gd" id="1_c7jwa"]
+[ext_resource type="PackedScene" uid="uid://b5vmo8llucetx" path="res://ui/status_indicator.tscn" id="3_bya50"]
+[ext_resource type="Script" path="res://tools/http_pinger.gd" id="3_erpqw"]
+
+[sub_resource type="DojoQuery" id="DojoQuery_erpqw"]
+
+[sub_resource type="EntitySubscription" id="EntitySubscription_henli"]
+
+[sub_resource type="MessageSubscription" id="MessageSubscription_advu3"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_gm8ps"]
+content_margin_left = 4.0
+content_margin_top = 4.0
+content_margin_right = 4.0
+content_margin_bottom = 4.0
+bg_color = Color(0.2484, 0.2484, 0.2484, 1)
+
+[node name="Connection" type="Node"]
+script = ExtResource("1_c7jwa")
+query = SubResource("DojoQuery_erpqw")
+entity_sub = SubResource("EntitySubscription_henli")
+message_sub = SubResource("MessageSubscription_advu3")
+
+[node name="ToriiClient" type="ToriiClient" parent="."]
+
+[node name="DojoSessionAccount" type="DojoSessionAccount" parent="."]
+
+[node name="CanvasLayer" type="CanvasLayer" parent="."]
+layer = 10
+
+[node name="PanelStatus" type="PanelContainer" parent="CanvasLayer"]
+anchors_preset = 7
+anchor_left = 0.5
+anchor_top = 1.0
+anchor_right = 0.5
+anchor_bottom = 1.0
+offset_left = -274.0
+offset_top = -31.0
+offset_right = 274.0
+grow_horizontal = 2
+grow_vertical = 0
+size_flags_horizontal = 4
+theme_override_styles/panel = SubResource("StyleBoxFlat_gm8ps")
+
+[node name="HBoxContainer" type="HBoxContainer" parent="CanvasLayer/PanelStatus"]
+layout_mode = 2
+size_flags_horizontal = 4
+theme_override_constants/separation = 10
+
+[node name="Label" type="Label" parent="CanvasLayer/PanelStatus/HBoxContainer"]
+layout_mode = 2
+text = "Status:"
+
+[node name="ClientStatus" parent="CanvasLayer/PanelStatus/HBoxContainer" instance=ExtResource("3_bya50")]
+unique_name_in_owner = true
+layout_mode = 2
+type_name = "Client"
+
+[node name="DojoSessionAccountStatus" parent="CanvasLayer/PanelStatus/HBoxContainer" instance=ExtResource("3_bya50")]
+unique_name_in_owner = true
+layout_mode = 2
+type_name = "Session"
+
+[node name="VSeparator" type="VSeparator" parent="CanvasLayer/PanelStatus/HBoxContainer"]
+layout_mode = 2
+
+[node name="EventUpdatesStatus" parent="CanvasLayer/PanelStatus/HBoxContainer" instance=ExtResource("3_bya50")]
+unique_name_in_owner = true
+layout_mode = 2
+type_name = "EventUpdates"
+
+[node name="EntityUpdatesStatus" parent="CanvasLayer/PanelStatus/HBoxContainer" instance=ExtResource("3_bya50")]
+unique_name_in_owner = true
+layout_mode = 2
+type_name = "EntityUpdates"
+
+[node name="HttpPinger" type="HTTPRequest" parent="."]
+script = ExtResource("3_erpqw")
+metadata/_custom_type_script = "uid://cibg6qwsaeyq6"
+
+[connection signal="client_connected" from="ToriiClient" to="." method="_on_torii_client_client_connected"]
+[connection signal="client_disconnected" from="ToriiClient" to="." method="_on_torii_client_client_disconnected"]
+[connection signal="subscription_created" from="ToriiClient" to="." method="_on_torii_client_subscription_created"]

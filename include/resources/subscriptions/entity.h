@@ -14,7 +14,7 @@ using namespace godot;
 class EntitySubscription : public DojoSubscription {
     GDCLASS(EntitySubscription, DojoSubscription);
 
-    Ref<OptionClause> clause;
+    Ref<DojoOptionClause> clause;
     TypedArray<String> world_addresses;
 
 public:
@@ -22,11 +22,11 @@ public:
         return ENTITY;
     }
 
-    Ref<OptionClause> get_clause() const {
+    Ref<DojoOptionClause> get_clause() const {
         return clause;
     }
 
-    void set_clause(const Ref<OptionClause> &p_clause) {
+    void set_clause(const Ref<DojoOptionClause> &p_clause) {
         clause = p_clause;
     }
 
@@ -58,7 +58,7 @@ protected:
     static void _bind_methods() {
         ClassDB::bind_method(D_METHOD("get_clause"), &EntitySubscription::get_clause);
         ClassDB::bind_method(D_METHOD("set_clause", "p_clause"), &EntitySubscription::set_clause);
-        ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "clause", PROPERTY_HINT_RESOURCE_TYPE, "OptionClause"), "set_clause",
+        ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "clause", PROPERTY_HINT_RESOURCE_TYPE, "DojoOptionClause"), "set_clause",
                      "get_clause");
 
         ClassDB::bind_method(D_METHOD("get_world_addresses"), &EntitySubscription::get_world_addresses);

@@ -9,7 +9,7 @@
 	<tutorials>
 	</tutorials>
 	<members>
-		<member name="clause" type="OptionClause" setter="set_clause" getter="get_clause">
+		<member name="clause" type="DojoOptionClause" setter="set_clause" getter="get_clause">
 			The [code]WHERE[/code] clause for the query. Use this to filter entities based on their component values.
 		</member>
 		<member name="is_historical" type="bool" setter="set_historical" getter="get_historical" default="false">

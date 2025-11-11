@@ -96,6 +96,11 @@
 				Converts a float to a 256-bit fixed-point integer.
 			</description>
 		</method>
+		<method name="generate_private_key" qualifiers="static">
+			<return type="String" />
+			<description>
+			</description>
+		</method>
 		<method name="get_custom_setting" qualifiers="static">
 			<return type="Variant" />
 			<param index="0" name="category" type="String" />
@@ -107,6 +112,7 @@
 		<method name="get_dojo_setting" qualifiers="static">
 			<return type="Variant" />
 			<param index="0" name="setting" type="String" />
+			<param index="1" name="default_value" type="Variant" default="null" />
 			<description>
 				Gets a setting from the 'Dojo' category in project settings.
 			</description>
@@ -127,9 +133,16 @@
 		<method name="get_setting" qualifiers="static">
 			<return type="Variant" />
 			<param index="0" name="setting" type="String" />
-			<param index="1" name="default_value" type="Variant" />
+			<param index="1" name="default_value" type="Variant" default="null" />
 			<description>
 				Gets the value of a setting.
+			</description>
+		</method>
+		<method name="get_torii_setting" qualifiers="static">
+			<return type="Variant" />
+			<param index="0" name="setting" type="String" />
+			<param index="1" name="default_value" type="Variant" default="null" />
+			<description>
 			</description>
 		</method>
 		<method name="signed_to_u32_offset" qualifiers="static">

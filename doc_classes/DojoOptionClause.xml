@@ -1,0 +1,243 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="DojoOptionClause" inherits="DojoOption" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://raw.githubusercontent.com/godotengine/godot/master/doc/class.xsd">
+	<brief_description>
+	</brief_description>
+	<description>
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="get_clauses" qualifiers="const">
+			<return type="Array" />
+			<description>
+			</description>
+		</method>
+		<method name="get_comparison_operator" qualifiers="const">
+			<return type="int" enum="dojo_bindings.ComparisonOperator" />
+			<description>
+			</description>
+		</method>
+		<method name="get_hashed_keys" qualifiers="const">
+			<return type="String[]" />
+			<description>
+			</description>
+		</method>
+		<method name="get_keys" qualifiers="const">
+			<return type="Array" />
+			<description>
+			</description>
+		</method>
+		<method name="get_logical_operator" qualifiers="const">
+			<return type="int" enum="dojo_bindings.LogicalOperator" />
+			<description>
+			</description>
+		</method>
+		<method name="get_member" qualifiers="const">
+			<return type="String" />
+			<description>
+			</description>
+		</method>
+		<method name="get_member_tag" qualifiers="const">
+			<return type="int" enum="dojo_bindings.MemberValue_Tag" />
+			<description>
+			</description>
+		</method>
+		<method name="get_model" qualifiers="const">
+			<return type="String" />
+			<description>
+			</description>
+		</method>
+		<method name="get_models" qualifiers="const">
+			<return type="String[]" />
+			<description>
+			</description>
+		</method>
+		<method name="get_pattern_matching" qualifiers="const">
+			<return type="int" enum="dojo_bindings.PatternMatching" />
+			<description>
+			</description>
+		</method>
+		<method name="get_primitive_tag" qualifiers="const">
+			<return type="int" enum="dojo_bindings.Primitive_Tag" />
+			<description>
+			</description>
+		</method>
+		<method name="get_tag" qualifiers="const">
+			<return type="int" enum="dojo_bindings.Clause_Tag" />
+			<description>
+			</description>
+		</method>
+		<method name="get_value" qualifiers="const">
+			<return type="Variant" />
+			<description>
+			</description>
+		</method>
+		<method name="set_clauses">
+			<return type="void" />
+			<param index="0" name="p_clauses" type="Array" />
+			<description>
+			</description>
+		</method>
+		<method name="set_comparison_operator">
+			<return type="void" />
+			<param index="0" name="p_op" type="int" enum="dojo_bindings.ComparisonOperator" />
+			<description>
+			</description>
+		</method>
+		<method name="set_hashed_keys">
+			<return type="void" />
+			<param index="0" name="p_keys" type="String[]" />
+			<description>
+			</description>
+		</method>
+		<method name="set_keys">
+			<return type="void" />
+			<param index="0" name="p_keys" type="Array" />
+			<description>
+			</description>
+		</method>
+		<method name="set_logical_operator">
+			<return type="void" />
+			<param index="0" name="p_op" type="int" enum="dojo_bindings.LogicalOperator" />
+			<description>
+			</description>
+		</method>
+		<method name="set_member">
+			<return type="void" />
+			<param index="0" name="p_member" type="String" />
+			<description>
+			</description>
+		</method>
+		<method name="set_member_tag">
+			<return type="void" />
+			<param index="0" name="p_tag" type="int" enum="dojo_bindings.MemberValue_Tag" />
+			<description>
+			</description>
+		</method>
+		<method name="set_model">
+			<return type="void" />
+			<param index="0" name="p_model" type="String" />
+			<description>
+			</description>
+		</method>
+		<method name="set_models">
+			<return type="void" />
+			<param index="0" name="p_models" type="String[]" />
+			<description>
+			</description>
+		</method>
+		<method name="set_pattern_matching">
+			<return type="void" />
+			<param index="0" name="p_pm" type="int" enum="dojo_bindings.PatternMatching" />
+			<description>
+			</description>
+		</method>
+		<method name="set_primitive_tag">
+			<return type="void" />
+			<param index="0" name="p_tag" type="int" enum="dojo_bindings.Primitive_Tag" />
+			<description>
+			</description>
+		</method>
+		<method name="set_tag">
+			<return type="void" />
+			<param index="0" name="p_tag" type="int" enum="dojo_bindings.Clause_Tag" />
+			<description>
+			</description>
+		</method>
+		<method name="set_value">
+			<return type="void" />
+			<param index="0" name="p_value" type="Variant" />
+			<description>
+			</description>
+		</method>
+		<method name="to_json" qualifiers="const">
+			<return type="Dictionary" />
+			<description>
+			</description>
+		</method>
+	</methods>
+	<constants>
+		<constant name="DOJO::Clause_Tag::HashedKeys" value="0" enum="Clause_Tag">
+		</constant>
+		<constant name="DOJO::Clause_Tag::Keys" value="1" enum="Clause_Tag">
+		</constant>
+		<constant name="DOJO::Clause_Tag::CMember" value="2" enum="Clause_Tag">
+		</constant>
+		<constant name="DOJO::Clause_Tag::Composite" value="3" enum="Clause_Tag">
+		</constant>
+		<constant name="DOJO::PatternMatching::FixedLen" value="0" enum="PatternMatching">
+		</constant>
+		<constant name="DOJO::PatternMatching::VariableLen" value="1" enum="PatternMatching">
+		</constant>
+		<constant name="DOJO::ComparisonOperator::Eq" value="0" enum="ComparisonOperator">
+		</constant>
+		<constant name="DOJO::ComparisonOperator::Neq" value="1" enum="ComparisonOperator">
+		</constant>
+		<constant name="DOJO::ComparisonOperator::Gt" value="2" enum="ComparisonOperator">
+		</constant>
+		<constant name="DOJO::ComparisonOperator::Gte" value="3" enum="ComparisonOperator">
+		</constant>
+		<constant name="DOJO::ComparisonOperator::Lt" value="4" enum="ComparisonOperator">
+		</constant>
+		<constant name="DOJO::ComparisonOperator::Lte" value="5" enum="ComparisonOperator">
+		</constant>
+		<constant name="DOJO::ComparisonOperator::In" value="6" enum="ComparisonOperator">
+		</constant>
+		<constant name="DOJO::ComparisonOperator::NotIn" value="7" enum="ComparisonOperator">
+		</constant>
+		<constant name="DOJO::ComparisonOperator::Contains" value="8" enum="ComparisonOperator">
+		</constant>
+		<constant name="DOJO::ComparisonOperator::ContainsAll" value="9" enum="ComparisonOperator">
+		</constant>
+		<constant name="DOJO::ComparisonOperator::ContainsAny" value="10" enum="ComparisonOperator">
+		</constant>
+		<constant name="DOJO::ComparisonOperator::ArrayLengthEq" value="11" enum="ComparisonOperator">
+		</constant>
+		<constant name="DOJO::ComparisonOperator::ArrayLengthGt" value="12" enum="ComparisonOperator">
+		</constant>
+		<constant name="DOJO::ComparisonOperator::ArrayLengthLt" value="13" enum="ComparisonOperator">
+		</constant>
+		<constant name="DOJO::MemberValue_Tag::PrimitiveValue" value="0" enum="MemberValue_Tag">
+		</constant>
+		<constant name="DOJO::MemberValue_Tag::String" value="1" enum="MemberValue_Tag">
+		</constant>
+		<constant name="DOJO::MemberValue_Tag::List" value="2" enum="MemberValue_Tag">
+		</constant>
+		<constant name="DOJO::LogicalOperator::And" value="0" enum="LogicalOperator">
+		</constant>
+		<constant name="DOJO::LogicalOperator::Or" value="1" enum="LogicalOperator">
+		</constant>
+		<constant name="DOJO::Primitive_Tag::I8" value="0" enum="Primitive_Tag">
+		</constant>
+		<constant name="DOJO::Primitive_Tag::I16" value="1" enum="Primitive_Tag">
+		</constant>
+		<constant name="DOJO::Primitive_Tag::I32" value="2" enum="Primitive_Tag">
+		</constant>
+		<constant name="DOJO::Primitive_Tag::I64" value="3" enum="Primitive_Tag">
+		</constant>
+		<constant name="DOJO::Primitive_Tag::I128" value="4" enum="Primitive_Tag">
+		</constant>
+		<constant name="DOJO::Primitive_Tag::U8" value="5" enum="Primitive_Tag">
+		</constant>
+		<constant name="DOJO::Primitive_Tag::U16" value="6" enum="Primitive_Tag">
+		</constant>
+		<constant name="DOJO::Primitive_Tag::U32" value="7" enum="Primitive_Tag">
+		</constant>
+		<constant name="DOJO::Primitive_Tag::U64" value="8" enum="Primitive_Tag">
+		</constant>
+		<constant name="DOJO::Primitive_Tag::U128" value="9" enum="Primitive_Tag">
+		</constant>
+		<constant name="DOJO::Primitive_Tag::U256_" value="10" enum="Primitive_Tag">
+		</constant>
+		<constant name="DOJO::Primitive_Tag::Bool" value="11" enum="Primitive_Tag">
+		</constant>
+		<constant name="DOJO::Primitive_Tag::Felt252" value="12" enum="Primitive_Tag">
+		</constant>
+		<constant name="DOJO::Primitive_Tag::ClassHash" value="13" enum="Primitive_Tag">
+		</constant>
+		<constant name="DOJO::Primitive_Tag::ContractAddress" value="14" enum="Primitive_Tag">
+		</constant>
+		<constant name="DOJO::Primitive_Tag::EthAddress" value="15" enum="Primitive_Tag">
+		</constant>
+	</constants>
+</class>

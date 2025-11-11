@@ -1,0 +1,155 @@
+name: Reusable GDExtension Build
+
+on:
+  workflow_call:
+    inputs:
+      os:
+        required: true
+        type: string
+      arch:
+        required: true
+        type: string
+      rust_target:
+        required: true
+        type: string
+      precision:
+        required: true
+        type: string
+      platform_id:
+        required: true
+        type: string
+      build_target:
+        required: true
+        type: string # 'editor' or 'templates'
+      macos_deployment_target:
+        required: false
+        type: string
+        default: ""
+
+jobs:
+  build:
+    name: Build ${{ inputs.platform_id }}-${{ inputs.arch }}-${{ inputs.precision }}-${{ inputs.build_target }}
+    runs-on: ${{ inputs.os }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          submodules: true
+          fetch-depth: 0
+
+      - name: Install dependencies (Linux)
+        if: runner.os == 'Linux'
+        run: sudo apt-get update && sudo apt-get install -y build-essential pkg-config dbus libdbus-1-dev protobuf-compiler libprotobuf-dev
+
+      - name: Install dependencies (macOS)
+        if: runner.os == 'macOS'
+        run: brew install protobuf
+
+      - name: Install dependencies (Windows)
+        if: runner.os == 'Windows'
+        run: choco install protoc
+
+      - name: Install Android NDK
+        if: inputs.platform_id == 'android'
+        uses: nttld/setup-ndk@v1
+        with:
+          ndk-version: r23c
+          add-to-path: true
+
+      - name: Download core artifacts (target)
+        uses: actions/download-artifact@v4
+        with:
+          name: core-target-${{ inputs.platform_id }}-${{ inputs.arch }}-release
+          path: godot-dojo/godot-dojo-core/target
+
+      - name: Set up Rust nightly
+        uses: dtolnay/rust-toolchain@nightly
+        with:
+          targets: ${{ inputs.rust_target }}
+
+      - name: Cache uniffi-bindgen-cpp
+        id: cache-uniffi-bindgen-cpp
+        uses: actions/cache@v3
+        with:
+          path: ~/.cargo/bin/uniffi-bindgen-cpp
+          key: ${{ runner.os }}-uniffi-bindgen-cpp-Larkooo-0.30
+
+      - name: Install uniffi-bindgen-cpp from source
+        if: steps.cache-uniffi-bindgen-cpp.outputs.cache-hit != 'true'
+        run: cargo install --git https://github.com/Larkooo/uniffi-bindgen-cpp --branch update-0.30 uniffi-bindgen-cpp
+
+      - name: Install scons
+        run: pip install scons
+
+      - name: Cache SCons and godot-cpp build artifacts
+        uses: actions/cache@v3
+        with:
+          path: |
+            godot-dojo/.sconsign.dblite
+            godot-dojo/demo/addons/godot-dojo/
+            godot-dojo/external/godot-cpp/bin/
+            godot-dojo/external/godot-cpp/.sconsign.dblite
+            godot-dojo/external/godot-cpp/gen/
+            godot-dojo/external/godot-cpp/__pycache__/
+          key: ${{ runner.os }}-${{ inputs.arch }}-scons-${{ inputs.precision }}-${{ inputs.build_target }}-${{ hashFiles('src/**/*.cpp', 'src/**/*.h', 'bindings/**/*.cpp', 'bindings/**/*.h', 'SConstruct') }}
+          restore-keys: |
+            ${{ runner.os }}-${{ inputs.arch }}-scons-${{ inputs.precision }}-${{ inputs.build_target }}-
+
+      - name: Build GDExtension
+        shell: bash
+        env:
+          CARGO_BUILD_TARGET: ${{ inputs.rust_target }}
+        run: |
+          set -e
+
+          # Set Android environment variables for SCons
+          if [ "${{ inputs.platform_id }}" = "android" ]; then
+            export ANDROID_NDK_ROOT=$ANDROID_NDK_HOME
+            SCONS_ANDROID_OPTS="android_ndk_path=$ANDROID_NDK_HOME"
+          fi
+
+          PLATFORM_ARG="platform=${{ inputs.platform_id }}"
+          ARCH_ARG="arch=${{ inputs.arch }}"
+          PRECISION_ARG="precision=${{ inputs.precision }}"
+          export FORCE_RUST_RELEASE=1
+
+          if [ "${{ runner.os }}" = "macOS" ]; then
+            export MACOSX_DEPLOYMENT_TARGET=${{ inputs.macos_deployment_target }}
+            export RUSTFLAGS="${RUSTFLAGS:+$RUSTFLAGS }-C link-arg=-mmacosx-version-min=${{ inputs.macos_deployment_target }}"
+          fi
+
+          mkdir -p godot-dojo/demo/addons/godot-dojo
+
+          cd godot-dojo
+
+          if [ "${{ inputs.platform_id }}" = "ios" ]; then
+            echo "Building iOS libraries for XCFramework (debug)..."
+            scons platform=ios arch=arm64 target=template_debug $PRECISION_ARG -j2
+            scons platform=ios arch=arm64 ios_simulator=yes target=template_debug $PRECISION_ARG -j2
+            scons platform=ios arch=x86_64 ios_simulator=yes target=template_debug $PRECISION_ARG -j2
+            scons platform=ios assemble-ios target=template_debug $PRECISION_ARG
+
+            echo "Building iOS libraries for XCFramework (release)..."
+            scons platform=ios arch=arm64 target=template_release $PRECISION_ARG -j2
+            scons platform=ios arch=arm64 ios_simulator=yes target=template_release $PRECISION_ARG -j2
+            scons platform=ios arch=x86_64 ios_simulator=yes target=template_release $PRECISION_ARG -j2
+            scons platform=ios assemble-ios target=template_release $PRECISION_ARG
+          else
+            if [ "${{ inputs.build_target }}" = "templates" ]; then
+              scons $PLATFORM_ARG $ARCH_ARG target=template_debug $PRECISION_ARG -j2 $SCONS_ANDROID_OPTS
+              scons $PLATFORM_ARG $ARCH_ARG target=template_release $PRECISION_ARG -j2 $SCONS_ANDROID_OPTS
+            else
+              scons $PLATFORM_ARG $ARCH_ARG target=${{ inputs.build_target }} $PRECISION_ARG -j2 $SCONS_ANDROID_OPTS
+            fi
+          fi
+
+
+      - name: Upload binaries
+        uses: actions/upload-artifact@v4
+        with:
+          name: bin-${{ inputs.precision }}-${{ inputs.platform_id }}-${{ inputs.arch }}-${{ inputs.build_target }}
+          path: |
+            godot-dojo/demo/addons/godot-dojo/
+            ${{ runner.os == 'Windows' && format('godot-dojo/godot-dojo-core/target/{0}/release/dojo_c.dll', inputs.rust_target) || '' }}
+          if-no-files-found: error

@@ -13,7 +13,7 @@ using namespace godot;
 class DojoQuery : public DojoQueryBase
 {
     GDCLASS(DojoQuery, DojoQueryBase);
-    Ref<OptionClause> clause;
+    Ref<DojoOptionClause> clause;
     bool no_hashed_keys;
     TypedArray<String> models;
     bool historical;
@@ -79,8 +79,8 @@ public:
         return query;
     }
 
-    Ref<OptionClause> get_clause() const { return clause; }
-    void set_clause(const Ref<OptionClause>& p_clause) { clause = p_clause; }
+    Ref<DojoOptionClause> get_clause() const { return clause; }
+    void set_clause(const Ref<DojoOptionClause>& p_clause) { clause = p_clause; }
     bool get_no_hashed_keys() const { return no_hashed_keys; }
     void set_no_hashed_keys(bool p_no_hashed_keys) { no_hashed_keys = p_no_hashed_keys; }
     TypedArray<String> get_models() const { return models; }
@@ -109,7 +109,7 @@ protected:
     {
         ClassDB::bind_method(D_METHOD("get_clause"), &DojoQuery::get_clause);
         ClassDB::bind_method(D_METHOD("set_clause", "p_clause"), &DojoQuery::set_clause);
-        ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "clause", PROPERTY_HINT_RESOURCE_TYPE, "OptionClause"), "set_clause", "get_clause");
+        ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "clause", PROPERTY_HINT_RESOURCE_TYPE, "DojoOptionClause"), "set_clause", "get_clause");
 
         ClassDB::bind_method(D_METHOD("get_no_hashed_keys"), &DojoQuery::get_no_hashed_keys);
         ClassDB::bind_method(D_METHOD("set_no_hashed_keys", "p_no_hashed_keys"), &DojoQuery::set_no_hashed_keys);

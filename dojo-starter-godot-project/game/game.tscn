@@ -1,0 +1,162 @@
+[gd_scene load_steps=18 format=3 uid="uid://cn1gdwiythfn2"]
+
+[ext_resource type="Script" uid="uid://dvbwyukos638c" path="res://game/game.gd" id="1_hb504"]
+[ext_resource type="PackedScene" uid="uid://b75yggsnay1mo" path="res://connection/connection.tscn" id="2_ee6o4"]
+[ext_resource type="Texture2D" uid="uid://blljslsxyx8em" path="res://assets/tile.png" id="3_4cobl"]
+[ext_resource type="Script" uid="uid://c63vfoblqmxxg" path="res://tools/controllers.gd" id="4_ln7ps"]
+[ext_resource type="PackedScene" uid="uid://dj5mxqnlsh6q7" path="res://game/entities/generic/generic.tscn" id="5_pxxsx"]
+[ext_resource type="PackedScene" uid="uid://vjy23l7u4hch" path="res://game/entities/player/player.tscn" id="6_u8s88"]
+[ext_resource type="Texture2D" uid="uid://bls0ryaavsbvd" path="res://assets/arrow_left.png" id="7_dxwpq"]
+[ext_resource type="Texture2D" uid="uid://bqdfqrx7ajogy" path="res://assets/arrow_left_p.png" id="8_mhvfb"]
+[ext_resource type="Texture2D" uid="uid://do4cgyej57yhs" path="res://assets/arrow_up.png" id="9_5e03w"]
+[ext_resource type="Texture2D" uid="uid://d1cuwkkgp8hyv" path="res://assets/arrow_up_p.png" id="10_leid8"]
+[ext_resource type="Texture2D" uid="uid://dkh2t0psfn40h" path="res://assets/arrow_down.png" id="11_8bboj"]
+[ext_resource type="Texture2D" uid="uid://bkiqp5xd7g5mf" path="res://assets/arrow_down_p.png" id="12_q52ks"]
+[ext_resource type="Texture2D" uid="uid://44dwfojqqvam" path="res://assets/arrow_right.png" id="13_jucfl"]
+[ext_resource type="Texture2D" uid="uid://dn0lmukjhns5l" path="res://assets/arrow_right_p.png" id="14_jdpby"]
+[ext_resource type="PackedScene" uid="uid://d1loujwy6tlp4" path="res://ui/screens/start_screen.tscn" id="15_58yx1"]
+
+[sub_resource type="DojoControllerQuery" id="DojoControllerQuery_w8h56"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_k3cyb"]
+content_margin_left = 4.0
+content_margin_top = 4.0
+content_margin_right = 4.0
+content_margin_bottom = 4.0
+bg_color = Color(0.2484, 0.2484, 0.2484, 1)
+
+[node name="DemoGame" type="Node" node_paths=PackedStringArray("connection")]
+script = ExtResource("1_hb504")
+connection = NodePath("Connection")
+controller_query = SubResource("DojoControllerQuery_w8h56")
+
+[node name="Connection" parent="." instance=ExtResource("2_ee6o4")]
+
+[node name="Parallax" type="ParallaxBackground" parent="."]
+layer = -1
+
+[node name="ParallaxLayer" type="ParallaxLayer" parent="Parallax"]
+
+[node name="Parallax2D" type="Parallax2D" parent="Parallax/ParallaxLayer"]
+repeat_size = Vector2(2048, 2048)
+repeat_times = 128
+
+[node name="Bg" type="Sprite2D" parent="Parallax/ParallaxLayer/Parallax2D"]
+texture_filter = 1
+texture_repeat = 2
+scale = Vector2(2, 2)
+texture = ExtResource("3_4cobl")
+centered = false
+offset = Vector2(32, 32)
+region_enabled = true
+region_rect = Rect2(0, 0, 1024, 1024)
+
+[node name="World" type="Node2D" parent="."]
+metadata/_edit_lock_ = true
+
+[node name="ControllersManager" type="Node2D" parent="World"]
+unique_name_in_owner = true
+script = ExtResource("4_ln7ps")
+generic_entity_scene = ExtResource("5_pxxsx")
+player_entity_scene = ExtResource("6_u8s88")
+
+[node name="Camera2D" type="Camera2D" parent="World"]
+position_smoothing_enabled = true
+position_smoothing_speed = 4.0
+
+[node name="UI" type="CanvasLayer" parent="."]
+
+[node name="Arrows" type="MarginContainer" parent="UI"]
+anchors_preset = 1
+anchor_left = 1.0
+anchor_right = 1.0
+offset_left = -200.0
+offset_bottom = 132.0
+grow_horizontal = 0
+theme_override_constants/margin_left = 32
+theme_override_constants/margin_top = 32
+theme_override_constants/margin_right = 32
+theme_override_constants/margin_bottom = 32
+
+[node name="VBoxContainer" type="VBoxContainer" parent="UI/Arrows"]
+layout_mode = 2
+
+[node name="HBoxContainer" type="HBoxContainer" parent="UI/Arrows/VBoxContainer"]
+texture_filter = 1
+layout_mode = 2
+alignment = 1
+
+[node name="ArrowLeft" type="TextureButton" parent="UI/Arrows/VBoxContainer/HBoxContainer"]
+layout_mode = 2
+size_flags_vertical = 12
+texture_normal = ExtResource("7_dxwpq")
+texture_pressed = ExtResource("8_mhvfb")
+texture_hover = ExtResource("7_dxwpq")
+
+[node name="VBoxContainer" type="VBoxContainer" parent="UI/Arrows/VBoxContainer/HBoxContainer"]
+layout_mode = 2
+alignment = 2
+
+[node name="ArrowUp" type="TextureButton" parent="UI/Arrows/VBoxContainer/HBoxContainer/VBoxContainer"]
+layout_mode = 2
+texture_normal = ExtResource("9_5e03w")
+texture_pressed = ExtResource("10_leid8")
+texture_hover = ExtResource("9_5e03w")
+
+[node name="ArrowDown" type="TextureButton" parent="UI/Arrows/VBoxContainer/HBoxContainer/VBoxContainer"]
+layout_mode = 2
+texture_normal = ExtResource("11_8bboj")
+texture_pressed = ExtResource("12_q52ks")
+texture_hover = ExtResource("11_8bboj")
+
+[node name="ArrowRight" type="TextureButton" parent="UI/Arrows/VBoxContainer/HBoxContainer"]
+layout_mode = 2
+size_flags_vertical = 12
+texture_normal = ExtResource("13_jucfl")
+texture_pressed = ExtResource("14_jdpby")
+texture_hover = ExtResource("13_jucfl")
+
+[node name="Panel" type="PanelContainer" parent="UI"]
+anchors_preset = 5
+anchor_left = 0.5
+anchor_right = 0.5
+offset_left = -125.0
+offset_right = 125.0
+offset_bottom = 39.0
+grow_horizontal = 2
+size_flags_horizontal = 4
+theme_override_styles/panel = SubResource("StyleBoxFlat_k3cyb")
+
+[node name="HBoxContainer" type="HBoxContainer" parent="UI/Panel"]
+layout_mode = 2
+
+[node name="LabelUsername" type="Label" parent="UI/Panel/HBoxContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "Username:"
+
+[node name="LabelAddress" type="Label" parent="UI/Panel/HBoxContainer"]
+unique_name_in_owner = true
+visible = false
+layout_mode = 2
+text = "Username:"
+
+[node name="LabelMoves" type="Label" parent="UI/Panel/HBoxContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "Moves:"
+
+[node name="Disconnect" type="Button" parent="UI/Panel/HBoxContainer"]
+layout_mode = 2
+text = "Disconnect"
+
+[node name="StartScreen" parent="UI" node_paths=PackedStringArray("connection") instance=ExtResource("15_58yx1")]
+visible = false
+connection = NodePath("../../Connection")
+
+[connection signal="pressed" from="UI/Arrows/VBoxContainer/HBoxContainer/ArrowLeft" to="." method="_on_arrow_left_pressed"]
+[connection signal="pressed" from="UI/Arrows/VBoxContainer/HBoxContainer/VBoxContainer/ArrowUp" to="." method="_on_arrow_up_pressed"]
+[connection signal="pressed" from="UI/Arrows/VBoxContainer/HBoxContainer/VBoxContainer/ArrowDown" to="." method="_on_arrow_down_pressed"]
+[connection signal="pressed" from="UI/Arrows/VBoxContainer/HBoxContainer/ArrowRight" to="." method="_on_arrow_right_pressed"]
+[connection signal="pressed" from="UI/Panel/HBoxContainer/Disconnect" to="." method="_on_disconnect_pressed"]
+[connection signal="entered" from="UI/StartScreen" to="." method="_on_start_screen_entered"]

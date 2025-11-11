@@ -53,9 +53,9 @@ public:
 
     static Variant get_custom_setting(const String &category, const String &setting);
 
-    static Variant get_dojo_setting(const String &setting);
+    static Variant get_dojo_setting(const String &setting, const Variant &default_value = Variant());
 
-    static Variant get_torii_setting(const String &setting);
+    static Variant get_torii_setting(const String &setting, const Variant &default_value = Variant());
 
     static Dictionary get_policies(const String &custom  = String());
 
@@ -129,6 +129,8 @@ public:
 
     static bool is_valid_calldata(const Variant &calldata);
 
+    static String generate_private_key();
+
 
 protected:
     static DojoHelpers *singleton;
@@ -136,9 +138,11 @@ protected:
     static void _bind_methods() {
         ClassDB::bind_static_method("DojoHelpers", D_METHOD("get_katana_url"), &DojoHelpers::get_katana_url);
         ClassDB::bind_static_method("DojoHelpers", D_METHOD("get_setting", "setting", "default_value"),
-                                    &DojoHelpers::get_setting);
-        ClassDB::bind_static_method("DojoHelpers", D_METHOD("get_dojo_setting", "setting"),
-                                    &DojoHelpers::get_dojo_setting);
+                                    &DojoHelpers::get_setting, DEFVAL(Variant()));
+        ClassDB::bind_static_method("DojoHelpers", D_METHOD("get_dojo_setting", "setting", "default_value"),
+                                    &DojoHelpers::get_dojo_setting, DEFVAL(Variant()));
+        ClassDB::bind_static_method("DojoHelpers", D_METHOD("get_torii_setting", "setting", "default_value"),
+                            &DojoHelpers::get_torii_setting, DEFVAL(Variant()));
         ClassDB::bind_static_method("DojoHelpers", D_METHOD("get_policies", "p_custom"),
                                     &DojoHelpers::get_policies, DEFVAL(String()));
         ClassDB::bind_static_method("DojoHelpers", D_METHOD("get_custom_setting", "category", "setting"),
@@ -183,6 +187,8 @@ protected:
                                     &DojoHelpers::bytes_to_u128_string);
         ClassDB::bind_static_method("DojoHelpers", D_METHOD("bytes_to_u256_string", "bytes"),
                                     &DojoHelpers::bytes_to_u256_string);
+
+        ClassDB::bind_static_method("DojoHelpers", D_METHOD("generate_private_key"), &DojoHelpers::generate_private_key);
     }
 };
 

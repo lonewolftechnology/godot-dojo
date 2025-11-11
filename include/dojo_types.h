@@ -3,7 +3,7 @@
 //
 #ifndef DOJO_TYPES_H
 #define DOJO_TYPES_H
-#include "dojo.h" // 1.7.5
+#include "dojo/dojo.h"
 
 #define DOJO dojo_bindings
 #define GET_DOJO_ERROR(result) ((result).err.message)

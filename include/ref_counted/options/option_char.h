@@ -10,21 +10,21 @@
 
 using namespace godot;
 
-class OptionChar : public DojoOption {
-    GDCLASS(OptionChar, DojoOption);
+class DojoOptionChar : public DojoOption {
+    GDCLASS(DojoOptionChar, DojoOption);
 
 protected:
     static void _bind_methods() {
     }
 
 public:
-    OptionChar() : DojoOption() {
+    DojoOptionChar() : DojoOption() {
     }
 
-    OptionChar(const String &value) : DojoOption(value) {
+    DojoOptionChar(const String &value) : DojoOption(value) {
     }
 
-    OptionChar(const DOJO::COptionc_char &value) {
+    DojoOptionChar(const DOJO::COptionc_char &value) {
         if (value.tag == DOJO::COptionc_char_Tag::Somec_char) {
             set_value(value.some);
         } else {
