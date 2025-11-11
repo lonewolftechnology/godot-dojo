@@ -15,6 +15,9 @@ on:
       precision:
         required: true
         type: string
+      platform_id:
+        required: true
+        type: string
       build_target:
         required: true
         type: string # 'editor' or 'templates'
@@ -25,7 +28,7 @@ on:
 
 jobs:
   build:
-    name: Build ${{ inputs.os }}-${{ inputs.arch }}-${{ inputs.precision }}-${{ inputs.build_target }}
+    name: Build ${{ inputs.platform_id }}-${{ inputs.arch }}-${{ inputs.precision }}-${{ inputs.build_target }}
     runs-on: ${{ inputs.os }}
 
     steps:
@@ -47,10 +50,17 @@ jobs:
         if: runner.os == 'Windows'
         run: choco install protoc
 
+      - name: Install Android NDK
+        if: inputs.platform_id == 'android'
+        uses: nttld/setup-ndk@v1
+        with:
+          ndk-version: r23c
+          add-to-path: true
+
       - name: Download core artifacts (target)
         uses: actions/download-artifact@v4
         with:
-          name: core-target-${{ runner.os == 'Windows' && 'windows' || (runner.os == 'macOS' && 'macos' || 'linux') }}-${{ inputs.arch }}-release
+          name: core-target-${{ inputs.platform_id }}-${{ inputs.arch }}-release
           path: godot-dojo/godot-dojo-core/target
 
       - name: Set up Rust nightly
@@ -92,7 +102,14 @@ jobs:
           CARGO_BUILD_TARGET: ${{ inputs.rust_target }}
         run: |
           set -e
-          PLATFORM_ARG="platform=${{ runner.os == 'Windows' && 'windows' || (runner.os == 'macOS' && 'macos' || 'linux') }}"
+
+          # Set Android environment variables for SCons
+          if [ "${{ inputs.platform_id }}" = "android" ]; then
+            export ANDROID_NDK_ROOT=$ANDROID_NDK_HOME
+            SCONS_ANDROID_OPTS="android_ndk_path=$ANDROID_NDK_HOME"
+          fi
+
+          PLATFORM_ARG="platform=${{ inputs.platform_id }}"
           ARCH_ARG="arch=${{ inputs.arch }}"
           PRECISION_ARG="precision=${{ inputs.precision }}"
           export FORCE_RUST_RELEASE=1
@@ -106,17 +123,32 @@ jobs:
 
           cd godot-dojo
 
-          if [ "${{ inputs.build_target }}" = "templates" ]; then
-            scons $PLATFORM_ARG $ARCH_ARG target=template_debug $PRECISION_ARG -j2
-            scons $PLATFORM_ARG $ARCH_ARG target=template_release $PRECISION_ARG -j2
+          if [ "${{ inputs.platform_id }}" = "ios" ]; then
+            echo "Building iOS libraries for XCFramework (debug)..."
+            scons platform=ios arch=arm64 target=template_debug $PRECISION_ARG -j2
+            scons platform=ios arch=arm64 ios_simulator=yes target=template_debug $PRECISION_ARG -j2
+            scons platform=ios arch=x86_64 ios_simulator=yes target=template_debug $PRECISION_ARG -j2
+            scons platform=ios assemble-ios target=template_debug $PRECISION_ARG
+
+            echo "Building iOS libraries for XCFramework (release)..."
+            scons platform=ios arch=arm64 target=template_release $PRECISION_ARG -j2
+            scons platform=ios arch=arm64 ios_simulator=yes target=template_release $PRECISION_ARG -j2
+            scons platform=ios arch=x86_64 ios_simulator=yes target=template_release $PRECISION_ARG -j2
+            scons platform=ios assemble-ios target=template_release $PRECISION_ARG
           else
-            scons $PLATFORM_ARG $ARCH_ARG target=${{ inputs.build_target }} $PRECISION_ARG -j2
+            if [ "${{ inputs.build_target }}" = "templates" ]; then
+              scons $PLATFORM_ARG $ARCH_ARG target=template_debug $PRECISION_ARG -j2 $SCONS_ANDROID_OPTS
+              scons $PLATFORM_ARG $ARCH_ARG target=template_release $PRECISION_ARG -j2 $SCONS_ANDROID_OPTS
+            else
+              scons $PLATFORM_ARG $ARCH_ARG target=${{ inputs.build_target }} $PRECISION_ARG -j2 $SCONS_ANDROID_OPTS
+            fi
           fi
+
 
       - name: Upload binaries
         uses: actions/upload-artifact@v4
         with:
-          name: bin-${{ inputs.precision }}-${{ runner.os == 'Windows' && 'windows' || (runner.os == 'macOS' && 'macos' || 'linux') }}-${{ inputs.arch }}-${{ inputs.build_target }}
+          name: bin-${{ inputs.precision }}-${{ inputs.platform_id }}-${{ inputs.arch }}-${{ inputs.build_target }}
           path: |
             godot-dojo/demo/addons/godot-dojo/
             ${{ runner.os == 'Windows' && format('godot-dojo/godot-dojo-core/target/{0}/release/dojo_c.dll', inputs.rust_target) || '' }}

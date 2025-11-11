@@ -574,24 +574,24 @@ if platform == "ios":
 
         # Dynamically determine which libraries to build based on command-line arguments.
         # This allows for building a single architecture (e.g., for testing) or all of them (for release).
-        libs_to_build = []
+        libs_to_package = []
 
         # If 'arch' is not specified or is 'universal', build all libraries.
-        if arch in ["universal", "all", None, ""]:
-            print(f"{Y}Building all architectures for iOS XCFramework...{X}")
-            libs_to_build.append(f"{output_base}/godot-dojo.ios.{target}.arm64.dylib")
-            libs_to_build.append(f"{output_base}/godot-dojo.ios.{target}.simulator.x86_64.dylib")
-            libs_to_build.append(f"{output_base}/godot-dojo.ios.{target}.simulator.arm64.dylib")
+        if arch == "universal":
+            print(f"{Y}Gathering all architectures for iOS XCFramework...{X}")
+            libs_to_package.append(f"{output_base}/godot-dojo.ios.{target}.arm64.dylib")
+            libs_to_package.append(f"{output_base}/godot-dojo.ios.{target}.simulator.x86_64.dylib")
+            libs_to_package.append(f"{output_base}/godot-dojo.ios.{target}.simulator.arm64.dylib")
         else:
             # Build only the specified architecture.
             if is_simulator:
-                print(f"{Y}Building for iOS Simulator ({arch}) only...{X}")
-                libs_to_build.append(f"{output_base}/godot-dojo.ios.{target}.simulator.{arch}.dylib")
+                print(f"{Y}Gathering for iOS Simulator ({arch}) only...{X}")
+                libs_to_package.append(f"{output_base}/godot-dojo.ios.{target}.simulator.{arch}.dylib")
             else:
-                print(f"{Y}Building for iOS Device ({arch}) only...{X}")
-                libs_to_build.append(f"{output_base}/godot-dojo.ios.{target}.{arch}.dylib")
+                print(f"{Y}Gathering for iOS Device ({arch}) only...{X}")
+                libs_to_package.append(f"{output_base}/godot-dojo.ios.{target}.{arch}.dylib")
 
-        if not libs_to_build:
+        if not libs_to_package:
             print(f"{R}{cross} No valid iOS libraries to build for the specified configuration. Aborting.{X}")
             Exit(1)
 
@@ -604,7 +604,7 @@ if platform == "ios":
 
         # Create a target for the final XCFramework directory.
         # This target depends on the individual libraries being built.
-        xcframework_package = env.Command(target_dir, libs_to_build, package_action)
+        xcframework_package = env.Command(target_dir, libs_to_package, package_action)
 
         # Create an alias so we can call it from the command line.
         # This alias now depends on the final package.
