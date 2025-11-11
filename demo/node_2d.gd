@@ -93,8 +93,9 @@ var calldata:Array = [
 		}
 	]
 
-func callback(data):
-	add_entry_to_output("CALLBACK", data)
+func callback(data:Dictionary, type:String):
+	var result = data["models"]
+	add_entry_to_output("%s CALLBACK" % type, result)
 
 func _ready() -> void:
 	entity_sub.world_addresses.append(WORLD)
@@ -108,11 +109,11 @@ func _ready() -> void:
 	torii_client.create_client(TORII_URL)
 	
 	torii_client.on_entity_state_update(
-		callback,
+		callback.bind("Entity"),
 		entity_sub
 	)
 	torii_client.on_event_message_update(
-		callback,
+		callback.bind("Event"),
 		message_sub
 	)
 	if priv_key.is_empty():
