@@ -59,7 +59,7 @@ jobs:
 
       - name: Install dependencies (macOS)
         if: runner.os == 'macOS'
-        run: brew install protobuf
+        run: brew install protobuf scons
 
       - name: Install dependencies (Windows)
         if: runner.os == 'Windows'

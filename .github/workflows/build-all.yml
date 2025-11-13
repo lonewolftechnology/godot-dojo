@@ -415,7 +415,7 @@ jobs:
         precision: [single, double]
         include:
           - os: ubuntu-latest
-          - platform_id: windows-gnu
+            platform_id: windows-gnu
             arch: x86_64
             rust_target: x86_64-pc-windows-gnu
     with:
