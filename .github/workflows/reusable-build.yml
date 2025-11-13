@@ -54,7 +54,11 @@ jobs:
 
       - name: Install dependencies (Linux)
         if: runner.os == 'Linux'
-        run: sudo apt-get update && sudo apt-get install -y build-essential pkg-config dbus libdbus-1-dev protobuf-compiler libprotobuf-dev
+        run: |
+          sudo apt-get update
+          PACKAGES="scons build-essential pkg-config dbus libdbus-1-dev protobuf-compiler libprotobuf-dev"
+          if [ "${{ inputs.platform_id }}" = "windows-gnu" ]; then PACKAGES="$PACKAGES mingw-w64"; fi
+          sudo apt-get install -y $PACKAGES
 
       - name: Install dependencies (macOS)
         if: runner.os == 'macOS'
@@ -85,9 +89,6 @@ jobs:
           echo "CXX_aarch64_linux_android=aarch64-linux-android29-clang++" >> $GITHUB_ENV
           echo "AR_aarch64_linux_android=llvm-ar" >> $GITHUB_ENV
 
-      - name: Install SCons
-        run: pip install scons
-
       - name: Download core artifacts (target)
         uses: actions/download-artifact@v4
         with:
@@ -116,6 +117,7 @@ jobs:
           export FORCE_RUST_RELEASE=1
           export SKIP_RUST_BUILD=1
           export SKIP_BINDINGS_GENERATION=1
+          export CARGO_BUILD_TARGET=${{ inputs.rust_target }}
           
           if [ "${{ runner.os }}" = "macOS" ] && [ -n "${{ inputs.macos_deployment_target }}" ]; then
             export MACOSX_DEPLOYMENT_TARGET=${{ inputs.macos_deployment_target }}
@@ -126,14 +128,17 @@ jobs:
           
           # Non-iOS builds
           if [ "${{ inputs.platform_id }}" != "ios" ]; then
-            PLATFORM_ARG="platform=${{ inputs.platform_id }}"
+            # For windows-gnu, the platform for SCons is 'windows'
+            SCONS_PLATFORM=${{ inputs.platform_id == 'windows-gnu' && 'windows' || inputs.platform_id }}
+            PLATFORM_ARG="platform=${SCONS_PLATFORM}"
             ARCH_ARG="arch=${{ inputs.arch }}"
             PRECISION_ARG="precision=${{ inputs.precision }}"
+            EXTRA_ARGS=${{ inputs.platform_id == 'windows-gnu' && 'use_mingw=true' || '' }}
             if [ "${{ inputs.build_target }}" = "templates" ]; then
-              scons $PLATFORM_ARG $ARCH_ARG target=template_debug $PRECISION_ARG -j2
-              scons $PLATFORM_ARG $ARCH_ARG target=template_release $PRECISION_ARG -j2
+              scons $PLATFORM_ARG $ARCH_ARG target=template_debug $PRECISION_ARG $EXTRA_ARGS -j2
+              scons $PLATFORM_ARG $ARCH_ARG target=template_release $PRECISION_ARG $EXTRA_ARGS -j2
             else
-              scons $PLATFORM_ARG $ARCH_ARG target=${{ inputs.build_target }} $PRECISION_ARG -j2
+              scons $PLATFORM_ARG $ARCH_ARG target=${{ inputs.build_target }} $PRECISION_ARG $EXTRA_ARGS -j2
             fi
           fi
 
@@ -166,6 +171,5 @@ jobs:
         with:
           name: bin-${{ inputs.precision }}-${{ inputs.platform_id }}-${{ inputs.arch }}-${{ inputs.build_target }}
           path: |
-            ${{ inputs.platform_id == 'ios' && 'build/' || 'demo/addons/godot-dojo/' }}
-            ${{ runner.os == 'Windows' && format('godot-dojo-core/target/{0}/release/dojo_c.dll', inputs.rust_target) || '' }}
+            ${{ inputs.platform_id == 'ios' && 'build/' || 'demo/addons/godot-dojo/' }}${{ inputs.platform_id == 'windows-gnu' && format('\ngodot-dojo-core/target/{0}/release/dojo_c.dll', inputs.rust_target) || '' }}
           if-no-files-found: error

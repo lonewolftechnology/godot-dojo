@@ -116,9 +116,6 @@ namespace std {
 }
 
 fn main(){
-    // FORCE REBUILD
-    env::set_var("REBUILD", format!("{:?}", std::time::Instant::now()));
-    println!("cargo:rerun-if-env-changed=REBUILD");
     if env::var("SKIP_BINDINGS_GENERATION").as_deref() == Ok("1") {
         info!("Skipping bindings generation because SKIP_BINDINGS_GENERATION is set to 1.");
         return;
