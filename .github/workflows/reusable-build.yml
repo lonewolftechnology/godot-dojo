@@ -71,12 +71,11 @@ jobs:
         uses: nttld/setup-ndk@v1
         with:
           ndk-version: r23c
-          add-to-path: true
 
       - name: Configure Cargo for Android
         if: inputs.platform_id == 'android'
         shell: bash
-        run: echo "ANDROID_NDK_ROOT_PATH=${{ steps.setup-ndk.outputs.ndk-path }}" >> $GITHUB_ENV
+        run: echo "ANDROID_NDK_ROOT=${{ steps.setup-ndk.outputs.ndk-path }}" >> $GITHUB_ENV
 
       - name: Download core artifacts (target)
         id: download-core-artifacts
@@ -109,7 +108,6 @@ jobs:
           export CARGO_BUILD_TARGET=${{ inputs.rust_target }}
           if [ "${{ inputs.platform_id }}" = "android" ]; then
             unset ANDROID_HOME
-            export ANDROID_NDK_ROOT="$ANDROID_NDK_ROOT_PATH"
           fi
           if [ "${{ runner.os }}" = "macOS" ] && [ -n "${{ inputs.macos_deployment_target }}" ]; then
             export MACOSX_DEPLOYMENT_TARGET=${{ inputs.macos_deployment_target }}
@@ -130,7 +128,6 @@ jobs:
           export CARGO_BUILD_TARGET=${{ inputs.rust_target }}
           if [ "${{ inputs.platform_id }}" = "android" ]; then
             unset ANDROID_HOME
-            export ANDROID_NDK_ROOT="$ANDROID_NDK_ROOT_PATH"
           fi
           if [ "${{ runner.os }}" = "macOS" ] && [ -n "${{ inputs.macos_deployment_target }}" ]; then
             export MACOSX_DEPLOYMENT_TARGET=${{ inputs.macos_deployment_target }}
@@ -151,7 +148,6 @@ jobs:
           export CARGO_BUILD_TARGET=${{ inputs.rust_target }}
           if [ "${{ inputs.platform_id }}" = "android" ]; then
             unset ANDROID_HOME
-            export ANDROID_NDK_ROOT="$ANDROID_NDK_ROOT_PATH"
           fi
           if [ "${{ runner.os }}" = "macOS" ] && [ -n "${{ inputs.macos_deployment_target }}" ]; then
             export MACOSX_DEPLOYMENT_TARGET=${{ inputs.macos_deployment_target }}
@@ -164,25 +160,39 @@ jobs:
       - name: Build for iOS Device (arm64)
         if: inputs.platform_id == 'ios'
         run: |
+          export FORCE_RUST_RELEASE=1
+          export SKIP_RUST_BUILD=1
           scons platform=ios arch=arm64 target=template_debug precision=${{ inputs.precision }} -j2
+          export FORCE_RUST_RELEASE=1
+          export SKIP_RUST_BUILD=1
           scons platform=ios arch=arm64 target=template_release precision=${{ inputs.precision }} -j2
 
       - name: Build for iOS Simulator (arm64)
         if: inputs.platform_id == 'ios'
         run: |
+          export FORCE_RUST_RELEASE=1
+          export SKIP_RUST_BUILD=1
           scons platform=ios arch=arm64 ios_simulator=yes target=template_debug precision=${{ inputs.precision }} -j2
+          export FORCE_RUST_RELEASE=1
+          export SKIP_RUST_BUILD=1
           scons platform=ios arch=arm64 ios_simulator=yes target=template_release precision=${{ inputs.precision }} -j2
 
       - name: Build for iOS Simulator (x86_64)
         if: inputs.platform_id == 'ios'
         run: |
+          export FORCE_RUST_RELEASE=1
+          export SKIP_RUST_BUILD=1
           scons platform=ios arch=x86_64 ios_simulator=yes target=template_debug precision=${{ inputs.precision }} -j2
+          export FORCE_RUST_RELEASE=1
+          export SKIP_RUST_BUILD=1
           scons platform=ios arch=x86_64 ios_simulator=yes target=template_release precision=${{ inputs.precision }} -j2
 
       - name: Assemble iOS XCFrameworks
         if: inputs.platform_id == 'ios'
         run: |
+          export SKIP_RUST_BUILD=1
           scons platform=ios arch=universal assemble-ios target=template_debug precision=${{ inputs.precision }}
+          export SKIP_RUST_BUILD=1
           scons platform=ios arch=universal assemble-ios target=template_release precision=${{ inputs.precision }}
 
       - name: Upload binaries
