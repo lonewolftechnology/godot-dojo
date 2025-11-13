@@ -18,9 +18,6 @@ on:
       platform_id:
         required: true
         type: string
-      build_target:
-        required: true
-        type: string # 'editor' or 'templates'
       macos_deployment_target:
         required: false
         type: string
@@ -36,7 +33,7 @@ on:
 
 jobs:
   build:
-    name: Build ${{ inputs.platform_id }}-${{ inputs.arch }}-${{ inputs.precision }}-${{ inputs.build_target }}
+    name: Build ${{ inputs.platform_id }}-${{ inputs.arch }}-${{ inputs.precision }}
     runs-on: ${{ inputs.os }}
 
     steps:
@@ -107,11 +104,10 @@ jobs:
             external/godot-cpp/gen/
             external/godot-cpp/__pycache__/
           key: ${{ runner.os }}-${{ inputs.arch }}-scons-${{ inputs.precision }}-${{ inputs.build_target }}-${{ inputs.current_tag }}
-          restore-keys: |
-            ${{ runner.os }}-${{ inputs.arch }}-scons-${{ inputs.precision }}-${{ inputs.build_target }}-${{ inputs.previous_tag }}
+          restore-keys: ${{ runner.os }}-${{ inputs.arch }}-scons-${{ inputs.precision }}-${{ inputs.previous_tag }}
 
       - name: Build GDExtension (editor)
-        if: inputs.platform_id != 'ios' && inputs.build_target == 'editor'
+        if: inputs.platform_id != 'ios'
         shell: bash
         run: |
           set -e
@@ -128,7 +124,7 @@ jobs:
           scons platform=${SCONS_PLATFORM} arch=${{ inputs.arch }} target=editor precision=${{ inputs.precision }} ${{ inputs.platform_id == 'windows-gnu' && 'use_mingw=true' || '' }} -j2
 
       - name: Build GDExtension (template debug)
-        if: inputs.platform_id != 'ios' && inputs.build_target == 'templates'
+        if: inputs.platform_id != 'ios'
         shell: bash
         run: |
           set -e
@@ -145,7 +141,7 @@ jobs:
           scons platform=${SCONS_PLATFORM} arch=${{ inputs.arch }} target=template_debug precision=${{ inputs.precision }} ${{ inputs.platform_id == 'windows-gnu' && 'use_mingw=true' || '' }} -j2
 
       - name: Build GDExtension (template release)
-        if: inputs.platform_id != 'ios' && inputs.build_target == 'templates'
+        if: inputs.platform_id != 'ios'
         shell: bash
         run: |
           set -e
@@ -188,7 +184,7 @@ jobs:
       - name: Upload binaries
         uses: actions/upload-artifact@v4
         with:
-          name: bin-${{ inputs.precision }}-${{ inputs.platform_id }}-${{ inputs.arch }}-${{ inputs.build_target }}
+          name: bin-${{ inputs.precision }}-${{ inputs.platform_id }}-${{ inputs.arch }}
           path: |
             ${{ inputs.platform_id == 'ios' && 'build/' || 'demo/addons/godot-dojo/' }}${{ inputs.platform_id == 'windows-gnu' && format('\ngodot-dojo-core/target/{0}/release/dojo_c.dll', inputs.rust_target) || '' }}
           if-no-files-found: error

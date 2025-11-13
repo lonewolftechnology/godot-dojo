@@ -246,25 +246,39 @@ jobs:
           restore-keys: |
             rust-build-${{ matrix.platform_id }}-${{ matrix.arch }}-
 
-      - name: Build godot-dojo-core
+      - name: Build godot-dojo-core (non-iOS)
+        if: matrix.platform_id != 'ios'
         shell: bash
         working-directory: godot-dojo-core
         env:
           SKIP_BINDINGS_GENERATION: ${{ matrix.rust_target == 'x86_64-unknown-linux-gnu' && '0' || '1' }}
-
         run: |
           if [ "${{ runner.os }}" = "macOS" ] && [ -n "${{ matrix.macos_deployment_target }}" ]; then
             export MACOSX_DEPLOYMENT_TARGET=${{ matrix.macos_deployment_target }}
             export RUSTFLAGS="${RUSTFLAGS}-C link-arg=-mmacosx-version-min=${{ matrix.macos_deployment_target }}"
           fi
+          cargo build --release --target ${{ matrix.rust_target }}
 
-          if [ "${{ matrix.platform_id }}" = "ios" ]; then
-            cargo build --release --target aarch64-apple-ios
-            cargo build --release --target x86_64-apple-ios
-            cargo build --release --target aarch64-apple-ios-sim
-          else
-            cargo build --release --target ${{ matrix.rust_target }}
-          fi
+      - name: Build godot-dojo-core (iOS Device arm64)
+        if: matrix.platform_id == 'ios'
+        working-directory: godot-dojo-core
+        env:
+          SKIP_BINDINGS_GENERATION: '1'
+        run: cargo build --release --target aarch64-apple-ios
+
+      - name: Build godot-dojo-core (iOS Simulator x86_64)
+        if: matrix.platform_id == 'ios'
+        working-directory: godot-dojo-core
+        env:
+          SKIP_BINDINGS_GENERATION: '1'
+        run: cargo build --release --target x86_64-apple-ios
+
+      - name: Build godot-dojo-core (iOS Simulator arm64)
+        if: matrix.platform_id == 'ios'
+        working-directory: godot-dojo-core
+        env:
+          SKIP_BINDINGS_GENERATION: '1'
+        run: cargo build --release --target aarch64-apple-ios-sim
 
       - name: Upload generated bindings
         if: matrix.rust_target == 'x86_64-unknown-linux-gnu'
@@ -291,7 +305,7 @@ jobs:
           if-no-files-found: error
 
   build-gdextension-android:
-    name: Build GDExtension (android-${{ matrix.arch }}-${{ matrix.precision }}-${{ matrix.build_target }})
+    name: Build GDExtension (android-${{ matrix.arch }}-${{ matrix.precision }})
     needs: [create_release, build-rust-core]
     if: needs.create_release.result == 'success' && needs.build-rust-core.result == 'success'
     uses: ./.github/workflows/reusable-build.yml
@@ -299,7 +313,6 @@ jobs:
       fail-fast: false
       matrix:
         precision: [single, double]
-        build_target: [editor, templates]
         include:
           - os: ubuntu-latest
             arch: arm64
@@ -310,14 +323,13 @@ jobs:
       arch: ${{ matrix.arch }}
       rust_target: ${{ matrix.rust_target }}
       precision: ${{ matrix.precision }}
-      build_target: ${{ matrix.build_target }}
       platform_id: ${{ matrix.platform_id }}
       macos_deployment_target: ''
 
       current_tag: ${{ needs.create_release.outputs.current_tag }}
       previous_tag: ${{ needs.create_release.outputs.previous_tag }}
   build-gdextension-ios:
-    name: Build GDExtension (ios-${{ matrix.arch }}-${{ matrix.precision }}-${{ matrix.build_target }})
+    name: Build GDExtension (ios-${{ matrix.arch }}-${{ matrix.precision }})
     needs: [create_release, build-rust-core]
     if: needs.create_release.result == 'success' && needs.build-rust-core.result == 'success'
     uses: ./.github/workflows/reusable-build.yml
@@ -330,7 +342,6 @@ jobs:
       arch: universal
       rust_target: 'aarch64-apple-ios' # Target base, el script se encarga del resto
       precision: ${{ matrix.precision }}
-      build_target: templates
       platform_id: ios
       macos_deployment_target: ''
 
@@ -338,7 +349,7 @@ jobs:
       previous_tag: ${{ needs.create_release.outputs.previous_tag }}
 
   build-gdextension-linux:
-    name: Build GDExtension (linux-${{ matrix.arch }}-${{ matrix.precision }}-${{ matrix.build_target }})
+    name: Build GDExtension (linux-${{ matrix.arch }}-${{ matrix.precision }})
     needs: [create_release, build-rust-core]
     if: needs.create_release.result == 'success' && needs.build-rust-core.result == 'success'
     uses: ./.github/workflows/reusable-build.yml
@@ -346,7 +357,6 @@ jobs:
       fail-fast: false
       matrix:
         precision: [single, double]
-        build_target: [editor, templates]
         include:
           - os: ubuntu-latest
             arch: x86_64
@@ -357,7 +367,6 @@ jobs:
       arch: ${{ matrix.arch }}
       rust_target: ${{ matrix.rust_target }}
       precision: ${{ matrix.precision }}
-      build_target: ${{ matrix.build_target }}
       platform_id: ${{ matrix.platform_id }}
       macos_deployment_target: ''
 
@@ -365,7 +374,7 @@ jobs:
       previous_tag: ${{ needs.create_release.outputs.previous_tag }}
 
   build-gdextension-macos:
-    name: Build GDExtension (macos-${{ matrix.arch }}-${{ matrix.precision }}-${{ matrix.build_target }})
+    name: Build GDExtension (macos-${{ matrix.arch }}-${{ matrix.precision }})
     needs: [create_release, build-rust-core]
     if: needs.create_release.result == 'success' && needs.build-rust-core.result == 'success'
     uses: ./.github/workflows/reusable-build.yml
@@ -373,7 +382,6 @@ jobs:
       fail-fast: false
       matrix:
         precision: [single, double]
-        build_target: [editor, templates]
         include:
            - os: macos-latest
              arch: arm64
@@ -390,7 +398,6 @@ jobs:
       arch: ${{ matrix.arch }}
       rust_target: ${{ matrix.rust_target }}
       precision: ${{ matrix.precision }}
-      build_target: ${{ matrix.build_target }}
       platform_id: ${{ matrix.platform_id }}
       macos_deployment_target: ${{ matrix.macos_deployment_target }}
 
@@ -398,7 +405,7 @@ jobs:
       previous_tag: ${{ needs.create_release.outputs.previous_tag }}
 
   build-gdextension-windows:
-    name: Build GDExtension (windows-gnu-${{ matrix.arch }}-${{ matrix.precision }}-${{ matrix.build_target }})
+    name: Build GDExtension (windows-gnu-${{ matrix.arch }}-${{ matrix.precision }})
     needs: [create_release, build-rust-core]
     if: needs.create_release.result == 'success' && needs.build-rust-core.result == 'success'
     uses: ./.github/workflows/reusable-build.yml
@@ -406,7 +413,6 @@ jobs:
       fail-fast: false
       matrix:
         precision: [single, double]
-        build_target: [editor, templates]
         include:
           - os: ubuntu-latest
           - platform_id: windows-gnu
@@ -417,7 +423,6 @@ jobs:
       arch: ${{ matrix.arch }}
       rust_target: ${{ matrix.rust_target }}
       precision: ${{ matrix.precision }}
-      build_target: ${{ matrix.build_target }}
       platform_id: ${{ matrix.platform_id }}
       macos_deployment_target: ''
       current_tag: ${{ needs.create_release.outputs.current_tag }}
