@@ -459,15 +459,12 @@ jobs:
           # Single precision binaries
           mkdir -p godot-dojo-bin/addons/godot-dojo/
           find all_bins/bin-single-linux-* all_bins/bin-single-macos-* all_bins/bin-single-android-* all_bins/bin-single-ios-* -name 'bin' -type d -exec cp -r {} godot-dojo-bin/addons/godot-dojo/ \;
-          # Copy dojo_c.dll for windows to the correct bin folder (it's inside demo/addons/godot-dojo)
           find all_bins/bin-single-windows-* -name 'bin' -type d -exec cp -r {} godot-dojo-bin/addons/godot-dojo/ \;
-          find all_bins/bin-single-windows-* -name 'dojo_c.dll' -exec cp {} godot-dojo-bin/addons/godot-dojo/bin/ \;
 
           # Double precision binaries
           mkdir -p godot-dojo-double-bin/addons/godot-dojo/
           find all_bins/bin-double-linux-* all_bins/bin-double-macos-* all_bins/bin-double-android-* all_bins/bin-double-ios-* -name 'bin' -type d -exec cp -r {} godot-dojo-double-bin/addons/godot-dojo/ \;
           find all_bins/bin-double-windows-* -name 'bin' -type d -exec cp -r {} godot-dojo-double-bin/addons/godot-dojo/ \;
-          find all_bins/bin-double-windows-* -name 'dojo_c.dll' -exec cp {} godot-dojo-double-bin/addons/godot-dojo/bin/ \;
 
       - name: Package into zip files
         run: |
