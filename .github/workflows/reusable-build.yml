@@ -76,15 +76,7 @@ jobs:
       - name: Configure Cargo for Android
         if: inputs.platform_id == 'android'
         shell: bash
-        run: |
-          NDK_TOOLCHAIN_PATH="${{ steps.setup-ndk.outputs.ndk-path }}/toolchains/llvm/prebuilt/linux-x86_64/bin"
-          echo "PATH=$NDK_TOOLCHAIN_PATH:$PATH" >> $GITHUB_ENV
-          echo "ANDROID_NDK_ROOT=${{ steps.setup-ndk.outputs.ndk-path }}" >> $GITHUB_ENV
-
-          echo "CARGO_TARGET_AARCH64_LINUX_ANDROID_LINKER=aarch64-linux-android29-clang" >> $GITHUB_ENV
-          echo "CC_aarch64_linux_android=aarch64-linux-android29-clang" >> $GITHUB_ENV
-          echo "CXX_aarch64_linux_android=aarch64-linux-android29-clang++" >> $GITHUB_ENV
-          echo "AR_aarch64_linux_android=llvm-ar" >> $GITHUB_ENV
+        run: echo "ANDROID_NDK_ROOT_PATH=${{ steps.setup-ndk.outputs.ndk-path }}" >> $GITHUB_ENV
 
       - name: Download core artifacts (target)
         id: download-core-artifacts
@@ -115,6 +107,10 @@ jobs:
           export SKIP_RUST_BUILD=1
           export SKIP_BINDINGS_GENERATION=1
           export CARGO_BUILD_TARGET=${{ inputs.rust_target }}
+          if [ "${{ inputs.platform_id }}" = "android" ]; then
+            unset ANDROID_HOME
+            export ANDROID_NDK_ROOT="$ANDROID_NDK_ROOT_PATH"
+          fi
           if [ "${{ runner.os }}" = "macOS" ] && [ -n "${{ inputs.macos_deployment_target }}" ]; then
             export MACOSX_DEPLOYMENT_TARGET=${{ inputs.macos_deployment_target }}
             export RUSTFLAGS="${RUSTFLAGS:+$RUSTFLAGS }-C link-arg=-mmacosx-version-min=${{ inputs.macos_deployment_target }}"
@@ -132,6 +128,10 @@ jobs:
           export SKIP_RUST_BUILD=1
           export SKIP_BINDINGS_GENERATION=1
           export CARGO_BUILD_TARGET=${{ inputs.rust_target }}
+          if [ "${{ inputs.platform_id }}" = "android" ]; then
+            unset ANDROID_HOME
+            export ANDROID_NDK_ROOT="$ANDROID_NDK_ROOT_PATH"
+          fi
           if [ "${{ runner.os }}" = "macOS" ] && [ -n "${{ inputs.macos_deployment_target }}" ]; then
             export MACOSX_DEPLOYMENT_TARGET=${{ inputs.macos_deployment_target }}
             export RUSTFLAGS="${RUSTFLAGS:+$RUSTFLAGS }-C link-arg=-mmacosx-version-min=${{ inputs.macos_deployment_target }}"
@@ -149,6 +149,10 @@ jobs:
           export SKIP_RUST_BUILD=1
           export SKIP_BINDINGS_GENERATION=1
           export CARGO_BUILD_TARGET=${{ inputs.rust_target }}
+          if [ "${{ inputs.platform_id }}" = "android" ]; then
+            unset ANDROID_HOME
+            export ANDROID_NDK_ROOT="$ANDROID_NDK_ROOT_PATH"
+          fi
           if [ "${{ runner.os }}" = "macOS" ] && [ -n "${{ inputs.macos_deployment_target }}" ]; then
             export MACOSX_DEPLOYMENT_TARGET=${{ inputs.macos_deployment_target }}
             export RUSTFLAGS="${RUSTFLAGS:+$RUSTFLAGS }-C link-arg=-mmacosx-version-min=${{ inputs.macos_deployment_target }}"

@@ -119,11 +119,6 @@ os.makedirs("demo/addons/godot-dojo", exist_ok=True)
 env = SConscript("external/godot-cpp/SConstruct")
 platform, arch, target = env["platform"], env["arch"], env.get("target", "template_debug")
 
-# Pass ANDROID_NDK_ROOT to the godot-cpp environment if it's set.
-android_ndk_root = os.environ.get("ANDROID_NDK_ROOT")
-if platform == "android" and android_ndk_root:
-    env["android_ndk_root"] = android_ndk_root
-
 # Validate that 'assemble-ios' is used with 'platform=ios'
 if "assemble-ios" in COMMAND_LINE_TARGETS and platform != "ios":
     print(f"{R}{cross} The 'assemble-ios' target requires 'platform=ios'. Please run the command as 'scons platform=ios assemble-ios'.{X}")
