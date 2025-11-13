@@ -140,11 +140,55 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-  build-rust-core:
-    name: Build Core Crate (${{ matrix.platform_id }}-${{ matrix.arch }})${{ matrix.is_primary && ' & Generate Bindings' || '' }}
-    runs-on: ${{ matrix.os_image }}
+  generate-bindings:
+    name: Generate Bindings
+    runs-on: ubuntu-latest
     needs: create_release
     if: needs.create_release.result == 'success'
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          submodules: true
+          fetch-depth: 0
+
+      - name: Install dependencies (Linux)
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y build-essential pkg-config libdbus-1-dev protobuf-compiler libprotobuf-dev
+
+      - name: Cache uniffi-bindgen-cpp
+        id: cache-uniffi-bindgen-cpp
+        uses: actions/cache@v3
+        with:
+          path: ~/.cargo/bin/uniffi-bindgen-cpp
+          key: ${{ runner.os }}-uniffi-bindgen-cpp-Larkooo-update-0.30
+
+      - name: Install uniffi-bindgen-cpp from source
+        if: ${{ steps.cache-uniffi-bindgen-cpp.outputs.cache-hit != 'true' }}
+        run: cargo install --git https://github.com/Larkooo/uniffi-bindgen-cpp --branch update-0.30 uniffi-bindgen-cpp
+
+      - name: Set up Rust nightly
+        uses: dtolnay/rust-toolchain@nightly
+        with:
+          targets: x86_64-unknown-linux-gnu
+
+      - name: Generate bindings
+        working-directory: godot-dojo-core
+        run: cargo build --release --target x86_64-unknown-linux-gnu
+
+      - name: Upload generated bindings
+        uses: actions/upload-artifact@v4
+        with:
+          name: generated-bindings
+          path: bindings/
+          if-no-files-found: error
+
+  build-rust-core:
+    name: Build Core Crate (${{ matrix.platform_id }}-${{ matrix.arch }})
+    runs-on: ${{ matrix.os_image }}
+    needs: [create_release, generate-bindings]
+    if: needs.create_release.result == 'success' && needs.generate-bindings.result == 'success'
     strategy:
       fail-fast: false
       matrix:
@@ -159,7 +203,6 @@ jobs:
             arch: x86_64
             rust_target: x86_64-unknown-linux-gnu
             macos_deployment_target: ""
-            is_primary: true # This job will generate bindings
           - platform_id: macos
             os_image: macos-latest # x86_64
             arch: x86_64
@@ -189,8 +232,7 @@ jobs:
           submodules: true
           fetch-depth: 0
 
-      - name: Download generated bindings (if not primary)
-        if: ${{ !matrix.is_primary }}
+      - name: Download generated bindings
         uses: actions/download-artifact@v4
         with:
           name: generated-bindings
@@ -214,18 +256,6 @@ jobs:
         if: runner.os == 'Windows'
         run: choco install protoc
 
-      - name: Cache uniffi-bindgen-cpp
-        if: ${{ matrix.is_primary }}
-        id: cache-uniffi-bindgen-cpp
-        uses: actions/cache@v3
-        with:
-          path: ~/.cargo/bin/uniffi-bindgen-cpp
-          key: ${{ runner.os }}-uniffi-bindgen-cpp-Larkooo-update-0.30
-
-      - name: Install uniffi-bindgen-cpp from source
-        if: ${{ matrix.is_primary && steps.cache-uniffi-bindgen-cpp.outputs.cache-hit != 'true' }}
-        run: cargo install --git https://github.com/Larkooo/uniffi-bindgen-cpp --branch update-0.30 uniffi-bindgen-cpp
-
       - name: Install Android NDK
         if: matrix.platform_id == 'android'
         uses: nttld/setup-ndk@v1
@@ -246,17 +276,19 @@ jobs:
         with:
           targets: ${{ matrix.platform_id == 'ios' && 'aarch64-apple-ios,x86_64-apple-ios,aarch64-apple-ios-sim' || matrix.rust_target }}
 
-      - name: Cache Rust build artifacts
-        uses: Swatinem/rust-cache@v2
+      - name: Cache Rust build artifacts (target folder)
+        uses: actions/cache@v3
         with:
-          workspaces: "godot-dojo-core -> target"
-          key: ${{ matrix.platform_id }}-${{ matrix.arch }} # Add platform/arch to the key
+          path: godot-dojo-core/target
+          key: rust-build-${{ matrix.platform_id }}-${{ matrix.arch }}-${{ hashFiles('godot-dojo-core/Cargo.lock') }}
+          restore-keys: |
+            rust-build-${{ matrix.platform_id }}-${{ matrix.arch }}-
 
       - name: Build godot-dojo-core
         shell: bash
         working-directory: godot-dojo-core
         env:
-          SKIP_BINDINGS_GENERATION: ${{ !matrix.is_primary && '1' || '0' }}
+          SKIP_BINDINGS_GENERATION: '1'
 
         run: |
           if [ "${{ runner.os }}" = "macOS" ] && [ -n "${{ matrix.macos_deployment_target }}" ]; then
@@ -271,14 +303,6 @@ jobs:
           else
             cargo build --release --target ${{ matrix.rust_target }}
           fi
-
-      - name: Upload generated bindings
-        if: ${{ matrix.is_primary }}
-        uses: actions/upload-artifact@v4
-        with:
-          name: generated-bindings
-          path: bindings/
-          if-no-files-found: error
 
       - name: Upload core artifacts (target)
         if: matrix.platform_id != 'ios'
