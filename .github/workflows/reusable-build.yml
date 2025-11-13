@@ -195,5 +195,5 @@ jobs:
         with:
           name: bin-${{ inputs.precision }}-${{ inputs.platform_id }}-${{ inputs.arch }}
           path: |
-            ${{ inputs.platform_id == 'ios' && 'build/' || 'demo/addons/godot-dojo/' }}${{ inputs.platform_id == 'windows-gnu' && format('\ngodot-dojo-core/target/{0}/release/dojo_c.dll', inputs.rust_target) || '' }}
+            ${{ inputs.platform_id == 'ios' && 'build/' || 'demo/addons/godot-dojo/' }}
           if-no-files-found: error
