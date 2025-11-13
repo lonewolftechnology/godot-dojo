@@ -90,9 +90,10 @@ jobs:
           echo "AR_aarch64_linux_android=llvm-ar" >> $GITHUB_ENV
 
       - name: Download core artifacts (target)
+        id: download-core-artifacts
         uses: actions/download-artifact@v4
         with:
-          name: core-build-${{ inputs.platform_id }}${{ inputs.platform_id == 'ios' && '-universal' || format('-{0}-release', inputs.arch) }}
+          name: ${{ inputs.platform_id == 'ios' && 'core-build-ios-universal' || format('core-build-{0}-{1}-release', inputs.platform_id, inputs.arch) }}
           path: godot-dojo-core/target
 
       - name: Cache SCons and godot-cpp build artifacts
@@ -109,38 +110,56 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-${{ inputs.arch }}-scons-${{ inputs.precision }}-${{ inputs.build_target }}-${{ inputs.previous_tag }}
 
-      - name: Build GDExtension
+      - name: Build GDExtension (editor)
+        if: inputs.platform_id != 'ios' && inputs.build_target == 'editor'
         shell: bash
         run: |
           set -e
-
           export FORCE_RUST_RELEASE=1
           export SKIP_RUST_BUILD=1
           export SKIP_BINDINGS_GENERATION=1
           export CARGO_BUILD_TARGET=${{ inputs.rust_target }}
-          
           if [ "${{ runner.os }}" = "macOS" ] && [ -n "${{ inputs.macos_deployment_target }}" ]; then
             export MACOSX_DEPLOYMENT_TARGET=${{ inputs.macos_deployment_target }}
             export RUSTFLAGS="${RUSTFLAGS:+$RUSTFLAGS }-C link-arg=-mmacosx-version-min=${{ inputs.macos_deployment_target }}"
           fi
-
           mkdir -p demo/addons/godot-dojo
-          
-          # Non-iOS builds
-          if [ "${{ inputs.platform_id }}" != "ios" ]; then
-            # For windows-gnu, the platform for SCons is 'windows'
-            SCONS_PLATFORM=${{ inputs.platform_id == 'windows-gnu' && 'windows' || inputs.platform_id }}
-            PLATFORM_ARG="platform=${SCONS_PLATFORM}"
-            ARCH_ARG="arch=${{ inputs.arch }}"
-            PRECISION_ARG="precision=${{ inputs.precision }}"
-            EXTRA_ARGS=${{ inputs.platform_id == 'windows-gnu' && 'use_mingw=true' || '' }}
-            if [ "${{ inputs.build_target }}" = "templates" ]; then
-              scons $PLATFORM_ARG $ARCH_ARG target=template_debug $PRECISION_ARG $EXTRA_ARGS -j2
-              scons $PLATFORM_ARG $ARCH_ARG target=template_release $PRECISION_ARG $EXTRA_ARGS -j2
-            else
-              scons $PLATFORM_ARG $ARCH_ARG target=${{ inputs.build_target }} $PRECISION_ARG $EXTRA_ARGS -j2
-            fi
+          SCONS_PLATFORM=${{ inputs.platform_id == 'windows-gnu' && 'windows' || inputs.platform_id }}
+          scons platform=${SCONS_PLATFORM} arch=${{ inputs.arch }} target=editor precision=${{ inputs.precision }} ${{ inputs.platform_id == 'windows-gnu' && 'use_mingw=true' || '' }} -j2
+
+      - name: Build GDExtension (template debug)
+        if: inputs.platform_id != 'ios' && inputs.build_target == 'templates'
+        shell: bash
+        run: |
+          set -e
+          export FORCE_RUST_RELEASE=1
+          export SKIP_RUST_BUILD=1
+          export SKIP_BINDINGS_GENERATION=1
+          export CARGO_BUILD_TARGET=${{ inputs.rust_target }}
+          if [ "${{ runner.os }}" = "macOS" ] && [ -n "${{ inputs.macos_deployment_target }}" ]; then
+            export MACOSX_DEPLOYMENT_TARGET=${{ inputs.macos_deployment_target }}
+            export RUSTFLAGS="${RUSTFLAGS:+$RUSTFLAGS }-C link-arg=-mmacosx-version-min=${{ inputs.macos_deployment_target }}"
           fi
+          mkdir -p demo/addons/godot-dojo
+          SCONS_PLATFORM=${{ inputs.platform_id == 'windows-gnu' && 'windows' || inputs.platform_id }}
+          scons platform=${SCONS_PLATFORM} arch=${{ inputs.arch }} target=template_debug precision=${{ inputs.precision }} ${{ inputs.platform_id == 'windows-gnu' && 'use_mingw=true' || '' }} -j2
+
+      - name: Build GDExtension (template release)
+        if: inputs.platform_id != 'ios' && inputs.build_target == 'templates'
+        shell: bash
+        run: |
+          set -e
+          export FORCE_RUST_RELEASE=1
+          export SKIP_RUST_BUILD=1
+          export SKIP_BINDINGS_GENERATION=1
+          export CARGO_BUILD_TARGET=${{ inputs.rust_target }}
+          if [ "${{ runner.os }}" = "macOS" ] && [ -n "${{ inputs.macos_deployment_target }}" ]; then
+            export MACOSX_DEPLOYMENT_TARGET=${{ inputs.macos_deployment_target }}
+            export RUSTFLAGS="${RUSTFLAGS:+$RUSTFLAGS }-C link-arg=-mmacosx-version-min=${{ inputs.macos_deployment_target }}"
+          fi
+          mkdir -p demo/addons/godot-dojo
+          SCONS_PLATFORM=${{ inputs.platform_id == 'windows-gnu' && 'windows' || inputs.platform_id }}
+          scons platform=${SCONS_PLATFORM} arch=${{ inputs.arch }} target=template_release precision=${{ inputs.precision }} ${{ inputs.platform_id == 'windows-gnu' && 'use_mingw=true' || '' }} -j2
 
       - name: Build for iOS Device (arm64)
         if: inputs.platform_id == 'ios'
