@@ -67,15 +67,10 @@ jobs:
 
       - name: Install Android NDK
         if: inputs.platform_id == 'android'
-        id: setup-ndk
-        uses: nttld/setup-ndk@v1
-        with:
-          ndk-version: r23c
-
-      - name: Configure Cargo for Android
-        if: inputs.platform_id == 'android'
         shell: bash
-        run: echo "ANDROID_NDK_ROOT=${{ steps.setup-ndk.outputs.ndk-path }}" >> $GITHUB_ENV
+        run: |
+          echo "y" | sudo ${ANDROID_HOME}/cmdline-tools/latest/bin/sdkmanager "ndk;23.2.8568313"
+          echo "ANDROID_NDK_ROOT=${ANDROID_HOME}/ndk/23.2.8568313" >> $GITHUB_ENV
 
       - name: Download core artifacts (target)
         id: download-core-artifacts
