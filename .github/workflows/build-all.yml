@@ -212,7 +212,7 @@ jobs:
       - name: Cache uniffi-bindgen-cpp
         if: matrix.rust_target == 'x86_64-unknown-linux-gnu'
         id: cache-uniffi-bindgen-cpp
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           path: ~/.cargo/bin/uniffi-bindgen-cpp
           key: ${{ runner.os }}-uniffi-bindgen-cpp-Larkooo-update-0.30
@@ -242,7 +242,7 @@ jobs:
           targets: ${{ matrix.platform_id == 'ios' && 'aarch64-apple-ios,x86_64-apple-ios,aarch64-apple-ios-sim' || matrix.rust_target }}
 
       - name: Cache Rust build artifacts (target folder)
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           path: |
             godot-dojo-core/target
@@ -452,13 +452,8 @@ jobs:
         run: |
           set -e
           mkdir -p godot-dojo-bin/addons/godot-dojo
-          # Copy the first found gdextension file to the root of the addon
-          find single_bins -type f -name 'godot-dojo.gdextension' -print -quit | xargs -I {} cp {} godot-dojo-bin/addons/godot-dojo/
-
-          # Iterate over each downloaded artifact directory
-          for dir in single_bins/bin-single-*; do
-            cp -r "$dir/bin"/* godot-dojo-bin/addons/godot-dojo/bin/
-          done
+          # Copy the merged contents from the download step into the target directory.
+          cp -r single_bins/* godot-dojo-bin/addons/godot-dojo/
       - name: Package single precision into zip file
         run: |
           TAGNAME=${GITHUB_REF##*/}
@@ -495,13 +490,8 @@ jobs:
         run: |
           set -e
           mkdir -p godot-dojo-double-bin/addons/godot-dojo
-          # Copy the first found gdextension file to the root of the addon
-          find double_bins -type f -name 'godot-dojo.gdextension' -print -quit | xargs -I {} cp {} godot-dojo-double-bin/addons/godot-dojo/
-
-          # Iterate over each downloaded artifact directory
-          for dir in double_bins/bin-double-*; do
-            cp -r "$dir/bin"/* godot-dojo-double-bin/addons/godot-dojo/bin/
-          done
+          # Copy the merged contents from the download step into the target directory.
+          cp -r double_bins/* godot-dojo-double-bin/addons/godot-dojo/
       - name: Package double precision into zip file
         run: |
           TAGNAME=${GITHUB_REF##*/}
