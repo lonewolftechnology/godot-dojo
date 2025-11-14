@@ -244,7 +244,8 @@ jobs:
       - name: Cache Rust build artifacts (target folder)
         uses: actions/cache@v3
         with:
-          path: godot-dojo-core/target
+          path: |
+            godot-dojo-core/target
           key: rust-build-${{ matrix.platform_id }}-${{ matrix.arch }}-${{ hashFiles('godot-dojo-core/Cargo.lock') }}
           restore-keys: |
             rust-build-${{ matrix.platform_id }}-${{ matrix.arch }}-
@@ -451,11 +452,13 @@ jobs:
         run: |
           set -e
           mkdir -p godot-dojo-bin/addons/godot-dojo
-          find single_bins -name 'godot-dojo.gdextension' -print -quit | xargs -I {} cp {} godot-dojo-bin/addons/godot-dojo/
-          mkdir -p godot-dojo-bin/addons/godot-dojo/bin
-          find single_bins -name '*.so' -o -name '*.dylib' -o -name '*.dll' -o -name '*.xcframework' | xargs -I {} cp -R {} godot-dojo-bin/addons/godot-dojo/bin/
-          find single_bins -path '*/gdip' -exec cp -r {} godot-dojo-bin/addons/godot-dojo/bin/ \;
+          # Copy the first found gdextension file to the root of the addon
+          find single_bins -type f -name 'godot-dojo.gdextension' -print -quit | xargs -I {} cp {} godot-dojo-bin/addons/godot-dojo/
 
+          # Iterate over each downloaded artifact directory
+          for dir in single_bins/bin-single-*; do
+            cp -r "$dir/bin"/* godot-dojo-bin/addons/godot-dojo/bin/
+          done
       - name: Package single precision into zip file
         run: |
           TAGNAME=${GITHUB_REF##*/}
@@ -492,11 +495,13 @@ jobs:
         run: |
           set -e
           mkdir -p godot-dojo-double-bin/addons/godot-dojo
-          find double_bins -name 'godot-dojo.gdextension' -print -quit | xargs -I {} cp {} godot-dojo-double-bin/addons/godot-dojo/
-          mkdir -p godot-dojo-double-bin/addons/godot-dojo/bin
-          find double_bins -name '*.so' -o -name '*.dylib' -o -name '*.dll' -o -name '*.xcframework' | xargs -I {} cp -R {} godot-dojo-double-bin/addons/godot-dojo/bin/
-          find double_bins -path '*/gdip' -exec cp -r {} godot-dojo-double-bin/addons/godot-dojo/bin/ \;
+          # Copy the first found gdextension file to the root of the addon
+          find double_bins -type f -name 'godot-dojo.gdextension' -print -quit | xargs -I {} cp {} godot-dojo-double-bin/addons/godot-dojo/
 
+          # Iterate over each downloaded artifact directory
+          for dir in double_bins/bin-double-*; do
+            cp -r "$dir/bin"/* godot-dojo-double-bin/addons/godot-dojo/bin/
+          done
       - name: Package double precision into zip file
         run: |
           TAGNAME=${GITHUB_REF##*/}
