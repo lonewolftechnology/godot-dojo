@@ -2,6 +2,7 @@
 #include "variant/ty/struct.h"
 #include "variant/ty/ty.h"
 #include "ref_counted/options/option_clause.h"
+#include "ref_counted/options/option_f64.h"
 #include "ref_counted/options/option_u256.h"
 
 DojoArray::DojoArray(DOJO::CArrayTy array)
@@ -131,6 +132,17 @@ DojoArray::DojoArray(DOJO::CArrayPlayerAchievementProgress array)
 DojoArray::DojoArray(DOJO::CArrayTaskProgress array)
 {
     value = CArrayTaskProgressToVariant(array);
+}
+
+DojoArray::DojoArray(DOJO::CArrayTableSearchResults array) {
+    value = CArrayTableSearchResultsToVariant(array);
+}
+DojoArray::DojoArray(DOJO::CArraySearchMatch array) {
+    value = CArraySearchMatchToVariant(array);
+}
+
+DojoArray::DojoArray(dojo_bindings::CArraySearchMatchField array) {
+    value = CArraySearchMatchFieldToVariant(array);
 }
 
 Variant DojoArray::CArrayTyToVariant(DOJO::CArrayTy array_ty)
@@ -612,7 +624,50 @@ Variant DojoArray::CArrayAchievementToVariant(DOJO::CArrayAchievement array)
      return result;
  }
 
- Variant DojoArray::CArrayTokenBalanceToVariant(DOJO::CArrayTokenBalance array)
+Variant DojoArray::CArrayTableSearchResultsToVariant(dojo_bindings::CArrayTableSearchResults array) {
+    std::vector<DOJO::TableSearchResults> table_search_results(array.data, array.data + array.data_len);
+    Array result;
+
+    for (const auto& table_search : table_search_results) {
+        Dictionary search_dict;
+        search_dict["table"] = table_search.table;
+        search_dict["count"] = table_search.count;
+        search_dict["matches"] = CArraySearchMatchToVariant(table_search.matches);
+        result.append(search_dict);
+    }
+    return result;
+}
+
+Variant DojoArray::CArraySearchMatchToVariant(dojo_bindings::CArraySearchMatch array) {
+    std::vector<DOJO::SearchMatch> search_matches(array.data, array.data + array.data_len);
+    Array result;
+
+    for (const auto& match : search_matches) {
+        Dictionary match_dict;
+        match_dict["id"] = match.id;
+        match_dict["fields"] = CArraySearchMatchFieldToVariant(match.fields);
+        match_dict["score"] = DojoOptionf64::from_native(match.score);
+
+    }
+
+    return result;
+}
+
+Variant DojoArray::CArraySearchMatchFieldToVariant(dojo_bindings::CArraySearchMatchField array) {
+    std::vector<DOJO::SearchMatchField> match_fields(array.data, array.data + array.data_len);
+
+    Array result;
+
+    for (const auto& field : match_fields) {
+        Dictionary field_dict;
+        field_dict["key"] = field.key;
+        field_dict["value"] = field.value;
+
+    }
+    return result;
+}
+
+Variant DojoArray::CArrayTokenBalanceToVariant(DOJO::CArrayTokenBalance array)
  {
      std::vector<DOJO::TokenBalance> balances(array.data, array.data + array.data_len);
      Array result;

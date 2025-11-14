@@ -464,6 +464,27 @@ TypedArray<Dictionary> ToriiClient::get_player_achievements(const Ref<DojoPlayer
     return result_array;
 }
 
+TypedArray<Dictionary> ToriiClient::search(const Ref<DojoSearchQuery> &query) {
+    Logger::info("Search triggered");
+    if (!_is_ready_for_query(query)) {
+        return {};
+    }
+
+    DOJO::SearchQuery search_query = query->get_native_query();
+
+    DOJO::ResultSearchResponse result_search = DOJO::client_search(client, search_query);
+
+    if (result_search.tag == DOJO::ErrSearchResponse) {
+        Logger::error("Toriiclient.client failed: ", GET_DOJO_ERROR(result_search));
+        return {};
+    }
+    DOJO::SearchResponse search_response = result_search.ok;
+    TypedArray<Dictionary> result_array = DojoArray::CArrayTableSearchResultsToVariant(search_response.results);
+
+    Logger::success_extra("ToriiClient", "Search results obtained", result_array.size(), search_response.total);
+    return result_array;
+}
+
 
 void ToriiClient::cancel_all_subscriptions() {
     Logger::info("Cancelling all subscriptions");

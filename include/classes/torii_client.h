@@ -24,6 +24,7 @@
 #include "resources/queries/dojo_token_transfer_query.h"
 #include "resources/queries/dojo_achievement_query.h"
 #include "resources/queries/dojo_player_achievement_query.h"
+#include "resources/queries/dojo_search_query.h"
 
 #include "resources/subscriptions/activity.h"
 #include "resources/subscriptions/aggregation.h"
@@ -113,6 +114,8 @@ public:
     TypedArray<Dictionary> get_achievements(const Ref<DojoAchievementQuery> &query) const;
 
     TypedArray<Dictionary> get_player_achievements(const Ref<DojoPlayerAchievementQuery> &query) const;
+
+    TypedArray<Dictionary> search (const Ref<DojoSearchQuery> &query);
 
     // Subscriptions
     void on_entity_state_update(const Callable &callback, const Ref<EntitySubscription> &subscription);
@@ -250,6 +253,7 @@ protected:
         ClassDB::bind_method(D_METHOD("get_token_info", "token_address"), &ToriiClient::get_token_info);
         ClassDB::bind_method(D_METHOD("get_achievements", "query"), &ToriiClient::get_achievements);
         ClassDB::bind_method(D_METHOD("get_player_achievements", "query"), &ToriiClient::get_player_achievements);
+        ClassDB::bind_method(D_METHOD("search", "query"), &ToriiClient::search);
 
         //Subscription
         ClassDB::bind_method(D_METHOD("on_entity_state_update", "callback", "subscription"),

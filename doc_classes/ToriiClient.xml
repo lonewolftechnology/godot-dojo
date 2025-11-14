@@ -251,6 +251,12 @@
 				Calls [method get_world_metadata] and emits the [signal metadata_updated] signal with the result. Returns [code]true[/code] on success.
 			</description>
 		</method>
+		<method name="search">
+			<return type="Dictionary[]" />
+			<param index="0" name="query" type="DojoSearchQuery" />
+			<description>
+			</description>
+		</method>
 		<method name="update_achievement_progression">
 			<return type="void" />
 			<param index="0" name="subscription" type="AchievementProgressionSubscription" />

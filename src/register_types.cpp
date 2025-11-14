@@ -14,6 +14,7 @@
 #include "editor/dojo_editor_plugin.h"
 #include "godot_cpp/core/defs.hpp"
 #include "godot_cpp/godot.hpp"
+#include "ref_counted/options/option_f64.h"
 // #include "tools/dojo_http.h"
 #ifdef WEB_ENABLED
 #include <tools/dojo_bridge.h>
@@ -61,6 +62,7 @@
 #include "ref_counted/dojo_option.h"
 #include "ref_counted/options/option_u32.h"
 #include "ref_counted/options/option_u64.h"
+#include "ref_counted/options/option_f64.h"
 #include "ref_counted/options/option_char.h"
 #include "ref_counted/options/option_u256.h"
 #include "ref_counted/options/option_clause.h"
@@ -100,6 +102,7 @@ void initialize_dojoc_module(ModuleInitializationLevel p_level) {
         GDREGISTER_CLASS(DojoOption);
         GDREGISTER_CLASS(DojoOptionU32);
         GDREGISTER_CLASS(DojoOptionU64);
+        GDREGISTER_CLASS(DojoOptionf64)
         GDREGISTER_CLASS(DojoOptionChar);
         GDREGISTER_CLASS(DojoOptionU256);
         GDREGISTER_CLASS(DojoOptionFieldElement);
@@ -122,6 +125,7 @@ void initialize_dojoc_module(ModuleInitializationLevel p_level) {
         GDREGISTER_CLASS(DojoTransactionFilter);
         GDREGISTER_CLASS(DojoAchievementQuery)
         GDREGISTER_CLASS(DojoPlayerAchievementQuery);
+        GDREGISTER_CLASS(DojoSearchQuery);
         // Subscriptions
         GDREGISTER_CLASS(EventSubscription);
         GDREGISTER_CLASS(MessageSubscription);

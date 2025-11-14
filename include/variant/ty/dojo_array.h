@@ -90,6 +90,9 @@ public:
     DojoArray(DOJO::CArrayPlayerAchievementEntry array);
     DojoArray(DOJO::CArrayPlayerAchievementProgress array);
     DojoArray(DOJO::CArrayTaskProgress array);
+    DojoArray(DOJO::CArrayTableSearchResults array);
+    DojoArray(DOJO::CArraySearchMatch array);
+    DojoArray(DOJO::CArraySearchMatchField array);
 
     // "static" methods.
     static Variant CArrayTyToVariant(DOJO::CArrayTy array);
@@ -118,6 +121,10 @@ public:
     static Variant CArrayPlayerAchievementEntryToVariant(DOJO::CArrayPlayerAchievementEntry array);
     static Variant CArrayPlayerAchievementProgressToVariant(DOJO::CArrayPlayerAchievementProgress array);
     static Variant CArrayTaskProgressToVariant(DOJO::CArrayTaskProgress array);
+    static Variant CArrayTableSearchResultsToVariant(DOJO::CArrayTableSearchResults array);
+    static Variant CArraySearchMatchToVariant(DOJO::CArraySearchMatch array);
+    static Variant CArraySearchMatchFieldToVariant(DOJO::CArraySearchMatchField array);
+
 
 
     Variant get_value() const { return value; }
