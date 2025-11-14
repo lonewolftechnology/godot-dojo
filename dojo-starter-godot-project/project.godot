@@ -15,6 +15,12 @@ run/main_scene="uid://cn1gdwiythfn2"
 config/features=PackedStringArray("4.5", "Forward Plus")
 config/icon="res://icon.svg"
 
+[display]
+
+window/size/viewport_width=720
+window/size/viewport_height=1280
+window/handheld/orientation=1
+
 [input]
 
 zoom_in={

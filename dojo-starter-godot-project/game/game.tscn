@@ -1,4 +1,4 @@
-[gd_scene load_steps=18 format=3 uid="uid://cn1gdwiythfn2"]
+[gd_scene load_steps=17 format=3 uid="uid://cn1gdwiythfn2"]
 
 [ext_resource type="Script" uid="uid://dvbwyukos638c" path="res://game/game.gd" id="1_hb504"]
 [ext_resource type="PackedScene" uid="uid://b75yggsnay1mo" path="res://connection/connection.tscn" id="2_ee6o4"]
@@ -16,8 +16,6 @@
 [ext_resource type="Texture2D" uid="uid://dn0lmukjhns5l" path="res://assets/arrow_right_p.png" id="14_jdpby"]
 [ext_resource type="PackedScene" uid="uid://d1loujwy6tlp4" path="res://ui/screens/start_screen.tscn" id="15_58yx1"]
 
-[sub_resource type="DojoControllerQuery" id="DojoControllerQuery_w8h56"]
-
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_k3cyb"]
 content_margin_left = 4.0
 content_margin_top = 4.0
@@ -28,12 +26,12 @@ bg_color = Color(0.2484, 0.2484, 0.2484, 1)
 [node name="DemoGame" type="Node" node_paths=PackedStringArray("connection")]
 script = ExtResource("1_hb504")
 connection = NodePath("Connection")
-controller_query = SubResource("DojoControllerQuery_w8h56")
 
 [node name="Connection" parent="." instance=ExtResource("2_ee6o4")]
 
 [node name="Parallax" type="ParallaxBackground" parent="."]
 layer = -1
+visible = false
 
 [node name="ParallaxLayer" type="ParallaxLayer" parent="Parallax"]
 
@@ -67,16 +65,20 @@ position_smoothing_speed = 4.0
 [node name="UI" type="CanvasLayer" parent="."]
 
 [node name="Arrows" type="MarginContainer" parent="UI"]
-anchors_preset = 1
-anchor_left = 1.0
-anchor_right = 1.0
-offset_left = -200.0
-offset_bottom = 132.0
-grow_horizontal = 0
+anchors_preset = 7
+anchor_left = 0.5
+anchor_top = 1.0
+anchor_right = 0.5
+anchor_bottom = 1.0
+offset_left = -132.0
+offset_top = -196.0
+offset_right = 132.0
+grow_horizontal = 2
+grow_vertical = 0
 theme_override_constants/margin_left = 32
 theme_override_constants/margin_top = 32
 theme_override_constants/margin_right = 32
-theme_override_constants/margin_bottom = 32
+theme_override_constants/margin_bottom = 64
 
 [node name="VBoxContainer" type="VBoxContainer" parent="UI/Arrows"]
 layout_mode = 2

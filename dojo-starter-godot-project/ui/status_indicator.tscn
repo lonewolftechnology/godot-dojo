@@ -17,16 +17,15 @@ script = ExtResource("1_22gwk")
 
 [node name="StatusIndicator" type="HBoxContainer" parent="."]
 layout_mode = 2
-size_flags_horizontal = 8
-alignment = 2
 
 [node name="Type" type="Label" parent="StatusIndicator"]
 layout_mode = 2
+size_flags_horizontal = 3
 text = "Type"
 
 [node name="Status" type="ColorRect" parent="StatusIndicator"]
 custom_minimum_size = Vector2(16, 16)
 layout_mode = 2
-size_flags_horizontal = 4
+size_flags_horizontal = 10
 size_flags_vertical = 4
 color = Color(1, 0, 0, 1)
