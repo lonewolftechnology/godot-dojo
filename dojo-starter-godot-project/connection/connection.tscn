@@ -1,49 +1,14 @@
-[gd_scene load_steps=9 format=3 uid="uid://b75yggsnay1mo"]
+[gd_scene load_steps=12 format=3 uid="uid://b75yggsnay1mo"]
 
 [ext_resource type="Script" uid="uid://bx5rlh0opi80k" path="res://connection/connection.gd" id="1_c7jwa"]
 [ext_resource type="PackedScene" uid="uid://b5vmo8llucetx" path="res://ui/status_indicator.tscn" id="3_bya50"]
 [ext_resource type="Script" uid="uid://cibg6qwsaeyq6" path="res://tools/http_pinger.gd" id="3_erpqw"]
 
-[sub_resource type="Animation" id="Animation_erpqw"]
-resource_name = "show"
-length = 0.2
-capture_included = true
-tracks/0/type = "value"
-tracks/0/imported = false
-tracks/0/enabled = true
-tracks/0/path = NodePath("../..:position")
-tracks/0/interp = 1
-tracks/0/loop_wrap = true
-tracks/0/keys = {
-"times": PackedFloat32Array(0.1),
-"transitions": PackedFloat32Array(0.5),
-"update": 2,
-"values": [Vector2(0, 0)]
-}
-tracks/1/type = "value"
-tracks/1/imported = false
-tracks/1/enabled = true
-tracks/1/path = NodePath("../ButtonShow:visible")
-tracks/1/interp = 1
-tracks/1/loop_wrap = true
-tracks/1/keys = {
-"times": PackedFloat32Array(0, 0.033333335),
-"transitions": PackedFloat32Array(1, 1),
-"update": 1,
-"values": [true, false]
-}
-tracks/2/type = "value"
-tracks/2/imported = false
-tracks/2/enabled = true
-tracks/2/path = NodePath("../ButtonHide:visible")
-tracks/2/interp = 1
-tracks/2/loop_wrap = true
-tracks/2/keys = {
-"times": PackedFloat32Array(0, 0.033333335),
-"transitions": PackedFloat32Array(1, 1),
-"update": 1,
-"values": [false, true]
-}
+[sub_resource type="DojoQuery" id="DojoQuery_erpqw"]
+
+[sub_resource type="EntitySubscription" id="EntitySubscription_henli"]
+
+[sub_resource type="MessageSubscription" id="MessageSubscription_advu3"]
 
 [sub_resource type="Animation" id="Animation_henli"]
 length = 0.001
@@ -125,6 +90,47 @@ tracks/2/keys = {
 "values": [true, false]
 }
 
+[sub_resource type="Animation" id="Animation_erpqw"]
+resource_name = "show"
+length = 0.2
+capture_included = true
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("../..:position")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0.1),
+"transitions": PackedFloat32Array(0.5),
+"update": 2,
+"values": [Vector2(0, 0)]
+}
+tracks/1/type = "value"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath("../ButtonShow:visible")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/keys = {
+"times": PackedFloat32Array(0, 0.033333335),
+"transitions": PackedFloat32Array(1, 1),
+"update": 1,
+"values": [true, false]
+}
+tracks/2/type = "value"
+tracks/2/imported = false
+tracks/2/enabled = true
+tracks/2/path = NodePath("../ButtonHide:visible")
+tracks/2/interp = 1
+tracks/2/loop_wrap = true
+tracks/2/keys = {
+"times": PackedFloat32Array(0, 0.033333335),
+"transitions": PackedFloat32Array(1, 1),
+"update": 1,
+"values": [false, true]
+}
+
 [sub_resource type="AnimationLibrary" id="AnimationLibrary_advu3"]
 _data = {
 &"RESET": SubResource("Animation_henli"),
@@ -141,30 +147,13 @@ bg_color = Color(0.2484, 0.2484, 0.2484, 1)
 
 [node name="Connection" type="Node"]
 script = ExtResource("1_c7jwa")
+query = SubResource("DojoQuery_erpqw")
+entity_sub = SubResource("EntitySubscription_henli")
+message_sub = SubResource("MessageSubscription_advu3")
 
 [node name="ToriiClient" type="ToriiClient" parent="."]
-_import_path = NodePath("")
-unique_name_in_owner = false
-process_mode = 0
-process_priority = 0
-process_physics_priority = 0
-process_thread_group = 0
-physics_interpolation_mode = 0
-auto_translate_mode = 0
-editor_description = ""
-script = null
 
 [node name="DojoSessionAccount" type="DojoSessionAccount" parent="."]
-_import_path = NodePath("")
-unique_name_in_owner = false
-process_mode = 0
-process_priority = 0
-process_physics_priority = 0
-process_thread_group = 0
-physics_interpolation_mode = 0
-auto_translate_mode = 0
-editor_description = ""
-script = null
 
 [node name="CanvasLayer" type="CanvasLayer" parent="."]
 layer = 10
@@ -236,5 +225,8 @@ text = "^"
 script = ExtResource("3_erpqw")
 metadata/_custom_type_script = "uid://cibg6qwsaeyq6"
 
-[connection signal="pressed" from="CanvasLayer/MarginContainer/VBoxContainer/ButtonShow" to="CanvasLayer/AnimationPlayer" method="play"]
-[connection signal="pressed" from="CanvasLayer/MarginContainer/VBoxContainer/ButtonHide" to="CanvasLayer/AnimationPlayer" method="play"]
+[connection signal="client_connected" from="ToriiClient" to="." method="_on_torii_client_client_connected"]
+[connection signal="client_disconnected" from="ToriiClient" to="." method="_on_torii_client_client_disconnected"]
+[connection signal="subscription_created" from="ToriiClient" to="." method="_on_torii_client_subscription_created"]
+[connection signal="pressed" from="CanvasLayer/MarginContainer/VBoxContainer/ButtonShow" to="CanvasLayer/AnimationPlayer" method="play" binds= ["show"]]
+[connection signal="pressed" from="CanvasLayer/MarginContainer/VBoxContainer/ButtonHide" to="CanvasLayer/AnimationPlayer" method="play" binds= ["hide"]]

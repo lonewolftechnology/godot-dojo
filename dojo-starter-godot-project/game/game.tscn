@@ -31,7 +31,6 @@ connection = NodePath("Connection")
 
 [node name="Parallax" type="ParallaxBackground" parent="."]
 layer = -1
-visible = false
 
 [node name="ParallaxLayer" type="ParallaxLayer" parent="Parallax"]
 

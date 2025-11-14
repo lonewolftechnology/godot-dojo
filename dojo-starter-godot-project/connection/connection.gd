@@ -86,15 +86,14 @@ func _on_torii_client_client_connected(success: bool) -> void:
 func _on_torii_client_client_disconnected() -> void:
 	_client_status.set_status(false)
 
-func _on_session_account_controller_connected(success: bool) -> void:
-	_session_account_status.set_status(success)
-	if success:
-		connected.emit()
-
-
-func _on_session_account_controller_disconnected() -> void:
-	if not _session_account_status: return
-	_session_account_status.set_status(false)
+#func _on_session_account_controller_connected(success: bool) -> void:
+	#_session_account_status.set_status(success)
+	#if success:
+		#connected.emit()
+#
+#func _on_session_account_controller_disconnected() -> void:
+	#if not _session_account_status: return
+	#_session_account_status.set_status(false)
 
 func _on_torii_client_subscription_created(subscription_name: String) -> void:
 	if subscription_name == "entity_state_update":
