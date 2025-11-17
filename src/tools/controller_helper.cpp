@@ -7,9 +7,6 @@
 #include <types/big_int.h>
 #include <random>
 #include <deque>
-
-#include <boost/multiprecision/cpp_int.hpp>
-
 #include "tools/logger.h"
 
 
@@ -117,7 +114,7 @@ std::vector<std::shared_ptr<controller::Call>> ControllerHelper::prepare_calls(c
                     break;
                 case Variant::Type::INT: {                    
                     int64_t int_val = arg;
-                    boost::multiprecision::cpp_int felt_val;
+                    cpp_int felt_val;
                     if (int_val < 0) {
                         felt_val = DojoHelpers::to_starknet_negative_felt(int_val);
                     } else {
