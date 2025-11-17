@@ -3,9 +3,12 @@
 #include "godot_cpp/classes/ref_counted.hpp"
 #include "tools/dojo_helper.h"
 #include <iomanip>
+#include <sstream>
 #include <types/big_int.h>
 #include <random>
 #include <deque>
+
+#include <boost/multiprecision/cpp_int.hpp>
 
 #include "tools/logger.h"
 
@@ -112,8 +115,17 @@ std::vector<std::shared_ptr<controller::Call>> ControllerHelper::prepare_calls(c
                 case Variant::Type::BOOL:
                     current_call->calldata.push_back(static_cast<bool>(arg) ? "0x1" : "0x0");
                     break;
-                case Variant::Type::INT: {
-                    current_call->calldata.push_back(String::num_int64(arg).utf8().get_data());
+                case Variant::Type::INT: {                    
+                    int64_t int_val = arg;
+                    boost::multiprecision::cpp_int felt_val;
+                    if (int_val < 0) {
+                        felt_val = DojoHelpers::to_starknet_negative_felt(int_val);
+                    } else {
+                        felt_val = int_val;
+                    }
+                    std::stringstream ss;
+                    ss << "0x" << std::hex << felt_val;
+                    current_call->calldata.push_back(ss.str());
                     break;
                 }
                 case Variant::Type::PACKED_BYTE_ARRAY: {
@@ -152,11 +164,11 @@ std::vector<std::shared_ptr<controller::Call>> ControllerHelper::prepare_calls(c
                             continue;
                         }
                     }
-                    // Logger::warning("prepare_calldata: Unsupported object type in calldata: " + obj->get_class());
+                    Logger::warning("prepare_calldata: Unsupported object type in calldata: " + obj->get_class());
                     break;
                 }
                 default:
-                    // Logger::warning("prepare_calldata: Unsupported variant type in calldata: " + Variant::get_type_name(arg.get_type()));
+                    Logger::warning("prepare_calldata: Unsupported variant type in calldata: " + Variant::get_type_name(arg.get_type()));
                     break;
             }
         }
