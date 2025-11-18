@@ -112,6 +112,11 @@ layout_mode = 2
 size_flags_vertical = 3
 text = "DojoController"
 
+[node name="IterativeCalls" type="Button" parent="CanvasLayer/PanelContainer/CenterContainer/MainContainer/MenuContainer"]
+layout_mode = 2
+size_flags_vertical = 3
+text = "Bulk Calls"
+
 [node name="FoldableContainer" type="FoldableContainer" parent="CanvasLayer/PanelContainer/CenterContainer/MainContainer/MenuContainer"]
 layout_mode = 2
 folded = true
@@ -158,3 +163,4 @@ horizontal_alignment = 1
 [connection signal="pressed" from="CanvasLayer/PanelContainer/CenterContainer/MainContainer/MenuContainer/CallOutsideBtn" to="." method="_on_call_outside_btn_pressed"]
 [connection signal="pressed" from="CanvasLayer/PanelContainer/CenterContainer/MainContainer/MenuContainer/InfoBtn" to="." method="_on_info_btn_pressed"]
 [connection signal="pressed" from="CanvasLayer/PanelContainer/CenterContainer/MainContainer/MenuContainer/DojoControllerBtn" to="." method="_on_dojo_controller_btn_pressed"]
+[connection signal="pressed" from="CanvasLayer/PanelContainer/CenterContainer/MainContainer/MenuContainer/IterativeCalls" to="." method="_on_iterative_calls_pressed"]

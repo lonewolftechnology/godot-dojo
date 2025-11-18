@@ -22,7 +22,7 @@ const RPC_URL: String = "https://api.cartridge.gg/x/godot-gdextension/katana"
 #const TORII_URL = "http://localhost:8080"
 const TORII_URL: String = "https://api.cartridge.gg/x/godot-gdextension/torii"
 
-@onready var priv_key: String = "0x46b7bc23fc1a1ad414004df3eaf4fe104ceb2c948d80b1f42a85ee713920ee6"
+@onready var priv_key: String = "0x2599663365beac1df6bdc95774f2cc538dac21d8f46dc1a0f8f58f927242249"
 
 
 var policies:Dictionary = {
@@ -33,9 +33,12 @@ var policies:Dictionary = {
 				"spawn",
 				"move",
 				"validate_i64",
+				"validate_u64",
 				"validate_i128",
 				"validate_u128",
-				"validate_u256"
+				"validate_u256",
+				"validate_fp_40"
+				
 			]
 		}]
 	}
@@ -49,48 +52,34 @@ var spawn_call:Dictionary = {
 var calldata:Array = [
 		{
 		"contract_address": CONTRACT,
-		"entrypoint": "spawn",
+		"entrypoint": "validate_u64",
+		"calldata": [4.2]
+		},		{
+		"contract_address": CONTRACT,
+		"entrypoint": "validate_i64",
+		"calldata": [4.2]
 		},
 		{
 		"contract_address": CONTRACT,
+		"entrypoint": "validate_u64",
+		"calldata": [-4.2]
+		},		
+		{
+		"contract_address": CONTRACT,
 		"entrypoint": "validate_i64",
-		"calldata": [4]
+		"calldata": [-4.2]
 		},
+		{
+		"contract_address": CONTRACT,
+		"entrypoint": "validate_u64",
+		"calldata": [-4]
+		},		
 		{
 		"contract_address": CONTRACT,
 		"entrypoint": "validate_i64",
 		"calldata": [-4]
-		},
-				{
-		"contract_address": CONTRACT,
-		"entrypoint": "validate_i128",
-		"calldata": [I128.from_variant(4)]
-		},
-		{
-		"contract_address": CONTRACT,
-		"entrypoint": "validate_i128",
-		"calldata": [I128.from_variant(-4)]
-		},
-		{
-		"contract_address": CONTRACT,
-		"entrypoint": "validate_u128",
-		"calldata": [U128.from_variant(4)]
-		},
-		{
-		"contract_address": CONTRACT,
-		"entrypoint": "validate_u128",
-		"calldata": [U128.from_variant(-4)]
-		},
-		{
-		"contract_address": CONTRACT,
-		"entrypoint": "validate_u256",
-		"calldata": [U256.from_variant(4)]
-		},
-		{
-		"contract_address": CONTRACT,
-		"entrypoint": "validate_u256",
-		"calldata": [U256.from_variant(-4)]
 		}
+
 	]
 
 func callback(data:Dictionary, type:String):
@@ -166,6 +155,9 @@ func get_session_url():
 					},
 					{
 						"entrypoint": "validate_i64"
+					},					
+					{
+						"entrypoint": "validate_u64"
 					},
 					{
 						"entrypoint": "validate_i128"
@@ -175,6 +167,9 @@ func get_session_url():
 					},
 					{
 						"entrypoint": "validate_u256"
+					},
+					{
+					"entrypoint": "validate_fp_40"
 					}
 				]
 			}
@@ -247,3 +242,13 @@ func _on_torii_client_event_received(event_data: Dictionary) -> void:
 
 func _on_torii_client_message_published(message_hash: String) -> void:
 	push_warning("_on_torii_client_message_published",message_hash)
+
+
+func _on_iterative_calls_pressed() -> void:
+	for _call in calldata:
+		var result = dojo_session_account.execute_from_outside([_call])
+		if result.begins_with("0x"):
+			push_warning("CURRENT CALL %s %s %s" % [_call["entrypoint"], _call["calldata"], result])
+		else:
+			push_error("CURRENT CALL %s %s %s" % [_call["entrypoint"], _call["calldata"], result])
+		add_entry_to_output("EXECUTE OUTSIDE %s" % _call["entrypoint"], result)
