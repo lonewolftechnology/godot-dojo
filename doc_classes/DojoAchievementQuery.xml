@@ -7,7 +7,7 @@
 	<tutorials>
 	</tutorials>
 	<members>
-		<member name="hidden" type="bool" setter="set_hidden" getter="get_hidden" default="false">
+		<member name="hidden" type="bool" setter="set_hidden" getter="get_hidden" default="true">
 		</member>
 		<member name="namespaces" type="String[]" setter="set_namespaces" getter="get_namespaces" default="[]">
 		</member>
