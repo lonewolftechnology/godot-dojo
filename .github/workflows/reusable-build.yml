@@ -72,14 +72,11 @@ jobs:
           echo "y" | sudo ${ANDROID_HOME}/cmdline-tools/latest/bin/sdkmanager "ndk;23.2.8568313"
           echo "ANDROID_NDK_ROOT=${ANDROID_HOME}/ndk/23.2.8568313" >> $GITHUB_ENV
 
-      - name: Restore Rust build artifacts (target folder)
-        uses: actions/cache@v4
+      - name: Download core artifacts (target)
+        uses: actions/download-artifact@v4
         with:
-          path: |
-            godot-dojo-core/target
-          key: rust-build-${{ inputs.platform_id }}-${{ inputs.arch }}-${{ hashFiles('godot-dojo-core/Cargo.lock') }}
-          restore-keys: |
-            rust-build-${{ inputs.platform_id }}-${{ inputs.arch }}-
+          name: core-build-${{ inputs.platform_id }}-${{ inputs.arch }}${{ inputs.platform_id == 'ios' && '-universal' || '' }}${{ inputs.platform_id != 'ios' && '-release' || '' }}
+          path: godot-dojo-core/target
 
       - name: Cache SCons and godot-cpp build artifacts
         uses: actions/cache@v4
