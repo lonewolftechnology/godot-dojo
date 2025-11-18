@@ -9,17 +9,15 @@ enum Directions {
 	DOWN = 4,
 }
 
-@export var connection : DojoConnection 
-
+@export var connection : DojoConnection
 @export var controller_query:DojoControllerQuery
+
+var _player_address : String = ""
 
 @onready var label_username: Label = %LabelUsername
 @onready var label_address: Label = %LabelAddress
 @onready var label_moves: Label = %LabelMoves
-
 @onready var controllers_manager: ControllersManager = %ControllersManager
-
-var _player_address : String = ""
 
 func _ready() -> void:
 	OS.set_environment("RUST_BACKTRACE", "full")
@@ -64,7 +62,6 @@ func spawn() -> void:
 		"entrypoint": "spawn",
 		"calldata": []
 	}
-#	connection.session_account.execute([spawn_call])
 	connection.session_account.execute_from_outside([spawn_call])
 
 func _on_start_screen_entered() -> void:
@@ -115,19 +112,18 @@ func get_entities() -> Dictionary:
 						
 						if entry.has("vec"):
 							v = entry["vec"]
-							
 						elif entry.has("Vector2"):
 							v = entry["Vector2"]
+						
 						var x := v["x"] as float
 						var y := v["y"] as float
 						position = Vector2(x,y)
 						
-						
 						if not parsed_entities.has(id):
 							parsed_entities[id] = {}
-						
 						parsed_entities[id] = {}
 						parsed_entities[id].merge({"position": position})
+					
 					"dojo_starter-Moves":
 						remaining = entry["remaining"] as int
 						can_move = entry["can_move"] as bool
@@ -137,6 +133,7 @@ func get_entities() -> Dictionary:
 							
 						parsed_entities[id]["remaining"] = remaining
 						parsed_entities[id]["can_move"] = can_move
+					
 					"dojo_starter-U128Value":
 						pass
 					"dojo_starter-U256Value":
@@ -169,7 +166,6 @@ func _on_arrow_down_pressed() -> void:
 
 func _on_arrow_right_pressed() -> void:
 	_move(Directions.RIGHT)
-
 
 func _on_disconnect_pressed() -> void:
 	connection.session_account.queue_free()
