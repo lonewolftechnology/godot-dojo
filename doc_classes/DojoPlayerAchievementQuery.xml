@@ -1,8 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="DojoPlayerAchievementQuery" inherits="DojoQueryBase" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://raw.githubusercontent.com/godotengine/godot/master/doc/class.xsd">
 	<brief_description>
+		A query for retrieving player achievements.
 	</brief_description>
 	<description>
+		This class is used to query for player achievements. It allows filtering by world addresses, player addresses and namespaces.
 	</description>
 	<tutorials>
 	</tutorials>

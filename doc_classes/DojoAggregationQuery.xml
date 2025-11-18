@@ -1,8 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="DojoAggregationQuery" inherits="DojoQueryBase" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://raw.githubusercontent.com/godotengine/godot/master/doc/class.xsd">
 	<brief_description>
+		A query for retrieving aggregations.
 	</brief_description>
 	<description>
+		This class is used to query for aggregations. It allows filtering by entity IDs and aggregator IDs.
 	</description>
 	<tutorials>
 	</tutorials>

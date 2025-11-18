@@ -1,8 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="DojoActivityQuery" inherits="DojoQueryBase" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://raw.githubusercontent.com/godotengine/godot/master/doc/class.xsd">
 	<brief_description>
+		A query for retrieving activities.
 	</brief_description>
 	<description>
+		This class is used to query for activities. It allows filtering by world addresses, caller addresses, namespaces and time range.
 	</description>
 	<tutorials>
 	</tutorials>

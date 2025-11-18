@@ -255,6 +255,7 @@
 			<return type="Dictionary[]" />
 			<param index="0" name="query" type="DojoSearchQuery" />
 			<description>
+				Searches for entities based on the provided [DojoSearchQuery].
 			</description>
 		</method>
 		<method name="update_achievement_progression">
