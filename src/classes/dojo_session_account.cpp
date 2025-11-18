@@ -119,7 +119,7 @@ String DojoSessionAccount::execute(const TypedArray<Dictionary> &calls) const {
     std::vector<std::shared_ptr<controller::Call> > c_calls = ControllerHelper::prepare_calls(calls);
 
     try {
-        String tx_hash = String(internal->execute(c_calls).c_str());
+        String tx_hash = internal->execute(c_calls).c_str();
         Logger::success_extra("DojoSessionAccount", "Execute successful. Tx hash:", tx_hash);
         return tx_hash;
     } catch (const controller::ControllerError &e) {
@@ -137,7 +137,7 @@ String DojoSessionAccount::execute_from_outside(const TypedArray<Dictionary> &ca
     std::vector<std::shared_ptr<controller::Call>> c_calls = ControllerHelper::prepare_calls(calls);
 
     try {
-        String tx_hash = String(internal->execute_from_outside(c_calls).c_str());
+        String tx_hash = internal->execute_from_outside(c_calls).c_str();
         Logger::success_extra("DojoSessionAccount", "Execute from outside successful. Tx hash:", tx_hash);
         return tx_hash;
     } catch (const controller::ControllerError &e) {

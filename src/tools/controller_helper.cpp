@@ -31,16 +31,7 @@ bool ControllerHelper::validate_felt(const String &felt) {
 }
 
 String ControllerHelper::generate_private_key() {
-    std::random_device rd;
-    std::mt19937_64 gen(rd());
-    std::uniform_int_distribution<unsigned int> dis(0, 255);
-
-    std::stringstream ss;
-    ss << "0x";
-    for (int i = 0; i < 32; i++) {
-        ss << std::hex << std::setw(2) << std::setfill('0') << (int) dis(gen);
-    }
-    return ss.str().data();
+    return DojoHelpers::generate_private_key();
 }
 
 std::vector<std::shared_ptr<controller::Call>> ControllerHelper::prepare_calls(const TypedArray<Dictionary> &calls) {
@@ -107,6 +98,22 @@ std::vector<std::shared_ptr<controller::Call>> ControllerHelper::prepare_calls(c
                     worklist.push_front(static_cast<int64_t>(vec.z));
                     worklist.push_front(static_cast<int64_t>(vec.y));
                     worklist.push_front(static_cast<int64_t>(vec.x));
+                    continue;
+                }
+                case Variant::Type::VECTOR4: {
+                    Vector4 vec = arg;
+                    worklist.push_front(vec.z);
+                    worklist.push_front(vec.y);
+                    worklist.push_front(vec.x);
+                    worklist.push_front(vec.w);
+                    continue;
+                }
+                case Variant::Type::VECTOR4I: {
+                    Vector4i vec = arg;
+                    worklist.push_front(static_cast<int64_t>(vec.z));
+                    worklist.push_front(static_cast<int64_t>(vec.y));
+                    worklist.push_front(static_cast<int64_t>(vec.x));
+                    worklist.push_front(static_cast<int64_t>(vec.w));
                     continue;
                 }
                 case Variant::Type::BOOL:
