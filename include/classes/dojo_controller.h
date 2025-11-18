@@ -17,13 +17,13 @@ using namespace godot;
 class DojoController : public Node {
     GDCLASS(DojoController, Node)
 
-    std::shared_ptr<controller::Controller> internal;
+    std::shared_ptr<controller::ControllerAccount> internal;
 
 public:
     DojoController() = default;
     ~DojoController() override = default;
 
-    void set_internal(std::shared_ptr<controller::Controller> p_internal);
+    void set_internal(std::shared_ptr<controller::ControllerAccount> p_internal);
 
     static DojoController *init(const String &app_id, const String &username, const String &class_hash, const String &rpc_url, const Ref<DojoOwner> &owner, const String &address, const String &chain_id);
     static DojoController *from_storage(const String &app_id);

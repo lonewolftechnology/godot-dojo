@@ -2,12 +2,12 @@
 #include "tools/controller_helper.h"
 #include "tools/dojo_helper.h"
 
-void DojoController::set_internal(std::shared_ptr<controller::Controller> p_internal) {
+void DojoController::set_internal(std::shared_ptr<controller::ControllerAccount> p_internal) {
     internal = p_internal;
 }
 
-DojoController *DojoController::init(const String &app_id, const String &username, const String &class_hash,
-                                     const String &rpc_url, const Ref<DojoOwner> &owner, const String &address,
+DojoController *DojoController::init(const String &app_id, const String &username, const String &class_hash, const String &rpc_url,
+                                     const Ref<DojoOwner> &owner, const String &address,
                                      const String &chain_id) {
     DojoController *dojo_controller = memnew(DojoController);
 
@@ -17,7 +17,7 @@ DojoController *DojoController::init(const String &app_id, const String &usernam
     }
 
     try {
-        auto internal_controller = controller::Controller::init(
+        auto internal_controller = controller::ControllerAccount::init(
             app_id.utf8().get_data(),
             username.utf8().get_data(),
             class_hash.utf8().get_data(),
@@ -39,7 +39,7 @@ DojoController *DojoController::from_storage(const String &app_id) {
     DojoController *dojo_controller = memnew(DojoController);
 
     try {
-        auto internal_controller = controller::Controller::from_storage(app_id.utf8().get_data());
+        auto internal_controller = controller::ControllerAccount::from_storage(app_id.utf8().get_data());
         dojo_controller->set_internal(internal_controller);
     } catch (const controller::ControllerError &e) {
         Logger::error("DojoController.from_storage failed:", e.what());
@@ -49,7 +49,9 @@ DojoController *DojoController::from_storage(const String &app_id) {
     return dojo_controller;
 }
 
-DojoController *DojoController::new_headless(const String &app_id, const String &username, const String &class_hash, const String &rpc_url, const Ref<DojoOwner> &owner, const String &chain_id) {
+DojoController *DojoController::new_headless(const String &app_id, const String &username, const String &class_hash,
+                                             const String &rpc_url, const Ref<DojoOwner> &owner,
+                                             const String &chain_id) {
     DojoController *dojo_controller = memnew(DojoController);
 
     if (!owner.is_valid()) {
@@ -58,7 +60,7 @@ DojoController *DojoController::new_headless(const String &app_id, const String 
     }
 
     try {
-        auto internal_controller = controller::Controller::new_headless(
+        auto internal_controller = controller::ControllerAccount::new_headless(
             app_id.utf8().get_data(),
             username.utf8().get_data(),
             class_hash.utf8().get_data(),
