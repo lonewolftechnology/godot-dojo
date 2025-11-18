@@ -5,6 +5,7 @@
 #define DEBUG_MACROS_H
 #include "godot_cpp/classes/project_settings.hpp"
 #include "godot_cpp/variant/utility_functions.hpp"
+#include "godot_cpp/core/error_macros.hpp"
 using namespace godot;
 
 namespace logger_internal
@@ -47,11 +48,11 @@ namespace logger_internal
 
 class Logger
 {
-private:
+
 	static bool is_enabled()
 	{
 		static bool initialized = false;
-		static bool enabled = true;
+		static bool enabled = false;
 
 		if (!initialized)
 		{
@@ -70,7 +71,7 @@ public:
     {
         if (!is_enabled()) { return; }
         String message = logger_internal::concat_all(args...);
-        UtilityFunctions::push_error(message);
+        ERR_PRINT(message.utf8().get_data());
     }
     // Doesn't send error, maybe change later and add a warning version
     template <typename... Args>
@@ -89,7 +90,7 @@ public:
     {
         if (!is_enabled()) { return; }
         String message = logger_internal::concat_all(args...);
-        UtilityFunctions::push_warning(message);
+        WARN_PRINT(message.utf8().get_data());
     }
 
     template <typename... Args>
@@ -102,7 +103,6 @@ public:
         UtilityFunctions::print_rich(formatted);
 #endif
     }
-
     template <typename... Args>
     static void typed_log_color(const String& color, const String& type, Args... args)
     {
