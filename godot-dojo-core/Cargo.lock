@@ -1232,7 +1232,7 @@ dependencies = [
 [[package]]
 name = "controller-uniffi"
 version = "0.1.0"
-source = "git+https://github.com/cartridge-gg/controller.c?rev=a15fb31#a15fb3154524290248b3733cb3a45fd9f5d7cddd"
+source = "git+https://github.com/cartridge-gg/controller.c?rev=429657c#429657c8aa2dddc47de11861436e6cb02dac003e"
 dependencies = [
  "account_sdk",
  "anyhow",
