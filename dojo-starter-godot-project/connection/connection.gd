@@ -3,21 +3,18 @@ extends Node
 
 signal connected
 signal session_created(_data:Dictionary)
-
-# As of time of writing, September 1 2025
-# This are from our contract deployend on slot (https://github.com/dannroda/dojo-starter) Dojo v1.7.0-alpha.3
-# But it should work with official starter (https://github.com/dojoengine/dojo-starter), Dojo v1.6.2
+# As of time of writing, November 19 2025
+# This world and contract address refers to (https://github.com/dojoengine/dojo-starter), Dojo v1.8.0
 const WORLD_CONTRACT = "0x026d5777eccca1861a23303ee0ba48c0e8349e849d0377a21c3801ef1d0f8cef"
-const ACTIONS_CONTRACT = "0x023b0d96f2617d1be29e5ee6ec4b7b4da312d0eb28d6c83f5ef1c2ba254f3a6f"
+const ACTIONS_CONTRACT = "0x01ae76ae877518f905b73b643d96731e71e6b848ba68824adb4f1a77760fc3c7"
 
-const rpc_url = "https://api.cartridge.gg/x/godot-gdextension/katana"
-const torii_url = "https://api.cartridge.gg/x/godot-gdextension/torii"
+const rpc_url = "https://api.cartridge.gg/x/godot-dojo-starter/katana"
+const torii_url = "https://api.cartridge.gg/x/godot-dojo-starter/torii"
 
 @export var query : DojoQuery
 @export var entity_sub : EntitySubscription
 @export var message_sub : MessageSubscription
 @export_placeholder("0x0") var priv_key : String
-
 
 @onready var torii_client: ToriiClient = $ToriiClient
 @onready var session_account: DojoSessionAccount = $DojoSessionAccount
@@ -58,7 +55,7 @@ func _ready() -> void:
 	# For debugging purposes
 	OS.set_environment("RUST_BACKTRACE", "full")
 	OS.set_environment("RUST_LOG", "debug")
-	
+
 	DisplayServer.enable_for_stealing_focus(OS.get_process_id())
 	get_window().focus_entered.connect(_on_window_focus)
 	
@@ -100,7 +97,7 @@ func _get_session_url() -> String:
 		
 	var base_url = "https://x.cartridge.gg/session"
 	var public_key = ControllerHelper.get_public_key(priv_key)
-	var redirect_uri = "about:blank"
+	var redirect_uri = "http://localhost:27000"
 	var redirect_query_name = "startapp"
 	
 	# The policies format for a session request is different than the format used for creating a session
@@ -126,8 +123,8 @@ func _get_session_url() -> String:
 		public_key, 
 		policies, 
 		rpc_url, 
-#		redirect_uri, # Optional parameter
-#		redirect_query_name # Optional parameter
+		redirect_uri, # Optional parameter
+		redirect_query_name # Optional parameter
 		)
-	
+
 	return session_url

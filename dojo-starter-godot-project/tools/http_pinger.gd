@@ -5,8 +5,8 @@ func _ready() -> void:
 	request_completed.connect(_on_request_completed)
 	
 	var urls = [
-			"https://api.cartridge.gg/x/godot-demo-rookie/katana",
-			"https://api.cartridge.gg/x/godot-demo-rookie/torii"
+			"https://api.cartridge.gg/x/godot-dojo-starter/katana",
+			"https://api.cartridge.gg/x/godot-dojo-starter/torii"
 		]
 	
 	var headers = ["Accept: application/json"]

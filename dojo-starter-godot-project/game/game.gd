@@ -2,11 +2,10 @@ class_name DemoGame
 extends Node
 
 enum Directions {
-	NONE = 0,
-	LEFT = 1,
-	RIGHT = 2,
-	UP = 3,
-	DOWN = 4,
+	LEFT = 0,
+	RIGHT = 1,
+	UP = 2,
+	DOWN = 3,
 }
 
 @export var connection : DojoConnection
@@ -84,7 +83,7 @@ func start() -> void:
 	spawn()
 
 func get_controllers(addrs:Array = []) -> void:
-	var data = connection.client.get_controllers(controller_query)
+	var data = connection.torii_client.get_controllers(controller_query)
 	for controller in data:
 		var id : String = controller["address"]
 		var username : String = controller["username"]
@@ -95,7 +94,7 @@ func get_controllers(addrs:Array = []) -> void:
 		entity.set_username(username)
 
 func get_entities() -> Dictionary:
-	var data = connection.client.get_entities(DojoQuery.new())
+	var data = connection.torii_client.get_entities(DojoQuery.new())
 	var parsed_entities : Dictionary = {}
 	for entity in data:
 		for model:Dictionary in entity.models:
