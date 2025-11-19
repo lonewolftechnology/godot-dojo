@@ -31,8 +31,13 @@ public:
     String get_address() const;
     String get_chain_id() const;
     String get_app_id() const;
+
     String execute(const TypedArray<Dictionary> &calls) const;
+    String execute_raw(const String &contract_address, const String &entrypoint, const Array &calldata) const;
+
     String execute_from_outside(const TypedArray<Dictionary> &calls) const;
+    String execute_from_outside_raw(const String &contract_address, const String &entrypoint, const Array &calldata) const;
+
     uint64_t get_expires_at() const;
     bool is_expired() const;
     bool is_revoked() const;
@@ -60,8 +65,13 @@ protected:
                                       "policies", "session_expiration"), &DojoSessionAccount::create);
 
         ClassDB::bind_method(D_METHOD("get_address"), &DojoSessionAccount::get_address);
+
         ClassDB::bind_method(D_METHOD("execute", "calls"), &DojoSessionAccount::execute);
+        ClassDB::bind_method(D_METHOD("execute_raw", "contract_address", "entrypoint", "calldata"), &DojoSessionAccount::execute_raw);
+
         ClassDB::bind_method(D_METHOD("execute_from_outside", "calls"), &DojoSessionAccount::execute_from_outside);
+        ClassDB::bind_method(D_METHOD("execute_from_outside_raw", "contract_address", "entrypoint", "calldata"), &DojoSessionAccount::execute_from_outside_raw);
+
         ClassDB::bind_method(D_METHOD("get_expires_at"), &DojoSessionAccount::get_expires_at);
         ClassDB::bind_method(D_METHOD("is_expired"), &DojoSessionAccount::is_expired);
         ClassDB::bind_method(D_METHOD("is_revoked"), &DojoSessionAccount::is_revoked);

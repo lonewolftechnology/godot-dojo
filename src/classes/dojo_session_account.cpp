@@ -128,13 +128,23 @@ String DojoSessionAccount::execute(const TypedArray<Dictionary> &calls) const {
     }
 }
 
+String DojoSessionAccount::execute_raw(const String &contract_address, const String &entrypoint, const Array &calldata) const {
+    Dictionary _call_dict;
+    _call_dict["contract_address"] = contract_address;
+    _call_dict["entrypoint"] = entrypoint;
+    _call_dict["calldata"] = calldata;
+
+    return execute(Array::make(_call_dict));
+}
+
+
 String DojoSessionAccount::execute_from_outside(const TypedArray<Dictionary> &calls) const {
     if (!internal) {
         Logger::error("DojoSessionAccount is not initialized.");
         return "";
     }
 
-    std::vector<std::shared_ptr<controller::Call>> c_calls = ControllerHelper::prepare_calls(calls);
+    std::vector<std::shared_ptr<controller::Call> > c_calls = ControllerHelper::prepare_calls(calls);
 
     try {
         String tx_hash = internal->execute_from_outside(c_calls).c_str();
@@ -145,6 +155,16 @@ String DojoSessionAccount::execute_from_outside(const TypedArray<Dictionary> &ca
         return e.what();
     }
 }
+
+String DojoSessionAccount::execute_from_outside_raw(const String &contract_address, const String &entrypoint, const Array &calldata) const {
+    Dictionary _call_dict;
+    _call_dict["contract_address"] = contract_address;
+    _call_dict["entrypoint"] = entrypoint;
+    _call_dict["calldata"] = calldata;
+
+    return execute_from_outside(Array::make(_call_dict));
+}
+
 
 uint64_t DojoSessionAccount::get_expires_at() const {
     if (!internal) {
