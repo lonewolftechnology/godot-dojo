@@ -148,7 +148,7 @@ jobs:
           fi
           mkdir -p demo/addons/godot-dojo
           SCONS_PLATFORM=${{ inputs.platform_id == 'windows-gnu' && 'windows' || inputs.platform_id }}
-          scons platform=${SCONS_PLATFORM} arch=${{ inputs.arch }} target=template_release precision=${{ inputs.precision }} ${4{ inputs.platform_id == 'windows-gnu' && 'use_mingw=true' || '' }} -j2
+          scons platform=${SCONS_PLATFORM} arch=${{ inputs.arch }} target=template_release precision=${{ inputs.precision }} ${{ inputs.platform_id == 'windows-gnu' && 'use_mingw=true' || '' }} -j2
 
       - name: Build for iOS Device (arm64)
         if: inputs.platform_id == 'ios'
