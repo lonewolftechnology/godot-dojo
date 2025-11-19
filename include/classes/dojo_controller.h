@@ -36,7 +36,8 @@ public:
     String delegate_account();
     void disconnect();
     String error_message();
-    String execute(const TypedArray<Dictionary> &calls);
+    String execute(const TypedArray<Dictionary> &calls) const;
+    String execute_raw(const String &contract_address, const String &entrypoint, const Array &calldata) const;
     void signup(ControllerHelper::SignerType signer_type, const Variant &session_expiration, const String &cartridge_api_url);
     void switch_chain(const String &rpc_url);
     String transfer(const String &recipient, const String &amount);
@@ -59,6 +60,7 @@ protected:
         ClassDB::bind_method(D_METHOD("disconnect"), &DojoController::disconnect);
         ClassDB::bind_method(D_METHOD("error_message"), &DojoController::error_message);
         ClassDB::bind_method(D_METHOD("execute", "calls"), &DojoController::execute);
+        ClassDB::bind_method(D_METHOD("execute_raw", "contract_address", "entrypoint", "calldata"), &DojoController::execute_raw);
         ClassDB::bind_method(D_METHOD("signup", "signer_type", "session_expiration", "cartridge_api_url"), &DojoController::signup);
         ClassDB::bind_method(D_METHOD("switch_chain", "rpc_url"), &DojoController::switch_chain);
         ClassDB::bind_method(D_METHOD("transfer", "recipient", "amount"), &DojoController::transfer);

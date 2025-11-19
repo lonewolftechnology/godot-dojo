@@ -166,7 +166,7 @@ String DojoController::error_message() {
     }
 }
 
-String DojoController::execute(const TypedArray<Dictionary> &calls) {
+String DojoController::execute(const TypedArray<Dictionary> &calls) const{
     if (!internal) {
         Logger::error("DojoController is not initialized.");
         return "";
@@ -180,6 +180,15 @@ String DojoController::execute(const TypedArray<Dictionary> &calls) {
         Logger::error("DojoController.execute failed:", e.what());
         return "";
     }
+}
+
+String DojoController::execute_raw(const String &contract_address, const String &entrypoint, const Array &calldata) const {
+    Dictionary _call_dict;
+    _call_dict["contract_address"] = contract_address;
+    _call_dict["entrypoint"] = entrypoint;
+    _call_dict["calldata"] = calldata;
+
+    return execute(Array::make(_call_dict));
 }
 
 void DojoController::signup(ControllerHelper::SignerType signer_type, const Variant &session_expiration, const String &cartridge_api_url) {
