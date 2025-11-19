@@ -1,5 +1,5 @@
 [unstable]
 bindeps = true
 
-#[target.wasm32-unknown-unknown]
-#rustflags = ["--cfg", "tokio_unstable"]
+[target.wasm32-unknown-unknown]
+rustflags = ["-C", "target-feature=+atomics,+bulk-memory", "--cfg=web"]
