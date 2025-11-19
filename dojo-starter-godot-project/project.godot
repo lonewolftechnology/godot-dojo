@@ -24,6 +24,11 @@ window/handheld/orientation=1
 [dojo]
 
 config/enable_extra_logs=true
+
+[editor_plugins]
+
+enabled=PackedStringArray("res://addons/addons/DeeplinkPlugin/plugin.cfg")
+
 [input]
 
 zoom_in={

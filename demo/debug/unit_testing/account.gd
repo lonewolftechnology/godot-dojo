@@ -6,8 +6,8 @@ signal next_test
 const local_rpc_url = "http://localhost:5050"
 const local_torii_url = "http://localhost:8080"
 
-const slot_rpc_url = "https://api.cartridge.gg/x/godot-demo-rookie/katana"
-const slot_torii_url = "https://api.cartridge.gg/x/godot-demo-rookie/torii"
+const slot_rpc_url = "https://api.cartridge.gg/x/godot-gdextension/katana"
+const slot_torii_url = "https://api.cartridge.gg/x/godot-gdextension/torii"
 
 const contract_namespace = "dojo_starter"
 
@@ -15,7 +15,7 @@ const slot_contract_address = "0x023b0d96f2617d1be29e5ee6ec4b7b4da312d0eb28d6c83
 const local_contract_address = "0x023b0d96f2617d1be29e5ee6ec4b7b4da312d0eb28d6c83f5ef1c2ba254f3a6f"
 const starter_contract = "0x06b71e9a3aa5198aa78f7d8c407024d863e1d1263e735081c824deea349d3852" #Plain Starter
 
-const slot_world_address = "0x03a7e28319f3617da4135893c711c79a1306adcd87cca4fbd0ceda50ae397683"
+const slot_world_address = "0x026d5777eccca1861a23303ee0ba48c0e8349e849d0377a21c3801ef1d0f8cef"
 const local_world_address = "0x073c2b317136214562b608523812f369a05efe67257842a17c4985ce6d390be7"
 
 # First account of contract

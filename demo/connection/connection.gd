@@ -10,8 +10,8 @@ const ACTIONS_CONTRACT = "0x01d18853e41a1607c1bd80c2e80c34db3a59999a038b54a2424f
 
 #TODO: Make not neccesary to setup ToriiClient/ControllearAccount through editor, so can be easily updated with code.
 # The chain_id can be obtained using a burner Account
-const rpc_url = "https://api.cartridge.gg/x/godot-demo-rookie/katana"
-const torii_url = "https://api.cartridge.gg/x/godot-demo-rookie/torii"
+const rpc_url = "https://api.cartridge.gg/x/godot-dojo-starter/katana"
+const torii_url = "https://api.cartridge.gg/x/godot-dojo-starter/torii"
 
 @export var query:DojoQuery
 @export var entity_sub:EntitySubscription
