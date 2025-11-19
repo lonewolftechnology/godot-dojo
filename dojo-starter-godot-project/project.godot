@@ -21,6 +21,9 @@ window/size/viewport_width=720
 window/size/viewport_height=1280
 window/handheld/orientation=1
 
+[dojo]
+
+config/enable_extra_logs=true
 [input]
 
 zoom_in={
