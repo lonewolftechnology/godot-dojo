@@ -1,143 +1,15 @@
-[gd_scene load_steps=13 format=3 uid="uid://b75yggsnay1mo"]
+[gd_scene load_steps=9 format=3 uid="uid://b75yggsnay1mo"]
 
 [ext_resource type="Script" uid="uid://bx5rlh0opi80k" path="res://connection/connection.gd" id="1_c7jwa"]
 [ext_resource type="PackedScene" uid="uid://b5vmo8llucetx" path="res://ui/status_indicator.tscn" id="3_bya50"]
 [ext_resource type="Script" uid="uid://cibg6qwsaeyq6" path="res://tools/http_pinger.gd" id="3_erpqw"]
-[ext_resource type="Script" uid="uid://clp7f22aqopw6" path="res://connection/http_tools.gd" id="4_henli"]
+[ext_resource type="PackedScene" uid="uid://b5w700tgwm1r6" path="res://connection/log_level_status.tscn" id="3_henli"]
 
 [sub_resource type="DojoQuery" id="DojoQuery_erpqw"]
 
 [sub_resource type="EntitySubscription" id="EntitySubscription_henli"]
 
 [sub_resource type="MessageSubscription" id="MessageSubscription_advu3"]
-
-[sub_resource type="Animation" id="Animation_henli"]
-length = 0.001
-tracks/0/type = "value"
-tracks/0/imported = false
-tracks/0/enabled = true
-tracks/0/path = NodePath("../..:position")
-tracks/0/interp = 1
-tracks/0/loop_wrap = true
-tracks/0/keys = {
-"times": PackedFloat32Array(0.001),
-"transitions": PackedFloat32Array(1),
-"update": 0,
-"values": [Vector2(0, -218)]
-}
-tracks/1/type = "value"
-tracks/1/imported = false
-tracks/1/enabled = true
-tracks/1/path = NodePath("../ButtonShow:visible")
-tracks/1/interp = 1
-tracks/1/loop_wrap = true
-tracks/1/keys = {
-"times": PackedFloat32Array(0),
-"transitions": PackedFloat32Array(1),
-"update": 1,
-"values": [true]
-}
-tracks/2/type = "value"
-tracks/2/imported = false
-tracks/2/enabled = true
-tracks/2/path = NodePath("../ButtonHide:visible")
-tracks/2/interp = 1
-tracks/2/loop_wrap = true
-tracks/2/keys = {
-"times": PackedFloat32Array(0),
-"transitions": PackedFloat32Array(1),
-"update": 1,
-"values": [false]
-}
-
-[sub_resource type="Animation" id="Animation_advu3"]
-resource_name = "hide"
-length = 0.2
-capture_included = true
-tracks/0/type = "value"
-tracks/0/imported = false
-tracks/0/enabled = true
-tracks/0/path = NodePath("../..:position")
-tracks/0/interp = 1
-tracks/0/loop_wrap = true
-tracks/0/keys = {
-"times": PackedFloat32Array(0.1),
-"transitions": PackedFloat32Array(1),
-"update": 2,
-"values": [Vector2(0, -218)]
-}
-tracks/1/type = "value"
-tracks/1/imported = false
-tracks/1/enabled = true
-tracks/1/path = NodePath("../ButtonShow:visible")
-tracks/1/interp = 1
-tracks/1/loop_wrap = true
-tracks/1/keys = {
-"times": PackedFloat32Array(0, 0.033333335),
-"transitions": PackedFloat32Array(1, 1),
-"update": 1,
-"values": [false, true]
-}
-tracks/2/type = "value"
-tracks/2/imported = false
-tracks/2/enabled = true
-tracks/2/path = NodePath("../ButtonHide:visible")
-tracks/2/interp = 1
-tracks/2/loop_wrap = true
-tracks/2/keys = {
-"times": PackedFloat32Array(0, 0.033333335),
-"transitions": PackedFloat32Array(1, 1),
-"update": 1,
-"values": [true, false]
-}
-
-[sub_resource type="Animation" id="Animation_erpqw"]
-resource_name = "show"
-length = 0.2
-capture_included = true
-tracks/0/type = "value"
-tracks/0/imported = false
-tracks/0/enabled = true
-tracks/0/path = NodePath("../..:position")
-tracks/0/interp = 1
-tracks/0/loop_wrap = true
-tracks/0/keys = {
-"times": PackedFloat32Array(0.1),
-"transitions": PackedFloat32Array(0.5),
-"update": 2,
-"values": [Vector2(0, 0)]
-}
-tracks/1/type = "value"
-tracks/1/imported = false
-tracks/1/enabled = true
-tracks/1/path = NodePath("../ButtonShow:visible")
-tracks/1/interp = 1
-tracks/1/loop_wrap = true
-tracks/1/keys = {
-"times": PackedFloat32Array(0, 0.033333335),
-"transitions": PackedFloat32Array(1, 1),
-"update": 1,
-"values": [true, false]
-}
-tracks/2/type = "value"
-tracks/2/imported = false
-tracks/2/enabled = true
-tracks/2/path = NodePath("../ButtonHide:visible")
-tracks/2/interp = 1
-tracks/2/loop_wrap = true
-tracks/2/keys = {
-"times": PackedFloat32Array(0, 0.033333335),
-"transitions": PackedFloat32Array(1, 1),
-"update": 1,
-"values": [false, true]
-}
-
-[sub_resource type="AnimationLibrary" id="AnimationLibrary_advu3"]
-_data = {
-&"RESET": SubResource("Animation_henli"),
-&"hide": SubResource("Animation_advu3"),
-&"show": SubResource("Animation_erpqw")
-}
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_gm8ps"]
 content_margin_left = 8.0
@@ -159,79 +31,67 @@ message_sub = SubResource("MessageSubscription_advu3")
 [node name="CanvasLayer" type="CanvasLayer" parent="."]
 layer = 10
 
-[node name="AnimationPlayer" type="AnimationPlayer" parent="CanvasLayer"]
-root_node = NodePath("../MarginContainer/VBoxContainer/PanelStatus")
-libraries = {
-&"": SubResource("AnimationLibrary_advu3")
-}
+[node name="HBoxContainer" type="HBoxContainer" parent="CanvasLayer"]
+anchors_preset = 10
+anchor_right = 1.0
+grow_horizontal = 2
 
-[node name="MarginContainer" type="MarginContainer" parent="CanvasLayer"]
-offset_top = -218.0
-offset_right = 158.0
-offset_bottom = 63.0
-
-[node name="VBoxContainer" type="VBoxContainer" parent="CanvasLayer/MarginContainer"]
+[node name="Status" type="FoldableContainer" parent="CanvasLayer/HBoxContainer"]
 layout_mode = 2
-theme_override_constants/separation = 0
+folded = true
+title = "Status"
+title_alignment = 1
 
-[node name="PanelStatus" type="PanelContainer" parent="CanvasLayer/MarginContainer/VBoxContainer"]
+[node name="PanelStatus" type="PanelContainer" parent="CanvasLayer/HBoxContainer/Status"]
+visible = false
 layout_mode = 2
 size_flags_horizontal = 4
 theme_override_styles/panel = SubResource("StyleBoxFlat_gm8ps")
 
-[node name="HBoxContainer" type="VBoxContainer" parent="CanvasLayer/MarginContainer/VBoxContainer/PanelStatus"]
+[node name="HBoxContainer" type="VBoxContainer" parent="CanvasLayer/HBoxContainer/Status/PanelStatus"]
 layout_mode = 2
 size_flags_horizontal = 4
 theme_override_constants/separation = 10
 
-[node name="Label" type="Label" parent="CanvasLayer/MarginContainer/VBoxContainer/PanelStatus/HBoxContainer"]
+[node name="Label" type="Label" parent="CanvasLayer/HBoxContainer/Status/PanelStatus/HBoxContainer"]
 layout_mode = 2
 text = "Status:"
 horizontal_alignment = 1
 
-[node name="ClientStatus" parent="CanvasLayer/MarginContainer/VBoxContainer/PanelStatus/HBoxContainer" instance=ExtResource("3_bya50")]
+[node name="ClientStatus" parent="CanvasLayer/HBoxContainer/Status/PanelStatus/HBoxContainer" instance=ExtResource("3_bya50")]
 unique_name_in_owner = true
 layout_mode = 2
 type_name = "Client"
 
-[node name="DojoSessionAccountStatus" parent="CanvasLayer/MarginContainer/VBoxContainer/PanelStatus/HBoxContainer" instance=ExtResource("3_bya50")]
+[node name="DojoSessionAccountStatus" parent="CanvasLayer/HBoxContainer/Status/PanelStatus/HBoxContainer" instance=ExtResource("3_bya50")]
 unique_name_in_owner = true
 layout_mode = 2
 type_name = "Session"
 
-[node name="EventUpdatesStatus" parent="CanvasLayer/MarginContainer/VBoxContainer/PanelStatus/HBoxContainer" instance=ExtResource("3_bya50")]
+[node name="EventUpdatesStatus" parent="CanvasLayer/HBoxContainer/Status/PanelStatus/HBoxContainer" instance=ExtResource("3_bya50")]
 unique_name_in_owner = true
 layout_mode = 2
 type_name = "EventUpdates"
 
-[node name="EntityUpdatesStatus" parent="CanvasLayer/MarginContainer/VBoxContainer/PanelStatus/HBoxContainer" instance=ExtResource("3_bya50")]
+[node name="EntityUpdatesStatus" parent="CanvasLayer/HBoxContainer/Status/PanelStatus/HBoxContainer" instance=ExtResource("3_bya50")]
 unique_name_in_owner = true
 layout_mode = 2
 type_name = "EntityUpdates"
 
-[node name="ButtonShow" type="Button" parent="CanvasLayer/MarginContainer/VBoxContainer"]
-custom_minimum_size = Vector2(30, 0)
+[node name="Logger" type="FoldableContainer" parent="CanvasLayer/HBoxContainer"]
 layout_mode = 2
-size_flags_horizontal = 0
-text = "v"
+folded = true
+title = "Logger Level"
+title_alignment = 1
 
-[node name="ButtonHide" type="Button" parent="CanvasLayer/MarginContainer/VBoxContainer"]
+[node name="LogLevelStatus" parent="CanvasLayer/HBoxContainer/Logger" instance=ExtResource("3_henli")]
 visible = false
-custom_minimum_size = Vector2(30, 0)
 layout_mode = 2
-size_flags_horizontal = 0
-text = "^"
 
 [node name="HttpPinger" type="HTTPRequest" parent="."]
 script = ExtResource("3_erpqw")
 metadata/_custom_type_script = "uid://cibg6qwsaeyq6"
 
-[node name="HttpTools" type="Node" parent="."]
-script = ExtResource("4_henli")
-html_file = "res://connection/template.html"
-
 [connection signal="client_connected" from="ToriiClient" to="." method="_on_torii_client_client_connected"]
 [connection signal="client_disconnected" from="ToriiClient" to="." method="_on_torii_client_client_disconnected"]
 [connection signal="subscription_created" from="ToriiClient" to="." method="_on_torii_client_subscription_created"]
-[connection signal="pressed" from="CanvasLayer/MarginContainer/VBoxContainer/ButtonShow" to="CanvasLayer/AnimationPlayer" method="play" binds= ["show"]]
-[connection signal="pressed" from="CanvasLayer/MarginContainer/VBoxContainer/ButtonHide" to="CanvasLayer/AnimationPlayer" method="play" binds= ["hide"]]

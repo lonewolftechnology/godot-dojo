@@ -2,7 +2,7 @@
 
 ## Overview
 
-This project provides a foundational setup for integrating the **DojoC GDExtension** within a Godot game. It utilizes the vanilla **Dojo-Starter** contract from https://github.com/dojoengine/dojo-starter to showcase basic functionalities. This document serves as a comprehensive guide to understanding and utilizing this project.
+This project provides a foundational setup for integrating the **GodotDojo GDExtension** within a Godot game. It utilizes the vanilla **Dojo-Starter** contract from https://github.com/dojoengine/dojo-starter to showcase basic functionalities. This document serves as a comprehensive guide to understanding and utilizing this project.
 
 ## Project Structure
 
@@ -65,6 +65,7 @@ If the public Slot deployment is down or you want to use your own contract:
     ```bash
     katana
     ```
+    *Note: If port 5050 is in use, you can specify a different one, e.g., `katana --port <YOUR_PORT>`. Use a port number above 1024 to avoid requiring administrator privileges.*
     Keep this terminal open.
 3.  **Build and Deploy**: In a new terminal, build and deploy the contracts to your local Katana instance.
     ```bash
@@ -77,6 +78,7 @@ If the public Slot deployment is down or you want to use your own contract:
       - `rpc_url` will be the Katana RPC endpoint (usually `http://0.0.0.0:5050`).
       - `torii_url` will be the Torii endpoint (usually `http://0.0.0.0:8080`).
       - `world_address` and `actions_address` are the addresses you noted from the `sozo migrate` output.
+    *Note: If you configured Katana or Torii to use different ports, make sure to update the URLs here accordingly. It is recommended to use ports above 1024 to avoid needing administrator privileges.*
 5.  **Run the Game**: Open the project in Godot and run the `game.tscn` scene.
 
 This starter project is designed to be a launchpad. Feel free to expand upon it by adding new entities, game mechanics, and UI elements.

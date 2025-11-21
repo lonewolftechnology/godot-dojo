@@ -24,10 +24,26 @@ window/handheld/orientation=1
 [dojo]
 
 config/enable_extra_logs=true
+config/katana_url="http://localhost:5050"
+config/contract_address="0x0"
+config/torii/torii_url="http://localhost:8080"
+config/torii/worlds=Array[String]([])
+config/account/address="0x0"
+config/account/public_key="0x0"
+config/account/private_key="0x0"
+config/fixed_point/default=128
+config/fixed_point/64=40
+config/fixed_point/128=60
+config/fixed_point/256=123
+config/debug/error=true
+config/debug/warning=true
+config/debug/info=false
+config/debug/success=true
+config/debug/debug=false
 
 [editor_plugins]
 
-enabled=PackedStringArray("res://addons/addons/DeeplinkPlugin/plugin.cfg")
+enabled=PackedStringArray()
 
 [input]
 

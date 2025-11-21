@@ -24,16 +24,20 @@ const torii_url = "https://api.cartridge.gg/x/godot-dojo-starter/torii"
 @onready var _entities_status: DojoStatusIndicator = %EntityUpdatesStatus
 @onready var url_open : bool = false
 
-var policies:Dictionary = {
-		"max_fee": "0x100000",
-		"policies": [{
-			"contract_address": ACTIONS_CONTRACT,
-			"entrypoints": [
-				"spawn",
-				"move"
-			]
-		}]
+var full_policies:Dictionary = {
+	ACTIONS_CONTRACT: {
+		"methods": [
+			{
+				"name" : "Spawn in world", # Optional
+				"description": "Can Spawn in the world", # Optional
+				"entrypoint": "spawn",
+			},
+			{
+				"entrypoint": "move",
+			}
+		]
 	}
+}
 
 func connect_client() -> void:
 	torii_client.create_client(torii_url)
@@ -41,7 +45,6 @@ func connect_client() -> void:
 func connect_session() -> void:
 	session_account.create_from_subscribe(
 		priv_key,
-		policies,
 		rpc_url,
 		"https://api.cartridge.gg"
 	)
@@ -61,6 +64,9 @@ func _ready() -> void:
 	
 	entity_sub.world_addresses = [WORLD_CONTRACT]
 	message_sub.world_addresses = [WORLD_CONTRACT]
+
+	session_account.max_fee = "0x100000"
+	session_account.full_policies = full_policies
 
 func _on_window_focus():
 	# After user logs in and switches back to the game
@@ -94,37 +100,26 @@ func _on_torii_client_subscription_created(subscription_name: String) -> void:
 func _get_session_url() -> String:
 	if priv_key.is_empty():
 		priv_key = DojoHelpers.generate_private_key()
+	
+	var http_tools:HttpTools = HttpTools.new()
+	
+	if not http_tools.start_server():
+		return ""
 		
 	var base_url = "https://x.cartridge.gg/session"
 	var public_key = ControllerHelper.get_public_key(priv_key)
-	var redirect_uri = "http://localhost:27000"
+	var redirect_uri = "http://localhost:%d" % http_tools.port
 	var redirect_query_name = "startapp"
 	
-	# The policies format for a session request is different than the format used for creating a session
-	var policies = {
-		"contracts": {
-			ACTIONS_CONTRACT: {
-				"methods": [
-					{
-						"name" : "Spawn in world", # Optional
-						"description": "Can Spawn in the world", # Optional
-						"entrypoint": "spawn",
-					},
-					{
-						"entrypoint": "move",
-					}
-				]
-			}
-		}
-	}
-
 	var session_url = DojoSessionAccount.generate_session_request_url(
 		base_url, 
 		public_key, 
-		policies, 
+		session_account.get_register_session_policy(), 
 		rpc_url, 
 		redirect_uri, # Optional parameter
 		redirect_query_name # Optional parameter
 		)
 
 	return session_url
+	
+
