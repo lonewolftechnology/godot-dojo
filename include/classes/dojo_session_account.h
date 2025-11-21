@@ -50,10 +50,10 @@ public:
     Dictionary get_info() const;
     bool is_valid() const;
 
-    static String generate_session_request_url(const String &base_url, const String &public_key,
-                                               const Dictionary &policies,
-                                               const String &rpc_url, const String &redirect_uri = String(),
-                                               const String &redirect_query_name = String());
+    String generate_session_request_url(const String &base_url, const String &public_key,
+                                        const String &rpc_url, const Dictionary &policies = Dictionary(),
+                                        const String &redirect_uri = String(),
+                                        const String &redirect_query_name = String()) const;
 
     void set_full_policies(const Dictionary &p_policies){ full_policies = p_policies; }
     Dictionary get_full_policies() const { return full_policies; }
@@ -102,11 +102,10 @@ protected:
         ClassDB::bind_method(D_METHOD("set_max_fee"), &DojoSessionAccount::set_max_fee);
         ADD_PROPERTY(PropertyInfo(Variant::STRING, "max_fee"), "set_max_fee", "get_max_fee");
 
-        // Static
-        ClassDB::bind_static_method("DojoSessionAccount",
-                                    D_METHOD("generate_session_request_url", "base_url", "public_key", "policies",
-                                             "rpc_url", "redirect_uri", "redirect_query_name"),
-                                    &DojoSessionAccount::generate_session_request_url, DEFVAL(String()), DEFVAL(String()));
+        ClassDB::bind_method(D_METHOD("generate_session_request_url", "base_url", "public_key",
+                                      "rpc_url", "policies", "redirect_uri", "redirect_query_name"),
+                             &DojoSessionAccount::generate_session_request_url, DEFVAL(Dictionary()),
+                             DEFVAL(String()), DEFVAL(String()));
 
     }
 };

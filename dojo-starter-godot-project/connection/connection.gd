@@ -112,11 +112,11 @@ func _get_session_url() -> String:
 		redirect_uri = "http://localhost:%d" % http_tools.port
 		redirect_query_name = "startapp" 
 
-	var session_url = DojoSessionAccount.generate_session_request_url(
+	var session_url = session_account.generate_session_request_url(
 		base_url, 
 		public_key, 
-		session_account.get_register_session_policy(), 
-		rpc_url, 
+		rpc_url,
+		session_account.get_register_session_policy(),
 		redirect_uri, # Optional parameter
 		redirect_query_name # Optional parameter
 		)

@@ -216,14 +216,15 @@ bool DojoSessionAccount::is_valid() const {
 }
 
 String DojoSessionAccount::generate_session_request_url(const String &base_url, const String &public_key,
-                                                        const Dictionary &policies, const String &rpc_url,
-                                                        const String &redirect_uri, const String &redirect_query_name) {
-    if (base_url.is_empty() || public_key.is_empty() || policies.is_empty() || rpc_url.is_empty()) {
-        Logger::error("generate_session_request_url: base_url, public_key, policies, and rpc_url are required.");
+                                                        const String &rpc_url, const Dictionary &policies,
+                                                        const String &redirect_uri, const String &redirect_query_name) const {
+    if (base_url.is_empty() || public_key.is_empty() || rpc_url.is_empty()) {
+        Logger::error("generate_session_request_url: base_url, public_key, and rpc_url are required.");
         return "";
     }
 
-    const String policies_json_string = JSON::stringify(policies);
+    const Dictionary policies_to_use = policies.is_empty() ? get_session_policy() : policies;
+    const String policies_json_string = JSON::stringify(policies_to_use);
     const String encoded_policies = policies_json_string.uri_encode();
 
     String url = String("{0}?public_key={1}&policies={2}&rpc_url={3}").format(
