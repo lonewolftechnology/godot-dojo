@@ -460,7 +460,7 @@ with open("plugin_template.gdextension.in", 'r') as f:
     template = f.read()
 
 gdext = template.replace("${PROJECT_NAME}", "godot-dojo")
-gdext = gdext.replace("${ENTRY_POINT}", "dojoc_library_init")
+gdext = gdext.replace("${ENTRY_POINT}", "godotdojo_library_init")
 
 
 gdext = gdext.replace("${GODOT_MIN_REQUIREMENT}", _godot_min)
