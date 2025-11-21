@@ -6,6 +6,7 @@
 #include "godot_cpp/classes/project_settings.hpp"
 #include "godot_cpp/variant/utility_functions.hpp"
 #include "godot_cpp/core/error_macros.hpp"
+#include "tools/dojo_helper.h"
 using namespace godot;
 
 namespace logger_internal
@@ -48,36 +49,38 @@ namespace logger_internal
 
 class Logger
 {
+    static bool is_level_enabled(const String& level)
+    {
+        return DojoHelpers::get_log_level_enabled(level);
+    }
 
-	static bool is_enabled()
-	{
-		static bool initialized = false;
-		static bool enabled = false;
-
-		if (!initialized)
-		{
-			if (ProjectSettings::get_singleton()->has_setting("dojo/config/enable_extra_logs"))
-			{
-				enabled = ProjectSettings::get_singleton()->get_setting("dojo/config/enable_extra_logs");
-			}
-			initialized = true;
-		}
-		return enabled;
-	}
+private:
+    template <typename... Args>
+    static void _print_typed(const String& color, const String& type, Args... args)
+    {
+#ifdef DEBUG_ENABLED
+        String message = logger_internal::concat_all(args...);
+        String formatted = "[color=" + color + "][b][" + type + "][/b][/color] " + message;
+#ifdef WEB_ENABLED
+        formatted = formatted.insert(0, "[color=green][b][WEB][/b][/color]");
+#endif
+        UtilityFunctions::print_rich(formatted);
+#endif
+    }
 
 public:
     template <typename... Args>
     static void error(Args... args)
     {
-        if (!is_enabled()) { return; }
+        if (!is_level_enabled("error")) { return; }
         String message = logger_internal::concat_all(args...);
         ERR_PRINT(message.utf8().get_data());
     }
-    // Doesn't send error, maybe change later and add a warning version
+
     template <typename... Args>
     static Dictionary error_dict(Args... args)
     {
-        if (!is_enabled()) { return {}; }
+        if (!is_level_enabled("error")) { return {}; }
         String message = logger_internal::concat_all(args...);
         Dictionary result = {};
         result["error"] = message;
@@ -88,96 +91,62 @@ public:
     template <typename... Args>
     static void warning(Args... args)
     {
-        if (!is_enabled()) { return; }
+        if (!is_level_enabled("warning")) { return; }
         String message = logger_internal::concat_all(args...);
         WARN_PRINT(message.utf8().get_data());
     }
 
     template <typename... Args>
-    static void log_color(const String& color, Args... args)
-    {
-#ifdef DEBUG_ENABLED
-        if (!is_enabled()) { return; }
-        String message = logger_internal::concat_all(args...);
-        String formatted = "[color=" + color + "]" + message + "[/color]";
-        UtilityFunctions::print_rich(formatted);
-#endif
-    }
-    template <typename... Args>
-    static void typed_log_color(const String& color, const String& type, Args... args)
-    {
-#ifdef DEBUG_ENABLED
-        if (!is_enabled()) { return; }
-        String message = logger_internal::concat_all(args...);
-        String formatted = "[color=" + color + "][b][" + type + "][/b][/color] " + message;
-#ifdef WEB_ENABLED
-        formatted = formatted.insert(0, "[color=green][b][WEB][/b][/color]");
-#endif
-        UtilityFunctions::print_rich(formatted);
-#endif
-    }
-
-    template <typename... Args>
     static void info(Args... args)
     {
-        typed_log_color("cyan", "INFO", args...);
+        if (!is_level_enabled("info")) { return; }
+        _print_typed("cyan", "INFO", args...);
     }
 
     template <typename... Args>
     static void success(Args... args)
     {
-        typed_log_color("green", "SUCCESS", args...);
+        if (!is_level_enabled("success")) { return; }
+        _print_typed("green", "SUCCESS", args...);
     }
 
     template <typename... Args>
     static void debug(Args... args)
     {
-        typed_log_color("wheat", "DEBUG", args...);
+        if (!is_level_enabled("debug")) { return; }
+        _print_typed("wheat", "DEBUG", args...);
     }
 
     template <typename... Args>
     static void custom(const String& type, Args... args)
     {
-        typed_log_color("magenta", type, args...);
+        if (!is_level_enabled("debug")) { return; }
+        _print_typed("magenta", type, args...);
     }
 
     template <typename... Args>
     static void custom_color(const String& color, const String& type, Args... args)
     {
-        typed_log_color(color, type, args...);
+        if (!is_level_enabled("debug")) { return; }
+        _print_typed(color, type, args...);
     }
 
     template <typename... Args>
     static void success_extra(const String& type, Args... args)
     {
-#ifdef DEBUG_ENABLED
-        if (!is_enabled()) { return; }
-        String message = logger_internal::concat_all(args...);
-        String formatted = "[color=green][b][" + type + "][/b][/color] " + message;
-#ifdef WEB_ENABLED
-        formatted = formatted.insert(0, "[color=green][b][WEB][/b][/color]");
-#endif
-        UtilityFunctions::print_rich(formatted);
-#endif
+        if (!is_level_enabled("debug")) { return; }
+        _print_typed("green", type, args...);
     }
 
     template <typename... Args>
     static void debug_extra(const String& type, Args... args)
     {
-#ifdef DEBUG_ENABLED
-        if (!is_enabled()) { return; }
-        String message = logger_internal::concat_all(args...);
-        String formatted = "[color=cyan][b][" + type + "][/b][/color] " + message;
-#ifdef WEB_ENABLED
-        formatted = formatted.insert(0, "[color=green][b][WEB][/b][/color]");
-#endif
-        UtilityFunctions::print_rich(formatted);
-#endif
+        if (!is_level_enabled("debug")) { return; }
+        _print_typed("cyan", type, args...);
     }
 
     static void empty_line()
     {
-        if (!is_enabled()) { return; }
         UtilityFunctions::print_rich("\n");
     }
 };

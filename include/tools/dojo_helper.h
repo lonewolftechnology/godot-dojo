@@ -131,6 +131,14 @@ public:
 
     static String generate_private_key();
 
+    static bool get_log_level_enabled(const String& level);
+    static void set_log_level_enabled(const String& level, bool enabled);
+    static void set_error_enabled(bool enabled);
+    static void set_warning_enabled(bool enabled);
+    static void set_info_enabled(bool enabled);
+    static void set_debug_enabled(bool enabled);
+    static void set_success_enabled(bool enabled);
+
 
 protected:
     static DojoHelpers *singleton;
@@ -189,6 +197,14 @@ protected:
                                     &DojoHelpers::bytes_to_u256_string);
 
         ClassDB::bind_static_method("DojoHelpers", D_METHOD("generate_private_key"), &DojoHelpers::generate_private_key);
+
+        ClassDB::bind_static_method("DojoHelpers", D_METHOD("get_log_level_enabled", "level"), &DojoHelpers::get_log_level_enabled);
+        ClassDB::bind_static_method("DojoHelpers", D_METHOD("set_log_level_enabled", "level", "enabled"), &DojoHelpers::set_log_level_enabled);
+        ClassDB::bind_static_method("DojoHelpers", D_METHOD("set_error_enabled", "enabled"), &DojoHelpers::set_error_enabled);
+        ClassDB::bind_static_method("DojoHelpers", D_METHOD("set_warning_enabled", "enabled"), &DojoHelpers::set_warning_enabled);
+        ClassDB::bind_static_method("DojoHelpers", D_METHOD("set_info_enabled", "enabled"), &DojoHelpers::set_info_enabled);
+        ClassDB::bind_static_method("DojoHelpers", D_METHOD("set_debug_enabled", "enabled"), &DojoHelpers::set_debug_enabled);
+        ClassDB::bind_static_method("DojoHelpers", D_METHOD("set_success_enabled", "enabled"), &DojoHelpers::set_success_enabled);
     }
 };
 

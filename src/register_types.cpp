@@ -5,17 +5,9 @@
 
 #include <godot_cpp/classes/editor_plugin.hpp>
 
-#include "dojo_c_gdextension.h"
-
 #include "gdextension_interface.h"
-#include "classes/dojo_owner.h"
-#include "classes/dojo_controller.h"
-#include "classes/dojo_session_account.h"
-#include "editor/dojo_editor_plugin.h"
 #include "godot_cpp/core/defs.hpp"
 #include "godot_cpp/godot.hpp"
-#include "ref_counted/options/option_f64.h"
-// #include "tools/dojo_http.h"
 #ifdef WEB_ENABLED
 #include <tools/dojo_bridge.h>
 #endif
@@ -24,10 +16,14 @@
 #include "editor/dojo_editor_plugin.h"
 #endif
 
+#include "tools/dojo_helper.h"
+#include "tools/controller_helper.h"
 
 #include "classes/torii_client.h"
 #include "classes/account.h"
-#include "tools/dojo_helper.h"
+#include "classes/dojo_owner.h"
+#include "classes/dojo_controller.h"
+#include "classes/dojo_session_account.h"
 
 #include "variant/ty/dojo_array.h"
 #include "variant/ty/enum.h"
@@ -72,7 +68,7 @@
 
 using namespace godot;
 
-void initialize_dojoc_module(ModuleInitializationLevel p_level) {
+void initialize_godotdojo_module(ModuleInitializationLevel p_level) {
     if (p_level == MODULE_INITIALIZATION_LEVEL_SCENE) {
         // Tools
 #ifdef WEB_ENABLED
@@ -81,7 +77,6 @@ void initialize_dojoc_module(ModuleInitializationLevel p_level) {
         // Tools
         GDREGISTER_CLASS(DojoHelpers);
         GDREGISTER_CLASS(ControllerHelper);
-        // GDREGISTER_CLASS(DojoHttp)
         // DojoTypes
         GDREGISTER_CLASS(DojoTy);
         GDREGISTER_CLASS(DojoPrimitive);
@@ -139,8 +134,6 @@ void initialize_dojoc_module(ModuleInitializationLevel p_level) {
         GDREGISTER_CLASS(ActivitySubscription);
         GDREGISTER_CLASS(AggregationSubscription);
         GDREGISTER_CLASS(AchievementProgressionSubscription);
-        // Main Class
-        GDREGISTER_CLASS(DojoC);
     }
 
     if (p_level == MODULE_INITIALIZATION_LEVEL_EDITOR) {
@@ -151,18 +144,18 @@ void initialize_dojoc_module(ModuleInitializationLevel p_level) {
     }
 }
 
-void uninitialize_dojoc_module(ModuleInitializationLevel p_level) {
+void uninitialize_godotdojo_module(ModuleInitializationLevel p_level) {
 }
 
 extern "C" {
 // Initialization.
-GDExtensionBool GDE_EXPORT dojoc_library_init(GDExtensionInterfaceGetProcAddress p_get_proc_address,
+GDExtensionBool GDE_EXPORT godotdojo_library_init(GDExtensionInterfaceGetProcAddress p_get_proc_address,
                                               const GDExtensionClassLibraryPtr p_library,
                                               GDExtensionInitialization *r_initialization) {
     GDExtensionBinding::InitObject init_obj(p_get_proc_address, p_library, r_initialization);
 
-    init_obj.register_initializer(initialize_dojoc_module);
-    init_obj.register_terminator(uninitialize_dojoc_module);
+    init_obj.register_initializer(initialize_godotdojo_module);
+    init_obj.register_terminator(uninitialize_godotdojo_module);
     init_obj.set_minimum_library_initialization_level(MODULE_INITIALIZATION_LEVEL_EDITOR);
 
     return init_obj.init();

@@ -656,3 +656,42 @@ bool DojoHelpers::can_use_typed_dictionaries() {
     String hint_string;
     return major > 4 || (major == 4 && minor >= 4);
 }
+
+bool DojoHelpers::get_log_level_enabled(const String& level)
+{
+    String setting_path = "dojo/config/debug/" + level;
+    return ProjectSettings::get_singleton()->get_setting(setting_path);
+}
+
+void DojoHelpers::set_log_level_enabled(const String& level, bool enabled)
+{
+    ProjectSettings* settings = ProjectSettings::get_singleton();
+    String setting_path = "dojo/config/debug/" + level;
+    settings->set_setting(setting_path, enabled);
+    settings->save();
+}
+
+void DojoHelpers::set_error_enabled(bool enabled)
+{
+    set_log_level_enabled("error", enabled);
+}
+
+void DojoHelpers::set_warning_enabled(bool enabled)
+{
+    set_log_level_enabled("warning", enabled);
+}
+
+void DojoHelpers::set_info_enabled(bool enabled)
+{
+    set_log_level_enabled("info", enabled);
+}
+
+void DojoHelpers::set_debug_enabled(bool enabled)
+{
+    set_log_level_enabled("debug", enabled);
+}
+
+void DojoHelpers::set_success_enabled(bool enabled)
+{
+    set_log_level_enabled("success", enabled);
+}
