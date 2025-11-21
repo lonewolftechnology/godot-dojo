@@ -1,9 +1,10 @@
-[gd_scene load_steps=9 format=3 uid="uid://b75yggsnay1mo"]
+[gd_scene load_steps=10 format=3 uid="uid://b75yggsnay1mo"]
 
 [ext_resource type="Script" uid="uid://bx5rlh0opi80k" path="res://connection/connection.gd" id="1_c7jwa"]
 [ext_resource type="PackedScene" uid="uid://b5vmo8llucetx" path="res://ui/status_indicator.tscn" id="3_bya50"]
 [ext_resource type="Script" uid="uid://cibg6qwsaeyq6" path="res://tools/http_pinger.gd" id="3_erpqw"]
 [ext_resource type="PackedScene" uid="uid://b5w700tgwm1r6" path="res://connection/log_level_status.tscn" id="3_henli"]
+[ext_resource type="Script" uid="uid://clp7f22aqopw6" path="res://connection/http_tools.gd" id="5_advu3"]
 
 [sub_resource type="DojoQuery" id="DojoQuery_erpqw"]
 
@@ -91,6 +92,11 @@ layout_mode = 2
 [node name="HttpPinger" type="HTTPRequest" parent="."]
 script = ExtResource("3_erpqw")
 metadata/_custom_type_script = "uid://cibg6qwsaeyq6"
+
+[node name="HttpTools" type="Node" parent="."]
+script = ExtResource("5_advu3")
+html_file = "res://connection/template.html"
+metadata/_custom_type_script = "uid://clp7f22aqopw6"
 
 [connection signal="client_connected" from="ToriiClient" to="." method="_on_torii_client_client_connected"]
 [connection signal="client_disconnected" from="ToriiClient" to="." method="_on_torii_client_client_disconnected"]

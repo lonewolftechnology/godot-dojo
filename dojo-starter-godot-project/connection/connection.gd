@@ -23,6 +23,7 @@ const torii_url = "https://api.cartridge.gg/x/godot-dojo-starter/torii"
 @onready var _events_status: DojoStatusIndicator = %EventUpdatesStatus
 @onready var _entities_status: DojoStatusIndicator = %EntityUpdatesStatus
 @onready var url_open : bool = false
+@onready var http_tools: HttpTools = $HttpTools
 
 var full_policies:Dictionary = {
 	ACTIONS_CONTRACT: {
@@ -54,7 +55,7 @@ func create_subscriptions(events:Callable,entities:Callable) -> void:
 	torii_client.on_entity_state_update(entities, entity_sub)
 	torii_client.on_event_message_update(events, message_sub)
 
-func _ready() -> void:
+func _ready() -> void:	
 	# For debugging purposes
 	OS.set_environment("RUST_BACKTRACE", "full")
 	OS.set_environment("RUST_LOG", "debug")
@@ -101,16 +102,16 @@ func _get_session_url() -> String:
 	if priv_key.is_empty():
 		priv_key = DojoHelpers.generate_private_key()
 	
-	var http_tools:HttpTools = HttpTools.new()
-	
-	if not http_tools.start_server():
-		return ""
 		
 	var base_url = "https://x.cartridge.gg/session"
 	var public_key = ControllerHelper.get_public_key(priv_key)
-	var redirect_uri = "http://localhost:%d" % http_tools.port
-	var redirect_query_name = "startapp"
+	var redirect_uri = ""
+	var redirect_query_name = ""
 	
+	if http_tools.start_server():
+		redirect_uri = "http://localhost:%d" % http_tools.port
+		redirect_query_name = "startapp" 
+
 	var session_url = DojoSessionAccount.generate_session_request_url(
 		base_url, 
 		public_key, 
