@@ -51,11 +51,20 @@
 				Returns the last error message.
 			</description>
 		</method>
-		<method name="execute">
+		<method name="execute" qualifiers="const">
 			<return type="String" />
 			<param index="0" name="calls" type="Dictionary[]" />
 			<description>
 				Executes a transaction with the given calls.
+			</description>
+		</method>
+		<method name="execute_raw" qualifiers="const">
+			<return type="String" />
+			<param index="0" name="contract_address" type="String" />
+			<param index="1" name="entrypoint" type="String" />
+			<param index="2" name="calldata" type="Array" />
+			<description>
+				Executes a single call. This is a convenience method that wraps [method execute].
 			</description>
 		</method>
 		<method name="from_storage" qualifiers="static">

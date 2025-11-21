@@ -22,6 +22,7 @@
 			If [code]true[/code], the keys will not be hashed before being sent to the Torii client. Defaults to [code]false[/code].
 		</member>
 		<member name="world_addresses" type="String[]" setter="set_world_addresses" getter="get_world_addresses" default="[]">
+			The addresses of the worlds to query. If empty, the client's default world addresses will be used.
 		</member>
 	</members>
 </class>

@@ -24,8 +24,10 @@
 	</members>
 	<constants>
 		<constant name="DOJO::PaginationDirection::Forward" value="0" enum="PaginationDirection">
+			Paginate forward.
 		</constant>
 		<constant name="DOJO::PaginationDirection::Backward" value="1" enum="PaginationDirection">
+			Paginate backward.
 		</constant>
 	</constants>
 </class>

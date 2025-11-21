@@ -99,6 +99,7 @@
 		<method name="generate_private_key" qualifiers="static">
 			<return type="String" />
 			<description>
+				Generates a new random private key.
 			</description>
 		</method>
 		<method name="get_custom_setting" qualifiers="static">
@@ -123,6 +124,13 @@
 				Returns the Katana RPC URL.
 			</description>
 		</method>
+		<method name="get_log_level_enabled" qualifiers="static">
+			<return type="bool" />
+			<param index="0" name="level" type="String" />
+			<description>
+				Returns true if the specified log level is enabled.
+			</description>
+		</method>
 		<method name="get_policies" qualifiers="static">
 			<return type="Dictionary" />
 			<param index="0" name="p_custom" type="String" default="&quot;&quot;" />
@@ -143,6 +151,50 @@
 			<param index="0" name="setting" type="String" />
 			<param index="1" name="default_value" type="Variant" default="null" />
 			<description>
+				Gets a setting from the 'Torii' category in project settings.
+			</description>
+		</method>
+		<method name="set_debug_enabled" qualifiers="static">
+			<return type="void" />
+			<param index="0" name="enabled" type="bool" />
+			<description>
+				Enables or disables debug logging.
+			</description>
+		</method>
+		<method name="set_error_enabled" qualifiers="static">
+			<return type="void" />
+			<param index="0" name="enabled" type="bool" />
+			<description>
+				Enables or disables error logging.
+			</description>
+		</method>
+		<method name="set_info_enabled" qualifiers="static">
+			<return type="void" />
+			<param index="0" name="enabled" type="bool" />
+			<description>
+				Enables or disables info logging.
+			</description>
+		</method>
+		<method name="set_log_level_enabled" qualifiers="static">
+			<return type="void" />
+			<param index="0" name="level" type="String" />
+			<param index="1" name="enabled" type="bool" />
+			<description>
+				Enables or disables a specific log level.
+			</description>
+		</method>
+		<method name="set_success_enabled" qualifiers="static">
+			<return type="void" />
+			<param index="0" name="enabled" type="bool" />
+			<description>
+				Enables or disables success logging.
+			</description>
+		</method>
+		<method name="set_warning_enabled" qualifiers="static">
+			<return type="void" />
+			<param index="0" name="enabled" type="bool" />
+			<description>
+				Enables or disables warning logging.
 			</description>
 		</method>
 		<method name="signed_to_u32_offset" qualifiers="static">

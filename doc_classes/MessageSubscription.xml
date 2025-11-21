@@ -15,6 +15,7 @@
 		<member name="name" type="String" setter="set_name" getter="get_name" overrides="DojoSubscription" default="&quot;MessageSubscription&quot;" />
 		<member name="type" type="int" setter="" getter="get_type" overrides="DojoSubscription" enum="DojoSubscription.Type" default="1" />
 		<member name="world_addresses" type="String[]" setter="set_world_addresses" getter="get_world_addresses" default="[]">
+			An array of world addresses to filter by.
 		</member>
 	</members>
 </class>

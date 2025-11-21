@@ -18,16 +18,22 @@
 	</members>
 	<constants>
 		<constant name="DOJO::ContractType::WORLD" value="0" enum="ContractType">
+			A world contract.
 		</constant>
 		<constant name="DOJO::ContractType::ERC20" value="1" enum="ContractType">
+			An ERC20 contract.
 		</constant>
 		<constant name="DOJO::ContractType::ERC721" value="2" enum="ContractType">
+			An ERC721 contract.
 		</constant>
 		<constant name="DOJO::ContractType::ERC1155" value="3" enum="ContractType">
+			An ERC1155 contract.
 		</constant>
 		<constant name="DOJO::ContractType::UDC" value="4" enum="ContractType">
+			A Universal Deployer Contract.
 		</constant>
 		<constant name="DOJO::ContractType::OTHER" value="5" enum="ContractType">
+			Any other contract type.
 		</constant>
 	</constants>
 </class>

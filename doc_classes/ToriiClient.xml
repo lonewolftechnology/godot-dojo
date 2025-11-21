@@ -5,7 +5,7 @@
 	</brief_description>
 	<description>
 		The ToriiClient is the main entry point for interacting with a Dojo world. It allows you to query the world's state and subscribe to real-time updates for entities, events, and more.
-		To use it, add it to your scene tree (often as an autoload singleton), set the [member world_addresses] and [member torii_url] properties, and then call [method create_client].
+		To use it, add it to your scene tree (often as an autoload singleton), set the [member torii_url] property and the world addresses in the project settings, and then call [method create_client].
 	</description>
 	<tutorials>
 	</tutorials>
@@ -20,7 +20,7 @@
 			<return type="bool" />
 			<param index="0" name="torii_url" type="String" default="&quot;&quot;" />
 			<description>
-				Initializes and connects the client to the Torii server. If [param p_url] or [param p_addresses] are not provided, it will use the values from [member torii_url] and [member world_addresses] respectively. Emits [signal client_connected] on success or failure.
+				Initializes and connects the client to the Torii server. If [param torii_url] is not provided, it will use the value from the [member torii_url] property. The client will also use the world addresses from the project settings. Emits [signal client_connected] on success or failure.
 			</description>
 		</method>
 		<method name="disconnect_client">

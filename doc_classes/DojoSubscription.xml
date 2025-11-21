@@ -56,10 +56,13 @@
 			Subscription for contract updates.
 		</constant>
 		<constant name="AGGREGATION" value="9" enum="Type">
+			Subscription for aggregation updates.
 		</constant>
 		<constant name="ACTIVITY" value="10" enum="Type">
+			Subscription for activity updates.
 		</constant>
 		<constant name="ACHIEVEMENT_PROGRESSION" value="11" enum="Type">
+			Subscription for achievement progression updates.
 		</constant>
 		<constant name="NIL" value="12" enum="Type">
 			Represents an uninitialized or invalid subscription type.
