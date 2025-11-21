@@ -88,7 +88,9 @@ jobs:
             external/godot-cpp/gen/
             external/godot-cpp/__pycache__/
           key: scons-cache-${{ inputs.platform_id }}-${{ inputs.arch }}-${{ inputs.precision }}-${{ inputs.current_tag }}
-          restore-keys: scons-cache-${{ inputs.platform_id }}-${{ inputs.arch }}-${{ inputs.precision }}-${{ inputs.previous_tag }}
+          restore-keys: |
+            scons-cache-${{ inputs.platform_id }}-${{ inputs.arch }}-${{ inputs.precision }}-${{ inputs.previous_tag }}
+            scons-cache-${{ inputs.platform_id }}-${{ inputs.arch }}-${{ inputs.precision }}-
 
       - name: Build GDExtension (editor)
         if: inputs.platform_id != 'ios'

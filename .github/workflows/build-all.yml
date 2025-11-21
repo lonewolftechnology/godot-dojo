@@ -216,6 +216,8 @@ jobs:
         with:
           path: ~/.cargo/bin/uniffi-bindgen-cpp
           key: ${{ runner.os }}-uniffi-bindgen-cpp-Larkooo-update-0.30
+          restore-keys: |
+            ${{ runner.os }}-uniffi-bindgen-cpp-Larkooo-update-0.30
 
       - name: Install uniffi-bindgen-cpp from source
         if: matrix.rust_target == 'x86_64-unknown-linux-gnu' && steps.cache-uniffi-bindgen-cpp.outputs.cache-hit != 'true'
