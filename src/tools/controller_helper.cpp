@@ -181,3 +181,44 @@ std::vector<std::shared_ptr<controller::Call>> ControllerHelper::prepare_calls(c
 
     return prepared_calls;
 }
+
+controller::SessionPolicies ControllerHelper::to_c_policies(const Dictionary &policies) {
+    controller::SessionPolicies c_policies;
+    c_policies.max_fee = "0x0";
+
+    if (policies.is_empty()) {
+        Logger::warning("Policies dictionary is empty.");
+        return c_policies;
+    }
+
+    if (policies.has("max_fee") && policies["max_fee"].get_type() == Variant::STRING) {
+        c_policies.max_fee = policies["max_fee"].operator String().utf8().get_data();
+        Logger::debug_extra("DojoSessionAccount", "max_fee", c_policies.max_fee.c_str());
+    } else {
+        Logger::warning("`max_fee` not found or not a String in policies. Using default.");
+    }
+
+    if (!policies.has("policies") || policies["policies"].get_type() != Variant::ARRAY) {
+        Logger::error("`policies` key not found or is not an Array.");
+        return c_policies;
+    }
+
+    Array policy_array = policies["policies"];
+
+    for (int i = 0; i < policy_array.size(); ++i) {
+        Dictionary policy_group = policy_array[i];
+        if (!policy_group.has("contract_address") || !policy_group.has("entrypoints")) continue;
+
+        String contract_address = policy_group["contract_address"];
+        Array entrypoints = policy_group["entrypoints"];
+        Logger::debug_extra("Policy", "Contract", contract_address);
+        for (int j = 0; j < entrypoints.size(); ++j) {
+            auto p = std::make_shared<controller::SessionPolicy>();
+            p->contract_address = contract_address.utf8().get_data();
+            p->entrypoint = String(entrypoints[j]).utf8().get_data();
+            Logger::debug_extra("Policy", "Entrypoint", p->entrypoint.c_str());
+            c_policies.policies.push_back(p);
+        }
+    }
+    return c_policies;
+}

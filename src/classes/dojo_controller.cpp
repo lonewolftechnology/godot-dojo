@@ -175,7 +175,7 @@ String DojoController::execute(const TypedArray<Dictionary> &calls) const{
     std::vector<std::shared_ptr<controller::Call>> c_calls = ControllerHelper::prepare_calls(calls);
 
     try {
-        return String(internal->execute(c_calls).c_str());
+        return internal->execute(c_calls).c_str();
     } catch (const controller::ControllerError &e) {
         Logger::error("DojoController.execute failed:", e.what());
         return "";

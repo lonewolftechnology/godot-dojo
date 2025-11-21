@@ -3,58 +3,14 @@
 #include <godot_cpp/classes/json.hpp>
 #include <utility>
 
-namespace {
-    controller::SessionPolicies to_c_policies(const Dictionary &policies) {
-        controller::SessionPolicies c_policies;
-        c_policies.max_fee = "0x0";
-
-        if (policies.is_empty()) {
-            Logger::warning("Policies dictionary is empty.");
-            return c_policies;
-        }
-
-        if (policies.has("max_fee") && policies["max_fee"].get_type() == Variant::STRING) {
-            c_policies.max_fee = policies["max_fee"].operator String().utf8().get_data();
-            Logger::debug_extra("DojoSessionAccount", "max_fee", c_policies.max_fee.c_str());
-        } else {
-            Logger::warning("`max_fee` not found or not a String in policies. Using default.");
-        }
-
-        if (!policies.has("policies") || policies["policies"].get_type() != Variant::ARRAY) {
-            Logger::error("`policies` key not found or is not an Array.");
-            return c_policies;
-        }
-
-        Array policy_array = policies["policies"];
-
-        for (int i = 0; i < policy_array.size(); ++i) {
-            Dictionary policy_group = policy_array[i];
-            if (!policy_group.has("contract_address") || !policy_group.has("entrypoints")) continue;
-
-            String contract_address = policy_group["contract_address"];
-            Array entrypoints = policy_group["entrypoints"];
-            Logger::debug_extra("Policy", "Contract", contract_address);
-            for (int j = 0; j < entrypoints.size(); ++j) {
-                auto p = std::make_shared<controller::SessionPolicy>();
-                p->contract_address = contract_address.utf8().get_data();
-                p->entrypoint = String(entrypoints[j]).utf8().get_data();
-                Logger::debug_extra("Policy", "Entrypoint", p->entrypoint.c_str());
-                c_policies.policies.push_back(p);
-            }
-        }
-        return c_policies;
-    }
-}
-
 void DojoSessionAccount::set_internal(std::shared_ptr<controller::SessionAccount> p_internal) {
     internal = std::move(p_internal);
 }
 
 void DojoSessionAccount::create(const String &rpc_url, const String &private_key, const String &address,
-                                const String &chain_id, const Dictionary &policies,
-                                uint64_t session_expiration) {
+                                const String &chain_id, uint64_t session_expiration) {
     try {
-        controller::SessionPolicies c_policies = to_c_policies(policies);
+        controller::SessionPolicies c_policies = ControllerHelper::to_c_policies(get_session_policy());
         if (!ControllerHelper::validate_felt(address)) {
             Logger::error("Invalid address format.");
             return;
@@ -81,13 +37,16 @@ void DojoSessionAccount::create(const String &rpc_url, const String &private_key
     }
 }
 
-void DojoSessionAccount::create_from_subscribe(const String &_private_key, const Dictionary &_policies,
-                                               const String &_rpc_url, const String &_cartridge_api_url) {
+void DojoSessionAccount::create_from_subscribe(const String &_private_key,
+                                               const String &_rpc_url, const String &_cartridge_api_url, const Dictionary &_policies) {
     try {
         String session_key_guid = ControllerHelper::signer_to_guid(_private_key);
         Logger::info("Using session_key_guid: " + session_key_guid);
         Logger::info("Attempting to subscribe with cartridge_api_url: " + _cartridge_api_url);
-        controller::SessionPolicies c_policies = to_c_policies(_policies);
+        
+        Dictionary policies_to_use = _policies.is_empty() ? get_session_policy() : _policies;
+        controller::SessionPolicies c_policies = ControllerHelper::to_c_policies(policies_to_use);
+
         auto internal_account = controller::SessionAccount::create_from_subscribe(
             _private_key.utf8().get_data(),
             c_policies,
@@ -278,4 +237,39 @@ String DojoSessionAccount::generate_session_request_url(const String &base_url, 
     }
 
     return url;
+}
+
+Dictionary DojoSessionAccount::get_session_policy() const
+{
+    Dictionary session_policy;
+    session_policy["max_fee"] = max_fee;
+
+    Array policies_array;
+    const Array contracts = full_policies.keys();
+    for (int i = 0; i < contracts.size(); ++i) {
+        const String& contract_address = contracts[i];
+        const Dictionary& contract_details = full_policies[contract_address];
+        const Array& methods = contract_details["methods"];
+
+        Array entrypoints;
+        for (int j = 0; j < methods.size(); ++j) {
+            const Dictionary& method = methods[j];
+            entrypoints.push_back(method["entrypoint"]);
+        }
+
+        Dictionary policy_group;
+        policy_group["contract_address"] = contract_address;
+        policy_group["entrypoints"] = entrypoints;
+        policies_array.push_back(policy_group);
+    }
+
+    session_policy["policies"] = policies_array;
+    return session_policy;
+}
+
+Dictionary DojoSessionAccount::get_register_session_policy() const
+{
+    Dictionary register_session_policy;
+    register_session_policy["contracts"] = full_policies;
+    return register_session_policy;
 }

@@ -17,16 +17,19 @@ class DojoSessionAccount : public Node {
     GDCLASS(DojoSessionAccount, Node)
     std::shared_ptr<controller::SessionAccount> internal;
 
+    Dictionary full_policies;
+    String max_fee;
+
 public:
     DojoSessionAccount() = default;
 
     ~DojoSessionAccount() override = default;
 
-    void create_from_subscribe(const String &_private_key, const Dictionary &_policies, const String &_rpc_url,
-                               const String &_cartridge_api_url);
+    void create_from_subscribe(const String &_private_key, const String &_rpc_url,
+                               const String &_cartridge_api_url, const Dictionary &_policies = Dictionary());
 
     void create(const String &rpc_url, const String &private_key, const String &address,
-        const String &chain_id, const Dictionary &policies, uint64_t session_expiration);
+        const String &chain_id, uint64_t session_expiration);
 
     String get_address() const;
     String get_chain_id() const;
@@ -52,17 +55,24 @@ public:
                                                const String &rpc_url, const String &redirect_uri = String(),
                                                const String &redirect_query_name = String());
 
+    void set_full_policies(const Dictionary &p_policies){ full_policies = p_policies; }
+    Dictionary get_full_policies() const { return full_policies; }
+
+    Dictionary get_session_policy() const;
+    Dictionary get_register_session_policy() const;
+
+    void set_max_fee(const String &p_max_fee){ max_fee = p_max_fee; }
+    String get_max_fee() const { return max_fee; }
 
 
 protected:
     void set_internal(std::shared_ptr<controller::SessionAccount> p_internal);
 
     static void _bind_methods() {
-        ClassDB::bind_method(D_METHOD("create_from_subscribe", "private_key", "policies", "rpc_url",
-                                      "cartridge_api_url"),
-                             &DojoSessionAccount::create_from_subscribe);
-        ClassDB::bind_method(D_METHOD("create", "rpc_url", "private_key", "address", "chain_id",
-                                      "policies", "session_expiration"), &DojoSessionAccount::create);
+        ClassDB::bind_method(D_METHOD("create_from_subscribe", "private_key", "rpc_url",
+                                      "cartridge_api_url", "policies"),
+                             &DojoSessionAccount::create_from_subscribe, DEFVAL(Dictionary()));
+        ClassDB::bind_method(D_METHOD("create", "rpc_url", "private_key", "address", "chain_id", "session_expiration"), &DojoSessionAccount::create);
 
         ClassDB::bind_method(D_METHOD("get_address"), &DojoSessionAccount::get_address);
 
@@ -79,11 +89,26 @@ protected:
         ClassDB::bind_method(D_METHOD("get_info"), &DojoSessionAccount::get_info);
         ClassDB::bind_method(D_METHOD("is_valid"), &DojoSessionAccount::is_valid);
 
+
+        // Properties
+        ClassDB::bind_method(D_METHOD("get_full_policies"), &DojoSessionAccount::get_full_policies);
+        ClassDB::bind_method(D_METHOD("set_full_policies"), &DojoSessionAccount::set_full_policies);
+        ADD_PROPERTY(PropertyInfo(Variant::DICTIONARY, "full_policies"), "set_full_policies", "get_full_policies");
+
+        ClassDB::bind_method(D_METHOD("get_session_policy"), &DojoSessionAccount::get_session_policy);
+        ClassDB::bind_method(D_METHOD("get_register_session_policy"), &DojoSessionAccount::get_register_session_policy);
+
+        ClassDB::bind_method(D_METHOD("get_max_fee"), &DojoSessionAccount::get_max_fee);
+        ClassDB::bind_method(D_METHOD("set_max_fee"), &DojoSessionAccount::set_max_fee);
+        ADD_PROPERTY(PropertyInfo(Variant::STRING, "max_fee"), "set_max_fee", "get_max_fee");
+
+        // Static
         ClassDB::bind_static_method("DojoSessionAccount",
                                     D_METHOD("generate_session_request_url", "base_url", "public_key", "policies",
                                              "rpc_url", "redirect_uri", "redirect_query_name"),
                                     &DojoSessionAccount::generate_session_request_url, DEFVAL(String()), DEFVAL(String()));
+
     }
 };
 //VARIANT_ENUM_CAST(controller::SignerType);
-#endif //DOJO_SESSION_ACCOUNT_H
+#endif //DOJO_SESSION_ACTION_H

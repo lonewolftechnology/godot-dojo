@@ -40,6 +40,7 @@ public:
     static bool validate_felt(const String &felt);
 	static String generate_private_key();
 	static std::vector<std::shared_ptr<controller::Call>>  prepare_calls(const TypedArray<Dictionary> &calls);
+    static controller::SessionPolicies to_c_policies(const Dictionary &policies);
 
 
 
