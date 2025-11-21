@@ -66,13 +66,12 @@
 		<method name="get_pattern_matching" qualifiers="const">
 			<return type="int" enum="dojo_bindings.PatternMatching" />
 			<description>
-				Returns the pattern matching of the clause.
-			</descript
+				Returns the primitive tag of the clause.
+			</description>
 		</method>
 		<method name="get_primitive_tag" qualifiers="const">
 			<return type="int" enum="dojo_bindings.Primitive_Tag" />
 			<description>
-				Returns the primitive tag of the clause.
 			</description>
 		</method>
 		<method name="get_tag" qualifiers="const">
