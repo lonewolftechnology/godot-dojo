@@ -1,5 +1,73 @@
-## [v0.4](https://github.com/lonewolftechnology/godot-dojo/tree/v0.4) (2025-11-12)
+## [v0.4.6](https://github.com/lonewolftechnology/godot-dojo/tree/v0.4.6) (2025-11-25)
 **Commits:**
+- [[3bc31fd](https://github.com/lonewolftechnology/godot-dojo/commit/3bc31fd2c035b9929e3d23eb422c3a341f25980e)] DojoHelper: don't save log level to projectsettings in runtime
+- [[6f11884](https://github.com/lonewolftechnology/godot-dojo/commit/6f11884c739ad05fd54a16002d6b8bfa08f3a61c)] GodotDojo: added node icons
+- [[33be926](https://github.com/lonewolftechnology/godot-dojo/commit/33be92695705c91d93871b29122e8ef919e91b5a)] StarterProject: ui changes
+- [[c2bffb2](https://github.com/lonewolftechnology/godot-dojo/commit/c2bffb2cfe68760f5e5d34d5d7f7c5f6345ffeb6)] StarterProject: Simplify logger level toggles
+- [[222c6b7](https://github.com/lonewolftechnology/godot-dojo/commit/222c6b78957396cf2923b20ec5073345c8bd33d4)] StarterProject: Stylize template callback
+- [[b179d00](https://github.com/lonewolftechnology/godot-dojo/commit/b179d0012ec4699753f6a0fb45bbe14ee7b5ff6b)] SessionAccount: make policies optional parameter so it can use internal member
+- [[6631153](https://github.com/lonewolftechnology/godot-dojo/commit/6631153c74d02596b57028e91e13190e53caa3b5)] ci: update cache, again
+- [[120b147](https://github.com/lonewolftechnology/godot-dojo/commit/120b1479491094d5699fc6c28ea66d253cbd38a9)] StarterProject: fix http callback
+- [[4420b64](https://github.com/lonewolftechnology/godot-dojo/commit/4420b645cded840733cbb23e48c5a37a0f178f82)] docs: update builder + missing docs
+
+## [v0.4.5](https://github.com/lonewolftechnology/godot-dojo/tree/v0.4.5) (2025-11-20)
+**Commits:**
+- [[641cc36](https://github.com/lonewolftechnology/godot-dojo/commit/641cc361ebe4776700a1014798e6004a08a25828)] docs: update all descriptions
+- [[6db4278](https://github.com/lonewolftechnology/godot-dojo/commit/6db4278054b1906970faf46d5330f277951a8271)] StarterProject: added debug level enabler/disabled
+- [[c2c5a39](https://github.com/lonewolftechnology/godot-dojo/commit/c2c5a394a3a2d8bac4dae75627dabedf3975c572)] scons: update lib entrypoint
+- [[1d82262](https://github.com/lonewolftechnology/godot-dojo/commit/1d8226201a813d6075f022c088da5730cfc8790e)] feat: Revamped logging system
+- [[b6e58ce](https://github.com/lonewolftechnology/godot-dojo/commit/b6e58ce1f572f3a65912ba7d79242ed7fd1c58ac)] Policies refactor
+- [[d666db5](https://github.com/lonewolftechnology/godot-dojo/commit/d666db588be999f8666f641fb14c3e5519cd43e1)] StarterProject: update guide README.md
+- [[e3574b2](https://github.com/lonewolftechnology/godot-dojo/commit/e3574b228939f109a58c2d416880ee5b7d8db9ff)] StarterProject: fixed http serving
+- [[5d26280](https://github.com/lonewolftechnology/godot-dojo/commit/5d262808c6fcbc7435da7fd49db7f2c901b095b2)] demo: update slots
+- [[666b55e](https://github.com/lonewolftechnology/godot-dojo/commit/666b55edb8dd95815307fd32734471757f8ccb9c)] StarterProject: enable extra loggin in project settings
+- [[f072fdd](https://github.com/lonewolftechnology/godot-dojo/commit/f072fdde15f2488761f1ae1ca431a9c5682e2e8a)] repo cleanup
+- [[4708ff9](https://github.com/lonewolftechnology/godot-dojo/commit/4708ff99d4e44a67fea8350c318a55d03df8c90a)] ControllerAccount: added `execute_raw` utility for single calls
+- [[af50a69](https://github.com/lonewolftechnology/godot-dojo/commit/af50a691442e3874b44effd8a53d672db340a38a)] SessionAccount: added `execute_raw` and `execute_from_outside_raw` as utilities for single calls
+- [[ea2875f](https://github.com/lonewolftechnology/godot-dojo/commit/ea2875f5b3d3f93fa88f615a3e9b6a75d006892e)] crate: update `controller.c` to latest commit
+- [[c72e791](https://github.com/lonewolftechnology/godot-dojo/commit/c72e791b739475c71c5e85a6d600597a14a80e2f)] StarterProject: update to use tcp server and new slot with vanilla dojo-starter contract
+- [[a0a5430](https://github.com/lonewolftechnology/godot-dojo/commit/a0a543085ea6bfb49fdcce6ed6992efbc15ca584)] StarterProject: minimal tcp server to "recreate" old `dojo.c` behaviour
+- [[a050429](https://github.com/lonewolftechnology/godot-dojo/commit/a050429606a60d970192ade8f57f15f187775409)] clean up
+
+## [v0.4.4](https://github.com/lonewolftechnology/godot-dojo/tree/v0.4.4) (2025-11-18)
+**Commits:**
+- [[2026081](https://github.com/lonewolftechnology/godot-dojo/commit/2026081e05ac13260890da360440fde7c2512474)] ci: fix bad substition
+- [[1201255](https://github.com/lonewolftechnology/godot-dojo/commit/12012559284ea21e8040751239d12d5e2a569fa3)] crate: cargo.lock update
+- [[0b4eb14](https://github.com/lonewolftechnology/godot-dojo/commit/0b4eb14d1437692199f93e148c48be33373ae6b9)] godot-dojo: minor changes
+- [[42e5035](https://github.com/lonewolftechnology/godot-dojo/commit/42e5035996adfdca0576755270e1d2df08d874da)] controller.c: Controller -> ControllerAccount
+- [[124c1c6](https://github.com/lonewolftechnology/godot-dojo/commit/124c1c615676c54645dfc9e1f3efebd7c725c64f)] crate: update `controller.c`
+- [[cddbaac](https://github.com/lonewolftechnology/godot-dojo/commit/cddbaac88fe99fbc4841b64051b5e029826c4896)] ci: delete old cache + fix ios cache
+
+## [v0.4.3](https://github.com/lonewolftechnology/godot-dojo/tree/v0.4.3) (2025-11-18)
+**Commits:**
+- [[d8d8220](https://github.com/lonewolftechnology/godot-dojo/commit/d8d82201d20a336e805f619c9fb64344566b2367)] ci: update cache
+- [[ab34c48](https://github.com/lonewolftechnology/godot-dojo/commit/ab34c489f44d8c5438b165236d0138df807b5c3e)] Docs: Add basic description to everything
+- [[14ae109](https://github.com/lonewolftechnology/godot-dojo/commit/14ae10913d707c66bd5c8964f2609e0353e7d489)] ProjectSettings: remove initial configuration for policies
+- [[d2790d0](https://github.com/lonewolftechnology/godot-dojo/commit/d2790d056814a189af84ee49374ee95efb065138)] Demo: update testings
+- [[1e51a92](https://github.com/lonewolftechnology/godot-dojo/commit/1e51a92fae78985be4b90f6d91054e57590a59fc)] Docs: uddate
+- [[2f0eaa1](https://github.com/lonewolftechnology/godot-dojo/commit/2f0eaa1e4ee626a60579c8a258f0eb329993d0ac)] Logger: simplify warnings/error by using Godot's internal error handling macros
+- [[0d0a67f](https://github.com/lonewolftechnology/godot-dojo/commit/0d0a67f2d6a0fa220ba34e3d3d18be03cd89a62a)] ControllerHelper: remove boost header as its already included with DojoHelper
+
+## [v0.4.2](https://github.com/lonewolftechnology/godot-dojo/tree/v0.4.2) (2025-11-17)
+**Commits:**
+- [[5eebb4e](https://github.com/lonewolftechnology/godot-dojo/commit/5eebb4e4af7d3e2dee62088f0d2e31319775bf14)] ControllerHelper: fix negative numbers
+
+## [v0.4.1](https://github.com/lonewolftechnology/godot-dojo/tree/v0.4.1) (2025-11-14)
+**Commits:**
+- [[dad9893](https://github.com/lonewolftechnology/godot-dojo/commit/dad9893b7c5e6acf85809d39f425f7f132bec789)] ci: update to actions/cache@v4
+- [[3517f9e](https://github.com/lonewolftechnology/godot-dojo/commit/3517f9e1d335e538780871968498a583064a079c)] feat: DojoSearch query - Performs a full-text search across indexed entities using FTS5
+- [[ce8faf2](https://github.com/lonewolftechnology/godot-dojo/commit/ce8faf2c5a98cdd94ac0be8970f8e5d1af3d56ab)] ci: fix bin rectories and cache optimization
+- [[0130ee8](https://github.com/lonewolftechnology/godot-dojo/commit/0130ee82bea2798bd6928d52b9b1e9c9c49b3920)] fixed missing resources and signals connections
+- [[457d392](https://github.com/lonewolftechnology/godot-dojo/commit/457d392805be0e3a7961dcf84a747e9d40c2253b)] vertical mode
+- [[194fec4](https://github.com/lonewolftechnology/godot-dojo/commit/194fec4575930b31d5c486447bd58aae88396614)] ci: revamp ci
+- [[334fb88](https://github.com/lonewolftechnology/godot-dojo/commit/334fb88ce9a2c9ad1ba68d18bd6437282a47f881)] ci: possible cache fix
+- [[7378857](https://github.com/lonewolftechnology/godot-dojo/commit/7378857c149d3d7a3ac05ef792be900c717e9980)] ci: update android build
+- [[af7ec55](https://github.com/lonewolftechnology/godot-dojo/commit/af7ec55b754dad30b71558e09b91a04cd4ae6d67)] revamp buildsystem
+- [[c54b099](https://github.com/lonewolftechnology/godot-dojo/commit/c54b099adc1287af39ad2fc88d391998a53e1840)] ci: only install mingw when building windows-gnu
+- [[026c6f3](https://github.com/lonewolftechnology/godot-dojo/commit/026c6f31c4e840b8ab39e9729157c8eaea15a876)] ci: fix build
+- [[3cc3aef](https://github.com/lonewolftechnology/godot-dojo/commit/3cc3aef2ca76ce6cdff208a2ad27631fbaf2f5db)] ci: fix syntaxis
+- [[ea364d6](https://github.com/lonewolftechnology/godot-dojo/commit/ea364d66f9af9c235a4e958fc98b5cf45324b1ba)] ci: refactor and possible fix for cache
+- [[1a28eb8](https://github.com/lonewolftechnology/godot-dojo/commit/1a28eb83b3917aa5f6cc6fd064115c96efb630be)] Changelog generation
 - [[33e8bf2](https://github.com/lonewolftechnology/godot-dojo/commit/33e8bf2cfc550a4c985db17db0449777e1c80d69)] ci: actually fix path
 - [[36cdde4](https://github.com/lonewolftechnology/godot-dojo/commit/36cdde46992bd9ed4290a525fd185d1a1508ffc8)] ci: ensure target path
 - [[aaa515a](https://github.com/lonewolftechnology/godot-dojo/commit/aaa515af22a849ba422ecbf4fd82132ce00c9b4a)] changelog: update
@@ -11,6 +79,37 @@
 - [[fc1025e](https://github.com/lonewolftechnology/godot-dojo/commit/fc1025ec83d26b37794baae1096c12930f3f1e31)] ci: maybe fix android build :shrug:
 - [[750b91d](https://github.com/lonewolftechnology/godot-dojo/commit/750b91dae41e78bb928a4b335791e9c74064557a)] ci: ignore `Merge branch` commits from changes list
 - [[08885ae](https://github.com/lonewolftechnology/godot-dojo/commit/08885ae56353bfd73bf46682bc0d008e9a24f853)] ci: fix missing android-ar tool
+
+## [v0.4-cache-test](https://github.com/lonewolftechnology/godot-dojo/tree/v0.4-cache-test) (2025-11-12)
+**Commits:**
+- [[0130ee8](https://github.com/lonewolftechnology/godot-dojo/commit/0130ee82bea2798bd6928d52b9b1e9c9c49b3920)] fixed missing resources and signals connections
+- [[457d392](https://github.com/lonewolftechnology/godot-dojo/commit/457d392805be0e3a7961dcf84a747e9d40c2253b)] vertical mode
+- [[194fec4](https://github.com/lonewolftechnology/godot-dojo/commit/194fec4575930b31d5c486447bd58aae88396614)] ci: revamp ci
+- [[334fb88](https://github.com/lonewolftechnology/godot-dojo/commit/334fb88ce9a2c9ad1ba68d18bd6437282a47f881)] ci: possible cache fix
+- [[7378857](https://github.com/lonewolftechnology/godot-dojo/commit/7378857c149d3d7a3ac05ef792be900c717e9980)] ci: update android build
+- [[af7ec55](https://github.com/lonewolftechnology/godot-dojo/commit/af7ec55b754dad30b71558e09b91a04cd4ae6d67)] revamp buildsystem
+- [[c54b099](https://github.com/lonewolftechnology/godot-dojo/commit/c54b099adc1287af39ad2fc88d391998a53e1840)] ci: only install mingw when building windows-gnu
+- [[026c6f3](https://github.com/lonewolftechnology/godot-dojo/commit/026c6f31c4e840b8ab39e9729157c8eaea15a876)] ci: fix build
+- [[3cc3aef](https://github.com/lonewolftechnology/godot-dojo/commit/3cc3aef2ca76ce6cdff208a2ad27631fbaf2f5db)] ci: fix syntaxis
+- [[ea364d6](https://github.com/lonewolftechnology/godot-dojo/commit/ea364d66f9af9c235a4e958fc98b5cf45324b1ba)] ci: refactor and possible fix for cache
+- [[1a28eb8](https://github.com/lonewolftechnology/godot-dojo/commit/1a28eb83b3917aa5f6cc6fd064115c96efb630be)] Changelog generation
+- [[33e8bf2](https://github.com/lonewolftechnology/godot-dojo/commit/33e8bf2cfc550a4c985db17db0449777e1c80d69)] ci: actually fix path
+- [[36cdde4](https://github.com/lonewolftechnology/godot-dojo/commit/36cdde46992bd9ed4290a525fd185d1a1508ffc8)] ci: ensure target path
+- [[aaa515a](https://github.com/lonewolftechnology/godot-dojo/commit/aaa515af22a849ba422ecbf4fd82132ce00c9b4a)] changelog: update
+- [[2a87654](https://github.com/lonewolftechnology/godot-dojo/commit/2a87654eeb6099d5dc2c00da721b3b0b9959da3a)] scons: fix parsing when target is editor
+- [[3c9ba78](https://github.com/lonewolftechnology/godot-dojo/commit/3c9ba78f21360b3a5b7a86958a7b4b511947b14c)] ci: add missing ios rust toolchains
+- [[668b74d](https://github.com/lonewolftechnology/godot-dojo/commit/668b74d4c5941be473066c41659bec27a2a61a59)] ci: fix ios missing MACOSX_DEPLOYMENT_TARGET not set
+- [[b20bd3b](https://github.com/lonewolftechnology/godot-dojo/commit/b20bd3bc88b0214526733a9fdb3286f25dc3b488)] ci: fix ios build
+- [[7011b48](https://github.com/lonewolftechnology/godot-dojo/commit/7011b485b24f9b8b381617b684e4b8f61cc3c24c)] ci: add missing ios rust compilation
+- [[fc1025e](https://github.com/lonewolftechnology/godot-dojo/commit/fc1025ec83d26b37794baae1096c12930f3f1e31)] ci: maybe fix android build :shrug:
+- [[750b91d](https://github.com/lonewolftechnology/godot-dojo/commit/750b91dae41e78bb928a4b335791e9c74064557a)] ci: ignore `Merge branch` commits from changes list
+- [[08885ae](https://github.com/lonewolftechnology/godot-dojo/commit/08885ae56353bfd73bf46682bc0d008e9a24f853)] ci: fix missing android-ar tool
+
+## [v0.4](https://github.com/lonewolftechnology/godot-dojo/tree/v0.4) (2025-11-14)
+**Commits:**
+- [[0130ee8](https://github.com/lonewolftechnology/godot-dojo/commit/0130ee82bea2798bd6928d52b9b1e9c9c49b3920)] fixed missing resources and signals connections
+- [[457d392](https://github.com/lonewolftechnology/godot-dojo/commit/457d392805be0e3a7961dcf84a747e9d40c2253b)] vertical mode
+- [[194fec4](https://github.com/lonewolftechnology/godot-dojo/commit/194fec4575930b31d5c486447bd58aae88396614)] ci: revamp ci
 - [[42d3123](https://github.com/lonewolftechnology/godot-dojo/commit/42d31230f21fa826d5baceacffcc71e780875945)] Merge branch 'controller.c' into dev
 - [[9dabef3](https://github.com/lonewolftechnology/godot-dojo/commit/9dabef37fed88a537734ecfef7f22923c5ab44ed)] ci: ensure paths for android NDK
 - [[21b4e51](https://github.com/lonewolftechnology/godot-dojo/commit/21b4e516e482ce7cfe2dc05e928a897e4be95518)] ci: fix missing Android NDK
