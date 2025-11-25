@@ -47,7 +47,7 @@ This project is configured by default to use a public deployment on Slot. If you
 ### Prerequisites
 - Godot Engine installed.
 - Dojo toolchain installed. Follow the guide at https://book.dojoengine.org/getting-started/quick-start.html.
-- **godot-dojo GDExtension**: If the `addons/godot-dojo` directory does not exist, download the latest release from https://github.com/lonewolftechnology/godot-dojo/releases. Unzip it and place the contents into the `addons/godot-dojo` directory within your project.
+- **godot-dojo GDExtension**: The `dojo-starter-godot-project.zip` from the [latest release](https://github.com/lonewolftechnology/godot-dojo/releases) comes with the addon pre-installed. If you are building manually, you will need to copy the `demo/addons/godot-dojo` directory into the `addons` folder of this project.
 
 ### Default Configuration (Slot)
 The project works out-of-the-box with a pre-deployed contract on the Slot network.

@@ -163,17 +163,17 @@
 
 ## 🚀 Running the Demo
 
+> **Note:** The `dojo-starter-godot-project` uses **Godot 4.5**.
+
 1.  **Get the addon:**
-    - **Option A: Build from source:** Follow the [Build Instructions](#️-build-instructions) above to build for `target=editor`. The compiled addon will be located in the `demo/addons/godot-dojo` directory.
-    - **Option B: Download from a release:** Download the `godot-dojo-*.zip` from the [latest release](https://github.com/lonewolftechnology/godot-dojo/releases) and extract it.
+    - **Option A (Recommended): Download from a release:** Download the `dojo-starter-godot-project.zip` from the [latest release](https://github.com/lonewolftechnology/godot-dojo/releases). The addon is already included.
+    - **Option B: Build from source:** Follow the [Build Instructions](#️-build-instructions) above to build for `target=editor`. The compiled addon will be located in the `demo/addons/godot-dojo` directory. Then, copy the `godot-dojo` directory into the `dojo-starter-godot-project/addons` directory.
+    - **Option C: Manual download:** Download the `godot-dojo-*.zip` from the [latest release](https://github.com/lonewolftechnology/godot-dojo/releases), extract it, and copy the `godot-dojo` directory into the `dojo-starter-godot-project/addons` directory.
 
-2.  **Copy the addon to the starter project:**
-    - Copy the `godot-dojo` directory from `demo/addons` (if you built from source) or from the extracted zip file into the `dojo-starter-godot-project/addons` directory.
-
-3.  **Open the project in Godot:**
+2.  **Open the project in Godot:**
     -   Launch Godot Engine.
     -   Open the `dojo-starter-godot-project` folder as a project.
-4.  **Run the demo scene:**
+3.  **Run the demo scene:**
     -   Open the `Demo` scene under the `game` folder.
     -   Press the **Play** button.
 
