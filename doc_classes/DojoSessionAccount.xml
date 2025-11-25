@@ -62,12 +62,12 @@
 				Executes a single call. This is a convenience method that wraps [method execute].
 			</description>
 		</method>
-		<method name="generate_session_request_url" qualifiers="static">
+		<method name="generate_session_request_url" qualifiers="const">
 			<return type="String" />
 			<param index="0" name="base_url" type="String" />
 			<param index="1" name="public_key" type="String" />
-			<param index="2" name="policies" type="Dictionary" />
-			<param index="3" name="rpc_url" type="String" />
+			<param index="2" name="rpc_url" type="String" />
+			<param index="3" name="policies" type="Dictionary" default="{}" />
 			<param index="4" name="redirect_uri" type="String" default="&quot;&quot;" />
 			<param index="5" name="redirect_query_name" type="String" default="&quot;&quot;" />
 			<description>
