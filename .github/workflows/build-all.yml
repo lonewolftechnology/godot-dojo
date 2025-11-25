@@ -471,13 +471,25 @@ jobs:
           cd godot-dojo-bin
           zip -r "../godot-dojo-${TAGNAME}.zip" .
 
+      - name: Prepare starter project
+        run: |
+          set -e
+          mkdir -p dojo-starter-godot-project/addons/godot-dojo
+          cp -r single_bins/* dojo-starter-godot-project/addons/godot-dojo/
+
+      - name: Package starter project into zip file
+        run: zip -r "dojo-starter-godot-project.zip" "dojo-starter-godot-project"
+
       - name: Upload Single Precision assets to release
         uses: softprops/action-gh-release@v2
         with:
           append_body: true
-          body: '- [Single Precision](https://github.com/${{ github.repository }}/releases/download/${{ github.ref_name }}/godot-dojo-${{ github.ref_name }}.zip)'
+          body: |
+            - [Single Precision](https://github.com/${{ github.repository }}/releases/download/${{ github.ref_name }}/godot-dojo-${{ github.ref_name }}.zip)
+            - [Starter Project](https://github.com/${{ github.repository }}/releases/download/${{ github.ref_name }}/dojo-starter-godot-project.zip)
           files: |
             godot-dojo-${{ github.ref_name }}.zip
+            dojo-starter-godot-project.zip
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
@@ -516,28 +528,6 @@ jobs:
           body: '- [Double Precision](https://github.com/${{ github.repository }}/releases/download/${{ github.ref_name }}/godot-dojo-double-${{ github.ref_name }}.zip)'
           files: |
             godot-dojo-double-${{ github.ref_name }}.zip
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-  package-starter:
-    name: Package Starter Project
-    runs-on: ubuntu-latest
-    needs: [create_release, build-gdextension-android, build-gdextension-linux, build-gdextension-macos, build-gdextension-windows, build-gdextension-ios]
-    if: success() && needs.create_release.result == 'success'
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Package starter project into zip file
-        run: zip -r "dojo-starter-godot-project.zip" "dojo-starter-godot-project"
-
-      - name: Upload Starter Project assets to release
-        uses: softprops/action-gh-release@v2
-        with:
-          append_body: true
-          body: '- [Starter Project](https://github.com/${{ github.repository }}/releases/download/${{ github.ref_name }}/dojo-starter-godot-project.zip)'
-          files: |
-            dojo-starter-godot-project.zip
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
