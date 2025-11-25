@@ -42,7 +42,7 @@ config/debug/debug=false
 
 [editor_plugins]
 
-enabled=PackedStringArray()
+enabled=PackedStringArray("res://addons/DeeplinkPlugin/plugin.cfg")
 
 [input]
 
