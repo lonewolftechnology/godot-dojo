@@ -24,6 +24,7 @@ script = ExtResource("1_c7jwa")
 query = SubResource("DojoQuery_erpqw")
 entity_sub = SubResource("EntitySubscription_henli")
 message_sub = SubResource("MessageSubscription_advu3")
+priv_key = null
 
 [node name="ToriiClient" type="ToriiClient" parent="."]
 
@@ -35,7 +36,9 @@ layer = 10
 [node name="HBoxContainer" type="HBoxContainer" parent="CanvasLayer"]
 anchors_preset = 10
 anchor_right = 1.0
+offset_bottom = 254.0
 grow_horizontal = 2
+alignment = 1
 
 [node name="Status" type="FoldableContainer" parent="CanvasLayer/HBoxContainer"]
 custom_minimum_size = Vector2(160, 254)

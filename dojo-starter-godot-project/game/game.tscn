@@ -121,13 +121,16 @@ texture_pressed = ExtResource("14_jdpby")
 texture_hover = ExtResource("13_jucfl")
 
 [node name="Panel" type="PanelContainer" parent="UI"]
-anchors_preset = 5
+anchors_preset = 7
 anchor_left = 0.5
+anchor_top = 1.0
 anchor_right = 0.5
+anchor_bottom = 1.0
 offset_left = -125.0
+offset_top = -39.0
 offset_right = 125.0
-offset_bottom = 39.0
 grow_horizontal = 2
+grow_vertical = 0
 size_flags_horizontal = 4
 theme_override_styles/panel = SubResource("StyleBoxFlat_k3cyb")
 
