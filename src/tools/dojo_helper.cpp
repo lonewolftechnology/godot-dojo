@@ -2,13 +2,15 @@
 
 #include "godot_cpp/classes/engine.hpp"
 #include "godot_cpp/classes/project_settings.hpp"
+#include "godot_cpp/classes/json.hpp"
+
 #include "tools/logger.h"
-#include <boost/multiprecision/cpp_dec_float.hpp>
-#include <types/big_int.h>
-#include <deque>
+#include "types/big_int.h"
 #include "variant/field_element.h"
 
-#include "godot_cpp/classes/json.hpp"
+#include <boost/multiprecision/cpp_dec_float.hpp>
+#include <deque>
+
 DojoHelpers *DojoHelpers::singleton = nullptr;
 using boost::multiprecision::cpp_int;
 using boost::multiprecision::int128_t;
@@ -668,7 +670,9 @@ void DojoHelpers::set_log_level_enabled(const String& level, bool enabled)
     ProjectSettings* settings = ProjectSettings::get_singleton();
     String setting_path = "dojo/config/debug/" + level;
     settings->set_setting(setting_path, enabled);
-    settings->save();
+    if (Engine::get_singleton()->is_editor_hint()) {
+        settings->save();
+    }
 }
 
 void DojoHelpers::set_error_enabled(bool enabled)
