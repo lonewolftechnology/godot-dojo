@@ -42,6 +42,6 @@ ios.release = {
 [icons]
 
 ToriiClient = "./assets/icons/torii_color.svg"
-Account = "./assets/icons/torii_white.svg"
-DojoSessionAccount = "./assets/icons/controller_white.svg"
+Account = "./assets/icons/torii_color.svg"
+DojoSessionAccount = "./assets/icons/controller_color.svg"
 DojoController = "./assets/icons/controller_color.svg"
