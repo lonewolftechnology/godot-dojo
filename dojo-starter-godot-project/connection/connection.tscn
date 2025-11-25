@@ -1,9 +1,9 @@
 [gd_scene load_steps=10 format=3 uid="uid://b75yggsnay1mo"]
 
 [ext_resource type="Script" uid="uid://bx5rlh0opi80k" path="res://connection/connection.gd" id="1_c7jwa"]
+[ext_resource type="Script" uid="uid://uiuper6f5unf" path="res://connection/logger_level_toggle.gd" id="3_advu3"]
 [ext_resource type="PackedScene" uid="uid://b5vmo8llucetx" path="res://ui/status_indicator.tscn" id="3_bya50"]
 [ext_resource type="Script" uid="uid://cibg6qwsaeyq6" path="res://tools/http_pinger.gd" id="3_erpqw"]
-[ext_resource type="PackedScene" uid="uid://b5w700tgwm1r6" path="res://connection/log_level_status.tscn" id="3_henli"]
 [ext_resource type="Script" uid="uid://clp7f22aqopw6" path="res://connection/http_tools.gd" id="5_advu3"]
 
 [sub_resource type="DojoQuery" id="DojoQuery_erpqw"]
@@ -38,56 +38,89 @@ anchor_right = 1.0
 grow_horizontal = 2
 
 [node name="Status" type="FoldableContainer" parent="CanvasLayer/HBoxContainer"]
+custom_minimum_size = Vector2(160, 254)
 layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_gm8ps")
 folded = true
 title = "Status"
 title_alignment = 1
 
-[node name="PanelStatus" type="PanelContainer" parent="CanvasLayer/HBoxContainer/Status"]
+[node name="HBoxContainer" type="VBoxContainer" parent="CanvasLayer/HBoxContainer/Status"]
 visible = false
 layout_mode = 2
-size_flags_horizontal = 4
-theme_override_styles/panel = SubResource("StyleBoxFlat_gm8ps")
-
-[node name="HBoxContainer" type="VBoxContainer" parent="CanvasLayer/HBoxContainer/Status/PanelStatus"]
-layout_mode = 2
-size_flags_horizontal = 4
 theme_override_constants/separation = 10
+alignment = 1
 
-[node name="Label" type="Label" parent="CanvasLayer/HBoxContainer/Status/PanelStatus/HBoxContainer"]
-layout_mode = 2
-text = "Status:"
-horizontal_alignment = 1
-
-[node name="ClientStatus" parent="CanvasLayer/HBoxContainer/Status/PanelStatus/HBoxContainer" instance=ExtResource("3_bya50")]
+[node name="ClientStatus" parent="CanvasLayer/HBoxContainer/Status/HBoxContainer" instance=ExtResource("3_bya50")]
 unique_name_in_owner = true
 layout_mode = 2
 type_name = "Client"
 
-[node name="DojoSessionAccountStatus" parent="CanvasLayer/HBoxContainer/Status/PanelStatus/HBoxContainer" instance=ExtResource("3_bya50")]
+[node name="DojoSessionAccountStatus" parent="CanvasLayer/HBoxContainer/Status/HBoxContainer" instance=ExtResource("3_bya50")]
 unique_name_in_owner = true
 layout_mode = 2
 type_name = "Session"
 
-[node name="EventUpdatesStatus" parent="CanvasLayer/HBoxContainer/Status/PanelStatus/HBoxContainer" instance=ExtResource("3_bya50")]
+[node name="EventUpdatesStatus" parent="CanvasLayer/HBoxContainer/Status/HBoxContainer" instance=ExtResource("3_bya50")]
 unique_name_in_owner = true
 layout_mode = 2
 type_name = "EventUpdates"
 
-[node name="EntityUpdatesStatus" parent="CanvasLayer/HBoxContainer/Status/PanelStatus/HBoxContainer" instance=ExtResource("3_bya50")]
+[node name="EntityUpdatesStatus" parent="CanvasLayer/HBoxContainer/Status/HBoxContainer" instance=ExtResource("3_bya50")]
 unique_name_in_owner = true
 layout_mode = 2
 type_name = "EntityUpdates"
 
 [node name="Logger" type="FoldableContainer" parent="CanvasLayer/HBoxContainer"]
+custom_minimum_size = Vector2(160, 254)
 layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_gm8ps")
 folded = true
 title = "Logger Level"
 title_alignment = 1
 
-[node name="LogLevelStatus" parent="CanvasLayer/HBoxContainer/Logger" instance=ExtResource("3_henli")]
+[node name="Vbox" type="VBoxContainer" parent="CanvasLayer/HBoxContainer/Logger"]
 visible = false
 layout_mode = 2
+
+[node name="ErrorStatus" type="CheckButton" parent="CanvasLayer/HBoxContainer/Logger/Vbox"]
+layout_mode = 2
+text = "Error"
+script = ExtResource("3_advu3")
+_level = "error"
+metadata/_custom_type_script = "uid://uiuper6f5unf"
+
+[node name="WarningStatus" type="CheckButton" parent="CanvasLayer/HBoxContainer/Logger/Vbox"]
+layout_mode = 2
+text = "Warning"
+script = ExtResource("3_advu3")
+_level = "warning"
+metadata/_custom_type_script = "uid://uiuper6f5unf"
+
+[node name="InfoStatus" type="CheckButton" parent="CanvasLayer/HBoxContainer/Logger/Vbox"]
+layout_mode = 2
+text = "Info"
+script = ExtResource("3_advu3")
+_level = "info"
+metadata/_custom_type_script = "uid://uiuper6f5unf"
+
+[node name="DebugStatus" type="CheckButton" parent="CanvasLayer/HBoxContainer/Logger/Vbox"]
+layout_mode = 2
+text = "Debug"
+script = ExtResource("3_advu3")
+_level = "debug"
+metadata/_custom_type_script = "uid://uiuper6f5unf"
+
+[node name="SuccessStatus" type="CheckButton" parent="CanvasLayer/HBoxContainer/Logger/Vbox"]
+layout_mode = 2
+text = "Success"
+script = ExtResource("3_advu3")
+_level = "success"
+metadata/_custom_type_script = "uid://uiuper6f5unf"
+
+[node name="SaveSettings" type="Button" parent="CanvasLayer/HBoxContainer/Logger/Vbox"]
+layout_mode = 2
+text = "Save to Project"
 
 [node name="HttpPinger" type="HTTPRequest" parent="."]
 script = ExtResource("3_erpqw")
@@ -101,3 +134,4 @@ metadata/_custom_type_script = "uid://clp7f22aqopw6"
 [connection signal="client_connected" from="ToriiClient" to="." method="_on_torii_client_client_connected"]
 [connection signal="client_disconnected" from="ToriiClient" to="." method="_on_torii_client_client_disconnected"]
 [connection signal="subscription_created" from="ToriiClient" to="." method="_on_torii_client_subscription_created"]
+[connection signal="pressed" from="CanvasLayer/HBoxContainer/Logger/Vbox/SaveSettings" to="." method="_on_save_settings_pressed"]

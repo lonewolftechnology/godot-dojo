@@ -123,4 +123,5 @@ func _get_session_url() -> String:
 
 	return session_url
 	
-
+func _on_save_settings_pressed() -> void:
+	ProjectSettings.save()

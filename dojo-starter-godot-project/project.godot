@@ -23,7 +23,6 @@ window/handheld/orientation=1
 
 [dojo]
 
-config/enable_extra_logs=true
 config/katana_url="http://localhost:5050"
 config/contract_address="0x0"
 config/torii/torii_url="http://localhost:8080"
