@@ -1,34 +1,47 @@
 [gd_scene load_steps=2 format=3 uid="uid://b5w700tgwm1r6"]
 
-[ext_resource type="Script" uid="uid://d1cyxn32yhxm" path="res://connection/log_level_status.gd" id="1_7t8i6"]
+[ext_resource type="Script" uid="uid://uiuper6f5unf" path="res://connection/logger_level_toggle.gd" id="1_7t8i6"]
 
 [node name="LogLevelStatus" type="PanelContainer"]
-script = ExtResource("1_7t8i6")
 
 [node name="Vbox" type="VBoxContainer" parent="."]
 layout_mode = 2
 
-[node name="ErrorStatus" type="CheckButton" parent="Vbox"]
-unique_name_in_owner = true
+[node name="ErrorStatus5" type="CheckButton" parent="Vbox"]
 layout_mode = 2
 text = "Error"
+script = ExtResource("1_7t8i6")
+_level = "error"
+metadata/_custom_type_script = "uid://uiuper6f5unf"
 
 [node name="WarningStatus" type="CheckButton" parent="Vbox"]
-unique_name_in_owner = true
 layout_mode = 2
 text = "Warning"
+script = ExtResource("1_7t8i6")
+_level = "warning"
+metadata/_custom_type_script = "uid://uiuper6f5unf"
 
 [node name="InfoStatus" type="CheckButton" parent="Vbox"]
-unique_name_in_owner = true
 layout_mode = 2
 text = "Info"
+script = ExtResource("1_7t8i6")
+_level = "info"
+metadata/_custom_type_script = "uid://uiuper6f5unf"
 
 [node name="DebugStatus" type="CheckButton" parent="Vbox"]
-unique_name_in_owner = true
 layout_mode = 2
 text = "Debug"
+script = ExtResource("1_7t8i6")
+_level = "debug"
+metadata/_custom_type_script = "uid://uiuper6f5unf"
 
 [node name="SuccessStatus" type="CheckButton" parent="Vbox"]
-unique_name_in_owner = true
 layout_mode = 2
 text = "Success"
+script = ExtResource("1_7t8i6")
+_level = "success"
+metadata/_custom_type_script = "uid://uiuper6f5unf"
+
+[node name="Button" type="Button" parent="Vbox"]
+layout_mode = 2
+text = "Save to Project"
