@@ -94,6 +94,11 @@ if GetOption('clean'):
     shutil.rmtree("demo/addons/godot-dojo", ignore_errors=True)
     print(f"{G}     {check} Addon directory deleted.{X}")
 
+    # Eliminar assets del addon
+    print(f"{B}  -> Deleting addon assets directory: demo/addons/godot-dojo/assets{X}")
+    shutil.rmtree("demo/addons/godot-dojo/assets", ignore_errors=True)
+    print(f"{G}     {check} Addon assets directory deleted.{X}")
+
     # Eliminar directorio de distribución
     print(f"{B}  -> Deleting distribution directory: demo/dist{X}")
     shutil.rmtree("demo/dist", ignore_errors=True)
@@ -470,7 +475,17 @@ with open("demo/addons/godot-dojo/godot-dojo.gdextension", 'w') as f:
 
 def build_complete_callback(target, source, env):
     print(f"{G}{party} Build complete for {str(target[0])}!{X}")
+
+    # Copiar assets
+    assets_src = "assets"
+    assets_dest = "demo/addons/godot-dojo/assets"
+    print(f"{Y}{clipboard} Copying assets to {assets_dest}...{X}")
+    if os.path.exists(assets_dest):
+        shutil.rmtree(assets_dest)
+    shutil.copytree(assets_src, assets_dest)
+    print(f"{G}{check} Assets copied successfully.{X}")
     return None
+
 
 env.AddPostAction(library, build_complete_callback)
 env.Default(library)

@@ -38,3 +38,10 @@ ios.debug = {
 ios.release = {
     "./bin/ios/release/${PROJECT_NAME}.xcframework" : "",
 }
+
+[icons]
+
+ToriiClient = "./assets/icons/torii_color.svg"
+Account = "./assets/icons/torii_white.svg"
+DojoSessionAccount = "./assets/icons/controller_white.svg"
+DojoController = "./assets/icons/controller_color.svg"
