@@ -17,8 +17,8 @@ config/icon="res://icon.svg"
 
 [display]
 
-window/size/viewport_width=720
-window/size/viewport_height=1280
+window/size/viewport_width=360
+window/size/viewport_height=640
 window/handheld/orientation=1
 
 [dojo]
@@ -36,9 +36,9 @@ config/fixed_point/128=60
 config/fixed_point/256=123
 config/debug/error=true
 config/debug/warning=true
-config/debug/info=false
+config/debug/info=true
 config/debug/success=true
-config/debug/debug=false
+config/debug/debug=true
 
 [editor_plugins]
 

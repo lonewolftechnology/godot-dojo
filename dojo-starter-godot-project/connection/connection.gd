@@ -5,8 +5,8 @@ signal connected
 signal session_created(_data:Dictionary)
 # As of time of writing, November 19 2025
 # This world and contract address refers to (https://github.com/dojoengine/dojo-starter), Dojo v1.8.0
-const WORLD_CONTRACT = "0x026d5777eccca1861a23303ee0ba48c0e8349e849d0377a21c3801ef1d0f8cef"
-const ACTIONS_CONTRACT = "0x01ae76ae877518f905b73b643d96731e71e6b848ba68824adb4f1a77760fc3c7"
+const WORLD_CONTRACT = "0x6560acafbd6c554e7458234c3bcf5636a18c72a6afe3099162fb8bdb12f4ef7"
+const ACTIONS_CONTRACT = "0x16de9d5d6d7f39930330d9cccb224d741794b3723cb7d50ddf23c4837fe3360"
 
 const rpc_url = "https://api.cartridge.gg/x/godot-dojo-starter/katana"
 const torii_url = "https://api.cartridge.gg/x/godot-dojo-starter/torii"
