@@ -11,6 +11,8 @@
 #include "option_field_element.h"
 #include "tools/dojo_helper.h"
 #include "variant/ty/primitive.h"
+#include "variant/field_element.h"
+#include "variant/ty/dojo_array.h"
 
 using namespace godot;
 
@@ -78,9 +80,7 @@ class DojoOptionClause : public DojoOption
         case DOJO::Primitive_Tag::ContractAddress:
         case DOJO::Primitive_Tag::EthAddress:
             {
-            //TODO: volver a FieldElement
-                DOJO::U256 u256_val = DojoHelpers::string_to_u256(str_val);
-                memcpy(primitive.felt252.data, u256_val.data, 32);
+                primitive.felt252 = FieldElement::from_string(str_val);
                 break;
             }
         }
@@ -122,6 +122,15 @@ class DojoOptionClause : public DojoOption
         return native_value;
     }
 
+private:
+    static char* string_to_c_char(const String& p_string)
+    {
+        CharString utf8_str = p_string.utf8();
+        char* c_str = new char[utf8_str.length() + 1];
+        strcpy(c_str, utf8_str.get_data());
+        return c_str;
+    }
+
 public:
     DojoOptionClause()
     {
@@ -151,7 +160,7 @@ public:
         case DOJO::Clause_Tag::HashedKeys:
             {
                 TypedArray<String> out;
-                for (uintptr_t i = 0; i > p_clause.hashed_keys.data_len; ++i)
+                for (uintptr_t i = 0; i < p_clause.hashed_keys.data_len; ++i)
                 {
                     Ref<FieldElement> felt = memnew(FieldElement(p_clause.hashed_keys.data));
                     out.push_back(felt->to_string());
@@ -302,52 +311,25 @@ public:
         {
         case DOJO::Clause_Tag::HashedKeys:
             {
-                auto* native_hashed_keys = new DOJO::FieldElement[hashed_keys.size()];
-                for (int i = 0; i < hashed_keys.size(); ++i)
-                {
-                    String key_str = hashed_keys[i];
-                    DOJO::U256 u256_val = DojoHelpers::string_to_u256(key_str);
-                    memcpy(native_hashed_keys[i].data, u256_val.data, 32);
-                }
-                option.some.hashed_keys = {native_hashed_keys, (uintptr_t)hashed_keys.size()};
+                option.some.hashed_keys = DojoArrayHelpers::string_array_to_native_carray_felt(hashed_keys);
                 break;
             }
         case DOJO::Clause_Tag::Keys:
             {
-                auto* native_keys = new DOJO::COptionFieldElement[keys.size()];
-                for (int i = 0; i < keys.size(); ++i)
-                {
-                    Ref<DojoOptionFieldElement> key_ref = keys[i];
-                    if (key_ref.is_valid())
-                    {
-                        native_keys[i] = key_ref->get_native_option();
-                    }
-                    else
-                    {
-                        native_keys[i].tag = DOJO::NoneFieldElement;
-                    }
-                }
-
-                const char** models_data = new const char*[models.size()];
-                for (int i = 0; i < models.size(); ++i)
-                {
-                    String model_str = models[i];
-                    char* c_str = new char[model_str.utf8().length() + 1];
-                    strcpy(c_str, model_str.utf8().get_data());
-                    models_data[i] = c_str;
-                }
+                DOJO::CArrayCOptionFieldElement native_keys = DojoArrayHelpers::option_field_element_array_to_native_carray(keys);
+                DOJO::CArrayc_char native_models = DojoArrayHelpers::string_array_to_native_carray_str(models);
 
                 option.some.keys = {
-                    {native_keys, (uintptr_t)keys.size()},
+                    native_keys,
                     pattern_matching,
-                    {models_data, (uintptr_t)models.size()}
+                    native_models
                 };
                 break;
             }
         case DOJO::Clause_Tag::CMember:
             {
-                option.some.c_member.model = model.utf8().get_data();
-                option.some.c_member.member = member.utf8().get_data();
+                option.some.c_member.model = string_to_c_char(model);
+                option.some.c_member.member = string_to_c_char(member);
                 option.some.c_member.operator_ = comparison_operator;
                 option.some.c_member.value = to_native_member_value(value, member_tag, primitive_tag);
                 break;
