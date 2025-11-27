@@ -16,22 +16,31 @@
 ToriiClient *ToriiClient::singleton = nullptr;
 
 ToriiClient::ToriiClient() {
-    if (Engine::get_singleton()->is_editor_hint()) {
-        return;
-    }
-    singleton = this;
+    // Always initialize members to a safe state.
     client = nullptr;
     is_connected = false;
-    Logger::debug_extra("ToriiClient", "CONSTRUCTOR CALLED");
+
+    if (Engine::get_singleton()->is_editor_hint()) {
+        // In the editor, many temporary instances can be created.
+        // We don't want any of them to become the singleton.
+        Logger::debug_extra("ToriiClient", "Editor hint constructor. Not setting singleton.");
+        return;
+    }
+
+    if (singleton == nullptr) {
+        singleton = this;
+    }
+    Logger::debug_extra("ToriiClient", "CONSTRUCTOR CALLED.");
 }
 
 ToriiClient::~ToriiClient() {
-    if (Engine::get_singleton()->is_editor_hint()) {
-        return;
+    // Only the singleton instance should free the client.
+    // This prevents crashes when temporary editor instances are destroyed.
+    if (singleton == this) {
+        disconnect_client(false);
+        singleton = nullptr;
+        Logger::debug_extra("ToriiClient", "Singleton DESTRUCTOR CALLED.");
     }
-    disconnect_client(false);
-    singleton = nullptr;
-    Logger::debug_extra("ToriiClient", "DESTRUCTOR CALLED");
 }
 
 ToriiClient *ToriiClient::get_singleton() {
@@ -64,8 +73,6 @@ bool ToriiClient::create_client(const String &p_url) {
     DojoBridge::call_async("toriiclient_new", args, callback);
     return true; // The actual connection status will be updated in the callback.
 #else
-    disconnect_client(true);
-
     Logger::info("Creating Torii client...");
     Logger::info("URL: ", torii_url);
 
@@ -81,10 +88,6 @@ bool ToriiClient::create_client(const String &p_url) {
 
     client = resClient.ok;
     is_connected = true;
-
-    DOJO::client_set_logger(client, [](const char *msg) {
-        Logger::info("ToriiClient: ", msg);
-    });
 
     Logger::success("Torii client created successfully");
     call_deferred("emit_signal", "client_connected", true);
@@ -102,7 +105,7 @@ void ToriiClient::disconnect_client(bool send_signal = true) {
 #else
     if (client != nullptr) {
         cancel_all_subscriptions();
-        // DOJO::client_free(client);
+        DOJO::client_free(client);
 
         client = nullptr;
         is_connected = false;
