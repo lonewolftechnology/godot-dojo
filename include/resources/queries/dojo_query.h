@@ -6,6 +6,7 @@
 #define DOJO_QUERY_H
 #include "ref_counted/options/option_clause.h"
 #include "resources/dojo_query_base.h"
+#include "variant/ty/dojo_array.h"
 #include "dojo_types.h"
 
 using namespace godot;
@@ -55,9 +56,8 @@ public:
         query->pagination.order_by.data = nullptr;
         query->pagination.order_by.data_len = 0;
 
-        if (clause.is_valid() && clause->is_some()) {
-            query->clause.tag = DOJO::SomeClause;
-            query->clause.some = clause->get_native_clause();
+        if (clause.is_valid()) {
+            query->clause = clause->get_native_option();
         } else {
             query->clause.tag = DOJO::NoneClause;
         }
@@ -65,16 +65,8 @@ public:
         query->no_hashed_keys = get_no_hashed_keys();
         query->historical = get_historical();
 
-        // Note: Memory for models must be managed by the caller
-        const char** models_data = new const char*[models.size()];
-        for (int i = 0; i < models.size(); ++i) {
-            String model_str = models[i];
-            char *c_str = new char[model_str.utf8().length() + 1];
-            strcpy(c_str, model_str.utf8().get_data());
-            models_data[i] = c_str;
-        }
-        query->models.data = models_data;
-        query->models.data_len = models.size();
+        DOJO::CArrayc_char native_models = DojoArrayHelpers::string_array_to_native_carray_str(models);
+        query->models = native_models;
 
         return query;
     }
