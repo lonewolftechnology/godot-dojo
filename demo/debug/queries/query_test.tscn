@@ -1,0 +1,104 @@
+[gd_scene load_steps=3 format=3 uid="uid://dtpm0lqcm48j6"]
+
+[ext_resource type="Script" uid="uid://bt4p48frgkum7" path="res://debug/queries/query_test.gd" id="1_1qvx6"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_emp7b"]
+content_margin_left = 8.0
+content_margin_top = 8.0
+content_margin_right = 8.0
+content_margin_bottom = 8.0
+bg_color = Color(0.1, 0.1, 0.1, 0.6)
+corner_radius_top_left = 3
+corner_radius_top_right = 3
+corner_radius_bottom_right = 3
+corner_radius_bottom_left = 3
+corner_detail = 5
+
+[node name="QueryTest" type="PanelContainer"]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_emp7b")
+script = ExtResource("1_1qvx6")
+
+[node name="VBoxContainer" type="VBoxContainer" parent="."]
+layout_mode = 2
+
+[node name="HBoxContainer2" type="HBoxContainer" parent="VBoxContainer"]
+layout_mode = 2
+alignment = 1
+
+[node name="VBoxContainer" type="VBoxContainer" parent="VBoxContainer/HBoxContainer2"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="Label" type="Label" parent="VBoxContainer/HBoxContainer2/VBoxContainer"]
+layout_mode = 2
+text = "Model"
+
+[node name="ModelInput" type="LineEdit" parent="VBoxContainer/HBoxContainer2/VBoxContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+text = "dojo_actions-Position"
+
+[node name="VBoxContainer2" type="VBoxContainer" parent="VBoxContainer/HBoxContainer2"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="Label" type="Label" parent="VBoxContainer/HBoxContainer2/VBoxContainer2"]
+layout_mode = 2
+text = "Member"
+
+[node name="MemberInput" type="LineEdit" parent="VBoxContainer/HBoxContainer2/VBoxContainer2"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+text = "player"
+
+[node name="HBoxContainer" type="HBoxContainer" parent="VBoxContainer"]
+layout_mode = 2
+
+[node name="VBoxContainer" type="VBoxContainer" parent="VBoxContainer/HBoxContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="Label" type="Label" parent="VBoxContainer/HBoxContainer/VBoxContainer"]
+layout_mode = 2
+text = "ContractAddress"
+
+[node name="AddressInput" type="LineEdit" parent="VBoxContainer/HBoxContainer/VBoxContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+text = "0x4a33b63d3132d36d41f432003592717ddedc04bb3d3ff23296ff2e5749c0f9"
+placeholder_text = "0x0"
+
+[node name="Query" type="Button" parent="VBoxContainer/HBoxContainer"]
+layout_mode = 2
+size_flags_vertical = 8
+text = "Query"
+
+[node name="VBoxContainer2" type="VBoxContainer" parent="VBoxContainer"]
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="Output" type="RichTextLabel" parent="VBoxContainer/VBoxContainer2"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_vertical = 3
+scroll_following = true
+
+[node name="Clear" type="Button" parent="VBoxContainer/VBoxContainer2"]
+layout_mode = 2
+text = "Clear"
+
+[node name="EmptyQuery" type="Button" parent="VBoxContainer"]
+layout_mode = 2
+text = "Empty Query"
+
+[connection signal="pressed" from="VBoxContainer/HBoxContainer/Query" to="." method="_on_query_pressed"]
+[connection signal="pressed" from="VBoxContainer/VBoxContainer2/Clear" to="." method="_on_clear_pressed"]
+[connection signal="pressed" from="VBoxContainer/EmptyQuery" to="." method="_on_empty_query_pressed"]
