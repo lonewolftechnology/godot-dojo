@@ -9,6 +9,7 @@
 #include "dojo_types.h"
 #include "variant/field_element.h"
 #include "tools/logger.h"
+#include "ref_counted/options/option_field_element.h"
 #include "tools/dojo_helper.h"
 
 using namespace godot;
@@ -18,9 +19,7 @@ namespace DojoArrayHelpers {
     inline DOJO::CArrayFieldElement string_array_to_native_carray_felt(const TypedArray<String>& arr) {
         auto* native_arr = new DOJO::FieldElement[arr.size()];
         for (int i = 0; i < arr.size(); ++i) {
-            String str = arr[i];
-            DOJO::U256 u256_val = DojoHelpers::string_to_u256(str);
-            memcpy(native_arr[i].data, u256_val.data, 32);
+            native_arr[i] = FieldElement::from_string(arr[i]);
         }
         return {native_arr, (uintptr_t)arr.size()};
     }
@@ -41,6 +40,22 @@ namespace DojoArrayHelpers {
             char *c_str = new char[str.utf8().length() + 1];
             strcpy(c_str, str.utf8().get_data());
             native_arr[i] = c_str;
+        }
+        return {native_arr, (uintptr_t)arr.size()};
+    }
+
+    inline DOJO::CArrayCOptionFieldElement option_field_element_array_to_native_carray(const Array& arr) {
+        auto* native_arr = new DOJO::COptionFieldElement[arr.size()];
+        for (int i = 0; i < arr.size(); ++i) {
+            Ref<DojoOptionFieldElement> key_ref = arr[i];
+            if (key_ref.is_valid())
+            {
+                native_arr[i] = key_ref->get_native_option();
+            }
+            else
+            {
+                native_arr[i].tag = DOJO::NoneFieldElement;
+            }
         }
         return {native_arr, (uintptr_t)arr.size()};
     }
