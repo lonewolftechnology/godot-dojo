@@ -1,0 +1,154 @@
+[gd_scene load_steps=6 format=3 uid="uid://cg5802c6ndrom"]
+
+[ext_resource type="Script" uid="uid://c3a48nnb14ty" path="res://debug/custom_starter/godot-dojo.gd" id="1_wtcfe"]
+[ext_resource type="PackedScene" uid="uid://bctooef6mvfds" path="res://user_info.tscn" id="2_0e48y"]
+[ext_resource type="Texture2D" uid="uid://bl01x1ru2lkp3" path="res://assets/retry-svgrepo-com.svg" id="2_epypp"]
+
+[sub_resource type="EntitySubscription" id="EntitySubscription_epypp"]
+
+[sub_resource type="MessageSubscription" id="MessageSubscription_0hol4"]
+
+[node name="Node2D" type="Node"]
+script = ExtResource("1_wtcfe")
+entity_sub = SubResource("EntitySubscription_epypp")
+message_sub = SubResource("MessageSubscription_0hol4")
+
+[node name="CanvasLayer" type="CanvasLayer" parent="."]
+
+[node name="PanelContainer" type="PanelContainer" parent="CanvasLayer"]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+
+[node name="CenterContainer" type="MarginContainer" parent="CanvasLayer/PanelContainer"]
+layout_mode = 2
+theme_override_constants/margin_left = 8
+theme_override_constants/margin_top = 8
+theme_override_constants/margin_right = 8
+theme_override_constants/margin_bottom = 8
+
+[node name="MainContainer" type="BoxContainer" parent="CanvasLayer/PanelContainer/CenterContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+
+[node name="MenuContainer" type="VBoxContainer" parent="CanvasLayer/PanelContainer/CenterContainer/MainContainer"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(300, 0)
+layout_mode = 2
+size_flags_horizontal = 0
+alignment = 1
+
+[node name="HBoxContainer" type="HBoxContainer" parent="CanvasLayer/PanelContainer/CenterContainer/MainContainer/MenuContainer"]
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="PrivateKeyCustom" type="LineEdit" parent="CanvasLayer/PanelContainer/CenterContainer/MainContainer/MenuContainer/HBoxContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 4
+placeholder_text = "Private Key"
+
+[node name="RefreshKey" type="Button" parent="CanvasLayer/PanelContainer/CenterContainer/MainContainer/MenuContainer/HBoxContainer"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(32, 32)
+layout_mode = 2
+size_flags_horizontal = 4
+size_flags_vertical = 4
+icon = ExtResource("2_epypp")
+icon_alignment = 1
+expand_icon = true
+
+[node name="LoginBtn" type="Button" parent="CanvasLayer/PanelContainer/CenterContainer/MainContainer/MenuContainer"]
+layout_mode = 2
+size_flags_vertical = 3
+text = "Login"
+
+[node name="SessionBtn" type="Button" parent="CanvasLayer/PanelContainer/CenterContainer/MainContainer/MenuContainer"]
+layout_mode = 2
+size_flags_vertical = 3
+text = "Create Session"
+
+[node name="PolicyBtn" type="Button" parent="CanvasLayer/PanelContainer/CenterContainer/MainContainer/MenuContainer"]
+visible = false
+layout_mode = 2
+size_flags_vertical = 3
+text = "Test Policy"
+
+[node name="CallBtn" type="Button" parent="CanvasLayer/PanelContainer/CenterContainer/MainContainer/MenuContainer"]
+layout_mode = 2
+size_flags_vertical = 3
+text = "Execute"
+
+[node name="CallOutsideBtn" type="Button" parent="CanvasLayer/PanelContainer/CenterContainer/MainContainer/MenuContainer"]
+layout_mode = 2
+size_flags_vertical = 3
+text = "Execute from outside"
+
+[node name="InfoBtn" type="Button" parent="CanvasLayer/PanelContainer/CenterContainer/MainContainer/MenuContainer"]
+visible = false
+layout_mode = 2
+size_flags_vertical = 3
+text = "Print User Info"
+
+[node name="DojoControllerBtn" type="Button" parent="CanvasLayer/PanelContainer/CenterContainer/MainContainer/MenuContainer"]
+layout_mode = 2
+size_flags_vertical = 3
+text = "DojoController"
+
+[node name="IterativeCalls" type="Button" parent="CanvasLayer/PanelContainer/CenterContainer/MainContainer/MenuContainer"]
+layout_mode = 2
+size_flags_vertical = 3
+text = "Bulk Calls"
+
+[node name="FoldableContainer" type="FoldableContainer" parent="CanvasLayer/PanelContainer/CenterContainer/MainContainer/MenuContainer"]
+layout_mode = 2
+folded = true
+title = "User Info"
+title_alignment = 1
+
+[node name="UserInfo" parent="CanvasLayer/PanelContainer/CenterContainer/MainContainer/MenuContainer/FoldableContainer" instance=ExtResource("2_0e48y")]
+unique_name_in_owner = true
+layout_mode = 2
+alignment = 1
+
+[node name="Output" type="VBoxContainer" parent="CanvasLayer/PanelContainer/CenterContainer/MainContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="Label" type="Label" parent="CanvasLayer/PanelContainer/CenterContainer/MainContainer/Output"]
+layout_mode = 2
+text = "Execute output"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="ScrollContainer" type="ScrollContainer" parent="CanvasLayer/PanelContainer/CenterContainer/MainContainer/Output"]
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="OutputBox" type="RichTextLabel" parent="CanvasLayer/PanelContainer/CenterContainer/MainContainer/Output/ScrollContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+bbcode_enabled = true
+scroll_following = true
+horizontal_alignment = 1
+
+[node name="DojoSessionAccount" type="DojoSessionAccount" parent="."]
+
+[node name="ToriiClient" type="ToriiClient" parent="."]
+
+[connection signal="pressed" from="CanvasLayer/PanelContainer/CenterContainer/MainContainer/MenuContainer/HBoxContainer/RefreshKey" to="." method="_on_refresh_key_pressed"]
+[connection signal="pressed" from="CanvasLayer/PanelContainer/CenterContainer/MainContainer/MenuContainer/LoginBtn" to="." method="_on_login_btn_pressed"]
+[connection signal="pressed" from="CanvasLayer/PanelContainer/CenterContainer/MainContainer/MenuContainer/SessionBtn" to="." method="_on_session_btn_pressed"]
+[connection signal="pressed" from="CanvasLayer/PanelContainer/CenterContainer/MainContainer/MenuContainer/PolicyBtn" to="." method="_on_policy_btn_pressed"]
+[connection signal="pressed" from="CanvasLayer/PanelContainer/CenterContainer/MainContainer/MenuContainer/CallBtn" to="." method="_on_call_btn_pressed"]
+[connection signal="pressed" from="CanvasLayer/PanelContainer/CenterContainer/MainContainer/MenuContainer/CallOutsideBtn" to="." method="_on_call_outside_btn_pressed"]
+[connection signal="pressed" from="CanvasLayer/PanelContainer/CenterContainer/MainContainer/MenuContainer/InfoBtn" to="." method="_on_info_btn_pressed"]
+[connection signal="pressed" from="CanvasLayer/PanelContainer/CenterContainer/MainContainer/MenuContainer/DojoControllerBtn" to="." method="_on_dojo_controller_btn_pressed"]
+[connection signal="pressed" from="CanvasLayer/PanelContainer/CenterContainer/MainContainer/MenuContainer/IterativeCalls" to="." method="_on_iterative_calls_pressed"]
