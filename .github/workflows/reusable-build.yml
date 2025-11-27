@@ -78,6 +78,14 @@ jobs:
           name: core-build-${{ inputs.platform_id }}-${{ inputs.arch }}${{ inputs.platform_id != 'ios' && '-release' || '' }}
           path: godot-dojo-core/target
 
+      - name: Cache Rust build artifacts
+        uses: actions/cache@v4
+        with:
+          path: godot-dojo-core/target
+          key: rust-build-${{ inputs.platform_id }}-${{ inputs.arch }}-${{ hashFiles('godot-dojo-core/Cargo.lock') }}
+          restore-keys: |
+            rust-build-${{ inputs.platform_id }}-${{ inputs.arch }}-
+
       - name: Cache SCons and godot-cpp build artifacts
         uses: actions/cache@v4
         with:

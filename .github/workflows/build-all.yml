@@ -19,6 +19,7 @@ jobs:
       commits_log: ${{ steps.get_commits.outputs.commits }}
       current_tag: ${{ steps.get_commits.outputs.current_tag }}
       previous_tag: ${{ steps.get_commits.outputs.previous_tag }}
+      previous_cargo_lock_hash: ${{ steps.get_previous_cargo_hash.outputs.hash }}
 
     steps:
       - name: Checkout code
@@ -48,10 +49,10 @@ jobs:
 
           if [ -z "$PREVIOUS_TAG" ]; then
             # If there's no previous tag, get all commits excluding those with '.idea' in the message
-            COMMITS_LOG=$(git log --pretty=format:"- %h %s" --invert-grep --grep="\.idea" --invert-grep --grep="^ci:" --invert-grep --grep="^Merge branch" $CURRENT_TAG)
+            COMMITS_LOG=$(git log --pretty=format:"- %h %s" --invert-grep --grep="\.idea" --invert-grep --grep="^ci:" --invert-grep --grep="^demo:" --invert-grep --grep="^Merge branch" $CURRENT_TAG)
           else
             # Get commits between the previous tag and the current tag, excluding those with '.idea' in the message
-            COMMITS_LOG=$(git log --pretty=format:"- %h %s" --invert-grep --grep="\.idea" --invert-grep --grep="^ci:" --invert-grep --grep="^Merge branch" $PREVIOUS_TAG..$CURRENT_TAG)
+            COMMITS_LOG=$(git log --pretty=format:"- %h %s" --invert-grep --grep="\.idea" --invert-grep --grep="^ci:" --invert-grep --grep="^demo:" --invert-grep --grep="^Merge branch" $PREVIOUS_TAG..$CURRENT_TAG)
           fi
 
           if [ -z "$COMMITS_LOG" ]; then
@@ -75,6 +76,14 @@ jobs:
           echo "EOF" >> $GITHUB_OUTPUT
           echo "current_tag=$CURRENT_TAG" >> $GITHUB_OUTPUT
           echo "previous_tag=$PREVIOUS_TAG" >> $GITHUB_OUTPUT
+
+      - name: Get Cargo.lock hash from previous tag
+        id: get_previous_cargo_hash
+        if: steps.get_commits.outputs.previous_tag != ''
+        run: |
+          git checkout ${{ steps.get_commits.outputs.previous_tag }}
+          echo "hash=$(sha256sum godot-dojo-core/Cargo.lock | cut -d ' ' -f 1)" >> $GITHUB_OUTPUT
+          git checkout ${{ steps.get_commits.outputs.current_tag }}
 
       - name: Check if tag is from main branch
         id: check_branch
@@ -107,7 +116,7 @@ jobs:
 
           # Parse controller-uniffi from [dependencies] in Cargo.toml
           CONTROLLER_LINE=$(awk '/\[dependencies\]/{f=1;next} /\[/{f=0} f && /controller-uniffi =/' Cargo.toml)
-          CONTROLLER_URL=$(echo "$CONTROLLER_LINE" | grep -o 'git = "[^"]*"' | sed 's/git = "//;s/"//')
+          CONTROLLER_URL=$(echo "$CONTROLLER_LINE" | grep -o 'git = "[^"]*"' | sed 's/rev = "//;s/"//')
           CONTROLLER_REV=$(echo "$CONTROLLER_LINE" | grep -o 'rev = "[^"]*"' | sed 's/rev = "//;s/"//')
           CONTROLLER_REV_SHORT=${CONTROLLER_REV:0:7}
 
@@ -558,6 +567,15 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           CACHE_KEY: scons-cache-${{ matrix.platform_id }}-${{ matrix.arch }}-${{ matrix.precision }}-${{ needs.create_release.outputs.previous_tag }}
+        run: |
+          echo "Attempting to delete cache with key: $CACHE_KEY"
+          gh cache delete "$CACHE_KEY" --repo "$GITHUB_REPOSITORY" || echo "Cache not found or failed to delete, continuing."
+
+      - name: Delete previous Rust cache
+        if: matrix.precision == 'single' && needs.create_release.outputs.previous_cargo_lock_hash != hashFiles('godot-dojo-core/Cargo.lock')
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          CACHE_KEY: rust-build-${{ matrix.platform_id }}-${{ matrix.arch }}-${{ needs.create_release.outputs.previous_cargo_lock_hash }}
         run: |
           echo "Attempting to delete cache with key: $CACHE_KEY"
           gh cache delete "$CACHE_KEY" --repo "$GITHUB_REPOSITORY" || echo "Cache not found or failed to delete, continuing."
