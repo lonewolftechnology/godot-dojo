@@ -298,11 +298,6 @@ public:
     DOJO::COptionClause get_native_option() const
     {
         DOJO::COptionClause option = {};
-        if (!is_some())
-        {
-            option.tag = DOJO::NoneClause;
-            return option;
-        }
 
         option.tag = DOJO::SomeClause;
         option.some.tag = tag;
@@ -633,11 +628,6 @@ protected:
 
     bool _get(const StringName& p_name, Variant& r_ret) const
     {
-        if (String(p_name) == "is_some")
-        {
-            r_ret = is_some();
-            return true;
-        }
 
         // if (!is_some()) return false;
 
