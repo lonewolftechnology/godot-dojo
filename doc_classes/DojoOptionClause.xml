@@ -185,87 +185,87 @@
 		</method>
 	</methods>
 	<constants>
-		<constant name="DOJO::Clause_Tag::HashedKeys" value="0" enum="Clause_Tag">
+		<constant name="HashedKeys" value="0" enum="ClauseTag">
 		</constant>
-		<constant name="DOJO::Clause_Tag::Keys" value="1" enum="Clause_Tag">
+		<constant name="Keys" value="1" enum="ClauseTag">
 		</constant>
-		<constant name="DOJO::Clause_Tag::CMember" value="2" enum="Clause_Tag">
+		<constant name="Member" value="2" enum="ClauseTag">
 		</constant>
-		<constant name="DOJO::Clause_Tag::Composite" value="3" enum="Clause_Tag">
+		<constant name="Composite" value="3" enum="ClauseTag">
 		</constant>
-		<constant name="DOJO::PatternMatching::FixedLen" value="0" enum="PatternMatching">
+		<constant name="FixedLen" value="0" enum="PatternMatching">
 		</constant>
-		<constant name="DOJO::PatternMatching::VariableLen" value="1" enum="PatternMatching">
+		<constant name="VariableLen" value="1" enum="PatternMatching">
 		</constant>
-		<constant name="DOJO::ComparisonOperator::Eq" value="0" enum="ComparisonOperator">
+		<constant name="Eq" value="0" enum="ComparisonOperator">
 		</constant>
-		<constant name="DOJO::ComparisonOperator::Neq" value="1" enum="ComparisonOperator">
+		<constant name="Neq" value="1" enum="ComparisonOperator">
 		</constant>
-		<constant name="DOJO::ComparisonOperator::Gt" value="2" enum="ComparisonOperator">
+		<constant name="Gt" value="2" enum="ComparisonOperator">
 		</constant>
-		<constant name="DOJO::ComparisonOperator::Gte" value="3" enum="ComparisonOperator">
+		<constant name="Gte" value="3" enum="ComparisonOperator">
 		</constant>
-		<constant name="DOJO::ComparisonOperator::Lt" value="4" enum="ComparisonOperator">
+		<constant name="Lt" value="4" enum="ComparisonOperator">
 		</constant>
-		<constant name="DOJO::ComparisonOperator::Lte" value="5" enum="ComparisonOperator">
+		<constant name="Lte" value="5" enum="ComparisonOperator">
 		</constant>
-		<constant name="DOJO::ComparisonOperator::In" value="6" enum="ComparisonOperator">
+		<constant name="In" value="6" enum="ComparisonOperator">
 		</constant>
-		<constant name="DOJO::ComparisonOperator::NotIn" value="7" enum="ComparisonOperator">
+		<constant name="NotIn" value="7" enum="ComparisonOperator">
 		</constant>
-		<constant name="DOJO::ComparisonOperator::Contains" value="8" enum="ComparisonOperator">
+		<constant name="Contains" value="8" enum="ComparisonOperator">
 		</constant>
-		<constant name="DOJO::ComparisonOperator::ContainsAll" value="9" enum="ComparisonOperator">
+		<constant name="ContainsAll" value="9" enum="ComparisonOperator">
 		</constant>
-		<constant name="DOJO::ComparisonOperator::ContainsAny" value="10" enum="ComparisonOperator">
+		<constant name="ContainsAny" value="10" enum="ComparisonOperator">
 		</constant>
-		<constant name="DOJO::ComparisonOperator::ArrayLengthEq" value="11" enum="ComparisonOperator">
+		<constant name="ArrayLengthEq" value="11" enum="ComparisonOperator">
 		</constant>
-		<constant name="DOJO::ComparisonOperator::ArrayLengthGt" value="12" enum="ComparisonOperator">
+		<constant name="ArrayLengthGt" value="12" enum="ComparisonOperator">
 		</constant>
-		<constant name="DOJO::ComparisonOperator::ArrayLengthLt" value="13" enum="ComparisonOperator">
+		<constant name="ArrayLengthLt" value="13" enum="ComparisonOperator">
 		</constant>
-		<constant name="DOJO::MemberValue_Tag::PrimitiveValue" value="0" enum="MemberValue_Tag">
+		<constant name="PrimitiveValue" value="0" enum="MemberValueTag">
 		</constant>
-		<constant name="DOJO::MemberValue_Tag::String" value="1" enum="MemberValue_Tag">
+		<constant name="String" value="1" enum="MemberValueTag">
 		</constant>
-		<constant name="DOJO::MemberValue_Tag::List" value="2" enum="MemberValue_Tag">
+		<constant name="List" value="2" enum="MemberValueTag">
 		</constant>
-		<constant name="DOJO::LogicalOperator::And" value="0" enum="LogicalOperator">
+		<constant name="And" value="0" enum="LogicalOperator">
 		</constant>
-		<constant name="DOJO::LogicalOperator::Or" value="1" enum="LogicalOperator">
+		<constant name="Or" value="1" enum="LogicalOperator">
 		</constant>
-		<constant name="DOJO::Primitive_Tag::I8" value="0" enum="Primitive_Tag">
+		<constant name="I8" value="0" enum="PrimitiveTag">
 		</constant>
-		<constant name="DOJO::Primitive_Tag::I16" value="1" enum="Primitive_Tag">
+		<constant name="I16" value="1" enum="PrimitiveTag">
 		</constant>
-		<constant name="DOJO::Primitive_Tag::I32" value="2" enum="Primitive_Tag">
+		<constant name="I32" value="2" enum="PrimitiveTag">
 		</constant>
-		<constant name="DOJO::Primitive_Tag::I64" value="3" enum="Primitive_Tag">
+		<constant name="I64" value="3" enum="PrimitiveTag">
 		</constant>
-		<constant name="DOJO::Primitive_Tag::I128" value="4" enum="Primitive_Tag">
+		<constant name="I128" value="4" enum="PrimitiveTag">
 		</constant>
-		<constant name="DOJO::Primitive_Tag::U8" value="5" enum="Primitive_Tag">
+		<constant name="U8" value="5" enum="PrimitiveTag">
 		</constant>
-		<constant name="DOJO::Primitive_Tag::U16" value="6" enum="Primitive_Tag">
+		<constant name="U16" value="6" enum="PrimitiveTag">
 		</constant>
-		<constant name="DOJO::Primitive_Tag::U32" value="7" enum="Primitive_Tag">
+		<constant name="U32" value="7" enum="PrimitiveTag">
 		</constant>
-		<constant name="DOJO::Primitive_Tag::U64" value="8" enum="Primitive_Tag">
+		<constant name="U64" value="8" enum="PrimitiveTag">
 		</constant>
-		<constant name="DOJO::Primitive_Tag::U128" value="9" enum="Primitive_Tag">
+		<constant name="U128" value="9" enum="PrimitiveTag">
 		</constant>
-		<constant name="DOJO::Primitive_Tag::U256_" value="10" enum="Primitive_Tag">
+		<constant name="U256" value="10" enum="PrimitiveTag">
 		</constant>
-		<constant name="DOJO::Primitive_Tag::Bool" value="11" enum="Primitive_Tag">
+		<constant name="Bool" value="11" enum="PrimitiveTag">
 		</constant>
-		<constant name="DOJO::Primitive_Tag::Felt252" value="12" enum="Primitive_Tag">
+		<constant name="Felt252" value="12" enum="PrimitiveTag">
 		</constant>
-		<constant name="DOJO::Primitive_Tag::ClassHash" value="13" enum="Primitive_Tag">
+		<constant name="ClassHash" value="13" enum="PrimitiveTag">
 		</constant>
-		<constant name="DOJO::Primitive_Tag::ContractAddress" value="14" enum="Primitive_Tag">
+		<constant name="ContractAddress" value="14" enum="PrimitiveTag">
 		</constant>
-		<constant name="DOJO::Primitive_Tag::EthAddress" value="15" enum="Primitive_Tag">
+		<constant name="EthAddress" value="15" enum="PrimitiveTag">
 		</constant>
 	</constants>
 </class>

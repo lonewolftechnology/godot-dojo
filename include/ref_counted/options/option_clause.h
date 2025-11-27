@@ -415,52 +415,52 @@ protected:
     static void _bind_methods()
     {
         // Enums
-        BIND_ENUM_CONSTANT(DOJO::Clause_Tag::HashedKeys);
-        BIND_ENUM_CONSTANT(DOJO::Clause_Tag::Keys);
-        BIND_ENUM_CONSTANT(DOJO::Clause_Tag::CMember);
-        BIND_ENUM_CONSTANT(DOJO::Clause_Tag::Composite);
+        ClassDB::bind_integer_constant(get_class_static(), "ClauseTag", "HashedKeys", DOJO::Clause_Tag::HashedKeys);
+        ClassDB::bind_integer_constant(get_class_static(), "ClauseTag", "Keys", DOJO::Clause_Tag::Keys);
+        ClassDB::bind_integer_constant(get_class_static(), "ClauseTag", "Member", DOJO::Clause_Tag::CMember);
+        ClassDB::bind_integer_constant(get_class_static(), "ClauseTag", "Composite", DOJO::Clause_Tag::Composite);
 
-        BIND_ENUM_CONSTANT(DOJO::PatternMatching::FixedLen);
-        BIND_ENUM_CONSTANT(DOJO::PatternMatching::VariableLen);
+        ClassDB::bind_integer_constant(get_class_static(), "PatternMatching", "FixedLen", DOJO::PatternMatching::FixedLen);
+        ClassDB::bind_integer_constant(get_class_static(), "PatternMatching", "VariableLen", DOJO::PatternMatching::VariableLen);
 
-        BIND_ENUM_CONSTANT(DOJO::ComparisonOperator::Eq);
-        BIND_ENUM_CONSTANT(DOJO::ComparisonOperator::Neq);
-        BIND_ENUM_CONSTANT(DOJO::ComparisonOperator::Gt);
-        BIND_ENUM_CONSTANT(DOJO::ComparisonOperator::Gte);
-        BIND_ENUM_CONSTANT(DOJO::ComparisonOperator::Lt);
-        BIND_ENUM_CONSTANT(DOJO::ComparisonOperator::Lte);
-        BIND_ENUM_CONSTANT(DOJO::ComparisonOperator::In);
-        BIND_ENUM_CONSTANT(DOJO::ComparisonOperator::NotIn);
-        BIND_ENUM_CONSTANT(DOJO::ComparisonOperator::Contains);
-        BIND_ENUM_CONSTANT(DOJO::ComparisonOperator::ContainsAll);
-        BIND_ENUM_CONSTANT(DOJO::ComparisonOperator::ContainsAny);
-        BIND_ENUM_CONSTANT(DOJO::ComparisonOperator::ArrayLengthEq);
-        BIND_ENUM_CONSTANT(DOJO::ComparisonOperator::ArrayLengthGt);
-        BIND_ENUM_CONSTANT(DOJO::ComparisonOperator::ArrayLengthLt);
+        ClassDB::bind_integer_constant(get_class_static(), "ComparisonOperator", "Eq", DOJO::ComparisonOperator::Eq);
+        ClassDB::bind_integer_constant(get_class_static(), "ComparisonOperator", "Neq", DOJO::ComparisonOperator::Neq);
+        ClassDB::bind_integer_constant(get_class_static(), "ComparisonOperator", "Gt", DOJO::ComparisonOperator::Gt);
+        ClassDB::bind_integer_constant(get_class_static(), "ComparisonOperator", "Gte", DOJO::ComparisonOperator::Gte);
+        ClassDB::bind_integer_constant(get_class_static(), "ComparisonOperator", "Lt", DOJO::ComparisonOperator::Lt);
+        ClassDB::bind_integer_constant(get_class_static(), "ComparisonOperator", "Lte", DOJO::ComparisonOperator::Lte);
+        ClassDB::bind_integer_constant(get_class_static(), "ComparisonOperator", "In", DOJO::ComparisonOperator::In);
+        ClassDB::bind_integer_constant(get_class_static(), "ComparisonOperator", "NotIn", DOJO::ComparisonOperator::NotIn);
+        ClassDB::bind_integer_constant(get_class_static(), "ComparisonOperator", "Contains", DOJO::ComparisonOperator::Contains);
+        ClassDB::bind_integer_constant(get_class_static(), "ComparisonOperator", "ContainsAll", DOJO::ComparisonOperator::ContainsAll);
+        ClassDB::bind_integer_constant(get_class_static(), "ComparisonOperator", "ContainsAny", DOJO::ComparisonOperator::ContainsAny);
+        ClassDB::bind_integer_constant(get_class_static(), "ComparisonOperator", "ArrayLengthEq", DOJO::ComparisonOperator::ArrayLengthEq);
+        ClassDB::bind_integer_constant(get_class_static(), "ComparisonOperator", "ArrayLengthGt", DOJO::ComparisonOperator::ArrayLengthGt);
+        ClassDB::bind_integer_constant(get_class_static(), "ComparisonOperator", "ArrayLengthLt", DOJO::ComparisonOperator::ArrayLengthLt);
 
-        BIND_ENUM_CONSTANT(DOJO::MemberValue_Tag::PrimitiveValue);
-        BIND_ENUM_CONSTANT(DOJO::MemberValue_Tag::String);
-        BIND_ENUM_CONSTANT(DOJO::MemberValue_Tag::List);
+        ClassDB::bind_integer_constant(get_class_static(), "MemberValueTag", "PrimitiveValue", DOJO::MemberValue_Tag::PrimitiveValue);
+        ClassDB::bind_integer_constant(get_class_static(), "MemberValueTag", "String", DOJO::MemberValue_Tag::String);
+        ClassDB::bind_integer_constant(get_class_static(), "MemberValueTag", "List", DOJO::MemberValue_Tag::List);
 
-        BIND_ENUM_CONSTANT(DOJO::LogicalOperator::And);
-        BIND_ENUM_CONSTANT(DOJO::LogicalOperator::Or);
+        ClassDB::bind_integer_constant(get_class_static(), "LogicalOperator", "And", DOJO::LogicalOperator::And);
+        ClassDB::bind_integer_constant(get_class_static(), "LogicalOperator", "Or", DOJO::LogicalOperator::Or);
 
-        BIND_ENUM_CONSTANT(DOJO::Primitive_Tag::I8);
-        BIND_ENUM_CONSTANT(DOJO::Primitive_Tag::I16);
-        BIND_ENUM_CONSTANT(DOJO::Primitive_Tag::I32);
-        BIND_ENUM_CONSTANT(DOJO::Primitive_Tag::I64);
-        BIND_ENUM_CONSTANT(DOJO::Primitive_Tag::I128);
-        BIND_ENUM_CONSTANT(DOJO::Primitive_Tag::U8);
-        BIND_ENUM_CONSTANT(DOJO::Primitive_Tag::U16);
-        BIND_ENUM_CONSTANT(DOJO::Primitive_Tag::U32);
-        BIND_ENUM_CONSTANT(DOJO::Primitive_Tag::U64);
-        BIND_ENUM_CONSTANT(DOJO::Primitive_Tag::U128);
-        BIND_ENUM_CONSTANT(DOJO::Primitive_Tag::U256_);
-        BIND_ENUM_CONSTANT(DOJO::Primitive_Tag::Bool);
-        BIND_ENUM_CONSTANT(DOJO::Primitive_Tag::Felt252);
-        BIND_ENUM_CONSTANT(DOJO::Primitive_Tag::ClassHash);
-        BIND_ENUM_CONSTANT(DOJO::Primitive_Tag::ContractAddress);
-        BIND_ENUM_CONSTANT(DOJO::Primitive_Tag::EthAddress);
+        ClassDB::bind_integer_constant(get_class_static(), "PrimitiveTag", "I8", DOJO::Primitive_Tag::I8);
+        ClassDB::bind_integer_constant(get_class_static(), "PrimitiveTag", "I16", DOJO::Primitive_Tag::I16);
+        ClassDB::bind_integer_constant(get_class_static(), "PrimitiveTag", "I32", DOJO::Primitive_Tag::I32);
+        ClassDB::bind_integer_constant(get_class_static(), "PrimitiveTag", "I64", DOJO::Primitive_Tag::I64);
+        ClassDB::bind_integer_constant(get_class_static(), "PrimitiveTag", "I128", DOJO::Primitive_Tag::I128);
+        ClassDB::bind_integer_constant(get_class_static(), "PrimitiveTag", "U8", DOJO::Primitive_Tag::U8);
+        ClassDB::bind_integer_constant(get_class_static(), "PrimitiveTag", "U16", DOJO::Primitive_Tag::U16);
+        ClassDB::bind_integer_constant(get_class_static(), "PrimitiveTag", "U32", DOJO::Primitive_Tag::U32);
+        ClassDB::bind_integer_constant(get_class_static(), "PrimitiveTag", "U64", DOJO::Primitive_Tag::U64);
+        ClassDB::bind_integer_constant(get_class_static(), "PrimitiveTag", "U128", DOJO::Primitive_Tag::U128);
+        ClassDB::bind_integer_constant(get_class_static(), "PrimitiveTag", "U256", DOJO::Primitive_Tag::U256_);
+        ClassDB::bind_integer_constant(get_class_static(), "PrimitiveTag", "Bool", DOJO::Primitive_Tag::Bool);
+        ClassDB::bind_integer_constant(get_class_static(), "PrimitiveTag", "Felt252", DOJO::Primitive_Tag::Felt252);
+        ClassDB::bind_integer_constant(get_class_static(), "PrimitiveTag", "ClassHash", DOJO::Primitive_Tag::ClassHash);
+        ClassDB::bind_integer_constant(get_class_static(), "PrimitiveTag", "ContractAddress", DOJO::Primitive_Tag::ContractAddress);
+        ClassDB::bind_integer_constant(get_class_static(), "PrimitiveTag", "EthAddress", DOJO::Primitive_Tag::EthAddress);
 
         // Tag
         ClassDB::bind_method(D_METHOD("get_tag"), &DojoOptionClause::get_tag);
