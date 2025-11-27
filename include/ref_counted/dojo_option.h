@@ -29,7 +29,7 @@ public:
     DojoOption() : _value(Variant()) {}
     DojoOption(const Variant& p_value) : _value(p_value) {}
 
-    bool is_some() const {
+    virtual bool is_some() const {
         return _value.get_type() != Variant::NIL;
     }
 
