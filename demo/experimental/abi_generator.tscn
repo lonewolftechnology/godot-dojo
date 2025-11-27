@@ -1,0 +1,7 @@
+[gd_scene load_steps=2 format=3 uid="uid://by0w2pudlyd4d"]
+
+[ext_resource type="Script" uid="uid://dnen2s7roxogv" path="res://experimental/abi_generator.gd" id="1_axkjq"]
+
+[node name="AbiGenerator" type="Node"]
+script = ExtResource("1_axkjq")
+manifest = "/home/chozo/Proyectos/Godot/GDE/dojo-starter/manifest_dev.json"
