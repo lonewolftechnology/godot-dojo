@@ -51,10 +51,15 @@ func _generate_abi():
 	_add_const("CONTRACTS", data["contracts"])
 	
 	var script_path:String = "res://%s_bindings.gd" % [world_name.to_snake_case()]
-	var err = ResourceSaver.save(_script, script_path)
+	var err: int = ResourceSaver.save(_script, script_path)
 
 	if Engine.has_singleton("EditorInterface") and err == OK:
-		Engine.get_singleton("EditorInterface").get_editor_toaster().push_toast("%s created" % script_path.get_file())
+		var editor_interface = Engine.get_singleton("EditorInterface")
+		editor_interface.get_editor_toaster().push_toast("%s created" % script_path.get_file())
+		editor_interface.get_resource_filesystem().update_file(script_path)
+		editor_interface.get_file_system_dock().navigate_to_path(script_path)
+		editor_interface.edit_script(load(script_path))
+		
 
 # Helper Methods
 func _add_line():
@@ -62,7 +67,7 @@ func _add_line():
 
 func _set_class_name(_class:String, _extends:String = ""):
 	_script.source_code = "class_name %s" % _class
-	if not _extends.is_empty():
+	if not _extends.is_empty():	
 		_add_line()
 		_script.source_code += "extends %s" % _extends
 	_add_line()
@@ -74,10 +79,19 @@ func _append_code(_code:String, _new_line:bool = true):
 	if _new_line: _add_line()
 
 func _add_const(_name:String, _value, _new_line:bool = false):
-	if _value is String:
-		_value = "\"{value}\"".format({"value": _value})
-		
-	var _const = "const {name} = {value}".format({"name": _name, "value": _value})
+	var _const: String = "const {name} = {value}".format({"name": _name, "value": _indent_value(_value)})
+	
 	_append_code(_const,_new_line)
 	if _new_line:
 		_add_line()
+		
+func _indent_value(_value) -> String:
+	var value:String = ""
+	if _value is Dictionary or _value is Array:
+		value = JSON.stringify(_value, "\t")
+	elif _value is String:
+		_value = "\"{value}\"".format({"value": _value})
+		value = _value
+	else:
+		value = str(_value)
+	return value
