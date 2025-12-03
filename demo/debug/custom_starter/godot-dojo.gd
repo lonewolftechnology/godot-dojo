@@ -25,3 +25,7 @@ func _on_session_testing_subscription_created(subscription_name: String) -> void
 		_entities_status.set_status(true)
 	if subscription_name == "event_message_update":
 		_events_status.set_status(true)
+
+
+func _on_save_log_pressed() -> void:
+	ProjectSettings.save()

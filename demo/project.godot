@@ -46,8 +46,8 @@ config/fixed_point/default=40
 config/enable_extra_logs=true
 config/debug/error=true
 config/debug/warning=true
-config/debug/info=false
-config/debug/debug=false
+config/debug/info=true
+config/debug/debug=true
 config/debug/success=true
 
 [input]

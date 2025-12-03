@@ -16,18 +16,22 @@ signal subscription_created(subscription_name:String)
 @export var entity_sub: EntitySubscription
 @export var message_sub: MessageSubscription
 
-@onready var priv_key: String = "0x676073720a1e057f6d802a1a861e27c3c41ddfdd0e58f7eae99e3a0a2002b53"
+@onready var priv_key: String = "0x3f377826d5364b2b9740464524ed4d5758a6d45e8129cbd504704dd65468e32"
 
-var policies:Dictionary = {
-		"max_fee": "0x100000",
-		"policies": [{
-			"contract_address": Constants.CONTRACT,
-			"entrypoints": [
-				"spawn",
-				"move",
-			]
-		}]
+var full_policies:Dictionary = {
+	Constants.CONTRACT: {
+		"methods": [
+			{
+				"name" : "Spawn in world", # Optional
+				"description": "Can Spawn in the world", # Optional
+				"entrypoint": "spawn",
+			},
+			{
+				"entrypoint": "move",
+			}
+		]
 	}
+}
 
 var spawn_call:Dictionary = { 
 		"contract_address": Constants.CONTRACT,
@@ -60,7 +64,11 @@ func _ready() -> void:
 	setup()
 	
 func setup():
-	torii_client.client_connected.connect(_on_client_connected)
+
+	dojo_session_account.max_fee = "0x100000"
+	dojo_session_account.full_policies = full_policies
+	if not torii_client.client_connected.is_connected(_on_client_connected):
+		torii_client.client_connected.connect(_on_client_connected)
 			
 	entity_sub.world_addresses.append(Constants.WORLD)
 	message_sub.world_addresses.append(Constants.WORLD)
@@ -70,8 +78,9 @@ func setup():
 		menu_container.size_flags_vertical = Control.SIZE_EXPAND_FILL
 		DisplayServer.screen_set_orientation(DisplayServer.ScreenOrientation.SCREEN_PORTRAIT)
 		priv_key = ""
-	
-	torii_client.create_client(Constants.TORII_URL)
+		
+	if not torii_client.is_client_connected():
+		torii_client.create_client(Constants.TORII_URL)
 	
 	if priv_key.is_empty():
 		priv_key = DojoHelpers.generate_private_key()
@@ -109,7 +118,6 @@ func _on_session_btn_pressed() -> void:
 		priv_key,
 		Constants.RPC_URL,
 		"https://api.cartridge.gg",
-		policies,
 	)
 	if (dojo_session_account.is_valid()):
 		_on_info_btn_pressed()
@@ -121,35 +129,16 @@ func _on_login_btn_pressed() -> void:
 func get_session_url():
 	var base_url = "https://x.cartridge.gg/session"
 	var public_key = ControllerHelper.get_public_key(priv_key)
-	var rpc_url = Constants.RPC_URL
 	var redirect_uri = "about:blank"
 	var redirect_query_name = "startapp"
 	
-	var _policies = {
-		"contracts": {
-			Constants.CONTRACT: {
-				"methods": [
-					{
-						"name" : "Spawn in world", # Optional
-						"description": "Can Spawn in the world", # Optional
-						"entrypoint": "spawn",
-					},
-					{
-						"entrypoint": "move",
-					}
-				]
-			}
-		},
-		"verified": false
-	}
-
 	var session_url = dojo_session_account.generate_session_request_url(
 		base_url, 
 		public_key, 
-		rpc_url, 
-		_policies, 
-#		redirect_uri, # Optional
-#		redirect_query_name # Optional
+		Constants.RPC_URL,
+		dojo_session_account.get_register_session_policy(),
+#		redirect_uri, # Optional parameter
+#		redirect_query_name # Optional parameter
 		)
 	OS.shell_open(session_url)
 
