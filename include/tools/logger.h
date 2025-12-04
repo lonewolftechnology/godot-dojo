@@ -74,7 +74,7 @@ public:
     {
         if (!is_level_enabled("error")) { return; }
         String message = logger_internal::concat_all(args...);
-        ERR_PRINT(message.utf8().get_data());
+        ERR_PRINT_ED(message.utf8().get_data());
     }
 
     template <typename... Args>
@@ -93,7 +93,7 @@ public:
     {
         if (!is_level_enabled("warning")) { return; }
         String message = logger_internal::concat_all(args...);
-        WARN_PRINT(message.utf8().get_data());
+        WARN_PRINT_ED(message.utf8().get_data());
     }
 
     template <typename... Args>
