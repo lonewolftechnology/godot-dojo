@@ -116,7 +116,7 @@ jobs:
 
           # Parse controller-uniffi from [dependencies] in Cargo.toml
           CONTROLLER_LINE=$(awk '/\[dependencies\]/{f=1;next} /\[/{f=0} f && /controller-uniffi =/' Cargo.toml)
-          CONTROLLER_URL=$(echo "$CONTROLLER_LINE" | grep -o 'git = "[^"]*"' | sed 's/rev = "//;s/"//')
+          CONTROLLER_URL=$(echo "$CONTROLLER_LINE" | grep -o 'git = "[^"]*"' | sed 's/git = "//;s/"//')
           CONTROLLER_REV=$(echo "$CONTROLLER_LINE" | grep -o 'rev = "[^"]*"' | sed 's/rev = "//;s/"//')
           CONTROLLER_REV_SHORT=${CONTROLLER_REV:0:7}
 
@@ -548,20 +548,25 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        precision: [single, double]
         include:
           - platform_id: android
             arch: arm64
+            precision: [single, double]
           - platform_id: ios
             arch: universal
+            precision: [single, double]
           - platform_id: linux
             arch: x86_64
+            precision: [single, double]
           - platform_id: macos
             arch: arm64
+            precision: [single, double]
           - platform_id: macos
             arch: x86_64
+            precision: [single, double]
           - platform_id: windows-gnu
             arch: x86_64
+            precision: [single, double]
     steps:
       - name: Delete previous SCons cache
         env:
