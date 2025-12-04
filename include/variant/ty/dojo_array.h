@@ -21,7 +21,7 @@ namespace DojoArrayHelpers {
         for (int i = 0; i < arr.size(); ++i) {
             native_arr[i] = FieldElement::from_string(arr[i]);
         }
-        return {native_arr, (uintptr_t)arr.size()};
+        return {native_arr, static_cast<uintptr_t>(arr.size())};
     }
 
     inline DOJO::CArrayU256 string_array_to_native_carray_u256(const TypedArray<String>& arr) {
@@ -30,7 +30,7 @@ namespace DojoArrayHelpers {
             String str = arr[i];
             native_arr[i] = DojoHelpers::string_to_u256(str);
         }
-        return {native_arr, (uintptr_t)arr.size()};
+        return {native_arr, static_cast<uintptr_t>(arr.size())};
     }
 
     inline DOJO::CArrayc_char string_array_to_native_carray_str(const TypedArray<String>& arr) {
@@ -41,7 +41,7 @@ namespace DojoArrayHelpers {
             strcpy(c_str, str.utf8().get_data());
             native_arr[i] = c_str;
         }
-        return {native_arr, (uintptr_t)arr.size()};
+        return {native_arr, static_cast<uintptr_t>(arr.size())};
     }
 
     inline DOJO::CArrayCOptionFieldElement option_field_element_array_to_native_carray(const Array& arr) {
@@ -57,7 +57,21 @@ namespace DojoArrayHelpers {
                 native_arr[i].tag = DOJO::NoneFieldElement;
             }
         }
-        return {native_arr, (uintptr_t)arr.size()};
+        return {native_arr, static_cast<uintptr_t>(arr.size())};
+    }
+
+    inline DOJO::CArrayOrderBy dictionary_array_to_native_carray_orderby(const TypedArray<Dictionary>& arr) {
+        auto* native_arr = new DOJO::OrderBy[arr.size()];
+        for (int i = 0; i < arr.size(); ++i) {
+            Dictionary dict = arr[i];
+            String field_str = dict["field"];
+            
+            char *field_cstr = new char[field_str.utf8().length() + 1];
+            strcpy(field_cstr, field_str.utf8().get_data());
+
+            native_arr[i] = {field_cstr, static_cast<DOJO::OrderDirection>(dict["direction"].operator int64_t())};
+        }
+        return {native_arr, static_cast<uintptr_t>(arr.size())};
     }
 }
 
@@ -173,22 +187,29 @@ public:
     struct CFieldElementArrayHelper {
     private:
         std::vector<DOJO::FieldElement> fe_storage;
-
-    public:
-        DOJO::CArrayFieldElement c_array;
-
-        CFieldElementArrayHelper(const TypedArray<String>& hex_string_array) {
+        template <typename T>
+        void initialize_from_array(const T& hex_string_array) {
             fe_storage.reserve(hex_string_array.size());
 
             for (int i = 0; i < hex_string_array.size(); ++i) {
                 String address = hex_string_array[i];
                 fe_storage.push_back(FieldElement::from_string(address));
             }
-
             c_array.data = fe_storage.data();
             c_array.data_len = fe_storage.size();
 
             Logger::debug_extra("CXexFelt", fe_storage.size());
+        }
+
+    public:
+        DOJO::CArrayFieldElement c_array;
+
+        CFieldElementArrayHelper(const TypedArray<String>& hex_string_array) {
+            initialize_from_array(hex_string_array);
+        }
+
+        CFieldElementArrayHelper(const PackedStringArray& hex_string_array) {
+            initialize_from_array(hex_string_array);
         }
     };
 protected:
