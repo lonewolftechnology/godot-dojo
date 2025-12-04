@@ -8,6 +8,24 @@
 #include "gdextension_interface.h"
 #include "godot_cpp/core/defs.hpp"
 #include "godot_cpp/godot.hpp"
+
+#include "ref_counted/query_builder.hpp"
+#include "ref_counted/dojo_utilities/queries/pagination.hpp"
+#include "ref_counted/dojo_utilities/queries/order_by.hpp"
+
+#include "ref_counted/queries/achievement.hpp"
+#include "ref_counted/queries/activity.hpp"
+#include "ref_counted/queries/aggregation.hpp"
+#include "ref_counted/queries/contract.hpp"
+#include "ref_counted/queries/controller.hpp"
+#include "ref_counted/queries/entity.hpp"
+#include "ref_counted/queries/player_achievement.hpp"
+#include "ref_counted/queries/search.hpp"
+#include "ref_counted/queries/token.hpp"
+#include "ref_counted/queries/token_balance.hpp"
+#include "ref_counted/queries/token_transfer.hpp"
+#include "ref_counted/queries/transaction.hpp"
+
 #ifdef WEB_ENABLED
 #include <tools/dojo_bridge.h>
 #endif
@@ -87,13 +105,13 @@ void initialize_godotdojo_module(ModuleInitializationLevel p_level) {
         GDREGISTER_CLASS(U128);
         GDREGISTER_CLASS(I128);
         GDREGISTER_CLASS(U256);
-        // Classes
+        // Classes //
         GDREGISTER_CLASS(ToriiClient);
         GDREGISTER_CLASS(Account);
         GDREGISTER_CLASS(DojoSessionAccount);
         GDREGISTER_CLASS(DojoOwner);
         GDREGISTER_CLASS(DojoController);
-        // RefCounted
+        // RefCounted //
         GDREGISTER_CLASS(DojoOption);
         GDREGISTER_CLASS(DojoOptionU32);
         GDREGISTER_CLASS(DojoOptionU64);
@@ -104,24 +122,48 @@ void initialize_godotdojo_module(ModuleInitializationLevel p_level) {
         GDREGISTER_CLASS(DojoOptionClause);
         GDREGISTER_CLASS(DojoOptionTransactionFilter);
         GDREGISTER_CLASS(DojoOptionArrayFieldElement);
-        // Resources
+
+        // -Experimental- //
+        // Builders
+        GDREGISTER_CLASS(QueryBuilder)
+        GDREGISTER_CLASS(DojoPagination)
+        GDREGISTER_CLASS(DojoOrderBy)
+
         // Queries
+        GDREGISTER_CLASS(AchievementQuery)
+        GDREGISTER_CLASS(ActivityQuery)
+        GDREGISTER_CLASS(AggregationQuery)
+        GDREGISTER_CLASS(ContractQuery)
+        GDREGISTER_CLASS(ControllerQuery)
+        GDREGISTER_CLASS(EntityQuery)
+        GDREGISTER_CLASS(PlayerAchievementQuery)
+        GDREGISTER_CLASS(SearchQuery)
+        GDREGISTER_CLASS(TokenQuery)
+        GDREGISTER_CLASS(TokenBalanceQuery)
+        GDREGISTER_CLASS(TokenTransferQuery)
+        GDREGISTER_CLASS(TransactionQuery)
+        // -Experimental- //
+
+        // Resources //
+        GDREGISTER_CLASS(DojoTransactionFilter);
+
+        // Queries (DEPRECATED)
         GDREGISTER_CLASS(DojoQueryBase);
-        GDREGISTER_CLASS(DojoQuery);
-        GDREGISTER_CLASS(DojoTokenQuery);
-        GDREGISTER_CLASS(DojoControllerQuery);
-        GDREGISTER_CLASS(DojoTransactionQuery);
-        GDREGISTER_CLASS(DojoTokenBalanceQuery);
-        GDREGISTER_CLASS(DojoTokenTransferQuery);
-        GDREGISTER_CLASS(DojoContractQuery)
+        GDREGISTER_CLASS(DojoAchievementQuery)
         GDREGISTER_CLASS(DojoActivityQuery)
         GDREGISTER_CLASS(DojoAggregationQuery)
-        GDREGISTER_CLASS(DojoSubscription);
-        GDREGISTER_CLASS(DojoTransactionFilter);
-        GDREGISTER_CLASS(DojoAchievementQuery)
+        GDREGISTER_CLASS(DojoContractQuery)
+        GDREGISTER_CLASS(DojoControllerQuery);
+        GDREGISTER_CLASS(DojoQuery);
         GDREGISTER_CLASS(DojoPlayerAchievementQuery);
         GDREGISTER_CLASS(DojoSearchQuery);
+        GDREGISTER_CLASS(DojoTokenQuery);
+        GDREGISTER_CLASS(DojoTokenBalanceQuery);
+        GDREGISTER_CLASS(DojoTokenTransferQuery);
+        GDREGISTER_CLASS(DojoTransactionQuery);
+
         // Subscriptions
+        GDREGISTER_CLASS(DojoSubscription);
         GDREGISTER_CLASS(EventSubscription);
         GDREGISTER_CLASS(MessageSubscription);
         GDREGISTER_CLASS(TokenSubscription);
