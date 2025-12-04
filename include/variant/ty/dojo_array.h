@@ -66,7 +66,7 @@ namespace DojoArrayHelpers {
         for (int i = 0; i < arr.size(); ++i) {
             Dictionary dict = arr[i];
             String field_str = dict["field"];
-            
+
             char *field_cstr = new char[field_str.utf8().length() + 1];
             strcpy(field_cstr, field_str.utf8().get_data());
 
@@ -100,30 +100,6 @@ namespace DojoArrayHelpers {
         arr.data_len = 0;
     }
 
-    inline void free_native_carray_felt(DOJO::CArrayFieldElement& arr) {
-        std::free(arr.data);
-        arr.data = nullptr;
-        arr.data_len = 0;
-    }
-
-    inline void free_native_carray_str(DOJO::CArrayc_char& arr) {
-        if (arr.data) {
-            // The Rust side will free the individual strings. We only free the array of pointers.
-            delete[] arr.data;
-        }
-        arr.data = nullptr;
-        arr.data_len = 0;
-    }
-
-    inline void free_native_carray_option_field_element(DOJO::CArrayCOptionFieldElement& arr) {
-        if (arr.data) {
-            // COptionFieldElement no tiene memoria interna que necesite ser liberada,
-            // por lo que solo necesitamos liberar el array principal.
-            std::free(arr.data);
-        }
-        arr.data = nullptr;
-        arr.data_len = 0;
-    }
 }
 
 
