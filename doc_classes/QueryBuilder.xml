@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="QueryBuilder" inherits="RefCounted" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://raw.githubusercontent.com/godotengine/godot/master/doc/class.xsd">
+	<brief_description>
+	</brief_description>
+	<description>
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="create" qualifiers="static">
+			<return type="QueryBuilder" />
+			<param index="0" name="type" type="int" />
+			<description>
+			</description>
+		</method>
+		<method name="set_type">
+			<return type="QueryBuilder" />
+			<param index="0" name="type" type="int" />
+			<description>
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="type" type="int" setter="set_type" getter="get_type" default="0">
+		</member>
+	</members>
+	<constants>
+		<constant name="None" value="0" enum="Type">
+		</constant>
+		<constant name="Achievement" value="1" enum="Type">
+		</constant>
+		<constant name="Activity" value="2" enum="Type">
+		</constant>
+		<constant name="Aggregation" value="3" enum="Type">
+		</constant>
+		<constant name="Contract" value="4" enum="Type">
+		</constant>
+		<constant name="Controller" value="5" enum="Type">
+		</constant>
+		<constant name="PlayerAchievement" value="7" enum="Type">
+		</constant>
+		<constant name="Entity" value="6" enum="Type">
+		</constant>
+		<constant name="Search" value="8" enum="Type">
+		</constant>
+		<constant name="Token" value="9" enum="Type">
+		</constant>
+		<constant name="TokenBalance" value="10" enum="Type">
+		</constant>
+		<constant name="TokenTransfer" value="11" enum="Type">
+		</constant>
+		<constant name="Transaction" value="12" enum="Type">
+		</constant>
+	</constants>
+</class>

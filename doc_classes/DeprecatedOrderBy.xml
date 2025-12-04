@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="DeprecatedOrderBy" inherits="Resource" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://raw.githubusercontent.com/godotengine/godot/master/doc/class.xsd">
+	<brief_description>
+	</brief_description>
+	<description>
+	</description>
+	<tutorials>
+	</tutorials>
+	<members>
+		<member name="direction" type="int" setter="set_direction" getter="get_direction" enum="dojo_bindings.OrderDirection" default="0">
+		</member>
+		<member name="field" type="String" setter="set_field" getter="get_field" default="&quot;&quot;">
+		</member>
+	</members>
+	<constants>
+		<constant name="DOJO::OrderDirection::Asc" value="0" enum="OrderDirection">
+		</constant>
+		<constant name="DOJO::OrderDirection::Desc" value="1" enum="OrderDirection">
+		</constant>
+	</constants>
+</class>
