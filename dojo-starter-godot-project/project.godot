@@ -10,7 +10,7 @@ config_version=5
 
 [application]
 
-config/name="Dojo C Test Project"
+config/name="Dojo Starter Godot Demo"
 run/main_scene="uid://cn1gdwiythfn2"
 config/features=PackedStringArray("4.5", "Forward Plus")
 config/icon="res://icon.svg"
