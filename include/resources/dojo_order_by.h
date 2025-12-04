@@ -11,29 +11,29 @@
 
 using namespace godot;
 
-class DojoOrderBy : public Resource {
-    GDCLASS(DojoOrderBy, Resource);
+class DeprecatedOrderBy : public Resource {
+    GDCLASS(DeprecatedOrderBy, Resource);
 
     String field;
     DOJO::OrderDirection direction;
 
 protected:
     static void _bind_methods() {
-        ClassDB::bind_method(D_METHOD("get_field"), &DojoOrderBy::get_field);
-        ClassDB::bind_method(D_METHOD("set_field", "p_field"), &DojoOrderBy::set_field);
+        ClassDB::bind_method(D_METHOD("get_field"), &DeprecatedOrderBy::get_field);
+        ClassDB::bind_method(D_METHOD("set_field", "p_field"), &DeprecatedOrderBy::set_field);
         ADD_PROPERTY(PropertyInfo(Variant::STRING, "field"), "set_field", "get_field");
 
         BIND_ENUM_CONSTANT(DOJO::OrderDirection::Asc);
         BIND_ENUM_CONSTANT(DOJO::OrderDirection::Desc);
 
-        ClassDB::bind_method(D_METHOD("get_direction"), &DojoOrderBy::get_direction);
-        ClassDB::bind_method(D_METHOD("set_direction", "p_direction"), &DojoOrderBy::set_direction);
+        ClassDB::bind_method(D_METHOD("get_direction"), &DeprecatedOrderBy::get_direction);
+        ClassDB::bind_method(D_METHOD("set_direction", "p_direction"), &DeprecatedOrderBy::set_direction);
         ADD_PROPERTY(PropertyInfo(Variant::INT, "direction", PROPERTY_HINT_ENUM, "Asc,Desc"), "set_direction", "get_direction");
     }
 
 public:
-    DojoOrderBy() : direction(DOJO::OrderDirection::Asc) {}
-    ~DojoOrderBy() {}
+    DeprecatedOrderBy() : direction(DOJO::OrderDirection::Asc) {}
+    ~DeprecatedOrderBy() {}
 
     void set_field(const String& p_field) { field = p_field; }
     String get_field() const { return field; }

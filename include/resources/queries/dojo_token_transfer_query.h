@@ -53,7 +53,7 @@ public:
         if (get_order_by().size() > 0) {
             auto* native_order_by_arr = new DOJO::OrderBy[get_order_by().size()];
             for (int i = 0; i < get_order_by().size(); ++i) {
-                Ref<DojoOrderBy> order_by_ref = get_order_by()[i];
+                Ref<DeprecatedOrderBy> order_by_ref = get_order_by()[i];
                 if (order_by_ref.is_valid()) {
                     char *field_str = new char[order_by_ref->get_field().utf8().length() + 1];
                     strcpy(field_str, order_by_ref->get_field().utf8().get_data());

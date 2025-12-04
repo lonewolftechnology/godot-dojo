@@ -19,7 +19,7 @@ class DojoQueryBase : public Resource
     uint32_t limit;
     String cursor;
     DOJO::PaginationDirection direction;
-    TypedArray<DojoOrderBy> order_by;
+    TypedArray<DeprecatedOrderBy> order_by;
 
 public:
     DojoQueryBase()
@@ -52,7 +52,7 @@ public:
         if (pagination.order_by.data_len > 0) {
             pagination.order_by.data = (dojo_bindings::OrderBy*) memalloc(sizeof(dojo_bindings::OrderBy) * pagination.order_by.data_len);
             for (int i = 0; i < pagination.order_by.data_len; ++i) {
-                Ref<DojoOrderBy> ob = order_by[i];
+                Ref<DeprecatedOrderBy> ob = order_by[i];
                 pagination.order_by.data[i] = ob->get_native_order_by();
             }
         }
@@ -68,8 +68,8 @@ public:
     DOJO::PaginationDirection get_direction() const {return direction;}
     void set_direction(DOJO::PaginationDirection p_direction) {direction = p_direction;}
 
-    void set_order_by(const TypedArray<DojoOrderBy>& p_order_by) { order_by = p_order_by; }
-    TypedArray<DojoOrderBy> get_order_by() const { return order_by; }
+    void set_order_by(const TypedArray<DeprecatedOrderBy>& p_order_by) { order_by = p_order_by; }
+    TypedArray<DeprecatedOrderBy> get_order_by() const { return order_by; }
 
 protected:
     static void _bind_methods()
