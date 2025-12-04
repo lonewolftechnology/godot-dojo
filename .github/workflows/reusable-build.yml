@@ -204,5 +204,6 @@ jobs:
           name: bin-${{ inputs.precision }}-${{ inputs.platform_id }}-${{ inputs.arch }}
           path: |
             demo/addons/godot-dojo/bin
+            demo/addons/godot-dojo/assets
             demo/addons/godot-dojo/godot-dojo.gdextension
           if-no-files-found: error
