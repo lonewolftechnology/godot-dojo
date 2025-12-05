@@ -5,28 +5,7 @@ using namespace godot;
 
 class DojoClause : public RefCounted {
     GDCLASS(DojoClause, RefCounted)
-
-    DOJO::Clause_Tag tag;
-
-    // Hashed Keys
-    TypedArray<String> hashed_keys;
-
-    // Keys
-    Array keys; // Using generic Array to avoid TypedArray<Ref<T>> issues
-    DOJO::PatternMatching pattern_matching;
-    TypedArray<String> models;
-
-    // Member
-    String model;
-    String member;
-    DOJO::ComparisonOperator comparison_operator;
-    DOJO::MemberValue_Tag member_tag;
-    DOJO::Primitive_Tag primitive_tag;
-    Variant value;
-
-    // Composite
-    DOJO::LogicalOperator logical_operator;
-    Array clauses; // Using generic Array to avoid TypedArray<Ref<T>> issues
+    DOJO::Clause_Tag type;
 
 public:
     DojoClause();
@@ -34,6 +13,11 @@ public:
 
 protected:
     static void _bind_methods() {
-
+        ClassDB::bind_integer_constant(get_class_static(), "Clause", "HashedKeys", DOJO::Clause_Tag::HashedKeys);
+        ClassDB::bind_integer_constant(get_class_static(), "Clause", "Keys", DOJO::Clause_Tag::Keys);
+        ClassDB::bind_integer_constant(get_class_static(), "Clause", "Member", DOJO::Clause_Tag::CMember);
+        ClassDB::bind_integer_constant(get_class_static(), "Clause", "Composite", DOJO::Clause_Tag::Composite);
     }
 };
+
+VARIANT_ENUM_CAST(DOJO::Clause_Tag)
