@@ -9,11 +9,11 @@ using namespace godot;
 class CompositeClause : public RefCounted {
     GDCLASS(CompositeClause, RefCounted)
     DOJO::LogicalOperator p_operator;
-    TypedArray<DojoClause> p_clauses;
+    Array p_clauses;
 
 public:
     CompositeClause();
-    ~CompositeClause();7
+    ~CompositeClause();
 
 protected:
     static void _bind_methods() {
