@@ -69,10 +69,10 @@ fn handle_uniffi_dependency(dep_name: &str, udl_relative_path: &str, output_sub_
     if output_sub_dir == "controller" || output_sub_dir == "dojo" {
         let hpp_filename = format!("{}.hpp", output_sub_dir);
         let hpp_path = output_dir.join(&hpp_filename);
-        note!("Attempting to patch file with std::endian polyfill: {}", hpp_path.display());
 
         if hpp_path.exists() {
-            let mut hpp_content = fs::read_to_string(&hpp_path)
+            note!("Attempting to patch file: {}", hpp_path.display());
+            let mut content = fs::read_to_string(&hpp_path)
                 .unwrap_or_else(|_| panic!("Failed to read generated {} for patching.", hpp_filename));
 
             let polyfill = r#"
@@ -100,19 +100,57 @@ namespace std {
 
 "#;
             let insertion_hook = format!("namespace {} {{", output_sub_dir);
-            if let Some(pos) = hpp_content.find(&insertion_hook) {
-                hpp_content.insert_str(pos, polyfill);
-                fs::write(&hpp_path, hpp_content)
-                    .unwrap_or_else(|_| panic!("Failed to write patched {}", hpp_filename));
+            if let Some(pos) = content.find(&insertion_hook) {
+                content.insert_str(pos, polyfill);
                 custom_println!("PATCHED", green, "Injected std::endian polyfill into {}", hpp_path.display());
             } else {
                 warn!("Could not find insertion point for std::endian polyfill in {}.", hpp_path.display());
             }
+
+            // For dojo.hpp, also patch the vtable initializers for callback interfaces.
+            // The generated code sometimes places .uniffi_free last, which is incorrect. It must be first.
+            if output_sub_dir == "dojo" {
+                let vtable_start_hook = "static inline UniffiVTableCallbackInterface";
+                let vtable_end_hook = "};";
+                let free_member = ".uniffi_free = reinterpret_cast<void *>(&uniffi_free)";
+
+                let mut replacements = Vec::new();
+                for (start, _) in content.match_indices(vtable_start_hook).collect::<Vec<_>>() {
+                    if let Some(end) = content[start..].find(vtable_end_hook) {
+                        let vtable_block = &content[start..start + end + vtable_end_hook.len()];
+
+                        if vtable_block.contains(free_member) {
+                            let init_start = vtable_block.find('{').unwrap() + 1;
+                            let init_end = vtable_block.rfind('}').unwrap();
+                            let init_block = &vtable_block[init_start..init_end];
+
+                            let mut members: Vec<&str> = init_block.split(',').map(|s| s.trim()).filter(|s| !s.is_empty()).collect();
+                            if let Some(pos) = members.iter().position(|&m| m.contains(".uniffi_free")) {
+                                let free = members.remove(pos);
+                                members.insert(0, free);
+
+                                let corrected_init = format!("\n            {}\n        ", members.join(",\n            "));
+                                let final_block = vtable_block.replace(init_block, &corrected_init);
+                                replacements.push((vtable_block.to_string(), final_block));
+                            }
+                        }
+                    }
+                }
+
+                if !replacements.is_empty() {
+                    for (old, new) in replacements {
+                        content = content.replace(&old, &new);
+                    }
+                    custom_println!("PATCHED", green, "Corrected vtable order in {}", hpp_path.display());
+                }
+            }
+
+            // Write all accumulated changes to the file.
+            fs::write(&hpp_path, content).unwrap_or_else(|_| panic!("Failed to write patched {}", hpp_filename));
         } else {
             warn!("{} not found for patching at {}", hpp_filename, hpp_path.display());
         }
     }
-
     custom_println!("DONE", green, "of {}\n", dep_name);
 }
 
