@@ -82,5 +82,11 @@ protected:
                                        DOJO::PaginationDirection::Forward);
         ClassDB::bind_integer_constant(get_class_static(), "PaginationDirection", "Backward",
                                        DOJO::PaginationDirection::Backward);
+
+        ClassDB::bind_method(D_METHOD("cursor", "cursor"), &DojoPagination::cursor);
+        ClassDB::bind_method(D_METHOD("limit", "limit"), &DojoPagination::limit);
+        ClassDB::bind_method(D_METHOD("direction", "direction"), &DojoPagination::direction);
+        ClassDB::bind_method(D_METHOD("order_by", "order_by"), &DojoPagination::order_by);
+        ClassDB::bind_method(D_METHOD("to_dict"), &DojoPagination::to_dict);
     }
 };
