@@ -65,14 +65,15 @@ fn handle_uniffi_dependency(dep_name: &str, udl_relative_path: &str, output_sub_
         panic!();
     }
     
-    // For controller.hpp, inject the std::endian polyfill for C++17 compilers.
-    if output_sub_dir == "controller" {
-        let hpp_path = output_dir.join("controller.hpp");
+    // For controller.hpp and dojo.hpp, inject the std::endian polyfill for C++17 compilers.
+    if output_sub_dir == "controller" || output_sub_dir == "dojo" {
+        let hpp_filename = format!("{}.hpp", output_sub_dir);
+        let hpp_path = output_dir.join(&hpp_filename);
         note!("Attempting to patch file with std::endian polyfill: {}", hpp_path.display());
 
         if hpp_path.exists() {
             let mut hpp_content = fs::read_to_string(&hpp_path)
-                .expect("Failed to read generated controller.hpp for patching.");
+                .unwrap_or_else(|_| panic!("Failed to read generated {} for patching.", hpp_filename));
 
             let polyfill = r#"
 
@@ -98,17 +99,17 @@ namespace std {
 #endif
 
 "#;
-            let insertion_hook = "namespace controller {";
-            if let Some(pos) = hpp_content.find(insertion_hook) {
+            let insertion_hook = format!("namespace {} {{", output_sub_dir);
+            if let Some(pos) = hpp_content.find(&insertion_hook) {
                 hpp_content.insert_str(pos, polyfill);
                 fs::write(&hpp_path, hpp_content)
-                    .expect("Failed to write patched controller.hpp");
+                    .unwrap_or_else(|_| panic!("Failed to write patched {}", hpp_filename));
                 custom_println!("PATCHED", green, "Injected std::endian polyfill into {}", hpp_path.display());
             } else {
                 warn!("Could not find insertion point for std::endian polyfill in {}.", hpp_path.display());
             }
         } else {
-            warn!("controller.hpp not found for patching at {}", hpp_path.display());
+            warn!("{} not found for patching at {}", hpp_filename, hpp_path.display());
         }
     }
 

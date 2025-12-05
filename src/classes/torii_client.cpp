@@ -192,6 +192,8 @@ TypedArray<Dictionary> ToriiClient::get_entities(const Ref<DojoQuery> &query) {
 
     DOJO::ResultPageEntity result_page_entity = DOJO::client_entities(client, *native_query_ptr);
 
+    DojoQuery::free_native_query(native_query_ptr);
+
     if (result_page_entity.tag == DOJO::ErrPageEntity) {
         return Array::make(Logger::error_dict("Failed to get entities: ", GET_DOJO_ERROR(result_page_entity)));
 ;
