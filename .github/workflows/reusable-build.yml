@@ -95,9 +95,8 @@ jobs:
             external/godot-cpp/.sconsign.dblite
             external/godot-cpp/gen/
             external/godot-cpp/__pycache__/
-          key: scons-cache-${{ inputs.platform_id }}-${{ inputs.arch }}-${{ inputs.precision }}-${{ inputs.current_tag }}
+          key: scons-cache-${{ inputs.platform_id }}-${{ inputs.arch }}-${{ inputs.precision }}-${{ hashFiles('godot-dojo-core/Cargo.lock') }}
           restore-keys: |
-            scons-cache-${{ inputs.platform_id }}-${{ inputs.arch }}-${{ inputs.precision }}-${{ inputs.previous_tag }}
             scons-cache-${{ inputs.platform_id }}-${{ inputs.arch }}-${{ inputs.precision }}-
 
       - name: Build GDExtension (editor)
