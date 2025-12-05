@@ -46,7 +46,7 @@ public:
 
         if (!get_cursor().is_empty()) {
             query->pagination.cursor.tag = DOJO::Somec_char;
-            char *c_str_cursor = new char[get_cursor().utf8().length() + 1];
+            char *c_str_cursor = static_cast<char*>(malloc(get_cursor().utf8().length() + 1));
             strcpy(c_str_cursor, get_cursor().utf8().get_data());
             query->pagination.cursor.some = c_str_cursor;
         } else {
@@ -69,6 +69,21 @@ public:
         query->models = native_models;
 
         return query;
+    }
+
+    static void free_native_query(void* p_query) {
+        if (!p_query) return;
+        auto* query = static_cast<DOJO::Query*>(p_query);
+
+        if (query->pagination.cursor.tag == DOJO::Somec_char) {
+            std::free((void*)query->pagination.cursor.some);
+        }
+
+        if (query->clause.tag == DOJO::SomeClause) {
+            DojoOptionClause::free_native_clause(query->clause.some);
+        }
+        DojoArrayHelpers::free_native_carray_str(query->models);
+        delete query; // Correctly use delete for an object created with new
     }
 
     Ref<DojoOptionClause> get_clause() const { return clause; }
