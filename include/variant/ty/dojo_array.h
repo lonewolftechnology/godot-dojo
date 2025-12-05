@@ -17,9 +17,10 @@ using namespace godot;
 namespace DojoArrayHelpers {
 // TODO: refactor, remove, improve
     inline DOJO::CArrayFieldElement string_array_to_native_carray_felt(const TypedArray<String>& arr) {
-        auto* native_arr = new DOJO::FieldElement[arr.size()];
+        auto* native_arr = static_cast<DOJO::FieldElement*>(malloc(sizeof(DOJO::FieldElement) * arr.size()));
         for (int i = 0; i < arr.size(); ++i) {
-            native_arr[i] = FieldElement::from_string(arr[i]);
+            // Construct the object directly in the allocated memory
+            native_arr[i] = FieldElement::from_string(arr[i]); // Now assign the value
         }
         return {native_arr, static_cast<uintptr_t>(arr.size())};
     }
@@ -37,7 +38,7 @@ namespace DojoArrayHelpers {
         const char** native_arr = new const char*[arr.size()];
         for (int i = 0; i < arr.size(); ++i) {
             String str = arr[i];
-            char *c_str = new char[str.utf8().length() + 1];
+            char *c_str = static_cast<char*>(malloc(str.utf8().length() + 1));
             strcpy(c_str, str.utf8().get_data());
             native_arr[i] = c_str;
         }
@@ -45,7 +46,7 @@ namespace DojoArrayHelpers {
     }
 
     inline DOJO::CArrayCOptionFieldElement option_field_element_array_to_native_carray(const Array& arr) {
-        auto* native_arr = new DOJO::COptionFieldElement[arr.size()];
+        auto* native_arr = static_cast<DOJO::COptionFieldElement*>(malloc(sizeof(DOJO::COptionFieldElement) * arr.size()));
         for (int i = 0; i < arr.size(); ++i) {
             Ref<DojoOptionFieldElement> key_ref = arr[i];
             if (key_ref.is_valid())
@@ -72,6 +73,31 @@ namespace DojoArrayHelpers {
             native_arr[i] = {field_cstr, static_cast<DOJO::OrderDirection>(dict["direction"].operator int64_t())};
         }
         return {native_arr, static_cast<uintptr_t>(arr.size())};
+    }
+
+    inline void free_native_carray_felt(DOJO::CArrayFieldElement& arr) {
+        std::free(arr.data);
+        arr.data = nullptr;
+        arr.data_len = 0;
+    }
+
+    inline void free_native_carray_str(DOJO::CArrayc_char& arr) {
+        if (arr.data) {
+            // The Rust side will free the individual strings. We only free the array of pointers.
+            delete[] arr.data;
+        }
+        arr.data = nullptr;
+        arr.data_len = 0;
+    }
+
+    inline void free_native_carray_option_field_element(DOJO::CArrayCOptionFieldElement& arr) {
+        if (arr.data) {
+            // COptionFieldElement no tiene memoria interna que necesite ser liberada,
+            // por lo que solo necesitamos liberar el array principal.
+            std::free(arr.data);
+        }
+        arr.data = nullptr;
+        arr.data_len = 0;
     }
 }
 

@@ -101,15 +101,16 @@ class DojoOptionClause : public DojoOption
         case DOJO::MemberValue_Tag::String:
             {
                 String str = p_value;
-                char* c_str = new char[str.utf8().length() + 1];
-                strcpy(c_str, str.utf8().get_data());
+                CharString utf8_str = str.utf8();
+                char* c_str = static_cast<char*>(malloc(utf8_str.length() + 1));
+                strcpy(c_str, utf8_str.get_data());
                 native_value.string = c_str;
                 break;
             }
         case DOJO::MemberValue_Tag::List:
             {
                 Array arr = p_value;
-                auto* native_list = new DOJO::MemberValue[arr.size()];
+                auto* native_list = static_cast<DOJO::MemberValue*>(malloc(sizeof(DOJO::MemberValue) * arr.size()));
                 for (int i = 0; i < arr.size(); ++i)
                 {
                     native_list[i].tag = DOJO::MemberValue_Tag::PrimitiveValue;
@@ -126,7 +127,7 @@ private:
     static char* string_to_c_char(const String& p_string)
     {
         CharString utf8_str = p_string.utf8();
-        char* c_str = new char[utf8_str.length() + 1];
+        char* c_str = static_cast<char*>(malloc(utf8_str.length() + 1));
         strcpy(c_str, utf8_str.get_data());
         return c_str;
     }
@@ -141,6 +142,46 @@ public:
         primitive_tag = DOJO::Primitive_Tag::U256_;
         logical_operator = DOJO::LogicalOperator::And;
     }
+    
+    static void free_native_member_value(DOJO::MemberValue& p_value)
+    {
+        switch (p_value.tag)
+        {
+        case DOJO::MemberValue_Tag::String:
+            std::free((void*)p_value.string);
+            break;
+        case DOJO::MemberValue_Tag::List:
+            // Asumimos que la lista solo contiene primitivas y no necesita limpieza profunda
+            std::free(p_value.list.data);
+            break;
+        default:
+            // PrimitiveValue no tiene memoria dinámica que limpiar
+            break;
+        }
+    }
+
+    static void free_native_clause(DOJO::Clause& p_clause)
+    {
+        switch (p_clause.tag)
+        {
+        case DOJO::Clause_Tag::HashedKeys:
+            DojoArrayHelpers::free_native_carray_felt(p_clause.hashed_keys);
+            break;
+        case DOJO::Clause_Tag::Keys:
+            DojoArrayHelpers::free_native_carray_option_field_element(p_clause.keys.keys);
+            DojoArrayHelpers::free_native_carray_str(p_clause.keys.models);
+            break;
+        // Fall through for CMember cleanup
+        case DOJO::Clause_Tag::Composite:
+            for (uintptr_t i = 0; i < p_clause.composite.clauses.data_len; ++i)
+            {
+                free_native_clause(p_clause.composite.clauses.data[i]);
+            }
+            std::free(p_clause.composite.clauses.data);
+            break;
+        }
+    }
+
 
     void load_from_native(const DOJO::Clause& p_clause)
     {
@@ -162,10 +203,12 @@ public:
                 TypedArray<String> out;
                 for (uintptr_t i = 0; i < p_clause.hashed_keys.data_len; ++i)
                 {
-                    Ref<FieldElement> felt = memnew(FieldElement(p_clause.hashed_keys.data));
+                    Ref<FieldElement> felt = memnew(FieldElement(p_clause.hashed_keys.data[i]));
                     out.push_back(felt->to_string());
                 }
+                hashed_keys = out;
             }
+            break;
         case DOJO::Clause_Tag::Keys:
             {
                 Array out_keys;
@@ -331,7 +374,7 @@ public:
             }
         case DOJO::Clause_Tag::Composite:
             {
-                auto* native_clauses = new DOJO::Clause[clauses.size()];
+                auto* native_clauses = static_cast<DOJO::Clause*>(malloc(sizeof(DOJO::Clause) * clauses.size()));
                 for (int i = 0; i < clauses.size(); ++i)
                 {
                     Ref<DojoOptionClause> clause_ref = clauses[i];
