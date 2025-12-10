@@ -51,29 +51,28 @@ except Exception:
 
     COMMAND_LINE_TARGETS = sys.argv
 
-# Colors
+# Colors and Emojis
 G, B, R, Y, X = '\033[92m', '\033[94m', '\033[91m', '\033[1;33m', '\033[0m'
+rocket, broom, check, package, clipboard, party, cross = "🚀", "🧹", "✅", "📦", "📋", "🎉", "❌"
 
-# Check if running on Windows to avoid encoding issues
 is_windows = host_platform.system().lower() == "windows"
 if is_windows:
-    # Use ASCII alternatives on Windows
-    rocket = ">"
-    broom = "-"
-    check = "+"
-    package = "#"
-    clipboard = "="
-    party = "!"
-    cross = "x"
-else:
-    # Use emojis on other platforms
-    rocket = "🚀"
-    broom = "🧹"
-    check = "✅"
-    package = "📦"
-    clipboard = "📋"
-    party = "🎉"
-    cross = "❌"
+    try:
+        import ctypes
+        kernel32 = ctypes.windll.kernel32
+        h_stdout = kernel32.GetStdHandle(-11)  # STD_OUTPUT_HANDLE
+        mode = ctypes.c_ulong()
+        # It's important to check the return value of GetConsoleMode.
+        if kernel32.GetConsoleMode(h_stdout, ctypes.byref(mode)) == 0:
+            raise ctypes.WinError()
+        mode.value |= 0x0004  # ENABLE_VIRTUAL_TERMINAL_PROCESSING
+        # Also check the return value of SetConsoleMode.
+        if kernel32.SetConsoleMode(h_stdout, mode) == 0:
+            raise ctypes.WinError()
+    except Exception:
+        # Fallback to no colors and ASCII symbols if ANSI support fails
+        G, B, R, Y, X = '', '', '', '', ''
+        rocket, broom, check, package, clipboard, party, cross = ">", "-", "+", "#", "=", "!", "x"
 
 print(f"{B}{rocket} Building godot-dojo{X}")
 
