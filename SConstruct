@@ -358,7 +358,7 @@ else:
 # Link Rust libraries
 rust_build_mode = "release" if is_release_build else "debug"
 
-# For macOS universal, rust_target was modified, so we handle it specially
+# Determine target directory for Rust libraries
 if platform in ["macos", "ios"] and arch == "universal":
     rust_lib_target_dir = "universal"
 else:
@@ -366,68 +366,67 @@ else:
 
 rust_lib_base_path = f"godot-dojo-core/target/{rust_lib_target_dir}/{rust_build_mode}"
 
+# Determine library path and name based on platform
 if platform == "windows":
-    if use_mingw:
-        rust_lib_path = f"{rust_lib_base_path}/libgodot_dojo_core.a"
-    else:
-        rust_lib_path = f"{rust_lib_base_path}/godot_dojo_core.lib"
+    rust_lib_path = f"{rust_lib_base_path}/{'lib' if use_mingw else ''}godot_dojo_core.{'a' if use_mingw else 'lib'}"
 else:
     rust_lib_path = f"{rust_lib_base_path}/libgodot_dojo_core.a"
 
-if platform == "windows":
-    if use_mingw:
-        # For MinGW, we link against the static .a library
-        rust_lib = rust_lib_path
-    elif is_host_windows:
-        # For MSVC, we link against the static .lib library
-        rust_lib = rust_lib_path
-        env.Append(LINKFLAGS=['/NODEFAULTLIB:MSVCRT'])
-        env.Append(LIBS=['ws2_32', 'advapi32', 'ntdll'])
-elif platform == "linux":
-    rust_lib = rust_lib_path
-    # Use pkg-config to add proper include/lib flags for dbus-1 and ensure correct link order.
-    # It's important to add this *after* our own library which depends on it.
-    try:
-        env.ParseConfig('pkg-config --cflags --libs dbus-1')
-    except Exception: # Fallback if pkg-config is not available
-        env.Append(LIBS=['dbus-1'])
-else:
-    # Default for other platforms like macos (non-universal), android, ios
-    rust_lib = rust_lib_path
-
-if rust_lib:
-    if platform in ["linux", "android"] or use_mingw:
-        if platform == "windows" and use_mingw:
-            # For MinGW, we must include the system libraries Rust depends on *inside* the group.
-            win_libs = ['-lws2_32', '-ladvapi32', '-lntdll']
-            env.Append(_LIBFLAGS=['-Wl,--start-group', rust_lib] + win_libs + ['-Wl,--end-group'])
-        else:
-            # For other platforms like Linux/macOS
-            env.Append(_LIBFLAGS=['-Wl,--start-group', rust_lib, '-Wl,--end-group'])
-    elif platform in ["macos", "ios"]:
-        # For macOS, we just add the library directly without the group flags.
-        env.Append(_LIBFLAGS=[rust_lib])
-        # The iana_time_zone crate (a dependency) requires the CoreFoundation framework on Apple platforms.
-        if platform in ["macos", "ios"]:
-            env.Append(LINKFLAGS=['-framework', 'CoreFoundation'])
-    elif platform == "windows" and not use_mingw:
-        # For MSVC
-        env.Append(LINKFLAGS=[f"/WHOLEARCHIVE:{os.path.basename(rust_lib)}"])
-        env.Append(LIBPATH=[os.path.dirname(rust_lib)])
-else:
-    print(f"{R}{cross} Could not determine Rust library paths for platform {platform}{X}")
+# Check if the library exists before proceeding
+if not os.path.exists(rust_lib_path):
+    print(f"{R}{cross} Could not find Rust library at {rust_lib_path}. Please build the Rust crate first.{X}")
     Exit(1)
 
-sources = sorted(glob.glob("src/**/*.cpp", recursive=True)) + [
-    "bindings/controller/controller.cpp",
-]
+# Configure linking for each platform
+if platform == "windows":
+    if use_mingw:
+        win_libs = ['-lws2_32', '-ladvapi32', '-lntdll']
+        env.Append(_LIBFLAGS=['-Wl,--start-group', rust_lib_path] + win_libs + ['-Wl,--end-group'])
+    else:  # MSVC
+        # Sidestep the SCons duplicate library issue by using /OPT:NOREF.
+        # This tells the linker to keep all symbols, achieving the same as /WHOLEARCHIVE
+        # but without conflicting with SCons's automatic dependency management.
+        rust_lib_dir = os.path.dirname(rust_lib_path)
+        rust_lib_name = os.path.splitext(os.path.basename(rust_lib_path))[0].replace("lib", "", 1)
+
+        env.Append(LIBPATH=[rust_lib_dir])
+        env.Append(LIBS=[rust_lib_name])
+        env.Append(LINKFLAGS=['/OPT:NOREF', '/NODEFAULTLIB:MSVCRT'])
+        env.Append(LIBS=['ws2_32', 'advapi32', 'ntdll'])
+elif platform in ["linux", "android"]:
+    env.Append(_LIBFLAGS=['-Wl,--start-group', rust_lib_path, '-Wl,--end-group'])
+    if platform == "linux":
+        try:
+            env.ParseConfig('pkg-config --cflags --libs dbus-1')
+        except Exception:
+            env.Append(LIBS=['dbus-1'])
+elif platform in ["macos", "ios"]:
+    env.Append(_LIBFLAGS=[rust_lib_path])
+    # The iana_time_zone crate (a dependency) requires the CoreFoundation framework on Apple platforms.
+    env.Append(LINKFLAGS=['-framework', 'CoreFoundation'])
+else:
+    # Fallback for other platforms (like web) which might just need the library path.
+    # Web builds, for example, don't link in the same way.
+    print(f"{Y}Warning: Using default linking for platform {platform}. This may not be correct.{X}")
+    env.Append(_LIBFLAGS=[rust_lib_path])
+
+# --- Source File Management ---
+# This is a common SCons pitfall: glob() finds files that were generated
+# in a previous run, causing them to be added to the build twice.
+# We fix this by explicitly filtering out known generated files from the glob result.
+all_sources = glob.glob("src/**/*.cpp", recursive=True)
+generated_doc_file = "src/gen/doc_data.gen.cpp"
+sources = [s for s in all_sources if os.path.normpath(s) != os.path.normpath(generated_doc_file)]
+sources = sorted(sources) + ["bindings/controller/controller.cpp"]
+
 _godot_min = _detect_godot_min_requirement()
 _godot_tag = _get_git_submodule_version("external/godot-cpp")
 print(f"{Y}{clipboard} Building with {_godot_tag}.{X}")
-# Add documentation
+
+# Add documentation (the correct way)
 if target in ["editor", "template_debug"]:
     try:
-        doc_data = env.GodotCPPDocData("src/gen/doc_data.gen.cpp", source=Glob("doc_classes/*.xml"))
+        doc_data = env.GodotCPPDocData(generated_doc_file, source=Glob("doc_classes/*.xml"))
         sources.append(doc_data)
     except AttributeError:
         print("Not including class reference as we're targeting a pre-4.3 baseline.")
