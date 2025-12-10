@@ -373,7 +373,7 @@ else:
     rust_lib_path = f"{rust_lib_base_path}/libgodot_dojo_core.a"
 
 # Check if the library exists before proceeding
-if not os.path.exists(rust_lib_path):
+if "assemble-ios" not in COMMAND_LINE_TARGETS and not os.path.exists(rust_lib_path):
     print(f"{R}{cross} Could not find Rust library at {rust_lib_path}. Please build the Rust crate first.{X}")
     Exit(1)
 
