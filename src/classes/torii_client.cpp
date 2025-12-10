@@ -190,13 +190,19 @@ TypedArray<Dictionary> ToriiClient::get_entities(const Ref<DojoQuery> &query) {
     }
     DOJO::Query *native_query_ptr = static_cast<DOJO::Query *>(query->get_native_query());
 
+    if (native_query_ptr == nullptr) {
+        Logger::error("Failed to get native query: pointer is null");
+        return {};
+    }
+
     DOJO::ResultPageEntity result_page_entity = DOJO::client_entities(client, *native_query_ptr);
 
     DojoQuery::free_native_query(native_query_ptr);
 
     if (result_page_entity.tag == DOJO::ErrPageEntity) {
-        return Array::make(Logger::error_dict("Failed to get entities: ", GET_DOJO_ERROR(result_page_entity)));
-;
+        Array ret;
+        ret.push_back(Logger::error_dict("Failed to get entities: ", GET_DOJO_ERROR(result_page_entity)));
+        return ret;
     }
 
     DOJO::PageEntity page_entities = result_page_entity.ok;
