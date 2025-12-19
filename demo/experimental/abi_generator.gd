@@ -48,6 +48,8 @@ func _generate_abi():
 	_create_enums()
 	_create_funcs()
 	
+	_generate_classes()
+	
 	_save_script(world_name)
 
 func _create_enums() -> void:
@@ -142,7 +144,6 @@ func _parse_model_members(list:Array) -> Array:
 		data.append(parsed)
 	return data
 
-
 func _parse_abis(list:Array,seed:String,contract_specific_only:bool=true) -> Array:
 	var data := []
 	for dict : Dictionary in list:
@@ -171,9 +172,7 @@ func _parse_abi(dict:Dictionary,seed:String) -> Dictionary:
 			data["kind"] = dict["kind"]
 		if dict.has("items"):
 			data["items"] = dict["items"]
-
 	return data
-
 
 func _parse_name(type:String) -> Array:
 	# TODO
@@ -183,7 +182,6 @@ func _parse_name(type:String) -> Array:
 			return e.strip_edges().replace("<","").replace(">","").replace("(","").replace(")","")
 	)
 	return list
-
 
 func _add_line():
 	_script.source_code += "\n"
@@ -195,7 +193,6 @@ func _set_class_name(_class:String, _extends:String = ""):
 		_script.source_code += "extends %s" % _extends
 	_add_line()
 
-
 func _append_code(_code:String, _new_line:bool = true):
 	_add_line()
 	_script.source_code += _code
@@ -206,7 +203,6 @@ func _get_contract_address(tag:String) -> String:
 		if contract["tag"] == tag:
 			return contract["address"]
 	return ""
-	
 
 func _add_execute(_name:String,params:Array,tag:Array):
 	var contract_tag : String = "%s-%s"%[tag[0],tag[-2]]
@@ -219,8 +215,7 @@ func _add_execute(_name:String,params:Array,tag:Array):
 	data["address"] = "{contract_address}"
 	data["entrypoint"] = "{entrypoint}"
 	data["calldata"] = [{calldata}]
-	account.execute([data])
-""".format({
+	account.execute([data])""".format({
 		"name":"execute_"+_name,
 		"calldata": "" if params.is_empty() else ", ".join(params),
 		"params": "" if params.is_empty() else ", ".join(params),
@@ -228,8 +223,8 @@ func _add_execute(_name:String,params:Array,tag:Array):
 		"entrypoint":_name,
 	})
 	_append_code(line)
-	
-	
+
+
 func _add_execute_from_outside(_name:String,params:Array,tag:Array):
 	var contract_tag : String = "%s-%s"%[tag[0],tag[-2]]
 	var contract_address : String = _get_contract_address(contract_tag)
@@ -241,8 +236,7 @@ func _add_execute_from_outside(_name:String,params:Array,tag:Array):
 	data["address"] = "{contract_address}"
 	data["entrypoint"] = "{entrypoint}"
 	data["calldata"] = [{calldata}]
-	account.execute_from_outside([data])
-""".format({
+	account.execute_from_outside([data])""".format({
 		"name":"execute_from_outside_"+_name,
 		"calldata": "" if params.is_empty() else ", ".join(params),
 		"params": "" if params.is_empty() else ", ".join(params),
@@ -250,7 +244,7 @@ func _add_execute_from_outside(_name:String,params:Array,tag:Array):
 		"entrypoint":_name,
 	})
 	_append_code(line)
-	
+
 func _add_enum(_name:String, _values: Array):
 	var line: String = "enum {name} {{values}}".format({
 		"name": _name.capitalize(),
@@ -274,3 +268,46 @@ func _indent_value(_value) -> String:
 	else:
 		value = str(_value)
 	return value
+
+func _generate_classes() -> void:
+	for model in symbols["models"]:
+		var _name = model["model_name"]
+		var _members = model["members"]
+		_add_class(_name,_members)
+		_add_line()
+
+func _add_class(_name:String,members:Array) -> void:
+	var line := "class %s:"%_name.to_pascal_case()
+	_append_code(line,false)
+	for member in members:
+		var mname : String = member.name
+		var mtype : String = _parse_core_type(member.type)
+		line = "\tvar {name} {type}".format({
+			"name":mname,
+			"type": (": "+mtype) if not mtype.is_empty() else ""
+		})
+		_append_code(line,false)
+
+func _parse_core_type(tags:Array) -> String:
+	var returned_type : String = ""
+	if tags[0] == "core":
+		match tags[1]:
+			"integer":
+				if tags.back() in ["i128","u128","u256"]:
+					returned_type = tags.back().to_upper()
+				else:
+					returned_type = "int"
+			"bool":
+				returned_type = "bool"
+			"starknet":
+				if tags.back() == "ContractAddress":
+					returned_type = "String"
+			"felt252":
+				returned_type = "String"
+			"byte_array":
+				returned_type = "PackedByteArray"
+			"option":
+				returned_type = "Variant"
+			"array":
+				returned_type = "Array"
+	return returned_type
