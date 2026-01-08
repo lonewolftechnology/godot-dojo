@@ -1,3 +1,47 @@
+## [v0.4.6.3](https://github.com/lonewolftechnology/godot-dojo/tree/v0.4.6.3) (2025-12-10)
+**Commits:**
+- [[477f033](https://github.com/lonewolftechnology/godot-dojo/commit/477f033d58810ecd8d3fd171a6c972841b2de68d)] ci: fix
+- [[0fd69aa](https://github.com/lonewolftechnology/godot-dojo/commit/0fd69aa0e23d7d52eeb9643f6f32834138c87f4a)] ci: build msvc
+- [[a5f1f49](https://github.com/lonewolftechnology/godot-dojo/commit/a5f1f49bde8b890e1b06aec6e5a703f321a37e09)] scons: potencial msvc fix
+- [[8b5bcb3](https://github.com/lonewolftechnology/godot-dojo/commit/8b5bcb33114411fff3c7d532fbc19f995326e78c)] scons: minor change
+
+## [v0.4.6.2](https://github.com/lonewolftechnology/godot-dojo/tree/v0.4.6.2) (2025-12-04)
+**Commits:**
+- [[1385c45](https://github.com/lonewolftechnology/godot-dojo/commit/1385c45e93a9c2ebd9367199f497c9cb05919eed)] ToriiClient: Potentially fix memory leak
+- [[6b074a2](https://github.com/lonewolftechnology/godot-dojo/commit/6b074a2ebcfd68f011d6d2c21f02b79efcf8d21b)] demo: update testing
+- [[f853cd0](https://github.com/lonewolftechnology/godot-dojo/commit/f853cd0fd4844bf4796fe8c0e2d11f3bbb9d4276)] demo: wip abi bindings generator
+
+## [v0.4.6.1](https://github.com/lonewolftechnology/godot-dojo/tree/v0.4.6.1) (2025-11-27)
+**Commits:**
+- [[27d931a](https://github.com/lonewolftechnology/godot-dojo/commit/27d931a3a482e4e8ad11040a0bcf0aa4a6cb3a67)] DojoOptionClause: fix enums bindings
+- [[4d3a6ce](https://github.com/lonewolftechnology/godot-dojo/commit/4d3a6ce0bcee2b5be266f5bcd5353663f25e9d9b)] ci: update cache handling and cleaning
+- [[0b385b4](https://github.com/lonewolftechnology/godot-dojo/commit/0b385b45a2706d537425d6f928afc232a0ab050b)] demo: wip new all in one tester for dojo-starter
+- [[9f4e921](https://github.com/lonewolftechnology/godot-dojo/commit/9f4e92101890ff15322cd0157900c8a395bf6a31)] demo: wip new modular `QueryTest`
+- [[6247a12](https://github.com/lonewolftechnology/godot-dojo/commit/6247a123bd5e1484322156e9d3bf99e35c640a10)] demo: modularize `SessionTesting`
+- [[08e8140](https://github.com/lonewolftechnology/godot-dojo/commit/08e8140f081942352014ebbb330646543eac5dfa)] demo: moved old scene tester that uses custom startar
+- [[76b7ce4](https://github.com/lonewolftechnology/godot-dojo/commit/76b7ce4ec6003cd6cdf9d30919aa3e7f4817e613)] demo: added `StatusIndicator` for visual debugging
+- [[5f2c9e1](https://github.com/lonewolftechnology/godot-dojo/commit/5f2c9e1c2b1d6c4a53d3c9eafd64e9f2e240f24f)] demo: added `LoggerLevelToggle` for debugging
+- [[51839d1](https://github.com/lonewolftechnology/godot-dojo/commit/51839d1018928d9f5025f7fccf816e002713eb1a)] demo: added a HttpPinger to check if katana/torii url is valid
+- [[2393b78](https://github.com/lonewolftechnology/godot-dojo/commit/2393b78510e678ad24b90d463862c632876e7b90)] demo: moved dojo config to its own static class
+- [[0c0d523](https://github.com/lonewolftechnology/godot-dojo/commit/0c0d523f788933b69f75c07894600ce0e96d2ffc)] demo: wip abi bindings generator
+- [[49ecfca](https://github.com/lonewolftechnology/godot-dojo/commit/49ecfcad1836ec272202ea97413b9416999f4df8)] demo: cleanup
+- [[8b3deff](https://github.com/lonewolftechnology/godot-dojo/commit/8b3deff187966bf3023f82a6591620295b8cf7ed)] DojoQuery: use better array handling from `DojoArray`
+- [[f3b86a5](https://github.com/lonewolftechnology/godot-dojo/commit/f3b86a5b78874dcdf1fd8d7c5dc4aeca8af8c590)] DojoOption: minor change
+- [[b1f102a](https://github.com/lonewolftechnology/godot-dojo/commit/b1f102ad7170e4eeed87f84d1f0d918271f04651)] DojoOptionClause: fix clause getting ignored every time
+- [[8ffa6b0](https://github.com/lonewolftechnology/godot-dojo/commit/8ffa6b081ecc856aa7c209bdb9ab1463e0e7efda)] DojoOptionClause: fix string leak
+- [[d688be3](https://github.com/lonewolftechnology/godot-dojo/commit/d688be31c7bd1ff82a3e27a04accd6c1d86591f9)] DojoOptionArrayFieldElement: fix array conversion
+- [[5488486](https://github.com/lonewolftechnology/godot-dojo/commit/5488486ba9ec9e07d0d99ca5397f9abfda5f090f)] DojoArray: added more helpers for `dojo.c` native arrays
+- [[5fe1ea0](https://github.com/lonewolftechnology/godot-dojo/commit/5fe1ea0cd4593865bfd4b89497cab398b90a9895)] ToriiClient: fix in-editor memory leakage
+- [[7b6a50e](https://github.com/lonewolftechnology/godot-dojo/commit/7b6a50e53f7b0a45fb5990520a445173b4eeb341)] StarterProject: update slot data
+- [[33c0b0c](https://github.com/lonewolftechnology/godot-dojo/commit/33c0b0c19beeb391ac6ad33b2efe4eb057afe4ff)] docs: update generator
+- [[fda3fca](https://github.com/lonewolftechnology/godot-dojo/commit/fda3fca0d59c8ed2556f5fc955b6f9bf8b7cab46)] StarterProject: update window size
+- [[08093c8](https://github.com/lonewolftechnology/godot-dojo/commit/08093c82d89d0144650cd34e12c165af8893f7ac)] StarterProject: minor changes
+- [[4567b33](https://github.com/lonewolftechnology/godot-dojo/commit/4567b33ee2dec1bfc67e4d4e0d37a0028d636a11)] ci: pre-install addon to starter-project
+- [[7bffc57](https://github.com/lonewolftechnology/godot-dojo/commit/7bffc57a642559655480af837277c6feb27a478d)] docs: update readmes
+- [[ae36639](https://github.com/lonewolftechnology/godot-dojo/commit/ae366391494255433dd21f20e70d58b4560fbfa5)] docs: update DojoSessionAccount parameter order
+- [[0610bc3](https://github.com/lonewolftechnology/godot-dojo/commit/0610bc325772f1cc3254c276309f9a2eb6731c26)] update changelog
+- [[bf03892](https://github.com/lonewolftechnology/godot-dojo/commit/bf03892561bfeb576acd8f4c6db0ed363391f97d)] update readme
+
 ## [v0.4.6](https://github.com/lonewolftechnology/godot-dojo/tree/v0.4.6) (2025-11-25)
 **Commits:**
 - [[3bc31fd](https://github.com/lonewolftechnology/godot-dojo/commit/3bc31fd2c035b9929e3d23eb422c3a341f25980e)] DojoHelper: don't save log level to projectsettings in runtime
