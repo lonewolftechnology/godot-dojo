@@ -189,10 +189,7 @@ export_presets.cfg
 # Vim
 *.swp
 *.swo
-*~
-
 # Emacs
-*~
 \#*\#
 /.emacs.desktop
 /.emacs.desktop.lock
@@ -212,4 +209,4 @@ tramp
 dojo_methods.md
 notes.md
 commit_script.sh
-bindings
+#bindings
