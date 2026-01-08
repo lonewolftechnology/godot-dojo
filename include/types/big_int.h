@@ -40,6 +40,10 @@ public:
     PackedByteArray to_bytes() const;
     DOJO::FieldElement to_felt() const;
     PackedByteArray _to_felt_bytes() const;
+    int get_width() const;
+    // Note: These methods return 0 if the value is out of range and log an error.
+    uint64_t get_uint64() const;
+    int64_t get_int64() const;
 
     static Ref<U128> from_variant(const Variant& p_value);
 
@@ -52,6 +56,10 @@ protected:
         ClassDB::bind_method(D_METHOD("to_float", "precision"), &U128::to_float, DEFVAL(-1));
         ClassDB::bind_method(D_METHOD("to_bytes"), &U128::to_bytes);
         ClassDB::bind_method(D_METHOD("to_felt"), &U128::_to_felt_bytes);
+        ClassDB::bind_method(D_METHOD("get_width"), &U128::get_width);
+        ClassDB::bind_method(D_METHOD("get_uint64"), &U128::get_uint64);
+        ClassDB::bind_method(D_METHOD("get_int64"), &U128::get_int64);
+
 
         ClassDB::bind_static_method("U128", D_METHOD("from_variant", "value"), &U128::from_variant);
     }
@@ -83,6 +91,9 @@ public:
     PackedByteArray to_bytes() const;
     DOJO::FieldElement to_felt() const;
     PackedByteArray _to_felt_bytes() const;
+    int get_width() const;
+    // Note: This method returns 0 if the value is out of int64_t range and logs an error.
+    int64_t get_int64() const;
 
     static Ref<I128> from_variant(const Variant& p_value);
 
@@ -95,6 +106,9 @@ protected:
         ClassDB::bind_method(D_METHOD("to_float", "precision"), &I128::to_float, DEFVAL(-1));
         ClassDB::bind_method(D_METHOD("to_bytes"), &I128::to_bytes);
         ClassDB::bind_method(D_METHOD("to_felt"), &I128::_to_felt_bytes);
+        ClassDB::bind_method(D_METHOD("get_width"), &I128::get_width);
+        ClassDB::bind_method(D_METHOD("get_int64"), &I128::get_int64);
+
 
         ClassDB::bind_static_method("I128", D_METHOD("from_variant", "value"), &I128::from_variant);
     }
@@ -125,6 +139,11 @@ public:
     Ref<U128> get_low() const;
     Ref<U128> get_high() const;
 
+    int get_width() const;
+    // Note: These methods return 0 if the value is out of range and log an error.
+    uint64_t get_uint64() const;
+    int64_t get_int64() const;
+
     // @deprecated: This is incorrect for calldata. Use get_low/get_high.
     DOJO::FieldElement to_felt() const;
     PackedByteArray _to_felt_bytes() const; // Uses the deprecated to_felt
@@ -142,6 +161,9 @@ protected:
         ClassDB::bind_method(D_METHOD("get_low"), &U256::get_low);
         ClassDB::bind_method(D_METHOD("get_high"), &U256::get_high);
         ClassDB::bind_method(D_METHOD("to_felt"), &U256::_to_felt_bytes);
+        ClassDB::bind_method(D_METHOD("get_width"), &U256::get_width);
+        ClassDB::bind_method(D_METHOD("get_uint64"), &U256::get_uint64);
+        ClassDB::bind_method(D_METHOD("get_int64"), &U256::get_int64);
 
         ClassDB::bind_static_method("U256", D_METHOD("from_variant", "value"), &U256::from_variant);
     }

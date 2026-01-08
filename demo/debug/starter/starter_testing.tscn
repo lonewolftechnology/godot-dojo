@@ -1,0 +1,244 @@
+[gd_scene load_steps=11 format=3 uid="uid://cn2due67t0wfp"]
+
+[ext_resource type="Script" uid="uid://c3a48nnb14ty" path="res://debug/custom_starter/godot-dojo.gd" id="1_uhy1p"]
+[ext_resource type="PackedScene" uid="uid://cj5lyq6newoxj" path="res://debug/session_testing/session_testing.tscn" id="2_nuvle"]
+[ext_resource type="PackedScene" uid="uid://dtpm0lqcm48j6" path="res://debug/queries/query_test.tscn" id="4_me0nv"]
+[ext_resource type="PackedScene" uid="uid://b5vmo8llucetx" path="res://debug/tools/status_indicator.tscn" id="4_n1jwj"]
+[ext_resource type="Script" uid="uid://c6eok305eogbd" path="res://debug/tools/logger_level_toggle.gd" id="5_n1jwj"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_fx8p4"]
+content_margin_left = 8.0
+content_margin_top = 8.0
+content_margin_right = 8.0
+content_margin_bottom = 8.0
+bg_color = Color(0.1, 0.1, 0.1, 0.6)
+corner_radius_top_left = 3
+corner_radius_top_right = 3
+corner_radius_bottom_right = 3
+corner_radius_bottom_left = 3
+corner_detail = 5
+
+[sub_resource type="EntitySubscription" id="EntitySubscription_nuvle"]
+
+[sub_resource type="MessageSubscription" id="MessageSubscription_nuvle"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_k1kwj"]
+content_margin_left = 8.0
+content_margin_top = 8.0
+content_margin_right = 8.0
+content_margin_bottom = 8.0
+bg_color = Color(0.1, 0.1, 0.1, 0.6)
+corner_radius_top_left = 3
+corner_radius_top_right = 3
+corner_radius_bottom_right = 3
+corner_radius_bottom_left = 3
+corner_detail = 5
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_n1jwj"]
+content_margin_left = 4.0
+content_margin_top = 4.0
+content_margin_right = 4.0
+content_margin_bottom = 4.0
+bg_color = Color(0.24705882, 0.24705882, 0.24705882, 1)
+corner_radius_top_left = 3
+corner_radius_top_right = 3
+corner_radius_bottom_right = 3
+corner_radius_bottom_left = 3
+
+[node name="StarterTesting" type="Node"]
+script = ExtResource("1_uhy1p")
+
+[node name="CanvasLayer" type="CanvasLayer" parent="."]
+
+[node name="VBoxContainer" type="VBoxContainer" parent="CanvasLayer"]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="TabContainer" type="TabContainer" parent="CanvasLayer/VBoxContainer"]
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_styles/panel = SubResource("StyleBoxFlat_fx8p4")
+tab_alignment = 1
+current_tab = 1
+
+[node name="SessionTesting" parent="CanvasLayer/VBoxContainer/TabContainer" node_paths=PackedStringArray("dojo_session_account", "torii_client") instance=ExtResource("2_nuvle")]
+unique_name_in_owner = true
+visible = false
+layout_mode = 2
+dojo_session_account = NodePath("../../../../DojoSessionAccount")
+torii_client = NodePath("../../../../ToriiClient")
+entity_sub = SubResource("EntitySubscription_nuvle")
+message_sub = SubResource("MessageSubscription_nuvle")
+
+[node name="QueryTest" parent="CanvasLayer/VBoxContainer/TabContainer" node_paths=PackedStringArray("torii_client") instance=ExtResource("4_me0nv")]
+layout_mode = 2
+torii_client = NodePath("../../../../ToriiClient")
+metadata/_tab_index = 1
+
+[node name="Settings" type="PanelContainer" parent="CanvasLayer/VBoxContainer/TabContainer"]
+visible = false
+layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_k1kwj")
+metadata/_tab_index = 2
+
+[node name="HBoxContainer" type="HBoxContainer" parent="CanvasLayer/VBoxContainer/TabContainer/Settings"]
+layout_mode = 2
+
+[node name="VBoxContainer" type="VBoxContainer" parent="CanvasLayer/VBoxContainer/TabContainer/Settings/HBoxContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="PanelContainer" type="PanelContainer" parent="CanvasLayer/VBoxContainer/TabContainer/Settings/HBoxContainer/VBoxContainer"]
+layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_n1jwj")
+
+[node name="VBoxContainer" type="VBoxContainer" parent="CanvasLayer/VBoxContainer/TabContainer/Settings/HBoxContainer/VBoxContainer/PanelContainer"]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="CanvasLayer/VBoxContainer/TabContainer/Settings/HBoxContainer/VBoxContainer/PanelContainer/VBoxContainer"]
+layout_mode = 2
+text = "Slot Config"
+horizontal_alignment = 1
+
+[node name="HBoxContainer" type="HBoxContainer" parent="CanvasLayer/VBoxContainer/TabContainer/Settings/HBoxContainer/VBoxContainer/PanelContainer/VBoxContainer"]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="CanvasLayer/VBoxContainer/TabContainer/Settings/HBoxContainer/VBoxContainer/PanelContainer/VBoxContainer/HBoxContainer"]
+layout_mode = 2
+text = "Torii Url"
+
+[node name="LineEdit" type="LineEdit" parent="CanvasLayer/VBoxContainer/TabContainer/Settings/HBoxContainer/VBoxContainer/PanelContainer/VBoxContainer/HBoxContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="HBoxContainer2" type="HBoxContainer" parent="CanvasLayer/VBoxContainer/TabContainer/Settings/HBoxContainer/VBoxContainer/PanelContainer/VBoxContainer"]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="CanvasLayer/VBoxContainer/TabContainer/Settings/HBoxContainer/VBoxContainer/PanelContainer/VBoxContainer/HBoxContainer2"]
+layout_mode = 2
+text = "Katana Url"
+
+[node name="LineEdit" type="LineEdit" parent="CanvasLayer/VBoxContainer/TabContainer/Settings/HBoxContainer/VBoxContainer/PanelContainer/VBoxContainer/HBoxContainer2"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="HBoxContainer3" type="HBoxContainer" parent="CanvasLayer/VBoxContainer/TabContainer/Settings/HBoxContainer/VBoxContainer/PanelContainer/VBoxContainer"]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="CanvasLayer/VBoxContainer/TabContainer/Settings/HBoxContainer/VBoxContainer/PanelContainer/VBoxContainer/HBoxContainer3"]
+layout_mode = 2
+text = "Contract Address"
+
+[node name="LineEdit" type="LineEdit" parent="CanvasLayer/VBoxContainer/TabContainer/Settings/HBoxContainer/VBoxContainer/PanelContainer/VBoxContainer/HBoxContainer3"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="HBoxContainer4" type="HBoxContainer" parent="CanvasLayer/VBoxContainer/TabContainer/Settings/HBoxContainer/VBoxContainer/PanelContainer/VBoxContainer"]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="CanvasLayer/VBoxContainer/TabContainer/Settings/HBoxContainer/VBoxContainer/PanelContainer/VBoxContainer/HBoxContainer4"]
+layout_mode = 2
+text = "World Address"
+
+[node name="LineEdit" type="LineEdit" parent="CanvasLayer/VBoxContainer/TabContainer/Settings/HBoxContainer/VBoxContainer/PanelContainer/VBoxContainer/HBoxContainer4"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="Button" type="Button" parent="CanvasLayer/VBoxContainer/TabContainer/Settings/HBoxContainer/VBoxContainer/PanelContainer/VBoxContainer"]
+layout_mode = 2
+text = "Update Connection"
+
+[node name="PanelContainer2" type="PanelContainer" parent="CanvasLayer/VBoxContainer/TabContainer/Settings/HBoxContainer/VBoxContainer"]
+layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_n1jwj")
+
+[node name="LoggerStatus" type="VBoxContainer" parent="CanvasLayer/VBoxContainer/TabContainer/Settings/HBoxContainer/VBoxContainer/PanelContainer2"]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="CanvasLayer/VBoxContainer/TabContainer/Settings/HBoxContainer/VBoxContainer/PanelContainer2/LoggerStatus"]
+layout_mode = 2
+text = "Logger Level"
+horizontal_alignment = 1
+
+[node name="ErrorStatus" type="CheckButton" parent="CanvasLayer/VBoxContainer/TabContainer/Settings/HBoxContainer/VBoxContainer/PanelContainer2/LoggerStatus"]
+layout_mode = 2
+text = "Error"
+script = ExtResource("5_n1jwj")
+_level = "error"
+metadata/_custom_type_script = "uid://c6eok305eogbd"
+
+[node name="WarningStatus" type="CheckButton" parent="CanvasLayer/VBoxContainer/TabContainer/Settings/HBoxContainer/VBoxContainer/PanelContainer2/LoggerStatus"]
+layout_mode = 2
+text = "Warning"
+script = ExtResource("5_n1jwj")
+_level = "warning"
+metadata/_custom_type_script = "uid://c6eok305eogbd"
+
+[node name="InfoStatus" type="CheckButton" parent="CanvasLayer/VBoxContainer/TabContainer/Settings/HBoxContainer/VBoxContainer/PanelContainer2/LoggerStatus"]
+layout_mode = 2
+text = "Info"
+script = ExtResource("5_n1jwj")
+_level = "info"
+metadata/_custom_type_script = "uid://c6eok305eogbd"
+
+[node name="DebugStatus" type="CheckButton" parent="CanvasLayer/VBoxContainer/TabContainer/Settings/HBoxContainer/VBoxContainer/PanelContainer2/LoggerStatus"]
+layout_mode = 2
+text = "Debug"
+script = ExtResource("5_n1jwj")
+_level = "debug"
+metadata/_custom_type_script = "uid://c6eok305eogbd"
+
+[node name="SuccessStatus" type="CheckButton" parent="CanvasLayer/VBoxContainer/TabContainer/Settings/HBoxContainer/VBoxContainer/PanelContainer2/LoggerStatus"]
+layout_mode = 2
+text = "Success"
+script = ExtResource("5_n1jwj")
+_level = "success"
+metadata/_custom_type_script = "uid://c6eok305eogbd"
+
+[node name="SaveLog" type="Button" parent="CanvasLayer/VBoxContainer/TabContainer/Settings/HBoxContainer/VBoxContainer/PanelContainer2/LoggerStatus"]
+layout_mode = 2
+text = "Save to project"
+
+[node name="PanelContainer" type="PanelContainer" parent="CanvasLayer/VBoxContainer"]
+layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_n1jwj")
+
+[node name="HBoxContainer" type="HBoxContainer" parent="CanvasLayer/VBoxContainer/PanelContainer"]
+layout_mode = 2
+alignment = 1
+
+[node name="ClientStatus" parent="CanvasLayer/VBoxContainer/PanelContainer/HBoxContainer" instance=ExtResource("4_n1jwj")]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+type_name = "Cllent"
+
+[node name="SessionStatus" parent="CanvasLayer/VBoxContainer/PanelContainer/HBoxContainer" instance=ExtResource("4_n1jwj")]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+type_name = "Session"
+
+[node name="EntityStatus" parent="CanvasLayer/VBoxContainer/PanelContainer/HBoxContainer" instance=ExtResource("4_n1jwj")]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+type_name = "EntityUpdates"
+
+[node name="EventStatus" parent="CanvasLayer/VBoxContainer/PanelContainer/HBoxContainer" instance=ExtResource("4_n1jwj")]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+type_name = "EventUpdates"
+
+[node name="DojoSessionAccount" type="DojoSessionAccount" parent="."]
+
+[node name="ToriiClient" type="ToriiClient" parent="."]
+
+[connection signal="session_connected" from="CanvasLayer/VBoxContainer/TabContainer/SessionTesting" to="." method="_on_session_testing_session_connected"]
+[connection signal="subscription_created" from="CanvasLayer/VBoxContainer/TabContainer/SessionTesting" to="." method="_on_session_testing_subscription_created"]
+[connection signal="pressed" from="CanvasLayer/VBoxContainer/TabContainer/Settings/HBoxContainer/VBoxContainer/PanelContainer2/LoggerStatus/SaveLog" to="." method="_on_save_log_pressed"]
+[connection signal="client_connected" from="ToriiClient" to="." method="_on_torii_client_client_connected"]

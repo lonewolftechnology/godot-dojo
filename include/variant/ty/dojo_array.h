@@ -9,17 +9,18 @@
 #include "dojo_types.h"
 #include "variant/field_element.h"
 #include "tools/logger.h"
+#include "ref_counted/options/option_field_element.h"
 #include "tools/dojo_helper.h"
 
 using namespace godot;
 
 namespace DojoArrayHelpers {
+// TODO: refactor, remove, improve
     inline DOJO::CArrayFieldElement string_array_to_native_carray_felt(const TypedArray<String>& arr) {
-        auto* native_arr = new DOJO::FieldElement[arr.size()];
+        auto* native_arr = static_cast<DOJO::FieldElement*>(malloc(sizeof(DOJO::FieldElement) * arr.size()));
         for (int i = 0; i < arr.size(); ++i) {
-            String str = arr[i];
-            DOJO::U256 u256_val = DojoHelpers::string_to_u256(str);
-            memcpy(native_arr[i].data, u256_val.data, 32);
+            // Construct the object directly in the allocated memory
+            native_arr[i] = FieldElement::from_string(arr[i]); // Now assign the value
         }
         return {native_arr, (uintptr_t)arr.size()};
     }
@@ -37,11 +38,52 @@ namespace DojoArrayHelpers {
         const char** native_arr = new const char*[arr.size()];
         for (int i = 0; i < arr.size(); ++i) {
             String str = arr[i];
-            char *c_str = new char[str.utf8().length() + 1];
+            char *c_str = static_cast<char*>(malloc(str.utf8().length() + 1));
             strcpy(c_str, str.utf8().get_data());
             native_arr[i] = c_str;
         }
         return {native_arr, (uintptr_t)arr.size()};
+    }
+
+    inline DOJO::CArrayCOptionFieldElement option_field_element_array_to_native_carray(const Array& arr) {
+        auto* native_arr = static_cast<DOJO::COptionFieldElement*>(malloc(sizeof(DOJO::COptionFieldElement) * arr.size()));
+        for (int i = 0; i < arr.size(); ++i) {
+            Ref<DojoOptionFieldElement> key_ref = arr[i];
+            if (key_ref.is_valid())
+            {
+                native_arr[i] = key_ref->get_native_option();
+            }
+            else
+            {
+                native_arr[i].tag = DOJO::NoneFieldElement;
+            }
+        }
+        return {native_arr, (uintptr_t)arr.size()};
+    }
+
+    inline void free_native_carray_felt(DOJO::CArrayFieldElement& arr) {
+        std::free(arr.data);
+        arr.data = nullptr;
+        arr.data_len = 0;
+    }
+
+    inline void free_native_carray_str(DOJO::CArrayc_char& arr) {
+        if (arr.data) {
+            // The Rust side will free the individual strings. We only free the array of pointers.
+            delete[] arr.data;
+        }
+        arr.data = nullptr;
+        arr.data_len = 0;
+    }
+
+    inline void free_native_carray_option_field_element(DOJO::CArrayCOptionFieldElement& arr) {
+        if (arr.data) {
+            // COptionFieldElement no tiene memoria interna que necesite ser liberada,
+            // por lo que solo necesitamos liberar el array principal.
+            std::free(arr.data);
+        }
+        arr.data = nullptr;
+        arr.data_len = 0;
     }
 }
 
@@ -68,6 +110,7 @@ public:
     DojoArray(DOJO::CArrayEntity array);
     DojoArray(DOJO::CArrayc_char array);
     DojoArray(DOJO::CArrayClause array);
+    DojoArray(DOJO::CArrayWorld array);
     DojoArray(DOJO::CArrayStruct array);
     DojoArray(DOJO::CArrayMember array);
     DojoArray(DOJO::CArrayOrderBy array);
@@ -79,6 +122,18 @@ public:
     DojoArray(DOJO::CArrayCOptionFieldElement array);
     DojoArray(DOJO::CArrayModel array);
     DojoArray(DOJO::CArrayActionCount array);
+    DojoArray(DOJO::CArrayActivity array);
+    DojoArray(DOJO::CArrayAggregationEntry array);
+    DojoArray(DOJO::CArrayAchievement array);
+    DojoArray(DOJO::CArrayTokenTransfer array);
+    DojoArray(DOJO::CArrayTokenBalance array);
+    DojoArray(DOJO::CArrayAchievementTask array);
+    DojoArray(DOJO::CArrayPlayerAchievementEntry array);
+    DojoArray(DOJO::CArrayPlayerAchievementProgress array);
+    DojoArray(DOJO::CArrayTaskProgress array);
+    DojoArray(DOJO::CArrayTableSearchResults array);
+    DojoArray(DOJO::CArraySearchMatch array);
+    DojoArray(DOJO::CArraySearchMatchField array);
 
     // "static" methods.
     static Variant CArrayTyToVariant(DOJO::CArrayTy array);
@@ -86,6 +141,7 @@ public:
     static Variant CArrayEntityToVariant(DOJO::CArrayEntity array);
     static Variant CArrayc_charToVariant(DOJO::CArrayc_char array);
     static Variant CArrayClauseToVariant(DOJO::CArrayClause array);
+    static Variant CArrayWorldToVariant(DOJO::CArrayWorld array);
     static Variant CArrayStructToVariant(DOJO::CArrayStruct array);
     static Variant CArrayMemberToVariant(DOJO::CArrayMember array);
     static Variant CArrayOrderByToVariant(DOJO::CArrayOrderBy array);
@@ -97,6 +153,20 @@ public:
     static Variant CArrayCOptionFieldElementToVariant(DOJO::CArrayCOptionFieldElement array);
     static Variant CArrayModelToVariant(DOJO::CArrayModel array);
     static Variant CArrayActionCountToVariant(DOJO::CArrayActionCount array);
+    static Variant CArrayActivityToVariant(DOJO::CArrayActivity array);
+    static Variant CArrayAggregationEntryToVariant(DOJO::CArrayAggregationEntry array);
+    static Variant CArrayAchievementToVariant(DOJO::CArrayAchievement array);
+    static Variant CArrayAchievementTaskToVariant(DOJO::CArrayAchievementTask array);
+    static Variant CArrayTokenTransferToVariant(DOJO::CArrayTokenTransfer array);
+    static Variant CArrayTokenBalanceToVariant(DOJO::CArrayTokenBalance array);
+    static Variant CArrayPlayerAchievementEntryToVariant(DOJO::CArrayPlayerAchievementEntry array);
+    static Variant CArrayPlayerAchievementProgressToVariant(DOJO::CArrayPlayerAchievementProgress array);
+    static Variant CArrayTaskProgressToVariant(DOJO::CArrayTaskProgress array);
+    static Variant CArrayTableSearchResultsToVariant(DOJO::CArrayTableSearchResults array);
+    static Variant CArraySearchMatchToVariant(DOJO::CArraySearchMatch array);
+    static Variant CArraySearchMatchFieldToVariant(DOJO::CArraySearchMatchField array);
+
+
 
     Variant get_value() const { return value; }
     void set_value(const Variant& p_value) { value = p_value; }

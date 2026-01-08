@@ -39,8 +39,9 @@ protected:
         ClassDB::bind_method(D_METHOD("set_value", "value"), &DojoEnum::set_value);
         ClassDB::bind_method(D_METHOD("get_name"), &DojoEnum::get_name);
         ClassDB::bind_method(D_METHOD("set_name", "name"), &DojoEnum::set_name);
-        // ADD_PROPERTY(PropertyInfo(Variant::INT, "value"), "set_value", "get_value");
 
+        ClassDB::bind_method(D_METHOD("get_option"), &DojoEnum::get_option);
+        ClassDB::bind_method(D_METHOD("to_string"), &DojoEnum::to_string);
     };
 };
 

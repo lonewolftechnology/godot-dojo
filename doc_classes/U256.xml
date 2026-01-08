@@ -22,10 +22,28 @@
 				Returns the high 128 bits of the [U256] value as a [U128].
 			</description>
 		</method>
+		<method name="get_int64" qualifiers="const">
+			<return type="int" />
+			<description>
+				Returns the low 64 bits of the [U256] value as a signed integer.
+			</description>
+		</method>
 		<method name="get_low" qualifiers="const">
 			<return type="U128" />
 			<description>
 				Returns the low 128 bits of the [U256] value as a [U128].
+			</description>
+		</method>
+		<method name="get_uint64" qualifiers="const">
+			<return type="int" />
+			<description>
+				Returns the low 64 bits of the [U256] value as an unsigned integer.
+			</description>
+		</method>
+		<method name="get_width" qualifiers="const">
+			<return type="int" />
+			<description>
+				Returns the width of the integer in bits (256).
 			</description>
 		</method>
 		<method name="init_from_int">

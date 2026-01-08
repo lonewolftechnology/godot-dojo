@@ -37,7 +37,7 @@ public:
         // Pagination
         query->pagination.direction = get_direction();
 
-        OptionU32 limit_option(get_limit());
+        DojoOptionU32 limit_option(get_limit());
         query->pagination.limit = limit_option.get_native_option();
 
         if (!get_cursor().is_empty()) {

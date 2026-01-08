@@ -4,61 +4,47 @@
 #ifndef DOJO_EDITOR_PLUGIN_H
 #define DOJO_EDITOR_PLUGIN_H
 
-#include "dojo_c_gdextension.h"
 #include "godot_cpp/classes/editor_plugin.hpp"
 #include "tools/logger.h"
+
 using namespace godot;
 
 class DojoEditorPlugin : public EditorPlugin
 {
     GDCLASS(DojoEditorPlugin, EditorPlugin)
 
+    bool enabled;
+
 public:
-    DojoEditorPlugin()
-    {
-        Logger::success_extra("DojoEditorPlugin", "Constructed");
+    DojoEditorPlugin();
+    ~DojoEditorPlugin();
 
-    }
-
-    ~DojoEditorPlugin()
-    {
-        Logger::success_extra("DojoEditorPlugin", "Destroyed");
-
-    }
-
-    void _enter_tree() override
-    {
-        Logger::success_extra("DojoEditorPlugin", "Entering tree");
-
-        add_tool_menu_item("Reset Dojo ProjectSettings to default", callable_mp_static(&DojoEditorPlugin::reset_project_settings));
-        Logger::success_extra("DojoEditorPlugin", "Tree entered");
-
-    }
-
-    void _exit_tree() override
-    {
-        Logger::success_extra("DojoEditorPlugin", "Exiting Tree");
-
-        remove_tool_menu_item("Reset Dojo ProjectSettings to default");
-        Logger::success_extra("DojoEditorPlugin", "Tree exited");
-
-    }
+    void _enter_tree() override;
+    void _exit_tree() override;
 
     String _get_plugin_name() const override
     {
-        return "DojoC Tools";
+        return "GodotDojo Tools";
     }
 
-    static void reset_project_settings()
-    {
-        Logger::debug_extra("Dojo", "Resetting Dojo ProjectSettings");
-        DojoC::init_config(true);
-    }
+    void set_enabled(bool p_enabled) { enabled = p_enabled; };
+    bool get_enabled() const { return enabled; }
+
+    void reset_project_settings();
+    void init_config(bool reset = false);
+    void set_setting(const String& setting, const Variant& value, const bool& force = false);
 
 protected:
     static void _bind_methods()
     {
-        ClassDB::bind_static_method("DojoEditorPlugin", D_METHOD("reset_project_settings"), &DojoEditorPlugin::reset_project_settings);
+        ClassDB::bind_method(D_METHOD("set_enabled", "p_enabled"), &DojoEditorPlugin::set_enabled);
+        ClassDB::bind_method(D_METHOD("get_enabled"), &DojoEditorPlugin::get_enabled);
+        ADD_PROPERTY(PropertyInfo(Variant::BOOL, "is_enabled"), "set_enabled", "get_enabled");
+
+        ClassDB::bind_method(D_METHOD("reset_project_settings"), &DojoEditorPlugin::reset_project_settings);
+        ClassDB::bind_method(D_METHOD("init_config", "reset"), &DojoEditorPlugin::init_config);
+        ClassDB::bind_method(D_METHOD("init_setting", "setting", "value", "force"),
+                                    &DojoEditorPlugin::set_setting);
     }
 };
 

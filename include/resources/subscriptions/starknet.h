@@ -14,7 +14,7 @@ class StarknetSubscription : public DojoSubscription
 {
     GDCLASS(StarknetSubscription, DojoSubscription);
 
-    Array keys; // Array of Ref<OptionFieldElement>
+    Array keys; // Array of Ref<DojoOptionFieldElement>
     DOJO::PatternMatching pattern_matching = DOJO::PatternMatching::FixedLen;
     TypedArray<String> models;
 
@@ -28,7 +28,7 @@ class StarknetSubscription : public DojoSubscription
         native_keys.clear();
         native_keys.reserve(keys.size());
         for (int i = 0; i < keys.size(); ++i) {
-            Ref<OptionFieldElement> key = keys[i];
+            Ref<DojoOptionFieldElement> key = keys[i];
             if (key.is_valid()) {
                 native_keys.push_back(key->get_native_option());
             } else {
@@ -81,7 +81,7 @@ protected:
         // Properties
         ClassDB::bind_method(D_METHOD("get_keys"), &StarknetSubscription::get_keys);
         ClassDB::bind_method(D_METHOD("set_keys", "p_keys"), &StarknetSubscription::set_keys);
-        ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "keys", PROPERTY_HINT_ARRAY_TYPE, vformat("%s/%s:%s", Variant::OBJECT, PROPERTY_HINT_RESOURCE_TYPE, "OptionFieldElement")), "set_keys", "get_keys");
+        ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "keys", PROPERTY_HINT_ARRAY_TYPE, vformat("%s/%s:%s", Variant::OBJECT, PROPERTY_HINT_RESOURCE_TYPE, "DojoOptionFieldElement")), "set_keys", "get_keys");
 
         ClassDB::bind_method(D_METHOD("get_pattern_matching"), &StarknetSubscription::get_pattern_matching);
         ClassDB::bind_method(D_METHOD("set_pattern_matching", "p_pm"), &StarknetSubscription::set_pattern_matching);

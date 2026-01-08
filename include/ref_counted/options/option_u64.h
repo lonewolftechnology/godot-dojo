@@ -10,15 +10,15 @@
 
 using namespace godot;
 
-class OptionU64 : public DojoOption {
-    GDCLASS(OptionU64, DojoOption);
+class DojoOptionU64 : public DojoOption {
+    GDCLASS(DojoOptionU64, DojoOption);
 
 protected:
     static void _bind_methods() {}
 
 public:
-    OptionU64() : DojoOption() {}
-    OptionU64(uint64_t value) : DojoOption(value) {}
+    DojoOptionU64() : DojoOption() {}
+    DojoOptionU64(uint64_t value) : DojoOption(value) {}
 
     DOJO::COptionu64 get_native_option() const {
         DOJO::COptionu64 option = {};
@@ -29,6 +29,13 @@ public:
             option.tag = DOJO::Noneu64;
         }
         return option;
+    }
+
+    static Ref<DojoOptionU64> from_native(const DOJO::COptionu64& native_option) {
+        if (native_option.tag == DOJO::Someu64) {
+            return memnew(DojoOptionU64(native_option.some));
+        }
+        return memnew(DojoOptionU64());
     }
 };
 

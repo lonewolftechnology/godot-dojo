@@ -22,6 +22,10 @@
 #include "resources/queries/dojo_token_balance_query.h"
 #include "resources/queries/dojo_controller_query.h"
 #include "resources/queries/dojo_token_transfer_query.h"
+#include "resources/queries/dojo_achievement_query.h"
+#include "resources/queries/dojo_player_achievement_query.h"
+#include "resources/queries/dojo_search_query.h"
+
 #include "resources/subscriptions/activity.h"
 #include "resources/subscriptions/aggregation.h"
 #include "resources/subscriptions/entity.h"
@@ -32,6 +36,7 @@
 #include "resources/subscriptions/contract.h"
 #include "resources/subscriptions/token_balance.h"
 #include "resources/subscriptions/token_transfer.h"
+#include "resources/subscriptions/achievement_progression.h"
 
 #ifdef WEB_ENABLED
 #include "godot_cpp/classes/os.hpp"
@@ -43,11 +48,10 @@
 
 using namespace godot;
 
-class ToriiClient : public Node
-{
+class ToriiClient : public Node {
     GDCLASS(ToriiClient, Node)
-    static ToriiClient* singleton;
-    DOJO::ToriiClient* client;
+    static ToriiClient *singleton;
+    DOJO::ToriiClient *client;
     bool is_connected;
     Array events;
     Array models;
@@ -64,109 +68,162 @@ public:
     Callable on_token_transfer_update_callback;
     Callable on_aggregation_update_callback;
     Callable on_activity_update_callback;
+    Callable on_update_achievement_update_callback;
+    Callable on_achievement_progression_update_callback;
 
     ToriiClient();
+
     ~ToriiClient();
 
-    static ToriiClient* get_singleton();
+    static ToriiClient *get_singleton();
 
-    bool create_client();
+    bool create_client(const String &p_url = "");
+
     void disconnect_client(bool send_signal);
+
     bool is_client_connected() const;
+
     bool is_callable_valid() const;
-    void callable_call(const char* msg) const;
-    String get_world() const;
-    void set_world(const dojo_bindings::FieldElement& n_world);
 
-    Dictionary get_world_metadata();
-    bool refresh_metadata();
+    void callable_call(const char *msg) const;
 
-    TypedArray<Dictionary> get_entities(const Ref<DojoQuery>& query);
+    TypedArray<Dictionary> get_worlds_metadata(const TypedArray<String>& world_addresses = Array());
+
+    bool refresh_metadata(const TypedArray<String>& p_world_addresses = Array());
+
+    TypedArray<Dictionary> get_entities(const Ref<DojoQuery> &query);
 
     TypedArray<Dictionary> get_controllers(Ref<DojoControllerQuery> query);
-    Dictionary get_controller_info(const String& controller_address);
 
-    TypedArray<Dictionary> get_tokens(const Ref<DojoTokenQuery>& query) const;
-    TypedArray<Dictionary> get_token_balances(const Ref<DojoTokenBalanceQuery>& query) const;
-    TypedArray<Dictionary> get_token_transfers(const Ref<DojoTokenTransferQuery>& query) const;
-    TypedArray<Dictionary> get_token_collections(const Ref<DojoContractQuery>& query) const;
-    Dictionary get_token_info(const String& token_address) const;
-    TypedArray<Dictionary> get_aggregations(const Ref<DojoAggregationQuery>& query) const;
-    TypedArray<Dictionary> get_activities(const Ref<DojoActivityQuery>& query) const;
+    Dictionary get_controller_info(const String &controller_address);
+
+    TypedArray<Dictionary> get_tokens(const Ref<DojoTokenQuery> &query) const;
+
+    TypedArray<Dictionary> get_token_balances(const Ref<DojoTokenBalanceQuery> &query) const;
+
+    TypedArray<Dictionary> get_token_transfers(const Ref<DojoTokenTransferQuery> &query) const;
+
+    TypedArray<Dictionary> get_token_collections(const Ref<DojoContractQuery> &query) const;
+
+    TypedArray<Dictionary> get_token_info(const Ref<DojoTokenQuery> &query) const;
+
+    TypedArray<Dictionary> get_aggregations(const Ref<DojoAggregationQuery> &query) const;
+
+    TypedArray<Dictionary> get_activities(const Ref<DojoActivityQuery> &query) const;
+
+    TypedArray<Dictionary> get_achievements(const Ref<DojoAchievementQuery> &query) const;
+
+    TypedArray<Dictionary> get_player_achievements(const Ref<DojoPlayerAchievementQuery> &query) const;
+
+    TypedArray<Dictionary> search (const Ref<DojoSearchQuery> &query);
 
     // Subscriptions
-    void on_entity_state_update(const Callable& callback, const Ref<EntitySubscription>& subscription);
-    void on_event_message_update(const Callable& callback, const Ref<MessageSubscription>& subscription);
-    void on_starknet_event(const Callable& callback, const Ref<StarknetSubscription>& subscription);
-    void on_transaction(const Callable& callback, const Ref<TransactionSubscription>& subscription);
-    void on_token_update(const Callable& callback, const Ref<TokenSubscription>& subscription);
-    void on_contract_update(const Callable& callback, const Ref<ContractSubscription>& subscription);
-    void on_token_balance_update(const Callable& callback, const Ref<TokenBalanceSubscription>& subscription);
-    void on_token_transfer_update(const Callable& callback, const Ref<TokenTransferSubscription>& subscription);
-    void on_aggregation_update(const Callable& callback, const Ref<AggregationSubscription>& subscription);
-    void on_activity_update(const Callable& callback, const Ref<ActivitySubscription>& subscription);
+    void on_entity_state_update(const Callable &callback, const Ref<EntitySubscription> &subscription);
+
+    void on_event_message_update(const Callable &callback, const Ref<MessageSubscription> &subscription);
+
+    void on_starknet_event(const Callable &callback, const Ref<StarknetSubscription> &subscription);
+
+    void on_transaction(const Callable &callback, const Ref<TransactionSubscription> &subscription);
+
+    void on_token_update(const Callable &callback, const Ref<TokenSubscription> &subscription);
+
+    void on_contract_update(const Callable &callback, const Ref<ContractSubscription> &subscription);
+
+    void on_token_balance_update(const Callable &callback, const Ref<TokenBalanceSubscription> &subscription);
+
+    void on_token_transfer_update(const Callable &callback, const Ref<TokenTransferSubscription> &subscription);
+
+    void on_aggregation_update(const Callable &callback, const Ref<AggregationSubscription> &subscription);
+
+    void on_activity_update(const Callable &callback, const Ref<ActivitySubscription> &subscription);
+
+    void on_achievement_progression_update(const Callable &callback,
+                                           const Ref<AchievementProgressionSubscription> &subscription);
 
 
     // Subscriptions update
-    void update_subscription(const Ref<DojoSubscription>& subscription, const Callable& callback = Callable());
-    void update_entity_subscription(const Ref<EntitySubscription>& subscription, const Callable& callback = Callable());
-    void update_event_message_subscription(const Ref<MessageSubscription>& subscription, const Callable& callback = Callable());
-    void update_starknet_event_subscription(const Ref<StarknetSubscription>& subscription, const Callable& callback = Callable());
-    void update_transaction_subscription(const Ref<TransactionSubscription>& subscription, const Callable& callback = Callable());
-    void update_token_subscription(const Ref<TokenSubscription>& subscription, const Callable& callback = Callable());
-    void update_contract_subscription(const Ref<ContractSubscription>& subscription, const Callable& callback = Callable());
-    void update_token_balance_subscription(const Ref<TokenBalanceSubscription>& subscription, const Callable& callback = Callable());
-    void update_token_transfer_subscription(const Ref<TokenTransferSubscription>& subscription, const Callable& callback = Callable());
-    void update_aggregation_subscription(const Ref<AggregationSubscription>& subscription, const Callable& callback = Callable());
-    void update_activity_subscription(const Ref<ActivitySubscription>& subscription, const Callable& callback = Callable());
+    void update_subscription(const Ref<DojoSubscription> &subscription, const Callable &callback = Callable());
+
+    void update_entity_subscription(const Ref<EntitySubscription> &subscription, const Callable &callback = Callable());
+
+    void update_event_message_subscription(const Ref<MessageSubscription> &subscription,
+                                           const Callable &callback = Callable());
+
+    void update_starknet_event_subscription(const Ref<StarknetSubscription> &subscription,
+                                            const Callable &callback = Callable());
+
+    void update_transaction_subscription(const Ref<TransactionSubscription> &subscription,
+                                         const Callable &callback = Callable());
+
+    void update_token_subscription(const Ref<TokenSubscription> &subscription, const Callable &callback = Callable());
+
+    void update_contract_subscription(const Ref<ContractSubscription> &subscription,
+                                      const Callable &callback = Callable());
+
+    void update_token_balance_subscription(const Ref<TokenBalanceSubscription> &subscription,
+                                           const Callable &callback = Callable());
+
+    void update_token_transfer_subscription(const Ref<TokenTransferSubscription> &subscription,
+                                            const Callable &callback = Callable());
+
+    void update_aggregation_subscription(const Ref<AggregationSubscription> &subscription,
+                                         const Callable &callback = Callable());
+
+    void update_activity_subscription(const Ref<ActivitySubscription> &subscription,
+                                      const Callable &callback = Callable());
+
+    void update_achievement_progression(const Ref<AchievementProgressionSubscription> &subscription,
+                                        const Callable &callback = Callable());
 
     void cancel_all_subscriptions();
 
-    bool publish_message(const String& message_data, const Array& signature_felts);
-    bool publish_typed_message(const Dictionary& typed_data, const Array& signature_felts);
+    bool publish_message(const String &message_data, const Array &signature_felts);
+
+    bool publish_typed_message(const Dictionary &typed_data, const Array &signature_felts);
 
 
     Dictionary get_client_info() const;
 
     Dictionary get_connection_status() const;
 
-    DOJO::ToriiClient* get_client() const { return client; }
+    DOJO::ToriiClient *get_client() const { return client; }
 
     Callable get_logger_callback() const { return logger_callback; }
-    void set_logger_callback(const Callable& p_logger_callback);
+
+    void set_logger_callback(const Callable &p_logger_callback);
 
     String get_torii_url() const { return torii_url; }
-    void set_torii_url(const String& p_torii_url) { torii_url = p_torii_url; }
+    void set_torii_url(const String &p_torii_url) { torii_url = p_torii_url; }
 
-    void set_world_address(const String& p_world_address) { world_address = p_world_address; }
-    String get_world_address() const { return world_address; }
+    TypedArray<String> get_worlds();
+    String get_url();
 
     Array get_events() const { return events; }
-    void set_events(const Array& p_events) { events = p_events; }
+    void set_events(const Array &p_events) { events = p_events; }
 
     Array get_models() const { return models; }
-    void set_models(const Array& p_models) { models = p_models; }
+    void set_models(const Array &p_models) { models = p_models; }
 
 private:
     // Private helpers
     bool _is_ready_for_query(const Ref<Resource> &query) const;
+
     bool _is_ready_for_subscription(const Ref<DojoSubscription> &subscription) const;
 
 
 #ifdef WEB_ENABLED
-    void _on_client_created(const Variant& result);
-    void _on_get_entities_completed(const Variant& result);
-    void _on_get_world_metadata_completed(const Variant& result);
-    void _on_entity_state_update_emitted(const Variant& entity_data);
-    void _on_event_message_update_emitted(const Variant& message_data);
+    void _on_client_created(const Variant &result);
+    void _on_get_entities_completed(const Variant &result);
+    void _on_get_world_metadata_completed(const Variant &result);
+    void _on_entity_state_update_emitted(const Variant &entity_data);
+    void _on_event_message_update_emitted(const Variant &message_data);
 
 #endif
 
 protected:
     String torii_url;
-    String world_address;
     Callable logger_callback;
-    DOJO::FieldElement* world;
 
     // Web specific properties
 #ifdef WEB_ENABLED
@@ -175,14 +232,13 @@ protected:
 #endif
 
 
-    static void _bind_methods()
-    {
-        ClassDB::bind_method(D_METHOD("create_client"), &ToriiClient::create_client);
+    static void _bind_methods() {
+        ClassDB::bind_method(D_METHOD("create_client", "torii_url"), &ToriiClient::create_client, DEFVAL(String()));
         ClassDB::bind_method(D_METHOD("disconnect_client", "send_signal"), &ToriiClient::disconnect_client);
         ClassDB::bind_method(D_METHOD("is_client_connected"), &ToriiClient::is_client_connected);
 
-        ClassDB::bind_method(D_METHOD("get_world_metadata"), &ToriiClient::get_world_metadata);
-        ClassDB::bind_method(D_METHOD("refresh_metadata"), &ToriiClient::refresh_metadata);
+        ClassDB::bind_method(D_METHOD("get_worlds_metadata", "world_addresses"), &ToriiClient::get_worlds_metadata, DEFVAL(Array()));
+        ClassDB::bind_method(D_METHOD("refresh_metadata", "p_world_addresses"), &ToriiClient::refresh_metadata, DEFVAL(Array()));
 
         ClassDB::bind_method(D_METHOD("get_entities", "query"), &ToriiClient::get_entities);
         ClassDB::bind_method(D_METHOD("get_controllers", "query"), &ToriiClient::get_controllers);
@@ -190,10 +246,14 @@ protected:
 
         ClassDB::bind_method(D_METHOD("get_tokens", "query"), &ToriiClient::get_tokens);
         ClassDB::bind_method(D_METHOD("get_token_balances", "query"), &ToriiClient::get_token_balances);
+        ClassDB::bind_method(D_METHOD("get_token_transfers", "query"), &ToriiClient::get_token_transfers);
         ClassDB::bind_method(D_METHOD("get_token_collections", "query"), &ToriiClient::get_token_collections);
         ClassDB::bind_method(D_METHOD("get_activities", "query"), &ToriiClient::get_activities);
         ClassDB::bind_method(D_METHOD("get_aggregations", "query"), &ToriiClient::get_aggregations);
         ClassDB::bind_method(D_METHOD("get_token_info", "token_address"), &ToriiClient::get_token_info);
+        ClassDB::bind_method(D_METHOD("get_achievements", "query"), &ToriiClient::get_achievements);
+        ClassDB::bind_method(D_METHOD("get_player_achievements", "query"), &ToriiClient::get_player_achievements);
+        ClassDB::bind_method(D_METHOD("search", "query"), &ToriiClient::search);
 
         //Subscription
         ClassDB::bind_method(D_METHOD("on_entity_state_update", "callback", "subscription"),
@@ -216,11 +276,17 @@ protected:
 
         ClassDB::bind_method(D_METHOD("on_token_balance_update", "callback", "subscription"),
                              &ToriiClient::on_token_balance_update);
+                             
+        ClassDB::bind_method(D_METHOD("on_token_transfer_update", "callback", "subscription"),
+                             &ToriiClient::on_token_transfer_update);
 
         ClassDB::bind_method(D_METHOD("on_aggregation_update", "callback", "subscription"),
                              &ToriiClient::on_aggregation_update);
         ClassDB::bind_method(D_METHOD("on_activity_update", "callback", "subscription"),
                              &ToriiClient::on_activity_update);
+
+        ClassDB::bind_method(D_METHOD("on_achievement_progression_update", "callback", "subscription"),
+                             &ToriiClient::on_achievement_progression_update);
 
         // Subscription Update
         ClassDB::bind_method(D_METHOD("update_subscription", "subscription", "callback"),
@@ -247,11 +313,17 @@ protected:
         ClassDB::bind_method(D_METHOD("update_token_balance_subscription", "subscription", "callback"),
                              &ToriiClient::update_token_balance_subscription, DEFVAL(Callable()));
 
+        ClassDB::bind_method(D_METHOD("update_token_transfer_subscription", "subscription", "callback"),
+                             &ToriiClient::update_token_transfer_subscription, DEFVAL(Callable()));
+
         ClassDB::bind_method(D_METHOD("update_aggregation_subscription", "subscription", "callback"),
                              &ToriiClient::update_aggregation_subscription, DEFVAL(Callable()));
 
         ClassDB::bind_method(D_METHOD("update_activity_subscription", "subscription", "callback"),
                              &ToriiClient::update_activity_subscription, DEFVAL(Callable()));
+        
+        ClassDB::bind_method(D_METHOD("update_achievement_progression", "subscription", "callback"),
+                             &ToriiClient::update_achievement_progression, DEFVAL(Callable()));
 
         //
         ClassDB::bind_method(D_METHOD("cancel_all_subscriptions"), &ToriiClient::cancel_all_subscriptions);
@@ -279,15 +351,13 @@ protected:
         ADD_SIGNAL(MethodInfo("contract_update", PropertyInfo(Variant::DICTIONARY, "contract_data")));
 
         // Signals for async web calls
-        ADD_SIGNAL(MethodInfo("entities_received", PropertyInfo(Variant::ARRAY, "entities", PROPERTY_HINT_ARRAY_TYPE, "Dictionary")));
+        ADD_SIGNAL(
+            MethodInfo("entities_received", PropertyInfo(Variant::ARRAY, "entities", PROPERTY_HINT_ARRAY_TYPE,
+                "Dictionary")));
 
         ClassDB::bind_method(D_METHOD("get_torii_url"), &ToriiClient::get_torii_url);
         ClassDB::bind_method(D_METHOD("set_torii_url", "torii_url"), &ToriiClient::set_torii_url);
         ADD_PROPERTY(PropertyInfo(Variant::STRING, "torii_url"), "set_torii_url", "get_torii_url");
-
-        ClassDB::bind_method(D_METHOD("set_world_address", "world_address"), &ToriiClient::set_world_address);
-        ClassDB::bind_method(D_METHOD("get_world_address"), &ToriiClient::get_world_address);
-        ADD_PROPERTY(PropertyInfo(Variant::STRING, "world_address"), "set_world_address", "get_world_address");
 
         ClassDB::bind_method(D_METHOD("set_logger_callback", "logger_callback"), &ToriiClient::set_logger_callback);
         ClassDB::bind_method(D_METHOD("get_logger_callback"), &ToriiClient::get_logger_callback);
@@ -302,12 +372,14 @@ protected:
         ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "models"), "set_models", "get_models");
 #ifdef WEB_ENABLED
         // Private callbacks
-        ClassDB::bind_method(D_METHOD("_on_get_entities_completed", "result"), &ToriiClient::_on_get_entities_completed);
-        ClassDB::bind_method(D_METHOD("_on_get_world_metadata_completed", "result"), &ToriiClient::_on_get_world_metadata_completed);
-        ClassDB::bind_method(D_METHOD("_on_entity_state_update_emitted", "entity_data"), &ToriiClient::_on_entity_state_update_emitted);
+        ClassDB::bind_method(D_METHOD("_on_get_entities_completed", "result"),
+                             &ToriiClient::_on_get_entities_completed);
+        ClassDB::bind_method(D_METHOD("_on_get_world_metadata_completed", "result"),
+                             &ToriiClient::_on_get_world_metadata_completed);
+        ClassDB::bind_method(D_METHOD("_on_entity_state_update_emitted", "entity_data"),
+                             &ToriiClient::_on_entity_state_update_emitted);
         ClassDB::bind_method(D_METHOD("_on_client_created", "result"), &ToriiClient::_on_client_created);
 #endif
-
     }
 };
 

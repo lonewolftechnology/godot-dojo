@@ -4,7 +4,7 @@
 		Represents a struct from a Dojo contract.
 	</brief_description>
 	<description>
-		This class holds the name and members of a struct from a Dojo contract. The members are stored as a dictionary in the [code]value[/code] property.
+		This class holds the name and members of a struct from a Dojo contract. The members are stored as a dictionary.
 	</description>
 	<tutorials>
 	</tutorials>

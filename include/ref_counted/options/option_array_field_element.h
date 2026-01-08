@@ -8,32 +8,26 @@
 #include "../dojo_option.h"
 #include "dojo_types.h"
 #include "tools/dojo_helper.h"
+#include "variant/ty/dojo_array.h"
 
 using namespace godot;
 
-class OptionArrayFieldElement : public DojoOption {
-    GDCLASS(OptionArrayFieldElement, DojoOption);
+class DojoOptionArrayFieldElement : public DojoOption {
+    GDCLASS(DojoOptionArrayFieldElement, DojoOption);
 
 protected:
     static void _bind_methods() {}
 
 public:
-    OptionArrayFieldElement() : DojoOption() {}
-    OptionArrayFieldElement(const TypedArray<String>& value) : DojoOption(value) {}
+    DojoOptionArrayFieldElement() : DojoOption() {}
+    DojoOptionArrayFieldElement(const TypedArray<String>& value) : DojoOption(value) {}
 
     DOJO::CArrayFieldElement get_native_array() const {
         if (!is_some()) {
             return {nullptr, 0};
         }
 
-        TypedArray<String> arr = get_value();
-        auto* data = new DOJO::FieldElement[arr.size()];
-        for (int i = 0; i < arr.size(); ++i) {
-            String str = arr[i];
-            DOJO::U256 u256_val = DojoHelpers::string_to_u256(str);
-            memcpy(data[i].data, u256_val.data, 32);
-        }
-        return {data, (uintptr_t)arr.size()};
+        return DojoArrayHelpers::string_array_to_native_carray_felt(get_value());
     }
 };
 

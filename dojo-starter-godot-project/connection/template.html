@@ -1,0 +1,1377 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+    <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+    <title>Godot Dojo!</title>
+    <meta charset="UTF-8">
+    
+    <link rel="icon" type="image/png" href="https://x.cartridge.gg/favicon-48x48.png" sizes="48x48">
+       
+    <style>
+        @import "https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@100;200;300;400;500;600;700&family=Inter:wght@100..900&display=swap";
+
+        *,
+        :before,
+        :after {
+            --tw-border-spacing-x: 0;
+            --tw-border-spacing-y: 0;
+            --tw-translate-x: 0;
+            --tw-translate-y: 0;
+            --tw-rotate: 0;
+            --tw-skew-x: 0;
+            --tw-skew-y: 0;
+            --tw-scale-x: 1;
+            --tw-scale-y: 1;
+            --tw-pan-x: ;
+            --tw-pan-y: ;
+            --tw-pinch-zoom: ;
+            --tw-scroll-snap-strictness: proximity;
+            --tw-gradient-from-position: ;
+            --tw-gradient-via-position: ;
+            --tw-gradient-to-position: ;
+            --tw-ordinal: ;
+            --tw-slashed-zero: ;
+            --tw-numeric-figure: ;
+            --tw-numeric-spacing: ;
+            --tw-numeric-fraction: ;
+            --tw-ring-inset: ;
+            --tw-ring-offset-width: 0px;
+            --tw-ring-offset-color: #fff;
+            --tw-ring-color: rgb(59 130 246 / .5);
+            --tw-ring-offset-shadow: 0 0 #0000;
+            --tw-ring-shadow: 0 0 #0000;
+            --tw-shadow: 0 0 #0000;
+            --tw-shadow-colored: 0 0 #0000;
+            --tw-blur: ;
+            --tw-brightness: ;
+            --tw-contrast: ;
+            --tw-grayscale: ;
+            --tw-hue-rotate: ;
+            --tw-invert: ;
+            --tw-saturate: ;
+            --tw-sepia: ;
+            --tw-drop-shadow: ;
+            --tw-backdrop-blur: ;
+            --tw-backdrop-brightness: ;
+            --tw-backdrop-contrast: ;
+            --tw-backdrop-grayscale: ;
+            --tw-backdrop-hue-rotate: ;
+            --tw-backdrop-invert: ;
+            --tw-backdrop-opacity: ;
+            --tw-backdrop-saturate: ;
+            --tw-backdrop-sepia: ;
+            --tw-contain-size: ;
+            --tw-contain-layout: ;
+            --tw-contain-paint: ;
+            --tw-contain-style:
+        }
+
+        *,
+        :before,
+        :after {
+            box-sizing: border-box;
+            border-width: 0;
+            border-style: solid;
+            border-color: currentColor
+        }
+
+        :before,
+        :after {
+            --tw-content: ""
+        }
+
+        html,
+        :host {
+            line-height: 1.5;
+            -webkit-text-size-adjust: 100%;
+            -moz-tab-size: 4;
+            -o-tab-size: 4;
+            tab-size: 4;
+            font-family: Inter, ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", Segoe UI Symbol, "Noto Color Emoji";
+            font-feature-settings: normal;
+            font-variation-settings: normal;
+            -webkit-tap-highlight-color: transparent
+        }
+
+        body {
+            margin: 0;
+            line-height: inherit
+        }
+
+        h1,
+        h2 {
+            font-size: inherit;
+            font-weight: inherit
+        }
+
+        strong {
+            font-weight: bolder
+        }
+
+        button,
+        input {
+            font-family: inherit;
+            font-feature-settings: inherit;
+            font-variation-settings: inherit;
+            font-size: 100%;
+            font-weight: inherit;
+            line-height: inherit;
+            color: inherit;
+            margin: 0;
+            padding: 0
+        }
+
+        button,
+        input:where([type=button]) {
+            -webkit-appearance: button;
+            background-color: transparent;
+            background-image: none
+        }
+
+        h1,
+        h2,
+        p {
+            margin: 0
+        }
+
+        button,
+        [role=button] {
+            cursor: pointer
+        }
+
+        img,
+        svg {
+            display: block;
+            vertical-align: middle
+        }
+
+        img {
+            max-width: 100%;
+            height: auto
+        }
+
+        :root {
+            --background-100: #161a17;
+            --background-200: #1e221f;
+            --background-300: #242824;
+            --translucent-dark-200: #0000007a;
+            --spacer-100: #0f1410;
+            --foreground-100: #ffffff;
+            --foreground-300: #808080;
+            --radius: .5rem
+        }
+
+        .dark {
+            --background-100: #161a17;
+            --background-200: #1e221f;
+            --background-300: #242824;
+            --translucent-dark-200: #0000007a;
+            --spacer-100: #0f1410;
+            --foreground: #ffffff;
+            --foreground-100: #ffffff;
+            --foreground-300: #808080;
+        }
+
+        html,
+        body {
+            touch-action: manipulation;
+            background-color: var(--background-100);
+            color: var(--foreground-100);
+            --tw-ring-color: var(--foreground-100)
+        }
+
+        .container {
+            width: 100%;
+            margin-right: auto;
+            margin-left: auto;
+            padding-right: 2rem;
+            padding-left: 2rem
+        }
+
+        @media (min-width: 1400px) {
+            .container {
+                max-width: 1400px
+            }
+        }
+
+        .pointer-events-none {
+            pointer-events: none
+        }
+
+        .visible {
+            visibility: visible
+        }
+
+        .fixed {
+            position: fixed
+        }
+
+        .absolute {
+            position: absolute
+        }
+
+        .relative {
+            position: relative
+        }
+
+        .inset-0 {
+            inset: 0
+        }
+
+        .left-0 {
+            left: 0
+        }
+
+        .right-0 {
+            right: 0
+        }
+
+        .top-0 {
+            top: 0
+        }
+
+        .z-10 {
+            z-index: 10
+        }
+
+        .z-50 {
+            z-index: 50
+        }
+
+        .flex {
+            display: flex
+        }
+
+        .h-16 {
+            height: 4rem
+        }
+
+        .h-5 {
+            height: 1.25rem
+        }
+
+        .h-auto {
+            height: auto
+        }
+
+        .h-dvh {
+            height: 100dvh
+        }
+
+        .h-full {
+            height: 100%
+        }
+
+        .max-h-\[600px\] {
+            max-height: 600px
+        }
+
+        .min-h-0 {
+            min-height: 0px
+        }
+
+        .w-5 {
+            width: 1.25rem
+        }
+
+        .w-\[432px\] {
+            width: 432px
+        }
+
+        .w-full {
+            width: 100%
+        }
+
+        .w-screen {
+            width: 100vw
+        }
+
+        .flex-1 {
+            flex: 1 1 0%
+        }
+
+        .grow {
+            flex-grow: 1
+        }
+
+        .transform {
+            transform: translate(var(--tw-translate-x), var(--tw-translate-y)) rotate(var(--tw-rotate)) skew(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y))
+        }
+
+        .select-none {
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            user-select: none
+        }
+
+        .flex-col {
+            flex-direction: column
+        }
+
+        .items-center {
+            align-items: center
+        }
+
+        .items-stretch {
+            align-items: stretch
+        }
+
+        .justify-center {
+            justify-content: center
+        }
+
+        .justify-between {
+            justify-content: space-between
+        }
+
+        .gap-0\.5 {
+            gap: .125rem
+        }
+
+        .gap-1 {
+            gap: .25rem
+        }
+
+        .gap-1\.5 {
+            gap: .375rem
+        }
+
+        .gap-2 {
+            gap: .5rem
+        }
+
+        .gap-4 {
+            gap: 1rem
+        }
+
+        .gap-6 {
+            gap: 1.5rem
+        }
+
+        .gap-y-px {
+            row-gap: 1px
+        }
+
+        .overflow-hidden {
+            overflow: hidden
+        }
+
+        .overflow-clip {
+            overflow: clip
+        }
+
+        .overflow-y-auto {
+            overflow-y: auto
+        }
+
+        .overflow-x-hidden {
+            overflow-x: hidden
+        }
+
+        .overflow-y-scroll {
+            overflow-y: scroll
+        }
+
+        .break-all {
+            word-break: break-all
+        }
+
+        .rounded {
+            border-radius: .25rem
+        }
+
+        .rounded-xl {
+            border-radius: calc(var(--radius) + 4px)
+        }
+
+        .border {
+            border-width: 1px
+        }
+
+        .border-background-200 {
+            border-color: var(--background-200)
+        }
+
+        .bg-background,
+        .bg-background-100 {
+            background-color: var(--background-100)
+        }
+
+        .bg-background-200 {
+            background-color: var(--background-200)
+        }
+
+        .bg-background-300 {
+            background-color: var(--background-300)
+        }
+
+        .bg-spacer-100 {
+            background-color: var(--spacer-100)
+        }
+
+        .bg-translucent-dark-200 {
+            background-color: var(--translucent-dark-200)
+        }
+
+        .bg-gradient-to-b {
+            background-image: linear-gradient(to bottom, var(--tw-gradient-stops))
+        }
+
+        .from-transparent {
+            --tw-gradient-from: transparent var(--tw-gradient-from-position);
+            --tw-gradient-to: rgb(0 0 0 / 0) var(--tw-gradient-to-position);
+            --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-to)
+        }
+
+        .to-background-100 {
+            --tw-gradient-to: var(--background-100) var(--tw-gradient-to-position)
+        }
+
+        .fill-current {
+            fill: currentColor
+        }
+
+        .p-3 {
+            padding: .75rem
+        }
+
+        .p-4 {
+            padding: 1rem
+        }
+
+        .px-3 {
+            padding-left: .75rem;
+            padding-right: .75rem
+        }
+
+        .py-2\.5 {
+            padding-top: .625rem;
+            padding-bottom: .625rem
+        }
+
+        .pb-6 {
+            padding-bottom: 1.5rem
+        }
+
+        .pr-4 {
+            padding-right: 1rem
+        }
+
+        .text-center {
+            text-align: center
+        }
+
+        .align-middle {
+            vertical-align: middle
+        }
+
+        .text-lg {
+            font-size: 1.125rem;
+            line-height: 1.75rem
+        }
+
+        .text-sm {
+            font-size: .875rem;
+            line-height: 1.25rem
+        }
+
+        .text-xs {
+            font-size: .75rem;
+            line-height: 1rem
+        }
+
+        .font-medium {
+            font-weight: 500
+        }
+
+        .font-semibold {
+            font-weight: 600
+        }
+
+        .text-foreground-100 {
+            color: var(--foreground-100)
+        }
+
+        .text-foreground-300 {
+            color: var(--foreground-300)
+        }
+
+        .opacity-0 {
+            opacity: 0
+        }
+
+        .transition-opacity {
+            transition-property: opacity;
+            transition-timing-function: cubic-bezier(.4, 0, .2, 1);
+            transition-duration: .15s
+        }
+
+        .duration-150 {
+            transition-duration: .15s
+        }
+
+        .ease-in-out {
+            transition-timing-function: cubic-bezier(.4, 0, .2, 1)
+        }
+
+        .before\:pointer-events-none:before {
+            content: var(--tw-content);
+            pointer-events: none
+        }
+
+        .before\:absolute:before {
+            content: var(--tw-content);
+            position: absolute
+        }
+
+        .before\:inset-0:before {
+            content: var(--tw-content);
+            inset: 0
+        }
+
+        .before\:bg-gradient-to-b:before {
+            content: var(--tw-content);
+            background-image: linear-gradient(to bottom, var(--tw-gradient-stops))
+        }
+
+        .before\:from-transparent:before {
+            content: var(--tw-content);
+            --tw-gradient-from: transparent var(--tw-gradient-from-position);
+            --tw-gradient-to: rgb(0 0 0 / 0) var(--tw-gradient-to-position);
+            --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-to)
+        }
+
+        .before\:to-background-100:before {
+            content: var(--tw-content);
+            --tw-gradient-to: var(--background-100) var(--tw-gradient-to-position)
+        }
+
+        .before\:content-\[\'\'\]:before {
+            --tw-content: "";
+            content: var(--tw-content)
+        }
+
+        .hover\:bg-background-300:hover {
+            background-color: var(--background-300)
+        }
+
+        @media (min-width: 640px) {
+            .sm\:h-auto {
+                height: auto
+            }
+        }
+
+        .username-bg {
+            position: relative;
+            overflow: hidden;
+            z-index: 1;
+        }
+
+        .username-bg::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' width='128' height='128'%3e%3cg fill='%23fff' transform='translate(12.322 12.322)scale(.101)'%3e%3cpath d='M105 673v33q407 354 814 0v-33z'/%3e%3cpath fill='%23478cbf' d='m105 673 152 14q12 1 15 14l4 67 132 10 8-61q2-11 15-15h162q13 4 15 15l8 61 132-10 4-67q3-13 15-14l152-14V427q30-39 56-81-35-59-83-108-43 20-82 47-40-37-88-64 7-51 8-102-59-28-123-42-26 43-46 89-49-7-98 0-20-46-46-89-64 14-123 42 1 51 8 102-48 27-88 64-39-27-82-47-48 49-83 108 26 42 56 81zm0 33v39c0 276 813 276 814 0v-39l-134 12-5 69q-2 10-14 13l-162 11q-12 0-16-11l-10-65H446l-10 65q-4 11-16 11l-162-11q-12-3-14-13l-5-69z'/%3e%3cpath d='M483 600c0 34 58 34 58 0v-86c0-34-58-34-58 0z'/%3e%3ccircle cx='725' cy='526' r='90'/%3e%3ccircle cx='299' cy='526' r='90'/%3e%3c/g%3e%3cg fill='%23414042' transform='translate(12.322 12.322)scale(.101)'%3e%3ccircle cx='307' cy='532' r='60'/%3e%3ccircle cx='717' cy='532' r='60'/%3e%3c/g%3e%3c/svg%3e");
+            background-size: 64px;
+            background-repeat: repeat;
+            z-index: -1;
+            opacity: 0.05;
+            transform: rotate(-45deg) scale(1.5);
+        }
+
+        .button-content {
+            position: relative;
+        }
+    </style>
+
+</head>
+<body class="h-dvh bg-background text-foreground overflow-y-auto">
+<div id="root">
+    <div style="position: relative;">
+        <div class="flex w-screen h-dvh items-center justify-center">
+            <div class="border border-background-200 rounded-xl flex flex-col relative overflow-hidden align-middle w-[432px] max-h-[600px]">
+                <div class="fixed inset-0 bg-translucent-dark-200 opacity-0 z-50 transition-opacity duration-150 invisible pointer-events-none"></div>
+                <div class="flex flex-col flex-1 min-h-0 overflow-x-hidden z-10" style="scrollbar-width: none;">
+                    <div class="sticky top-0 w-full z-10 bg-background">
+                        <div class="flex flex-col bg-spacer-100 gap-y-px">
+                            <div class="username-bg starry-container overflow-hidden w-full h-16 pb-6 relative before:content-[''] before:absolute before:inset-0 before:bg-gradient-to-b before:from-transparent before:to-background-100 before:pointer-events-none"
+                                 style="width: 100%; height: 64px; background-color: rgb(23, 26, 23);">
+                                <div class="starfield absolute inset-0">
+                                    <div class="star yellow-star foreground"
+                                         style="width: 2.11139px; height: 2.11139px; opacity: 0.79; transform: translate(32.6px, 44.2px) rotate(45deg);"></div>
+                                    <div class="star yellow-star foreground"
+                                         style="width: 2.06421px; height: 2.06421px; opacity: 0.82; transform: translate(333px, 32.6px) rotate(45deg);"></div>
+                                    <div class="star yellow-star foreground"
+                                         style="width: 2.45545px; height: 2.45545px; opacity: 0.87; transform: translate(127.6px, 37.6px) rotate(45deg);"></div>
+                                    <div class="star yellow-star foreground"
+                                         style="width: 2.9082px; height: 2.9082px; opacity: 0.72; transform: translate(249px, 43.6px) rotate(45deg);"></div>
+                                    <div class="star yellow-star foreground"
+                                         style="width: 3.23984px; height: 3.23984px; opacity: 0.71; transform: translate(253.6px, 10.7px) rotate(45deg);"></div>
+                                    <div class="star yellow-star foreground"
+                                         style="width: 3.12559px; height: 3.12559px; opacity: 0.7; transform: translate(184.8px, 15.8px) rotate(45deg);"></div>
+                                    <div class="star yellow-star foreground"
+                                         style="width: 2.55569px; height: 2.55569px; opacity: 0.96; transform: translate(-3.2px, 16.9px) rotate(45deg);"></div>
+                                    <div class="star yellow-star foreground"
+                                         style="width: 2.15333px; height: 2.15333px; opacity: 0.97; transform: translate(214.9px, 9.6px) rotate(45deg);"></div>
+                                    <div class="star yellow-star foreground"
+                                         style="width: 2.56174px; height: 2.56174px; opacity: 0.77; transform: translate(223.6px, 39.5px) rotate(45deg);"></div>
+                                    <div class="star yellow-star foreground"
+                                         style="width: 3.12745px; height: 3.12745px; opacity: 0.72; transform: translate(139.2px, 32.1px) rotate(45deg);"></div>
+                                    <div class="star yellow-star foreground"
+                                         style="width: 3.25148px; height: 3.25148px; opacity: 0.82; transform: translate(129.9px, 25.8px) rotate(45deg);"></div>
+                                    <div class="star yellow-star foreground"
+                                         style="width: 2.49689px; height: 2.49689px; opacity: 0.88; transform: translate(406px, 27px) rotate(45deg);"></div>
+                                    <div class="star yellow-star foreground"
+                                         style="width: 2.83298px; height: 2.83298px; opacity: 0.84; transform: translate(102.9px, 54.3px) rotate(45deg);"></div>
+                                    <div class="star yellow-star foreground"
+                                         style="width: 3.44393px; height: 3.44393px; opacity: 0.98; transform: translate(236px, 54.1px) rotate(45deg);"></div>
+                                    <div class="star yellow-star foreground"
+                                         style="width: 2.6917px; height: 2.6917px; opacity: 0.86; transform: translate(184.4px, 38.7px) rotate(45deg);"></div>
+                                    <div class="star yellow-star middle"
+                                         style="width: 1.83403px; height: 1.83403px; opacity: 0.67; transform: translate(189.5px, 20.4px) rotate(45deg);"></div>
+                                    <div class="star yellow-star middle"
+                                         style="width: 2.23941px; height: 2.23941px; opacity: 0.58; transform: translate(178.9px, 39.3px) rotate(45deg);"></div>
+                                    <div class="star yellow-star middle"
+                                         style="width: 2.29055px; height: 2.29055px; opacity: 0.69; transform: translate(196.7px, 55px) rotate(45deg);"></div>
+                                    <div class="star yellow-star middle"
+                                         style="width: 2.65755px; height: 2.65755px; opacity: 0.59; transform: translate(153.4px, 35.8px) rotate(45deg);"></div>
+                                    <div class="star yellow-star middle"
+                                         style="width: 1.60197px; height: 1.60197px; opacity: 0.85; transform: translate(388.2px, 53.1px) rotate(45deg);"></div>
+                                    <div class="star yellow-star middle"
+                                         style="width: 2.61111px; height: 2.61111px; opacity: 0.76; transform: translate(403.6px, 45.7px) rotate(45deg);"></div>
+                                    <div class="star yellow-star middle"
+                                         style="width: 2.66183px; height: 2.66183px; opacity: 0.48; transform: translate(30.6px, 17.1px) rotate(45deg);"></div>
+                                    <div class="star yellow-star middle"
+                                         style="width: 1.93836px; height: 1.93836px; opacity: 0.57; transform: translate(410.8px, 46.7px) rotate(45deg);"></div>
+                                    <div class="star yellow-star middle"
+                                         style="width: 2.79207px; height: 2.79207px; opacity: 0.62; transform: translate(364.7px, 54.8px) rotate(45deg);"></div>
+                                    <div class="star yellow-star middle"
+                                         style="width: 1.86764px; height: 1.86764px; opacity: 0.52; transform: translate(25.3px, 30.8px) rotate(45deg);"></div>
+                                    <div class="star yellow-star middle"
+                                         style="width: 2.00604px; height: 2.00604px; opacity: 0.79; transform: translate(58px, 43.4px) rotate(45deg);"></div>
+                                    <div class="star yellow-star middle"
+                                         style="width: 2.26529px; height: 2.26529px; opacity: 0.64; transform: translate(378.6px, 8.9px) rotate(45deg);"></div>
+                                    <div class="star yellow-star middle"
+                                         style="width: 2.32684px; height: 2.32684px; opacity: 0.76; transform: translate(290.2px, 11px) rotate(45deg);"></div>
+                                    <div class="star yellow-star middle"
+                                         style="width: 1.7315px; height: 1.7315px; opacity: 0.59; transform: translate(73.2px, 50.7px) rotate(45deg);"></div>
+                                    <div class="star yellow-star middle"
+                                         style="width: 2.54981px; height: 2.54981px; opacity: 0.68; transform: translate(150.6px, 25.3px) rotate(45deg);"></div>
+                                    <div class="star yellow-star middle"
+                                         style="width: 2.35182px; height: 2.35182px; opacity: 0.66; transform: translate(34.2px, 2.2px) rotate(45deg);"></div>
+                                    <div class="star yellow-star middle"
+                                         style="width: 2.59686px; height: 2.59686px; opacity: 0.6; transform: translate(286.2px, 58.1px) rotate(45deg);"></div>
+                                    <div class="star yellow-star middle"
+                                         style="width: 1.89114px; height: 1.89114px; opacity: 0.78; transform: translate(128.1px, 28.8px) rotate(45deg);"></div>
+                                    <div class="star yellow-star middle"
+                                         style="width: 2.28464px; height: 2.28464px; opacity: 0.71; transform: translate(363.6px, 7.1px) rotate(45deg);"></div>
+                                    <div class="star yellow-star middle"
+                                         style="width: 1.54027px; height: 1.54027px; opacity: 0.42; transform: translate(130px, 25.2px) rotate(45deg);"></div>
+                                    <div class="star yellow-star middle"
+                                         style="width: 1.64213px; height: 1.64213px; opacity: 0.72; transform: translate(269.5px, 5.7px) rotate(45deg);"></div>
+                                    <div class="star yellow-star middle"
+                                         style="width: 1.5316px; height: 1.5316px; opacity: 0.61; transform: translate(114.6px, 14px) rotate(45deg);"></div>
+                                    <div class="star yellow-star middle"
+                                         style="width: 2.05553px; height: 2.05553px; opacity: 0.72; transform: translate(5.3px, 59.3px) rotate(45deg);"></div>
+                                    <div class="star yellow-star middle"
+                                         style="width: 2.60456px; height: 2.60456px; opacity: 0.76; transform: translate(382.6px, 21.3px) rotate(45deg);"></div>
+                                    <div class="star yellow-star middle"
+                                         style="width: 2.79909px; height: 2.79909px; opacity: 0.52; transform: translate(108px, 44.5px) rotate(45deg);"></div>
+                                    <div class="star yellow-star middle"
+                                         style="width: 1.97164px; height: 1.97164px; opacity: 0.81; transform: translate(321.5px, 53.3px) rotate(45deg);"></div>
+                                    <div class="star yellow-star middle"
+                                         style="width: 1.5383px; height: 1.5383px; opacity: 0.78; transform: translate(260.2px, 52.3px) rotate(45deg);"></div>
+                                    <div class="star yellow-star middle"
+                                         style="width: 1.95508px; height: 1.95508px; opacity: 0.87; transform: translate(129.2px, 42.4px) rotate(45deg);"></div>
+                                    <div class="star yellow-star middle"
+                                         style="width: 2.21771px; height: 2.21771px; opacity: 0.83; transform: translate(126.9px, 32px) rotate(45deg);"></div>
+                                    <div class="star yellow-star middle"
+                                         style="width: 1.69546px; height: 1.69546px; opacity: 0.8; transform: translate(142px, 56.8px) rotate(45deg);"></div>
+                                    <div class="star yellow-star middle"
+                                         style="width: 2.59759px; height: 2.59759px; opacity: 0.46; transform: translate(407px, 16.4px) rotate(45deg);"></div>
+                                    <div class="star yellow-star middle"
+                                         style="width: 2.11794px; height: 2.11794px; opacity: 0.72; transform: translate(361.7px, 52.8px) rotate(45deg);"></div>
+                                    <div class="star yellow-star middle"
+                                         style="width: 1.89869px; height: 1.89869px; opacity: 0.6; transform: translate(412.2px, 9px) rotate(45deg);"></div>
+                                    <div class="star yellow-star middle"
+                                         style="width: 2.6968px; height: 2.6968px; opacity: 0.66; transform: translate(125.7px, 18px) rotate(45deg);"></div>
+                                    <div class="star yellow-star middle"
+                                         style="width: 1.60174px; height: 1.60174px; opacity: 0.82; transform: translate(163.2px, 58.2px) rotate(45deg);"></div>
+                                    <div class="star yellow-star middle"
+                                         style="width: 1.8666px; height: 1.8666px; opacity: 0.68; transform: translate(390.4px, 16.8px) rotate(45deg);"></div>
+                                    <div class="star yellow-star middle"
+                                         style="width: 2.43594px; height: 2.43594px; opacity: 0.51; transform: translate(44.3px, 50.9px) rotate(45deg);"></div>
+                                    <div class="star yellow-star middle"
+                                         style="width: 2.53451px; height: 2.53451px; opacity: 0.71; transform: translate(392.7px, 26.1px) rotate(45deg);"></div>
+                                    <div class="star yellow-star middle"
+                                         style="width: 1.93436px; height: 1.93436px; opacity: 0.52; transform: translate(374.4px, 28.6px) rotate(45deg);"></div>
+                                    <div class="star yellow-star middle"
+                                         style="width: 2.71198px; height: 2.71198px; opacity: 0.67; transform: translate(151.9px, 32.9px) rotate(45deg);"></div>
+                                    <div class="star yellow-star middle"
+                                         style="width: 2.12951px; height: 2.12951px; opacity: 0.62; transform: translate(230.7px, 8.9px) rotate(45deg);"></div>
+                                    <div class="star yellow-star middle"
+                                         style="width: 1.97686px; height: 1.97686px; opacity: 0.65; transform: translate(119.1px, 58.8px) rotate(45deg);"></div>
+                                    <div class="star yellow-star middle"
+                                         style="width: 1.91203px; height: 1.91203px; opacity: 0.6; transform: translate(241.5px, 49px) rotate(45deg);"></div>
+                                    <div class="star yellow-star middle"
+                                         style="width: 2.11994px; height: 2.11994px; opacity: 0.76; transform: translate(59.8px, 58.5px) rotate(45deg);"></div>
+                                    <div class="star yellow-star middle"
+                                         style="width: 2.67637px; height: 2.67637px; opacity: 0.7; transform: translate(354.7px, 40.5px) rotate(45deg);"></div>
+                                    <div class="star yellow-star middle"
+                                         style="width: 1.67101px; height: 1.67101px; opacity: 0.6; transform: translate(375.8px, 56.3px) rotate(45deg);"></div>
+                                    <div class="star yellow-star middle"
+                                         style="width: 2.56109px; height: 2.56109px; opacity: 0.61; transform: translate(398.6px, 14.5px) rotate(45deg);"></div>
+                                    <div class="star yellow-star middle"
+                                         style="width: 2.21255px; height: 2.21255px; opacity: 0.52; transform: translate(36.5px, 37.2px) rotate(45deg);"></div>
+                                    <div class="star yellow-star middle"
+                                         style="width: 1.86948px; height: 1.86948px; opacity: 0.73; transform: translate(373.7px, 60.5px) rotate(45deg);"></div>
+                                    <div class="star yellow-star middle"
+                                         style="width: 2.32891px; height: 2.32891px; opacity: 0.72; transform: translate(395.1px, 28.1px) rotate(45deg);"></div>
+                                    <div class="star yellow-star background"
+                                         style="width: 1.1796px; height: 1.1796px; opacity: 0.44; transform: translate(35.5px, 47.2px) rotate(45deg);"></div>
+                                    <div class="star yellow-star background"
+                                         style="width: 0.665128px; height: 0.665128px; opacity: 0.41; transform: translate(423.4px, 14.8px) rotate(45deg);"></div>
+                                    <div class="star yellow-star background"
+                                         style="width: 0.550968px; height: 0.550968px; opacity: 0.43; transform: translate(270.1px, 2.9px) rotate(45deg);"></div>
+                                    <div class="star yellow-star background"
+                                         style="width: 0.709343px; height: 0.709343px; opacity: 0.43; transform: translate(318.8px, 50.9px) rotate(45deg);"></div>
+                                    <div class="star yellow-star background"
+                                         style="width: 1.19147px; height: 1.19147px; opacity: 0.38; transform: translate(47px, 50px) rotate(45deg);"></div>
+                                    <div class="star yellow-star background"
+                                         style="width: 0.878001px; height: 0.878001px; opacity: 0.39; transform: translate(343.4px, 40px) rotate(45deg);"></div>
+                                    <div class="star yellow-star background"
+                                         style="width: 0.479508px; height: 0.479508px; opacity: 0.32; transform: translate(337.8px, 53.8px) rotate(45deg);"></div>
+                                    <div class="star yellow-star background"
+                                         style="width: 0.567247px; height: 0.567247px; opacity: 0.5; transform: translate(346px, 39.5px) rotate(45deg);"></div>
+                                    <div class="star yellow-star background"
+                                         style="width: 0.604658px; height: 0.604658px; opacity: 0.33; transform: translate(337.6px, 44.5px) rotate(45deg);"></div>
+                                    <div class="star yellow-star background"
+                                         style="width: 0.931647px; height: 0.931647px; opacity: 0.48; transform: translate(344.6px, 43.7px) rotate(45deg);"></div>
+                                    <div class="star yellow-star background"
+                                         style="width: 0.556551px; height: 0.556551px; opacity: 0.42; transform: translate(146.7px, 52.2px) rotate(45deg);"></div>
+                                    <div class="star yellow-star background"
+                                         style="width: 0.970021px; height: 0.970021px; opacity: 0.52; transform: translate(208.5px, 53.4px) rotate(45deg);"></div>
+                                    <div class="star yellow-star background"
+                                         style="width: 1.215px; height: 1.215px; opacity: 0.32; transform: translate(321.8px, 22.6px) rotate(45deg);"></div>
+                                    <div class="star yellow-star background"
+                                         style="width: 1.25599px; height: 1.25599px; opacity: 0.35; transform: translate(394.4px, 19.1px) rotate(45deg);"></div>
+                                    <div class="star yellow-star background"
+                                         style="width: 0.557152px; height: 0.557152px; opacity: 0.41; transform: translate(54.2px, 59.8px) rotate(45deg);"></div>
+                                    <div class="star yellow-star background"
+                                         style="width: 1.21713px; height: 1.21713px; opacity: 0.26; transform: translate(286.8px, 49.4px) rotate(45deg);"></div>
+                                    <div class="star yellow-star background"
+                                         style="width: 1.25202px; height: 1.25202px; opacity: 0.3; transform: translate(218.2px, 42.7px) rotate(45deg);"></div>
+                                    <div class="star yellow-star background"
+                                         style="width: 0.768385px; height: 0.768385px; opacity: 0.48; transform: translate(353.4px, 36.6px) rotate(45deg);"></div>
+                                    <div class="star yellow-star background"
+                                         style="width: 1.21438px; height: 1.21438px; opacity: 0.5; transform: translate(45.7px, 25.9px) rotate(45deg);"></div>
+                                    <div class="star yellow-star background"
+                                         style="width: 0.738658px; height: 0.738658px; opacity: 0.46; transform: translate(394.1px, 7.1px) rotate(45deg);"></div>
+                                    <div class="star yellow-star background"
+                                         style="width: 0.904775px; height: 0.904775px; opacity: 0.5; transform: translate(290px, 28.3px) rotate(45deg);"></div>
+                                    <div class="star yellow-star background"
+                                         style="width: 0.971216px; height: 0.971216px; opacity: 0.51; transform: translate(263px, 40px) rotate(45deg);"></div>
+                                    <div class="star yellow-star background"
+                                         style="width: 0.633779px; height: 0.633779px; opacity: 0.45; transform: translate(99.9px, 1.7px) rotate(45deg);"></div>
+                                    <div class="star yellow-star background"
+                                         style="width: 0.721393px; height: 0.721393px; opacity: 0.42; transform: translate(223.4px, 14.4px) rotate(45deg);"></div>
+                                    <div class="star yellow-star background"
+                                         style="width: 0.662229px; height: 0.662229px; opacity: 0.39; transform: translate(233px, 18.2px) rotate(45deg);"></div>
+                                    <div class="star yellow-star background"
+                                         style="width: 0.957055px; height: 0.957055px; opacity: 0.37; transform: translate(225.9px, 18.4px) rotate(45deg);"></div>
+                                    <div class="star yellow-star background"
+                                         style="width: 0.702061px; height: 0.702061px; opacity: 0.23; transform: translate(234.4px, 25.1px) rotate(45deg);"></div>
+                                    <div class="star yellow-star background"
+                                         style="width: 0.425929px; height: 0.425929px; opacity: 0.32; transform: translate(233.4px, 26.2px) rotate(45deg);"></div>
+                                    <div class="star yellow-star background"
+                                         style="width: 0.645198px; height: 0.645198px; opacity: 0.42; transform: translate(314.2px, 56px) rotate(45deg);"></div>
+                                    <div class="star yellow-star background"
+                                         style="width: 0.489085px; height: 0.489085px; opacity: 0.2; transform: translate(299.9px, 50.6px) rotate(45deg);"></div>
+                                    <div class="star yellow-star background"
+                                         style="width: 0.541972px; height: 0.541972px; opacity: 0.4; transform: translate(320px, 55.4px) rotate(45deg);"></div>
+                                    <div class="star yellow-star background"
+                                         style="width: 0.85827px; height: 0.85827px; opacity: 0.26; transform: translate(317.4px, 63.7px) rotate(45deg);"></div>
+                                    <div class="star yellow-star background"
+                                         style="width: 0.657864px; height: 0.657864px; opacity: 0.3; transform: translate(304.4px, 61.5px) rotate(45deg);"></div>
+                                    <div class="star yellow-star background"
+                                         style="width: 0.518293px; height: 0.518293px; opacity: 0.34; transform: translate(260.2px, 58.4px) rotate(45deg);"></div>
+                                    <div class="star yellow-star background"
+                                         style="width: 1.10605px; height: 1.10605px; opacity: 0.43; transform: translate(350.3px, 11.7px) rotate(45deg);"></div>
+                                    <div class="star yellow-star background"
+                                         style="width: 0.572425px; height: 0.572425px; opacity: 0.44; transform: translate(421px, 22.6px) rotate(45deg);"></div>
+                                    <div class="star yellow-star background"
+                                         style="width: 1.12098px; height: 1.12098px; opacity: 0.52; transform: translate(72.6px, 11.3px) rotate(45deg);"></div>
+                                    <div class="star yellow-star background"
+                                         style="width: 1.01232px; height: 1.01232px; opacity: 0.4; transform: translate(206.4px, 14.2px) rotate(45deg);"></div>
+                                    <div class="star yellow-star background"
+                                         style="width: 1.14387px; height: 1.14387px; opacity: 0.52; transform: translate(234.2px, 44.8px) rotate(45deg);"></div>
+                                    <div class="star yellow-star background"
+                                         style="width: 0.914254px; height: 0.914254px; opacity: 0.39; transform: translate(417.7px, 48px) rotate(45deg);"></div>
+                                    <div class="star yellow-star background"
+                                         style="width: 0.957608px; height: 0.957608px; opacity: 0.48; transform: translate(331.4px, 52px) rotate(45deg);"></div>
+                                    <div class="star yellow-star background"
+                                         style="width: 1.04082px; height: 1.04082px; opacity: 0.34; transform: translate(418px, 51.1px) rotate(45deg);"></div>
+                                    <div class="star yellow-star background"
+                                         style="width: 1.08658px; height: 1.08658px; opacity: 0.31; transform: translate(418.7px, 33.5px) rotate(45deg);"></div>
+                                    <div class="star yellow-star background"
+                                         style="width: 0.606374px; height: 0.606374px; opacity: 0.44; transform: translate(87.1px, 6.2px) rotate(45deg);"></div>
+                                    <div class="star yellow-star background"
+                                         style="width: 0.851503px; height: 0.851503px; opacity: 0.37; transform: translate(73.8px, 14.2px) rotate(45deg);"></div>
+                                    <div class="star yellow-star background"
+                                         style="width: 0.568815px; height: 0.568815px; opacity: 0.27; transform: translate(78.6px, 0.2px) rotate(45deg);"></div>
+                                    <div class="star yellow-star background"
+                                         style="width: 0.820791px; height: 0.820791px; opacity: 0.42; transform: translate(97.1px, 15.9px) rotate(45deg);"></div>
+                                    <div class="star yellow-star background"
+                                         style="width: 0.4567px; height: 0.4567px; opacity: 0.43; transform: translate(97.1px, 4.3px) rotate(45deg);"></div>
+                                    <div class="star yellow-star background"
+                                         style="width: 1.03464px; height: 1.03464px; opacity: 0.49; transform: translate(49.9px, 8.1px) rotate(45deg);"></div>
+                                    <div class="star yellow-star background"
+                                         style="width: 0.682455px; height: 0.682455px; opacity: 0.43; transform: translate(332.2px, 1.7px) rotate(45deg);"></div>
+                                    <div class="star yellow-star background"
+                                         style="width: 1.05501px; height: 1.05501px; opacity: 0.39; transform: translate(418.2px, 42.2px) rotate(45deg);"></div>
+                                    <div class="star yellow-star background"
+                                         style="width: 0.617246px; height: 0.617246px; opacity: 0.45; transform: translate(146.1px, 33px) rotate(45deg);"></div>
+                                    <div class="star yellow-star background"
+                                         style="width: 0.812823px; height: 0.812823px; opacity: 0.25; transform: translate(210.9px, 61.1px) rotate(45deg);"></div>
+                                    <div class="star yellow-star background"
+                                         style="width: 0.741863px; height: 0.741863px; opacity: 0.42; transform: translate(71.1px, 63.3px) rotate(45deg);"></div>
+                                    <div class="star yellow-star background"
+                                         style="width: 0.852862px; height: 0.852862px; opacity: 0.47; transform: translate(219.8px, 63.8px) rotate(45deg);"></div>
+                                    <div class="star yellow-star background"
+                                         style="width: 0.77575px; height: 0.77575px; opacity: 0.25; transform: translate(310.5px, 48.1px) rotate(45deg);"></div>
+                                    <div class="star yellow-star background"
+                                         style="width: 0.468998px; height: 0.468998px; opacity: 0.29; transform: translate(300.5px, 50.2px) rotate(45deg);"></div>
+                                    <div class="star yellow-star background"
+                                         style="width: 0.432948px; height: 0.432948px; opacity: 0.41; transform: translate(301.1px, 44.7px) rotate(45deg);"></div>
+                                    <div class="star yellow-star background"
+                                         style="width: 0.921216px; height: 0.921216px; opacity: 0.38; transform: translate(321.5px, 37.3px) rotate(45deg);"></div>
+                                    <div class="star yellow-star background"
+                                         style="width: 0.466816px; height: 0.466816px; opacity: 0.36; transform: translate(317.8px, 54.5px) rotate(45deg);"></div>
+                                    <div class="star yellow-star background"
+                                         style="width: 1.24312px; height: 1.24312px; opacity: 0.42; transform: translate(347.9px, 49px) rotate(45deg);"></div>
+                                    <div class="star yellow-star background"
+                                         style="width: 0.404238px; height: 0.404238px; opacity: 0.42; transform: translate(346.3px, 47.5px) rotate(45deg);"></div>
+                                    <div class="star yellow-star background"
+                                         style="width: 0.826882px; height: 0.826882px; opacity: 0.22; transform: translate(361.3px, 41.7px) rotate(45deg);"></div>
+                                    <div class="star yellow-star background"
+                                         style="width: 0.707771px; height: 0.707771px; opacity: 0.29; transform: translate(337.7px, 47.8px) rotate(45deg);"></div>
+                                    <div class="star yellow-star background"
+                                         style="width: 0.622824px; height: 0.622824px; opacity: 0.32; transform: translate(358.5px, 57.2px) rotate(45deg);"></div>
+                                    <div class="star yellow-star background"
+                                         style="width: 0.726049px; height: 0.726049px; opacity: 0.51; transform: translate(173px, 56.7px) rotate(45deg);"></div>
+                                    <div class="star yellow-star background"
+                                         style="width: 0.494356px; height: 0.494356px; opacity: 0.37; transform: translate(172.5px, 58.9px) rotate(45deg);"></div>
+                                    <div class="star yellow-star background"
+                                         style="width: 0.769372px; height: 0.769372px; opacity: 0.28; transform: translate(181.5px, 46.7px) rotate(45deg);"></div>
+                                    <div class="star yellow-star background"
+                                         style="width: 0.855865px; height: 0.855865px; opacity: 0.34; transform: translate(171.1px, 64.2px) rotate(45deg);"></div>
+                                    <div class="star yellow-star background"
+                                         style="width: 0.539113px; height: 0.539113px; opacity: 0.41; transform: translate(186px, 64.2px) rotate(45deg);"></div>
+                                    <div class="star yellow-star background"
+                                         style="width: 0.7899px; height: 0.7899px; opacity: 0.39; transform: translate(248.9px, 53.4px) rotate(45deg);"></div>
+                                    <div class="star yellow-star background"
+                                         style="width: 0.855577px; height: 0.855577px; opacity: 0.52; transform: translate(173.6px, 32.4px) rotate(45deg);"></div>
+                                    <div class="star yellow-star background"
+                                         style="width: 0.769893px; height: 0.769893px; opacity: 0.4; transform: translate(82.7px, 12.7px) rotate(45deg);"></div>
+                                    <div class="star yellow-star background"
+                                         style="width: 1.18191px; height: 1.18191px; opacity: 0.46; transform: translate(297.9px, 8px) rotate(45deg);"></div>
+                                    <div class="star yellow-star background"
+                                         style="width: 0.630647px; height: 0.630647px; opacity: 0.31; transform: translate(244.1px, 46.4px) rotate(45deg);"></div>
+                                    <div class="star yellow-star background"
+                                         style="width: 0.717724px; height: 0.717724px; opacity: 0.44; transform: translate(73.1px, 24.6px) rotate(45deg);"></div>
+                                    <div class="star yellow-star background"
+                                         style="width: 0.810548px; height: 0.810548px; opacity: 0.25; transform: translate(60px, 11.9px) rotate(45deg);"></div>
+                                    <div class="star yellow-star background"
+                                         style="width: 0.625339px; height: 0.625339px; opacity: 0.43; transform: translate(78.8px, 27.6px) rotate(45deg);"></div>
+                                    <div class="star yellow-star background"
+                                         style="width: 0.432489px; height: 0.432489px; opacity: 0.26; transform: translate(84.4px, 37.6px) rotate(45deg);"></div>
+                                    <div class="star yellow-star background"
+                                         style="width: 0.596207px; height: 0.596207px; opacity: 0.26; transform: translate(86.2px, 32px) rotate(45deg);"></div>
+                                    <div class="star yellow-star background"
+                                         style="width: 0.636345px; height: 0.636345px; opacity: 0.27; transform: translate(19.1px, 38.7px) rotate(45deg);"></div>
+                                    <div class="star yellow-star background"
+                                         style="width: 0.921758px; height: 0.921758px; opacity: 0.37; transform: translate(191.4px, 12.9px) rotate(45deg);"></div>
+                                    <div class="star yellow-star background"
+                                         style="width: 0.914563px; height: 0.914563px; opacity: 0.36; transform: translate(59.5px, 14.9px) rotate(45deg);"></div>
+                                    <div class="star yellow-star background"
+                                         style="width: 0.622342px; height: 0.622342px; opacity: 0.39; transform: translate(87.7px, 44px) rotate(45deg);"></div>
+                                    <div class="star yellow-star background"
+                                         style="width: 0.723616px; height: 0.723616px; opacity: 0.38; transform: translate(272px, 2.5px) rotate(45deg);"></div>
+                                    <div class="star yellow-star background"
+                                         style="width: 1.20333px; height: 1.20333px; opacity: 0.37; transform: translate(392.6px, 10.6px) rotate(45deg);"></div>
+                                    <div class="star yellow-star background"
+                                         style="width: 0.81696px; height: 0.81696px; opacity: 0.47; transform: translate(185.6px, 4.8px) rotate(45deg);"></div>
+                                    <div class="star yellow-star background"
+                                         style="width: 0.691826px; height: 0.691826px; opacity: 0.36; transform: translate(336.2px, 27.7px) rotate(45deg);"></div>
+                                    <div class="star yellow-star background"
+                                         style="width: 0.611685px; height: 0.611685px; opacity: 0.38; transform: translate(332.4px, 41.3px) rotate(45deg);"></div>
+                                    <div class="star yellow-star background"
+                                         style="width: 0.976502px; height: 0.976502px; opacity: 0.24; transform: translate(329px, 13.1px) rotate(45deg);"></div>
+                                    <div class="star yellow-star background"
+                                         style="width: 0.402241px; height: 0.402241px; opacity: 0.34; transform: translate(346.3px, 31.2px) rotate(45deg);"></div>
+                                    <div class="star yellow-star background"
+                                         style="width: 0.62246px; height: 0.62246px; opacity: 0.29; transform: translate(348.3px, 41.9px) rotate(45deg);"></div>
+                                    <div class="star yellow-star background"
+                                         style="width: 0.556836px; height: 0.556836px; opacity: 0.44; transform: translate(399.2px, 42.7px) rotate(45deg);"></div>
+                                    <div class="star yellow-star background"
+                                         style="width: 0.63939px; height: 0.63939px; opacity: 0.47; transform: translate(29.3px, 13.6px) rotate(45deg);"></div>
+                                    <div class="star yellow-star background"
+                                         style="width: 1.20788px; height: 1.20788px; opacity: 0.46; transform: translate(413.7px, 23.2px) rotate(45deg);"></div>
+                                    <div class="star yellow-star background"
+                                         style="width: 0.725429px; height: 0.725429px; opacity: 0.25; transform: translate(140.8px, 39px) rotate(45deg);"></div>
+                                    <div class="star yellow-star background"
+                                         style="width: 0.952936px; height: 0.952936px; opacity: 0.41; transform: translate(69.6px, 53.3px) rotate(45deg);"></div>
+                                    <div class="star yellow-star background"
+                                         style="width: 0.972407px; height: 0.972407px; opacity: 0.36; transform: translate(217.9px, 3.3px) rotate(45deg);"></div>
+                                    <div class="star yellow-star background"
+                                         style="width: 0.56519px; height: 0.56519px; opacity: 0.3; transform: translate(205px, 19.1px) rotate(45deg);"></div>
+                                    <div class="star yellow-star background"
+                                         style="width: 0.916093px; height: 0.916093px; opacity: 0.39; transform: translate(37.8px, 11.8px) rotate(45deg);"></div>
+                                    <div class="star yellow-star background"
+                                         style="width: 0.685272px; height: 0.685272px; opacity: 0.35; transform: translate(25.7px, 17.3px) rotate(45deg);"></div>
+                                    <div class="star yellow-star background"
+                                         style="width: 0.961055px; height: 0.961055px; opacity: 0.39; transform: translate(40.2px, 10.8px) rotate(45deg);"></div>
+                                    <div class="star yellow-star background"
+                                         style="width: 0.738432px; height: 0.738432px; opacity: 0.36; transform: translate(48.2px, 12.7px) rotate(45deg);"></div>
+                                    <div class="star yellow-star background"
+                                         style="width: 0.537845px; height: 0.537845px; opacity: 0.37; transform: translate(43.5px, 13.3px) rotate(45deg);"></div>
+                                    <div class="star yellow-star background"
+                                         style="width: 0.688175px; height: 0.688175px; opacity: 0.36; transform: translate(131.9px, 15.8px) rotate(45deg);"></div>
+                                    <div class="star yellow-star background"
+                                         style="width: 1.29364px; height: 1.29364px; opacity: 0.46; transform: translate(383.2px, 39.2px) rotate(45deg);"></div>
+                                    <div class="star yellow-star background"
+                                         style="width: 0.79145px; height: 0.79145px; opacity: 0.45; transform: translate(42.6px, 4.7px) rotate(45deg);"></div>
+                                    <div class="star yellow-star background"
+                                         style="width: 1.18479px; height: 1.18479px; opacity: 0.48; transform: translate(411.4px, 21.4px) rotate(45deg);"></div>
+                                    <div class="star yellow-star background"
+                                         style="width: 0.832192px; height: 0.832192px; opacity: 0.42; transform: translate(372.1px, 42.6px) rotate(45deg);"></div>
+                                    <div class="star yellow-star background"
+                                         style="width: 1.08201px; height: 1.08201px; opacity: 0.49; transform: translate(123.9px, 37px) rotate(45deg);"></div>
+                                    <div class="star yellow-star background"
+                                         style="width: 1.15949px; height: 1.15949px; opacity: 0.4; transform: translate(270.3px, 31.2px) rotate(45deg);"></div>
+                                    <div class="star yellow-star background"
+                                         style="width: 0.835697px; height: 0.835697px; opacity: 0.36; transform: translate(249.9px, 21.2px) rotate(45deg);"></div>
+                                    <div class="star yellow-star background"
+                                         style="width: 1.29293px; height: 1.29293px; opacity: 0.27; transform: translate(302.1px, 38.8px) rotate(45deg);"></div>
+                                    <div class="star yellow-star background"
+                                         style="width: 0.432997px; height: 0.432997px; opacity: 0.25; transform: translate(303.7px, 49.7px) rotate(45deg);"></div>
+                                    <div class="star yellow-star background"
+                                         style="width: 0.883125px; height: 0.883125px; opacity: 0.25; transform: translate(295.7px, 32.4px) rotate(45deg);"></div>
+                                    <div class="star yellow-star background"
+                                         style="width: 0.580031px; height: 0.580031px; opacity: 0.47; transform: translate(316.1px, 37.1px) rotate(45deg);"></div>
+                                    <div class="star yellow-star background"
+                                         style="width: 0.861801px; height: 0.861801px; opacity: 0.4; transform: translate(317px, 50px) rotate(45deg);"></div>
+                                    <div class="star yellow-star background"
+                                         style="width: 0.837578px; height: 0.837578px; opacity: 0.31; transform: translate(274.4px, 46.9px) rotate(45deg);"></div>
+                                    <div class="star yellow-star background"
+                                         style="width: 0.823994px; height: 0.823994px; opacity: 0.4; transform: translate(257.5px, 49.8px) rotate(45deg);"></div>
+                                    <div class="star yellow-star background"
+                                         style="width: 0.813049px; height: 0.813049px; opacity: 0.3; transform: translate(231.2px, 43px) rotate(45deg);"></div>
+                                    <div class="star yellow-star background"
+                                         style="width: 0.524902px; height: 0.524902px; opacity: 0.4; transform: translate(223.7px, 56.7px) rotate(45deg);"></div>
+                                    <div class="star yellow-star background"
+                                         style="width: 0.574009px; height: 0.574009px; opacity: 0.5; transform: translate(216.7px, 52.9px) rotate(45deg);"></div>
+                                    <div class="star yellow-star background"
+                                         style="width: 0.502986px; height: 0.502986px; opacity: 0.3; transform: translate(221.9px, 37.8px) rotate(45deg);"></div>
+                                    <div class="star yellow-star background"
+                                         style="width: 0.577956px; height: 0.577956px; opacity: 0.42; transform: translate(233.8px, 36.4px) rotate(45deg);"></div>
+                                    <div class="star yellow-star background"
+                                         style="width: 0.990815px; height: 0.990815px; opacity: 0.36; transform: translate(72.4px, 38.6px) rotate(45deg);"></div>
+                                    <div class="star yellow-star background"
+                                         style="width: 0.820629px; height: 0.820629px; opacity: 0.33; transform: translate(378px, 48px) rotate(45deg);"></div>
+                                    <div class="star yellow-star background"
+                                         style="width: 0.785251px; height: 0.785251px; opacity: 0.33; transform: translate(0.5px, 29.3px) rotate(45deg);"></div>
+                                    <div class="star yellow-star background"
+                                         style="width: 1.09797px; height: 1.09797px; opacity: 0.37; transform: translate(332.1px, 34.2px) rotate(45deg);"></div>
+                                    <div class="star yellow-star background"
+                                         style="width: 1.1706px; height: 1.1706px; opacity: 0.31; transform: translate(253.8px, 15.9px) rotate(45deg);"></div>
+                                    <div class="star yellow-star background"
+                                         style="width: 0.517885px; height: 0.517885px; opacity: 0.35; transform: translate(238.7px, 62.3px) rotate(45deg);"></div>
+                                    <div class="star yellow-star background"
+                                         style="width: 0.847144px; height: 0.847144px; opacity: 0.35; transform: translate(380.5px, 42.8px) rotate(45deg);"></div>
+                                    <div class="star yellow-star background"
+                                         style="width: 0.696383px; height: 0.696383px; opacity: 0.55; transform: translate(12px, 3.1px) rotate(45deg);"></div>
+                                    <div class="star yellow-star background"
+                                         style="width: 1.18794px; height: 1.18794px; opacity: 0.45; transform: translate(315.3px, 55.9px) rotate(45deg);"></div>
+                                    <div class="star yellow-star background"
+                                         style="width: 0.77971px; height: 0.77971px; opacity: 0.47; transform: translate(82.8px, 61.5px) rotate(45deg);"></div>
+                                    <div class="star yellow-star background"
+                                         style="width: 0.677498px; height: 0.677498px; opacity: 0.39; transform: translate(94.1px, 53.4px) rotate(45deg);"></div>
+                                    <div class="star yellow-star background"
+                                         style="width: 0.511077px; height: 0.511077px; opacity: 0.43; transform: translate(93.3px, 64.2px) rotate(45deg);"></div>
+                                    <div class="star yellow-star background"
+                                         style="width: 0.992763px; height: 0.992763px; opacity: 0.42; transform: translate(97.3px, 62.9px) rotate(45deg);"></div>
+                                    <div class="star yellow-star background"
+                                         style="width: 0.597466px; height: 0.597466px; opacity: 0.41; transform: translate(76.3px, 64.2px) rotate(45deg);"></div>
+                                    <div class="star yellow-star background"
+                                         style="width: 0.697875px; height: 0.697875px; opacity: 0.38; transform: translate(270.4px, 59.3px) rotate(45deg);"></div>
+                                    <div class="star yellow-star background"
+                                         style="width: 1.12879px; height: 1.12879px; opacity: 0.45; transform: translate(58.9px, 60.5px) rotate(45deg);"></div>
+                                    <div class="star yellow-star background"
+                                         style="width: 1.26979px; height: 1.26979px; opacity: 0.45; transform: translate(168.8px, 23.2px) rotate(45deg);"></div>
+                                    <div class="star yellow-star background"
+                                         style="width: 0.54525px; height: 0.54525px; opacity: 0.55; transform: translate(169.9px, 35.4px) rotate(45deg);"></div>
+                                    <div class="star yellow-star background"
+                                         style="width: 1.00879px; height: 1.00879px; opacity: 0.42; transform: translate(-3.1px, 4.4px) rotate(45deg);"></div>
+                                    <div class="star yellow-star background"
+                                         style="width: 1.21794px; height: 1.21794px; opacity: 0.35; transform: translate(259px, 25px) rotate(45deg);"></div>
+                                    <div class="star yellow-star background"
+                                         style="width: 0.656062px; height: 0.656062px; opacity: 0.42; transform: translate(304.1px, 25.7px) rotate(45deg);"></div>
+                                    <div class="star yellow-star background"
+                                         style="width: 1.05491px; height: 1.05491px; opacity: 0.48; transform: translate(132.2px, 29.3px) rotate(45deg);"></div>
+                                    <div class="star yellow-star background"
+                                         style="width: 1.24018px; height: 1.24018px; opacity: 0.37; transform: translate(146.6px, 11px) rotate(45deg);"></div>
+                                    <div class="star yellow-star background"
+                                         style="width: 1.19615px; height: 1.19615px; opacity: 0.37; transform: translate(420.8px, 38.5px) rotate(45deg);"></div>
+                                    <div class="star yellow-star background"
+                                         style="width: 0.814781px; height: 0.814781px; opacity: 0.46; transform: translate(299.6px, 1.9px) rotate(45deg);"></div>
+                                    <div class="star yellow-star background"
+                                         style="width: 0.861332px; height: 0.861332px; opacity: 0.47; transform: translate(180.8px, 16.5px) rotate(45deg);"></div>
+                                    <div class="star yellow-star background"
+                                         style="width: 1.05979px; height: 1.05979px; opacity: 0.44; transform: translate(94.5px, 43.4px) rotate(45deg);"></div>
+                                    <div class="star yellow-star background"
+                                         style="width: 0.536401px; height: 0.536401px; opacity: 0.46; transform: translate(410.2px, 62.9px) rotate(45deg);"></div>
+                                    <div class="star yellow-star background"
+                                         style="width: 1.1627px; height: 1.1627px; opacity: 0.53; transform: translate(11.6px, 22.5px) rotate(45deg);"></div>
+                                    <div class="star yellow-star background"
+                                         style="width: 1.18884px; height: 1.18884px; opacity: 0.42; transform: translate(330px, 44.1px) rotate(45deg);"></div>
+                                    <div class="star yellow-star background"
+                                         style="width: 1.07896px; height: 1.07896px; opacity: 0.46; transform: translate(410.3px, 25px) rotate(45deg);"></div>
+                                    <div class="star yellow-star background"
+                                         style="width: 0.772193px; height: 0.772193px; opacity: 0.4; transform: translate(18.6px, 16.2px) rotate(45deg);"></div>
+                                    <div class="star yellow-star background"
+                                         style="width: 0.627285px; height: 0.627285px; opacity: 0.47; transform: translate(295.5px, 28.3px) rotate(45deg);"></div>
+                                    <div class="star yellow-star background"
+                                         style="width: 0.935181px; height: 0.935181px; opacity: 0.41; transform: translate(128.2px, 62.3px) rotate(45deg);"></div>
+                                    <div class="star yellow-star background"
+                                         style="width: 0.56288px; height: 0.56288px; opacity: 0.4; transform: translate(395.9px, 15.9px) rotate(45deg);"></div>
+                                    <div class="star yellow-star background"
+                                         style="width: 0.593866px; height: 0.593866px; opacity: 0.43; transform: translate(369.3px, 32.2px) rotate(45deg);"></div>
+                                    <div class="star yellow-star background"
+                                         style="width: 0.883015px; height: 0.883015px; opacity: 0.34; transform: translate(374px, 32.8px) rotate(45deg);"></div>
+                                    <div class="star yellow-star background"
+                                         style="width: 0.787944px; height: 0.787944px; opacity: 0.31; transform: translate(378.4px, 44.6px) rotate(45deg);"></div>
+                                    <div class="star yellow-star background"
+                                         style="width: 0.712176px; height: 0.712176px; opacity: 0.38; transform: translate(370.5px, 26px) rotate(45deg);"></div>
+                                    <div class="star yellow-star background"
+                                         style="width: 0.745622px; height: 0.745622px; opacity: 0.38; transform: translate(374.8px, 18.7px) rotate(45deg);"></div>
+                                    <div class="star yellow-star background"
+                                         style="width: 0.565457px; height: 0.565457px; opacity: 0.43; transform: translate(163.9px, 7.3px) rotate(45deg);"></div>
+                                    <div class="star yellow-star background"
+                                         style="width: 1.26501px; height: 1.26501px; opacity: 0.34; transform: translate(35.7px, 7.6px) rotate(45deg);"></div>
+                                    <div class="star yellow-star background"
+                                         style="width: 0.658334px; height: 0.658334px; opacity: 0.28; transform: translate(236.3px, 47.3px) rotate(45deg);"></div>
+                                    <div class="star yellow-star background"
+                                         style="width: 0.576639px; height: 0.576639px; opacity: 0.54; transform: translate(137.7px, 12.6px) rotate(45deg);"></div>
+                                    <div class="star yellow-star background"
+                                         style="width: 0.666056px; height: 0.666056px; opacity: 0.33; transform: translate(125.7px, 17px) rotate(45deg);"></div>
+                                    <div class="star yellow-star background"
+                                         style="width: 0.540045px; height: 0.540045px; opacity: 0.44; transform: translate(136.6px, 14.6px) rotate(45deg);"></div>
+                                    <div class="star yellow-star background"
+                                         style="width: 0.806949px; height: 0.806949px; opacity: 0.4; transform: translate(130.5px, 2.2px) rotate(45deg);"></div>
+                                    <div class="star yellow-star background"
+                                         style="width: 0.751068px; height: 0.751068px; opacity: 0.35; transform: translate(126.3px, 12.4px) rotate(45deg);"></div>
+                                    <div class="star yellow-star background"
+                                         style="width: 0.518462px; height: 0.518462px; opacity: 0.45; transform: translate(12.8px, 23.6px) rotate(45deg);"></div>
+                                    <div class="star yellow-star background"
+                                         style="width: 0.932282px; height: 0.932282px; opacity: 0.55; transform: translate(180.7px, 23.9px) rotate(45deg);"></div>
+                                    <div class="star yellow-star background"
+                                         style="width: 0.649585px; height: 0.649585px; opacity: 0.28; transform: translate(303.7px, 6px) rotate(45deg);"></div>
+                                    <div class="star yellow-star background"
+                                         style="width: 0.927266px; height: 0.927266px; opacity: 0.46; transform: translate(108.9px, 11.3px) rotate(45deg);"></div>
+                                    <div class="star yellow-star background"
+                                         style="width: 0.689475px; height: 0.689475px; opacity: 0.5; transform: translate(408.5px, 34.6px) rotate(45deg);"></div>
+                                    <div class="star yellow-star background"
+                                         style="width: 0.503511px; height: 0.503511px; opacity: 0.39; transform: translate(326.9px, 60.7px) rotate(45deg);"></div>
+                                    <div class="star yellow-star background"
+                                         style="width: 0.900801px; height: 0.900801px; opacity: 0.34; transform: translate(165.9px, 52.3px) rotate(45deg);"></div>
+                                    <div class="star yellow-star background"
+                                         style="width: 1.04671px; height: 1.04671px; opacity: 0.49; transform: translate(392.8px, 46.4px) rotate(45deg);"></div>
+                                    <div class="star yellow-star background"
+                                         style="width: 0.797387px; height: 0.797387px; opacity: 0.35; transform: translate(212.1px, 21.7px) rotate(45deg);"></div>
+                                    <div class="star yellow-star background"
+                                         style="width: 0.813713px; height: 0.813713px; opacity: 0.38; transform: translate(302.9px, 37.3px) rotate(45deg);"></div>
+                                    <div class="star yellow-star background"
+                                         style="width: 0.419152px; height: 0.419152px; opacity: 0.4; transform: translate(316.7px, 31.9px) rotate(45deg);"></div>
+                                    <div class="star yellow-star background"
+                                         style="width: 0.680685px; height: 0.680685px; opacity: 0.39; transform: translate(317.8px, 48.8px) rotate(45deg);"></div>
+                                    <div class="star yellow-star background"
+                                         style="width: 0.537682px; height: 0.537682px; opacity: 0.3; transform: translate(293px, 47.8px) rotate(45deg);"></div>
+                                    <div class="star yellow-star background"
+                                         style="width: 0.854936px; height: 0.854936px; opacity: 0.33; transform: translate(302.9px, 42.5px) rotate(45deg);"></div>
+                                    <div class="star yellow-star background"
+                                         style="width: 1.26467px; height: 1.26467px; opacity: 0.37; transform: translate(246.6px, 3.7px) rotate(45deg);"></div>
+                                    <div class="star yellow-star background"
+                                         style="width: 0.712994px; height: 0.712994px; opacity: 0.33; transform: translate(31.7px, 45.5px) rotate(45deg);"></div>
+                                    <div class="star yellow-star background"
+                                         style="width: 0.516133px; height: 0.516133px; opacity: 0.45; transform: translate(166.8px, 62.1px) rotate(45deg);"></div>
+                                    <div class="star yellow-star background"
+                                         style="width: 0.509682px; height: 0.509682px; opacity: 0.44; transform: translate(283.5px, 40.1px) rotate(45deg);"></div>
+                                    <div class="star yellow-star background"
+                                         style="width: 0.569564px; height: 0.569564px; opacity: 0.42; transform: translate(243.1px, 59.5px) rotate(45deg);"></div>
+                                    <div class="star yellow-star background"
+                                         style="width: 1.05019px; height: 1.05019px; opacity: 0.32; transform: translate(328.3px, 23.5px) rotate(45deg);"></div>
+                                    <div class="star yellow-star background"
+                                         style="width: 0.893936px; height: 0.893936px; opacity: 0.39; transform: translate(387.5px, 40px) rotate(45deg);"></div>
+                                    <div class="star yellow-star background"
+                                         style="width: 1.01707px; height: 1.01707px; opacity: 0.44; transform: translate(283.8px, 41.4px) rotate(45deg);"></div>
+                                    <div class="star yellow-star background"
+                                         style="width: 0.997948px; height: 0.997948px; opacity: 0.36; transform: translate(283.8px, 27.1px) rotate(45deg);"></div>
+                                    <div class="star yellow-star background"
+                                         style="width: 0.749717px; height: 0.749717px; opacity: 0.44; transform: translate(283.3px, 44px) rotate(45deg);"></div>
+                                    <div class="star yellow-star background"
+                                         style="width: 0.811123px; height: 0.811123px; opacity: 0.32; transform: translate(276.4px, 52.5px) rotate(45deg);"></div>
+                                    <div class="star yellow-star background"
+                                         style="width: 0.414693px; height: 0.414693px; opacity: 0.4; transform: translate(287.5px, 32.5px) rotate(45deg);"></div>
+                                    <div class="star yellow-star background"
+                                         style="width: 1.11385px; height: 1.11385px; opacity: 0.45; transform: translate(130.3px, 35.9px) rotate(45deg);"></div>
+                                    <div class="star yellow-star background"
+                                         style="width: 0.943142px; height: 0.943142px; opacity: 0.38; transform: translate(231.5px, 21.3px) rotate(45deg);"></div>
+                                    <div class="star yellow-star background"
+                                         style="width: 0.539967px; height: 0.539967px; opacity: 0.37; transform: translate(187.8px, 5.9px) rotate(45deg);"></div>
+                                    <div class="star yellow-star background"
+                                         style="width: 0.875932px; height: 0.875932px; opacity: 0.31; transform: translate(313.8px, 22px) rotate(45deg);"></div>
+                                    <div class="star yellow-star background"
+                                         style="width: 0.996749px; height: 0.996749px; opacity: 0.37; transform: translate(184px, 56.4px) rotate(45deg);"></div>
+                                    <div class="star yellow-star background"
+                                         style="width: 0.860451px; height: 0.860451px; opacity: 0.4; transform: translate(360.7px, 25px) rotate(45deg);"></div>
+                                    <div class="star yellow-star background"
+                                         style="width: 0.951862px; height: 0.951862px; opacity: 0.38; transform: translate(322px, 54.8px) rotate(45deg);"></div>
+                                    <div class="star yellow-star background"
+                                         style="width: 0.758904px; height: 0.758904px; opacity: 0.5; transform: translate(18.8px, 60px) rotate(45deg);"></div>
+                                    <div class="star yellow-star background"
+                                         style="width: 0.803499px; height: 0.803499px; opacity: 0.37; transform: translate(243.7px, 9.9px) rotate(45deg);"></div>
+                                    <div class="star yellow-star background"
+                                         style="width: 1.01043px; height: 1.01043px; opacity: 0.41; transform: translate(195.3px, 9.9px) rotate(45deg);"></div>
+                                    <div class="star yellow-star background"
+                                         style="width: 1.20291px; height: 1.20291px; opacity: 0.43; transform: translate(-1.1px, 57.4px) rotate(45deg);"></div>
+                                    <div class="star yellow-star background"
+                                         style="width: 1.08906px; height: 1.08906px; opacity: 0.4; transform: translate(309.7px, 35px) rotate(45deg);"></div>
+                                    <div class="star yellow-star background"
+                                         style="width: 0.723472px; height: 0.723472px; opacity: 0.54; transform: translate(81.8px, 7.1px) rotate(45deg);"></div>
+                                    <div class="star yellow-star background"
+                                         style="width: 0.821751px; height: 0.821751px; opacity: 0.31; transform: translate(260px, 46.8px) rotate(45deg);"></div>
+                                    <div class="star yellow-star background"
+                                         style="width: 0.790494px; height: 0.790494px; opacity: 0.38; transform: translate(8.2px, 45.7px) rotate(45deg);"></div>
+                                    <div class="star yellow-star background"
+                                         style="width: 0.907151px; height: 0.907151px; opacity: 0.47; transform: translate(249.6px, 23.3px) rotate(45deg);"></div>
+                                    <div class="star yellow-star background"
+                                         style="width: 0.744763px; height: 0.744763px; opacity: 0.33; transform: translate(145.2px, 7.9px) rotate(45deg);"></div>
+                                    <div class="star yellow-star background"
+                                         style="width: 0.510968px; height: 0.510968px; opacity: 0.44; transform: translate(159.8px, 0.2px) rotate(45deg);"></div>
+                                    <div class="star yellow-star background"
+                                         style="width: 0.935248px; height: 0.935248px; opacity: 0.37; transform: translate(148.8px, 16px) rotate(45deg);"></div>
+                                    <div class="star yellow-star background"
+                                         style="width: 0.421715px; height: 0.421715px; opacity: 0.39; transform: translate(149.8px, 19.6px) rotate(45deg);"></div>
+                                    <div class="star yellow-star background"
+                                         style="width: 0.527244px; height: 0.527244px; opacity: 0.19; transform: translate(145.7px, 5.7px) rotate(45deg);"></div>
+                                    <div class="star yellow-star background"
+                                         style="width: 1.08357px; height: 1.08357px; opacity: 0.34; transform: translate(167px, 36.4px) rotate(45deg);"></div>
+                                    <div class="star yellow-star background"
+                                         style="width: 1.06299px; height: 1.06299px; opacity: 0.45; transform: translate(53.7px, 25px) rotate(45deg);"></div>
+                                    <div class="star yellow-star background"
+                                         style="width: 0.700574px; height: 0.700574px; opacity: 0.41; transform: translate(40.6px, 23.4px) rotate(45deg);"></div>
+                                    <div class="star yellow-star background"
+                                         style="width: 0.877979px; height: 0.877979px; opacity: 0.43; transform: translate(230.4px, 54.5px) rotate(45deg);"></div>
+                                    <div class="star yellow-star background"
+                                         style="width: 0.701883px; height: 0.701883px; opacity: 0.46; transform: translate(8.4px, 24px) rotate(45deg);"></div>
+                                    <div class="star yellow-star background"
+                                         style="width: 0.614995px; height: 0.614995px; opacity: 0.51; transform: translate(62.9px, 32.7px) rotate(45deg);"></div>
+                                    <div class="star yellow-star background"
+                                         style="width: 1.14267px; height: 1.14267px; opacity: 0.28; transform: translate(-2.3px, 52.9px) rotate(45deg);"></div>
+                                    <div class="star yellow-star background"
+                                         style="width: 0.941906px; height: 0.941906px; opacity: 0.33; transform: translate(-4px, 59.9px) rotate(45deg);"></div>
+                                    <div class="star yellow-star background"
+                                         style="width: 0.521023px; height: 0.521023px; opacity: 0.33; transform: translate(8.4px, 44.9px) rotate(45deg);"></div>
+                                    <div class="star yellow-star background"
+                                         style="width: 0.843834px; height: 0.843834px; opacity: 0.34; transform: translate(-4px, 48.6px) rotate(45deg);"></div>
+                                    <div class="star yellow-star background"
+                                         style="width: 0.843046px; height: 0.843046px; opacity: 0.34; transform: translate(-4px, 48.2px) rotate(45deg);"></div>
+                                    <div class="star yellow-star background"
+                                         style="width: 1.22276px; height: 1.22276px; opacity: 0.45; transform: translate(38.1px, 54.6px) rotate(45deg);"></div>
+                                    <div class="star yellow-star background"
+                                         style="width: 0.748142px; height: 0.748142px; opacity: 0.45; transform: translate(421.6px, 21.9px) rotate(45deg);"></div>
+                                    <div class="star yellow-star background"
+                                         style="width: 0.793815px; height: 0.793815px; opacity: 0.41; transform: translate(409.1px, 16.3px) rotate(45deg);"></div>
+                                    <div class="star yellow-star background"
+                                         style="width: 0.652109px; height: 0.652109px; opacity: 0.3; transform: translate(425.8px, 20.3px) rotate(45deg);"></div>
+                                    <div class="star yellow-star background"
+                                         style="width: 0.741862px; height: 0.741862px; opacity: 0.45; transform: translate(425.8px, 23.2px) rotate(45deg);"></div>
+                                    <div class="star yellow-star background"
+                                         style="width: 0.775675px; height: 0.775675px; opacity: 0.36; transform: translate(425.8px, 36.7px) rotate(45deg);"></div>
+                                    <div class="star yellow-star background"
+                                         style="width: 0.822584px; height: 0.822584px; opacity: 0.47; transform: translate(5.1px, 38.2px) rotate(45deg);"></div>
+                                    <div class="star yellow-star background"
+                                         style="width: 1.26524px; height: 1.26524px; opacity: 0.45; transform: translate(10.3px, 33.3px) rotate(45deg);"></div>
+                                    <div class="star yellow-star background"
+                                         style="width: 1.28963px; height: 1.28963px; opacity: 0.43; transform: translate(184.2px, 43.2px) rotate(45deg);"></div>
+                                    <div class="star yellow-star background"
+                                         style="width: 0.892243px; height: 0.892243px; opacity: 0.26; transform: translate(182.8px, 28.5px) rotate(45deg);"></div>
+                                    <div class="star yellow-star background"
+                                         style="width: 0.989981px; height: 0.989981px; opacity: 0.22; transform: translate(180.1px, 43.6px) rotate(45deg);"></div>
+                                    <div class="star yellow-star background"
+                                         style="width: 0.857725px; height: 0.857725px; opacity: 0.38; transform: translate(183.7px, 37.5px) rotate(45deg);"></div>
+                                    <div class="star yellow-star background"
+                                         style="width: 0.56115px; height: 0.56115px; opacity: 0.32; transform: translate(182.6px, 30.6px) rotate(45deg);"></div>
+                                    <div class="star yellow-star background"
+                                         style="width: 1.28567px; height: 1.28567px; opacity: 0.28; transform: translate(223.9px, 2.4px) rotate(45deg);"></div>
+                                    <div class="star yellow-star background"
+                                         style="width: 1.25905px; height: 1.25905px; opacity: 0.34; transform: translate(88.8px, 14.9px) rotate(45deg);"></div>
+                                    <div class="star yellow-star background"
+                                         style="width: 1.25196px; height: 1.25196px; opacity: 0.26; transform: translate(263.2px, 43.2px) rotate(45deg);"></div>
+                                    <div class="star yellow-star background"
+                                         style="width: 0.892007px; height: 0.892007px; opacity: 0.43; transform: translate(173.2px, 61.8px) rotate(45deg);"></div>
+                                    <div class="star yellow-star background"
+                                         style="width: 1.13085px; height: 1.13085px; opacity: 0.34; transform: translate(290.5px, 43.5px) rotate(45deg);"></div>
+                                    <div class="star yellow-star background"
+                                         style="width: 1.0812px; height: 1.0812px; opacity: 0.3; transform: translate(289.7px, 13.9px) rotate(45deg);"></div>
+                                    <div class="star yellow-star background"
+                                         style="width: 1.20444px; height: 1.20444px; opacity: 0.5; transform: translate(282.6px, 13.2px) rotate(45deg);"></div>
+                                </div>
+                                <div class="gradient-fade"></div>
+                            </div>
+                            <div class="bg-background-100"></div>
+                        </div>
+                        <div class="flex items-center justify-between absolute top-0 left-0 right-0 h-16 p-3 z-50">
+                            <div class="flex items-center gap-2">
+                                <div>
+                                    <button data-state="closed" class="flex items-center gap-1.5 rounded px-3 py-2.5 bg-background-200 hover:bg-background-300">
+                                        <div class="flex items-center gap-1.5">
+                                            <svg viewBox="0 0 24 24" class="h-5 w-5">
+                                                <path d="M6 4H4V8H8V6H6V4Z" class="fill-current"></path>
+                                                <path d="M8 10V12H4V10H8Z" class="fill-current"></path>
+                                                <path d="M10 12H8V14H6V20H8V14H10V12Z" class="fill-current"></path>
+                                                <path d="M10 8V12H14V14H16V20H18V14H16V12H20V10H16V12H14V8H10Z" class="fill-current"></path>
+                                                <path d="M10 16V18H14V16H10Z" class="fill-current"></path>
+                                                <path d="M18 4H20V8H16V6H18V4Z" class="fill-current"></path>
+                                            </svg>
+                                            <div class="text-sm font-semibold">{username}</div>
+                                        </div>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="h-full sm:h-auto w-full p-4 flex flex-col items-stretch gap-4 overflow-y-scroll"
+                         style="scrollbar-width: none; scrollbar-color: rgba(100, 100, 100, 0) transparent; transition: scrollbar-color 1000ms ease-in-out;">
+                        <div class="rounded overflow-clip w-full flex flex-col gap-y-px" style="scrollbar-width: none;">
+                            <div class="select-none p-3 pr-4 flex items-center justify-between gap-4 text-foreground-100 bg-background-200">
+                                <div class="flex flex-col gap-0.5 items-stretch grow overflow-hidden">
+                                    <div class="flex items-center gap-6 justify-between text-sm font-medium">
+                                        <p>Address</p>
+                                    </div>
+                                    <div class="flex items-center gap-1 justify-between text-xs text-foreground-300" style="word-break: break-all;" data-placeholder="address">
+                                        {address}
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="select-none p-3 pr-4 flex items-center justify-between gap-4 text-foreground-100 bg-background-200">
+                                <div class="flex flex-col gap-0.5 items-stretch grow overflow-hidden">
+                                    <div class="flex items-center gap-6 justify-between text-sm font-medium">
+                                        <p>OwnerGuid</p>
+                                    </div>
+                                    <div class="flex items-center gap-1 justify-between text-xs text-foreground-300" style="word-break: break-all;" data-placeholder="owner_guid">
+                                        {owner_guid}
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="select-none p-3 pr-4 flex items-center justify-between gap-4 text-foreground-100 bg-background-200">
+                                <div class="flex flex-col gap-0.5 items-stretch grow overflow-hidden">
+                                    <div class="flex items-center gap-6 justify-between text-sm font-medium">
+                                        <p>TransactionHash</p>
+                                    </div>
+                                    <div class="flex items-center gap-1 justify-between text-xs text-foreground-300" style="word-break: break-all;" data-placeholder="transaction_hash">
+                                        {transaction_hash}
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="select-none p-3 pr-4 flex items-center justify-between gap-4 text-foreground-100 bg-background-200">
+                                <div class="flex flex-col gap-0.5 items-stretch grow overflow-hidden">
+                                    <div class="flex items-center gap-6 justify-between text-sm font-medium">
+                                        <p>ExpiresAt</p>
+                                    </div>
+                                    <div class="flex items-center gap-1 justify-between text-xs text-foreground-300" data-placeholder="expires_at">
+                                        <strong>{expires_at}</strong>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="p-4 text-center"><h2 class="text-lg font-semibold">Now you should return to the
+                            game!</h2></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const urlParams = new URLSearchParams(window.location.search);
+        // Get the first (and only) query parameter from the URL.
+        const queryParamName = urlParams.keys().next().value;
+        let base64Data = null;
+
+        if (queryParamName) {
+            base64Data = urlParams.get(queryParamName);
+        }
+
+        let data = {};
+
+        if (base64Data) {
+            try {
+                // Decode from Base64, then parse the JSON string
+                const jsonString = atob(base64Data);
+                data = JSON.parse(jsonString);
+            } catch (e) {
+                console.error("Failed to parse data from URL:", e);
+            }
+        }
+        
+        /**
+         * Finds and replaces placeholder text like {placeholder} in the document body.
+         * @param {Object} rawData The raw data object from the URL.
+         */
+        function replacePlaceholders(rawData) {
+            // Map camelCase keys from JSON to the snake_case placeholders in the HTML.
+            const placeholderMap = {
+                username: rawData.username,
+                address: rawData.address,
+                owner_guid: rawData.ownerGuid,
+                transaction_hash: rawData.transactionHash,
+                expires_at: rawData.expiresAt
+            };
+
+            // Format the Unix timestamp for expires_at.
+            if (placeholderMap.expires_at) {
+                // The value is a string, so it needs to be parsed as a number.
+                // JavaScript's Date constructor expects milliseconds, so multiply by 1000.
+                const timestamp = parseInt(placeholderMap.expires_at, 10) * 1000;
+                const date = new Date(timestamp);
+                const options = { year: '2-digit', month: '2-digit', day: '2-digit', hour: 'numeric', minute: 'numeric', second: 'numeric' };
+                // Using 'es' locale to get dd/mm/yy format. You can change it if needed.
+                placeholderMap.expires_at = date.toLocaleString('es', options);
+            }
+
+            // Iterate over all text nodes in the document to safely replace content.
+            const walker = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT, null, false);
+            let node;
+            while (node = walker.nextNode()) {
+                for (const key in placeholderMap) {
+                    const placeholder = `{${key}}`;
+                    if (node.nodeValue.includes(placeholder)) {
+                        node.nodeValue = node.nodeValue.replace(new RegExp(placeholder, 'g'), placeholderMap[key] || 'N/A');
+                    }
+                }
+            }
+        }
+
+        replacePlaceholders(data);
+    });
+</script>
+
+</body>
+</html>

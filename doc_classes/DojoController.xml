@@ -1,0 +1,145 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="DojoController" inherits="Node" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://raw.githubusercontent.com/godotengine/godot/master/doc/class.xsd">
+	<brief_description>
+		Represents a controller account.
+	</brief_description>
+	<description>
+		This class is used to interact with a controller account. It allows you to execute transactions, query account information, and manage account state.
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="address">
+			<return type="String" />
+			<description>
+				Returns the address of the controller.
+			</description>
+		</method>
+		<method name="app_id">
+			<return type="String" />
+			<description>
+				Returns the app ID of the controller.
+			</description>
+		</method>
+		<method name="chain_id">
+			<return type="String" />
+			<description>
+				Returns the chain ID of the network.
+			</description>
+		</method>
+		<method name="clear_last_error">
+			<return type="void" />
+			<description>
+				Clears the last error message.
+			</description>
+		</method>
+		<method name="delegate_account">
+			<return type="String" />
+			<description>
+				Returns the delegate account address.
+			</description>
+		</method>
+		<method name="disconnect">
+			<return type="void" />
+			<description>
+				Disconnects the controller.
+			</description>
+		</method>
+		<method name="error_message">
+			<return type="String" />
+			<description>
+				Returns the last error message.
+			</description>
+		</method>
+		<method name="execute" qualifiers="const">
+			<return type="String" />
+			<param index="0" name="calls" type="Dictionary[]" />
+			<description>
+				Executes a transaction with the given calls.
+			</description>
+		</method>
+		<method name="execute_raw" qualifiers="const">
+			<return type="String" />
+			<param index="0" name="contract_address" type="String" />
+			<param index="1" name="entrypoint" type="String" />
+			<param index="2" name="calldata" type="Array" />
+			<description>
+				Executes a single call. This is a convenience method that wraps [method execute].
+			</description>
+		</method>
+		<method name="from_storage" qualifiers="static">
+			<return type="DojoController" />
+			<param index="0" name="app_id" type="String" />
+			<description>
+				Loads a controller from storage.
+			</description>
+		</method>
+		<method name="get_info">
+			<return type="Dictionary" />
+			<description>
+				Returns a dictionary with information about the controller.
+			</description>
+		</method>
+		<method name="init" qualifiers="static">
+			<return type="DojoController" />
+			<param index="0" name="app_id" type="String" />
+			<param index="1" name="username" type="String" />
+			<param index="2" name="class_hash" type="String" />
+			<param index="3" name="rpc_url" type="String" />
+			<param index="4" name="owner" type="DojoOwner" />
+			<param index="5" name="address" type="String" />
+			<param index="6" name="chain_id" type="String" />
+			<description>
+				Initializes a new controller.
+			</description>
+		</method>
+		<method name="is_valid">
+			<return type="bool" />
+			<description>
+				Returns true if the controller is valid.
+			</description>
+		</method>
+		<method name="new_headless" qualifiers="static">
+			<return type="DojoController" />
+			<param index="0" name="app_id" type="String" />
+			<param index="1" name="username" type="String" />
+			<param index="2" name="class_hash" type="String" />
+			<param index="3" name="rpc_url" type="String" />
+			<param index="4" name="owner" type="DojoOwner" />
+			<param index="5" name="chain_id" type="String" />
+			<description>
+				Creates a new headless controller.
+			</description>
+		</method>
+		<method name="signup">
+			<return type="void" />
+			<param index="0" name="signer_type" type="int" enum="ControllerHelper.SignerType" />
+			<param index="1" name="session_expiration" type="Variant" />
+			<param index="2" name="cartridge_api_url" type="String" />
+			<description>
+				Signs up a new controller.
+			</description>
+		</method>
+		<method name="switch_chain">
+			<return type="void" />
+			<param index="0" name="rpc_url" type="String" />
+			<description>
+				Switches the chain of the controller.
+			</description>
+		</method>
+		<method name="transfer">
+			<return type="String" />
+			<param index="0" name="recipient" type="String" />
+			<param index="1" name="amount" type="String" />
+			<description>
+				Transfers an amount to a recipient.
+			</description>
+		</method>
+		<method name="username">
+			<return type="String" />
+			<description>
+				Returns the username of the controller.
+			</description>
+		</method>
+	</methods>
+</class>

@@ -10,15 +10,15 @@
 
 using namespace godot;
 
-class OptionU32 : public DojoOption {
-    GDCLASS(OptionU32, DojoOption);
+class DojoOptionU32 : public DojoOption {
+    GDCLASS(DojoOptionU32, DojoOption);
 
 protected:
     static void _bind_methods() {}
 
 public:
-    OptionU32() : DojoOption() {}
-    OptionU32(uint32_t value) : DojoOption(value) {}
+    DojoOptionU32() : DojoOption() {}
+    DojoOptionU32(uint32_t value) : DojoOption(value) {}
 
     DOJO::COptionu32 get_native_option() const {
         DOJO::COptionu32 option = {};

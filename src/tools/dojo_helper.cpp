@@ -2,13 +2,15 @@
 
 #include "godot_cpp/classes/engine.hpp"
 #include "godot_cpp/classes/project_settings.hpp"
+#include "godot_cpp/classes/json.hpp"
+
 #include "tools/logger.h"
-#include <boost/multiprecision/cpp_dec_float.hpp>
-#include <types/big_int.h>
-#include <deque>
+#include "types/big_int.h"
 #include "variant/field_element.h"
 
-#include "godot_cpp/classes/json.hpp"
+#include <boost/multiprecision/cpp_dec_float.hpp>
+#include <deque>
+
 DojoHelpers *DojoHelpers::singleton = nullptr;
 using boost::multiprecision::cpp_int;
 using boost::multiprecision::int128_t;
@@ -57,8 +59,12 @@ Variant DojoHelpers::get_custom_setting(const String& category, const String &se
     return result;
 }
 
-Variant DojoHelpers::get_dojo_setting(const String &setting) {
-    return get_setting("dojo/config/" + setting);
+Variant DojoHelpers::get_dojo_setting(const String &setting, const Variant& default_value) {
+    return get_setting("dojo/config/" + setting, default_value);
+}
+
+Variant DojoHelpers::get_torii_setting(const String &setting, const Variant& default_value) {
+    return get_setting("dojo/config/torii/" + setting, default_value);
 }
 
 Dictionary DojoHelpers::get_policies(const String& custom) {
@@ -588,6 +594,11 @@ bool DojoHelpers::is_valid_calldata(const Variant &calldata) {
     return true;
 }
 
+String DojoHelpers::generate_private_key() {
+    DOJO::FieldElement felt_key = DOJO::signing_key_new();
+    return FieldElement::get_as_string(&felt_key);
+}
+
 String DojoHelpers::bytes_to_i128_string(const PackedByteArray &bytes) {
     if (bytes.size() != 16) {
         Logger::error("Error: PackedByteArray must be 16 bytes for i128.");
@@ -646,4 +657,45 @@ bool DojoHelpers::can_use_typed_dictionaries() {
 
     String hint_string;
     return major > 4 || (major == 4 && minor >= 4);
+}
+
+bool DojoHelpers::get_log_level_enabled(const String& level)
+{
+    String setting_path = "dojo/config/debug/" + level;
+    return ProjectSettings::get_singleton()->get_setting(setting_path);
+}
+
+void DojoHelpers::set_log_level_enabled(const String& level, bool enabled)
+{
+    ProjectSettings* settings = ProjectSettings::get_singleton();
+    String setting_path = "dojo/config/debug/" + level;
+    settings->set_setting(setting_path, enabled);
+    if (Engine::get_singleton()->is_editor_hint()) {
+        settings->save();
+    }
+}
+
+void DojoHelpers::set_error_enabled(bool enabled)
+{
+    set_log_level_enabled("error", enabled);
+}
+
+void DojoHelpers::set_warning_enabled(bool enabled)
+{
+    set_log_level_enabled("warning", enabled);
+}
+
+void DojoHelpers::set_info_enabled(bool enabled)
+{
+    set_log_level_enabled("info", enabled);
+}
+
+void DojoHelpers::set_debug_enabled(bool enabled)
+{
+    set_log_level_enabled("debug", enabled);
+}
+
+void DojoHelpers::set_success_enabled(bool enabled)
+{
+    set_log_level_enabled("success", enabled);
 }

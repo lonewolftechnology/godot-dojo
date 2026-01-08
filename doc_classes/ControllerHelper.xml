@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="ControllerHelper" inherits="Object" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://raw.githubusercontent.com/godotengine/godot/master/doc/class.xsd">
+	<brief_description>
+		A collection of static helper functions for controllers.
+	</brief_description>
+	<description>
+		This class provides various utility functions for managing controllers, such as key generation and validation.
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="generate_private_key" qualifiers="static">
+			<return type="String" />
+			<description>
+				Generates a new random private key.
+			</description>
+		</method>
+		<method name="get_controller_class_hash" qualifiers="static">
+			<return type="String" />
+			<param index="0" name="version" type="int" />
+			<description>
+				Returns the class hash for a given controller version.
+			</description>
+		</method>
+		<method name="get_public_key" qualifiers="static">
+			<return type="String" />
+			<param index="0" name="private_key" type="String" />
+			<description>
+				Derives the public key from a given private key.
+			</description>
+		</method>
+		<method name="has_storage" qualifiers="static">
+			<return type="bool" />
+			<param index="0" name="app_id" type="String" />
+			<description>
+				Returns true if there is storage for the given app ID.
+			</description>
+		</method>
+		<method name="signer_to_guid" qualifiers="static">
+			<return type="String" />
+			<param index="0" name="private_key" type="String" />
+			<description>
+				Converts a private key to a GUID.
+			</description>
+		</method>
+		<method name="validate_felt" qualifiers="static">
+			<return type="bool" />
+			<param index="0" name="felt" type="String" />
+			<description>
+				Validates if the given string is a valid field element.
+			</description>
+		</method>
+	</methods>
+	<constants>
+		<constant name="SignerType::Webauthn" value="1" enum="SignerType">
+			Webauthn signer type.
+		</constant>
+		<constant name="SignerType::Starknet" value="2" enum="SignerType">
+			Starknet signer type.
+		</constant>
+		<constant name="Version::V104" value="1" enum="Version">
+			Version 1.0.4.
+		</constant>
+		<constant name="Version::V105" value="2" enum="Version">
+			Version 1.0.5.
+		</constant>
+		<constant name="Version::V106" value="3" enum="Version">
+			Version 1.0.6.
+		</constant>
+		<constant name="Version::V107" value="4" enum="Version">
+			Version 1.0.7.
+		</constant>
+		<constant name="Version::V108" value="5" enum="Version">
+			Version 1.0.8.
+		</constant>
+		<constant name="Version::V109" value="6" enum="Version">
+			Version 1.0.9.
+		</constant>
+		<constant name="Version::Latest" value="7" enum="Version">
+			The latest version.
+		</constant>
+	</constants>
+</class>

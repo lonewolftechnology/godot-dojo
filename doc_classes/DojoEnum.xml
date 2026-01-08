@@ -4,7 +4,8 @@
 		Represents an enum value from a Dojo contract.
 	</brief_description>
 	<description>
-		This class holds the name and value of an enum from a Dojo contract. It's used to represent enum variants.
+		This class holds the name, selected option, and value of an enum from a Dojo contract. It's used to represent enum variants.
+		When printed, it will output the string representation of the current enum option.
 	</description>
 	<tutorials>
 	</tutorials>
@@ -12,20 +13,26 @@
 		<method name="get_name" qualifiers="const">
 			<return type="String" />
 			<description>
-				Returns the name of the enum variant.
+				Returns the name of the enum type.
+			</description>
+		</method>
+		<method name="get_option" qualifiers="const">
+			<return type="int" />
+			<description>
+				Returns the index of the selected enum option.
 			</description>
 		</method>
 		<method name="get_value" qualifiers="const">
 			<return type="Variant" />
 			<description>
-				Returns the value of the enum variant.
+				Returns the value associated with the enum variant. This can be of any type, including another struct or enum.
 			</description>
 		</method>
 		<method name="set_name">
 			<return type="void" />
 			<param index="0" name="name" type="String" />
 			<description>
-				Sets the name of the enum variant.
+				Sets the name of the enum type.
 			</description>
 		</method>
 		<method name="set_value">
@@ -33,6 +40,12 @@
 			<param index="0" name="value" type="Variant" />
 			<description>
 				Sets the value of the enum variant.
+			</description>
+		</method>
+		<method name="to_string" qualifiers="const">
+			<return type="String" />
+			<description>
+				Returns the name of the selected enum option as a string.
 			</description>
 		</method>
 	</methods>

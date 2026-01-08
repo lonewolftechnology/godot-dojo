@@ -1,13 +1,5 @@
-[submodule "external/dojo.c"]
-	path = external/dojo.c
-	url = https://github.com/dojoengine/dojo.c
-	branch = v1.7.5
-
 [submodule "external/godot-cpp"]
 	path = external/godot-cpp
 	url = https://github.com/godotengine/godot-cpp
 	branch = godot-4.3-stable
 
-[submodule "external/controller.c"]
-	path = external/controller.c
-	url = https://github.com/cartridge-gg/controller.c

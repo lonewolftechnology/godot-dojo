@@ -5,10 +5,7 @@
 
 #include <godot_cpp/classes/editor_plugin.hpp>
 
-#include "dojo_c_gdextension.h"
-
 #include "gdextension_interface.h"
-#include "editor/dojo_editor_plugin.h"
 #include "godot_cpp/core/defs.hpp"
 #include "godot_cpp/godot.hpp"
 #ifdef WEB_ENABLED
@@ -19,11 +16,14 @@
 #include "editor/dojo_editor_plugin.h"
 #endif
 
+#include "tools/dojo_helper.h"
+#include "tools/controller_helper.h"
 
 #include "classes/torii_client.h"
-#include "classes/controller_account.h"
 #include "classes/account.h"
-#include "tools/dojo_helper.h"
+#include "classes/dojo_owner.h"
+#include "classes/dojo_controller.h"
+#include "classes/dojo_session_account.h"
 
 #include "variant/ty/dojo_array.h"
 #include "variant/ty/enum.h"
@@ -58,6 +58,7 @@
 #include "ref_counted/dojo_option.h"
 #include "ref_counted/options/option_u32.h"
 #include "ref_counted/options/option_u64.h"
+#include "ref_counted/options/option_f64.h"
 #include "ref_counted/options/option_char.h"
 #include "ref_counted/options/option_u256.h"
 #include "ref_counted/options/option_clause.h"
@@ -67,16 +68,15 @@
 
 using namespace godot;
 
-void initialize_dojoc_module(ModuleInitializationLevel p_level)
-{
-    if (p_level == MODULE_INITIALIZATION_LEVEL_SCENE)
-    {
+void initialize_godotdojo_module(ModuleInitializationLevel p_level) {
+    if (p_level == MODULE_INITIALIZATION_LEVEL_SCENE) {
         // Tools
 #ifdef WEB_ENABLED
         GDREGISTER_CLASS(DojoBridge);
 #endif
-
+        // Tools
         GDREGISTER_CLASS(DojoHelpers);
+        GDREGISTER_CLASS(ControllerHelper);
         // DojoTypes
         GDREGISTER_CLASS(DojoTy);
         GDREGISTER_CLASS(DojoPrimitive);
@@ -89,19 +89,23 @@ void initialize_dojoc_module(ModuleInitializationLevel p_level)
         GDREGISTER_CLASS(U256);
         // Classes
         GDREGISTER_CLASS(ToriiClient);
-        GDREGISTER_CLASS(ControllerAccount);
         GDREGISTER_CLASS(Account);
+        GDREGISTER_CLASS(DojoSessionAccount);
+        GDREGISTER_CLASS(DojoOwner);
+        GDREGISTER_CLASS(DojoController);
         // RefCounted
         GDREGISTER_CLASS(DojoOption);
-        GDREGISTER_CLASS(OptionU32);
-        GDREGISTER_CLASS(OptionU64);
-        GDREGISTER_CLASS(OptionChar);
-        GDREGISTER_CLASS(OptionU256);
-        GDREGISTER_CLASS(OptionFieldElement);
-        GDREGISTER_CLASS(OptionClause);
-        GDREGISTER_CLASS(OptionTransactionFilter);
-        GDREGISTER_CLASS(OptionArrayFieldElement);
+        GDREGISTER_CLASS(DojoOptionU32);
+        GDREGISTER_CLASS(DojoOptionU64);
+        GDREGISTER_CLASS(DojoOptionf64)
+        GDREGISTER_CLASS(DojoOptionChar);
+        GDREGISTER_CLASS(DojoOptionU256);
+        GDREGISTER_CLASS(DojoOptionFieldElement);
+        GDREGISTER_CLASS(DojoOptionClause);
+        GDREGISTER_CLASS(DojoOptionTransactionFilter);
+        GDREGISTER_CLASS(DojoOptionArrayFieldElement);
         // Resources
+        // Queries
         GDREGISTER_CLASS(DojoQueryBase);
         GDREGISTER_CLASS(DojoQuery);
         GDREGISTER_CLASS(DojoTokenQuery);
@@ -114,6 +118,10 @@ void initialize_dojoc_module(ModuleInitializationLevel p_level)
         GDREGISTER_CLASS(DojoAggregationQuery)
         GDREGISTER_CLASS(DojoSubscription);
         GDREGISTER_CLASS(DojoTransactionFilter);
+        GDREGISTER_CLASS(DojoAchievementQuery)
+        GDREGISTER_CLASS(DojoPlayerAchievementQuery);
+        GDREGISTER_CLASS(DojoSearchQuery);
+        // Subscriptions
         GDREGISTER_CLASS(EventSubscription);
         GDREGISTER_CLASS(MessageSubscription);
         GDREGISTER_CLASS(TokenSubscription);
@@ -123,35 +131,31 @@ void initialize_dojoc_module(ModuleInitializationLevel p_level)
         GDREGISTER_CLASS(EntitySubscription);
         GDREGISTER_CLASS(TransactionSubscription);
         GDREGISTER_CLASS(StarknetSubscription);
-        GDREGISTER_CLASS(ActivitySubscription)
-        GDREGISTER_CLASS(AggregationSubscription)
-        GDREGISTER_CLASS(DojoC);
+        GDREGISTER_CLASS(ActivitySubscription);
+        GDREGISTER_CLASS(AggregationSubscription);
+        GDREGISTER_CLASS(AchievementProgressionSubscription);
     }
 
-    if (p_level == MODULE_INITIALIZATION_LEVEL_EDITOR)
-    {
+    if (p_level == MODULE_INITIALIZATION_LEVEL_EDITOR) {
 #ifdef TOOLS_ENABLED
         GDREGISTER_CLASS(DojoEditorPlugin);
         EditorPlugins::add_by_type<DojoEditorPlugin>();
 #endif
-
     }
 }
 
-void uninitialize_dojoc_module(ModuleInitializationLevel p_level)
-{
+void uninitialize_godotdojo_module(ModuleInitializationLevel p_level) {
 }
 
 extern "C" {
 // Initialization.
-GDExtensionBool GDE_EXPORT dojoc_library_init(GDExtensionInterfaceGetProcAddress p_get_proc_address,
+GDExtensionBool GDE_EXPORT godotdojo_library_init(GDExtensionInterfaceGetProcAddress p_get_proc_address,
                                               const GDExtensionClassLibraryPtr p_library,
-                                              GDExtensionInitialization* r_initialization)
-{
+                                              GDExtensionInitialization *r_initialization) {
     GDExtensionBinding::InitObject init_obj(p_get_proc_address, p_library, r_initialization);
 
-    init_obj.register_initializer(initialize_dojoc_module);
-    init_obj.register_terminator(uninitialize_dojoc_module);
+    init_obj.register_initializer(initialize_godotdojo_module);
+    init_obj.register_terminator(uninitialize_godotdojo_module);
     init_obj.set_minimum_library_initialization_level(MODULE_INITIALIZATION_LEVEL_EDITOR);
 
     return init_obj.init();

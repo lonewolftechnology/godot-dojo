@@ -23,7 +23,7 @@
 			<param index="0" name="master_account" type="Account" />
 			<param index="1" name="signing_key" type="String" />
 			<description>
-				Deploys a new burner account using a master account to pay for the deployment fees. The [code]signing_key[/code] is the private key for the new burner account.
+				Deploys a new burner account using a master account to pay for the deployment fees. The [code]signing_key[/code] is the private key for the new burner account. The result is emitted via the [signal transaction_executed] or [signal transaction_failed] signal.
 			</description>
 		</method>
 		<method name="execute_raw">
@@ -32,7 +32,7 @@
 			<param index="1" name="selector" type="String" />
 			<param index="2" name="calldata" type="Variant" default="[]" />
 			<description>
-				Executes a raw transaction. [code]to[/code] is the contract address, [code]selector[/code] is the function selector, and [code]calldata[/code] is an array of arguments for the function.
+				Executes a raw transaction. [code]to[/code] is the contract address, [code]selector[/code] is the function selector, and [code]calldata[/code] is an array of arguments for the function. The result is emitted via the [signal transaction_executed] or [signal transaction_failed] signal.
 			</description>
 		</method>
 		<method name="get_address" qualifiers="const">

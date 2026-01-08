@@ -1,5 +1,0 @@
-[gd_resource type="DojoPolicy" format=3 uid="uid://86qr71xw2y0e"]
-
-[resource]
-method = "move_to"
-description = "Moves to a position"

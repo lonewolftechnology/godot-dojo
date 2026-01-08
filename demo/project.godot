@@ -11,27 +11,25 @@ config_version=5
 [application]
 
 config/name="Dojo C GDextension Example"
-run/main_scene="uid://cn1gdwiythfn2"
+run/main_scene="uid://cn2due67t0wfp"
 config/features=PackedStringArray("4.5", "Forward Plus")
 run/max_fps=60
 config/icon="res://icon.svg"
 
 [display]
 
-window/size/viewport_width=1280
+window/size/viewport_width=1080
 window/size/viewport_height=720
-window/stretch/mode="viewport"
+window/stretch/mode="canvas_items"
 window/stretch/aspect="expand"
+window/handheld/orientation=1
 
 [dojo]
 
 config/katana_url="https://api.cartridge.gg/x/godot-demo-rookie/katana"
-config/torii_url="https://api.cartridge.gg/x/godot-demo-rookie/torii"
 config/account/address="0x6677fe62ee39c7b07401f754138502bab7fac99d2d3c5d37df7d1c6fab10819"
 config/account/public_key="0x3e3979c1ed728490308054fe357a9f49cf67f80f9721f44cc57235129e090f4"
 config/account/private_key="0x1e8965b7d0b20b91a62fe515dd991dc9fcb748acddf6b2cf18cec3bdd0f9f9a"
-config/contract_address="0x01d18853e41a1607c1bd80c2e80c34db3a59999a038b54a2424fae4ac71278da"
-config/world_address="0x03a7e28319f3617da4135893c711c79a1306adcd87cca4fbd0ceda50ae397683"
 config/fixed_point/64=40
 config/fixed_point/128=60
 config/fixed_point/256=123
@@ -40,7 +38,17 @@ config/policies={
 "spawn": "Spawn in the world"
 }
 config/disconnect_controller_on_exit=false
-config/fixed_point/default=128
+config/torii/torii_url="https://api.cartridge.gg/x/godot-demo-rookie/torii"
+config/torii/contract_addresses=Array[String](["0x01d18853e41a1607c1bd80c2e80c34db3a59999a038b54a2424fae4ac71278da"])
+config/contract_address="0x01d18853e41a1607c1bd80c2e80c34db3a59999a038b54a2424fae4ac71278da"
+config/torii/worlds=PackedStringArray("0x03a7e28319f3617da4135893c711c79a1306adcd87cca4fbd0ceda50ae397683")
+config/fixed_point/default=40
+config/enable_extra_logs=true
+config/debug/error=true
+config/debug/warning=true
+config/debug/info=true
+config/debug/debug=true
+config/debug/success=true
 
 [input]
 

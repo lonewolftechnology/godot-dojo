@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="DojoOptionTransactionFilter" inherits="DojoOption" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://raw.githubusercontent.com/godotengine/godot/master/doc/class.xsd">
+	<brief_description>
+		An optional transaction filter.
+	</brief_description>
+	<description>
+		This class represents an optional transaction filter. It can either contain a transaction filter ([code]Some[/code]) or be empty ([code]None[/code]).
+	</description>
+	<tutorials>
+	</tutorials>
+</class>

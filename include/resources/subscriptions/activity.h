@@ -26,8 +26,19 @@ public:
     }
 
     DOJO::CArrayFieldElement get_native_world_addresses() const {
-        return DojoArrayHelpers::string_array_to_native_carray_felt(world_addresses);
+        if (world_addresses.is_empty()) {
+            Logger::debug_extra("Activity Subscription", "Empty world addresses, fetching ProjectSettings");
+            TypedArray<String> setting = DojoHelpers::get_torii_setting("worlds");
+            if (setting.is_empty()) {
+                Logger::error("World addresses not found in Project Settings");
+                static DOJO::FieldElement dummy; // A static dummy pointer.
+                return {&dummy, 0};
+            }
+            return DojoArray::CFieldElementArrayHelper(setting).c_array;
+        }
+        return DojoArray::CFieldElementArrayHelper(world_addresses).c_array;
     }
+
 
     DOJO::CArrayFieldElement get_native_caller_addresses() const {
         return DojoArrayHelpers::string_array_to_native_carray_felt(caller_addresses);

@@ -11,12 +11,14 @@
 #include "option_field_element.h"
 #include "tools/dojo_helper.h"
 #include "variant/ty/primitive.h"
+#include "variant/field_element.h"
+#include "variant/ty/dojo_array.h"
 
 using namespace godot;
 
-class OptionClause : public DojoOption
+class DojoOptionClause : public DojoOption
 {
-    GDCLASS(OptionClause, DojoOption);
+    GDCLASS(DojoOptionClause, DojoOption);
 
     // Clause type tag
     DOJO::Clause_Tag tag;
@@ -74,12 +76,23 @@ class OptionClause : public DojoOption
         case DOJO::Primitive_Tag::Bool: primitive.bool_ = static_cast<bool>(p_value);
             break;
         case DOJO::Primitive_Tag::Felt252:
+        {
+            primitive.felt252 = FieldElement::from_string(str_val);
+            break;
+        }
         case DOJO::Primitive_Tag::ClassHash:
+        {
+            primitive.class_hash = FieldElement::from_string(str_val);
+            break;
+        }
         case DOJO::Primitive_Tag::ContractAddress:
+        {
+            primitive.contract_address = FieldElement::from_string(str_val);
+            break;
+        }
         case DOJO::Primitive_Tag::EthAddress:
             {
-                DOJO::U256 u256_val = DojoHelpers::string_to_u256(str_val);
-                memcpy(primitive.felt252.data, u256_val.data, 32);
+                primitive.eth_address = FieldElement::from_string(str_val);
                 break;
             }
         }
@@ -100,15 +113,16 @@ class OptionClause : public DojoOption
         case DOJO::MemberValue_Tag::String:
             {
                 String str = p_value;
-                char* c_str = new char[str.utf8().length() + 1];
-                strcpy(c_str, str.utf8().get_data());
+                CharString utf8_str = str.utf8();
+                char* c_str = static_cast<char*>(malloc(utf8_str.length() + 1));
+                strcpy(c_str, utf8_str.get_data());
                 native_value.string = c_str;
                 break;
             }
         case DOJO::MemberValue_Tag::List:
             {
                 Array arr = p_value;
-                auto* native_list = new DOJO::MemberValue[arr.size()];
+                auto* native_list = static_cast<DOJO::MemberValue*>(malloc(sizeof(DOJO::MemberValue) * arr.size()));
                 for (int i = 0; i < arr.size(); ++i)
                 {
                     native_list[i].tag = DOJO::MemberValue_Tag::PrimitiveValue;
@@ -121,8 +135,17 @@ class OptionClause : public DojoOption
         return native_value;
     }
 
+private:
+    static char* string_to_c_char(const String& p_string)
+    {
+        CharString utf8_str = p_string.utf8();
+        char* c_str = static_cast<char*>(malloc(utf8_str.length() + 1));
+        strcpy(c_str, utf8_str.get_data());
+        return c_str;
+    }
+
 public:
-    OptionClause()
+    DojoOptionClause()
     {
         tag = DOJO::Clause_Tag::HashedKeys;
         pattern_matching = DOJO::PatternMatching::FixedLen;
@@ -131,6 +154,46 @@ public:
         primitive_tag = DOJO::Primitive_Tag::U256_;
         logical_operator = DOJO::LogicalOperator::And;
     }
+    
+    static void free_native_member_value(DOJO::MemberValue& p_value)
+    {
+        switch (p_value.tag)
+        {
+        case DOJO::MemberValue_Tag::String:
+            std::free((void*)p_value.string);
+            break;
+        case DOJO::MemberValue_Tag::List:
+            // Asumimos que la lista solo contiene primitivas y no necesita limpieza profunda
+            std::free(p_value.list.data);
+            break;
+        default:
+            // PrimitiveValue no tiene memoria dinámica que limpiar
+            break;
+        }
+    }
+
+    static void free_native_clause(DOJO::Clause& p_clause)
+    {
+        switch (p_clause.tag)
+        {
+        case DOJO::Clause_Tag::HashedKeys:
+            DojoArrayHelpers::free_native_carray_felt(p_clause.hashed_keys);
+            break;
+        case DOJO::Clause_Tag::Keys:
+            DojoArrayHelpers::free_native_carray_option_field_element(p_clause.keys.keys);
+            DojoArrayHelpers::free_native_carray_str(p_clause.keys.models);
+            break;
+        // Fall through for CMember cleanup
+        case DOJO::Clause_Tag::Composite:
+            for (uintptr_t i = 0; i < p_clause.composite.clauses.data_len; ++i)
+            {
+                free_native_clause(p_clause.composite.clauses.data[i]);
+            }
+            std::free(p_clause.composite.clauses.data);
+            break;
+        }
+    }
+
 
     void load_from_native(const DOJO::Clause& p_clause)
     {
@@ -150,19 +213,21 @@ public:
         case DOJO::Clause_Tag::HashedKeys:
             {
                 TypedArray<String> out;
-                for (uintptr_t i = 0; i > p_clause.hashed_keys.data_len; ++i)
+                for (uintptr_t i = 0; i < p_clause.hashed_keys.data_len; ++i)
                 {
-                    Ref<FieldElement> felt = memnew(FieldElement(p_clause.hashed_keys.data));
+                    Ref<FieldElement> felt = memnew(FieldElement(p_clause.hashed_keys.data[i]));
                     out.push_back(felt->to_string());
                 }
+                hashed_keys = out;
             }
+            break;
         case DOJO::Clause_Tag::Keys:
             {
                 Array out_keys;
                 for (uintptr_t i = 0; i < p_clause.keys.keys.data_len; ++i)
                 {
                     const DOJO::COptionFieldElement& k = p_clause.keys.keys.data[i];
-                    Ref<OptionFieldElement> opt = memnew(OptionFieldElement());
+                    Ref<DojoOptionFieldElement> opt = memnew(DojoOptionFieldElement());
                     if (k.tag == DOJO::COptionFieldElement_Tag::SomeFieldElement)
                     {
                         Ref<FieldElement> felt = memnew(FieldElement(k.some));
@@ -260,7 +325,7 @@ public:
                 Array out_clauses;
                 for (uintptr_t i = 0; i < p_clause.composite.clauses.data_len; ++i)
                 {
-                    Ref<OptionClause> sub = from_native(p_clause.composite.clauses.data[i]);
+                    Ref<DojoOptionClause> sub = from_native(p_clause.composite.clauses.data[i]);
                     out_clauses.push_back(sub);
                 }
                 clauses = out_clauses;
@@ -269,30 +334,25 @@ public:
         }
     }
 
-    static Ref<OptionClause> from_native(const DOJO::Clause& p_clause)
+    static Ref<DojoOptionClause> from_native(const DOJO::Clause& p_clause)
     {
-        Ref<OptionClause> ref = memnew(OptionClause());
+        Ref<DojoOptionClause> ref = memnew(DojoOptionClause());
         ref->load_from_native(p_clause);
         return ref;
     }
 
-    static Ref<OptionClause> from_native_option(const DOJO::COptionClause& p_opt)
+    static Ref<DojoOptionClause> from_native_option(const DOJO::COptionClause& p_opt)
     {
         if (p_opt.tag == DOJO::COptionClause_Tag::SomeClause)
         {
             return from_native(p_opt.some);
         }
-        return Ref<OptionClause>();
+        return Ref<DojoOptionClause>();
     }
 
     DOJO::COptionClause get_native_option() const
     {
         DOJO::COptionClause option = {};
-        if (!is_some())
-        {
-            option.tag = DOJO::NoneClause;
-            return option;
-        }
 
         option.tag = DOJO::SomeClause;
         option.some.tag = tag;
@@ -301,62 +361,35 @@ public:
         {
         case DOJO::Clause_Tag::HashedKeys:
             {
-                auto* native_hashed_keys = new DOJO::FieldElement[hashed_keys.size()];
-                for (int i = 0; i < hashed_keys.size(); ++i)
-                {
-                    String key_str = hashed_keys[i];
-                    DOJO::U256 u256_val = DojoHelpers::string_to_u256(key_str);
-                    memcpy(native_hashed_keys[i].data, u256_val.data, 32);
-                }
-                option.some.hashed_keys = {native_hashed_keys, (uintptr_t)hashed_keys.size()};
+                option.some.hashed_keys = DojoArrayHelpers::string_array_to_native_carray_felt(hashed_keys);
                 break;
             }
         case DOJO::Clause_Tag::Keys:
             {
-                auto* native_keys = new DOJO::COptionFieldElement[keys.size()];
-                for (int i = 0; i < keys.size(); ++i)
-                {
-                    Ref<OptionFieldElement> key_ref = keys[i];
-                    if (key_ref.is_valid())
-                    {
-                        native_keys[i] = key_ref->get_native_option();
-                    }
-                    else
-                    {
-                        native_keys[i].tag = DOJO::NoneFieldElement;
-                    }
-                }
-
-                const char** models_data = new const char*[models.size()];
-                for (int i = 0; i < models.size(); ++i)
-                {
-                    String model_str = models[i];
-                    char* c_str = new char[model_str.utf8().length() + 1];
-                    strcpy(c_str, model_str.utf8().get_data());
-                    models_data[i] = c_str;
-                }
+                DOJO::CArrayCOptionFieldElement native_keys = DojoArrayHelpers::option_field_element_array_to_native_carray(keys);
+                DOJO::CArrayc_char native_models = DojoArrayHelpers::string_array_to_native_carray_str(models);
 
                 option.some.keys = {
-                    {native_keys, (uintptr_t)keys.size()},
+                    native_keys,
                     pattern_matching,
-                    {models_data, (uintptr_t)models.size()}
+                    native_models
                 };
                 break;
             }
         case DOJO::Clause_Tag::CMember:
             {
-                option.some.c_member.model = model.utf8().get_data();
-                option.some.c_member.member = member.utf8().get_data();
+                option.some.c_member.model = string_to_c_char(model);
+                option.some.c_member.member = string_to_c_char(member);
                 option.some.c_member.operator_ = comparison_operator;
                 option.some.c_member.value = to_native_member_value(value, member_tag, primitive_tag);
                 break;
             }
         case DOJO::Clause_Tag::Composite:
             {
-                auto* native_clauses = new DOJO::Clause[clauses.size()];
+                auto* native_clauses = static_cast<DOJO::Clause*>(malloc(sizeof(DOJO::Clause) * clauses.size()));
                 for (int i = 0; i < clauses.size(); ++i)
                 {
-                    Ref<OptionClause> clause_ref = clauses[i];
+                    Ref<DojoOptionClause> clause_ref = clauses[i];
                     if (clause_ref.is_valid())
                     {
                         native_clauses[i] = clause_ref->get_native_clause();
@@ -437,91 +470,91 @@ protected:
     static void _bind_methods()
     {
         // Enums
-        BIND_ENUM_CONSTANT(DOJO::Clause_Tag::HashedKeys);
-        BIND_ENUM_CONSTANT(DOJO::Clause_Tag::Keys);
-        BIND_ENUM_CONSTANT(DOJO::Clause_Tag::CMember);
-        BIND_ENUM_CONSTANT(DOJO::Clause_Tag::Composite);
+        ClassDB::bind_integer_constant(get_class_static(), "ClauseTag", "HashedKeys", DOJO::Clause_Tag::HashedKeys);
+        ClassDB::bind_integer_constant(get_class_static(), "ClauseTag", "Keys", DOJO::Clause_Tag::Keys);
+        ClassDB::bind_integer_constant(get_class_static(), "ClauseTag", "Member", DOJO::Clause_Tag::CMember);
+        ClassDB::bind_integer_constant(get_class_static(), "ClauseTag", "Composite", DOJO::Clause_Tag::Composite);
 
-        BIND_ENUM_CONSTANT(DOJO::PatternMatching::FixedLen);
-        BIND_ENUM_CONSTANT(DOJO::PatternMatching::VariableLen);
+        ClassDB::bind_integer_constant(get_class_static(), "PatternMatching", "FixedLen", DOJO::PatternMatching::FixedLen);
+        ClassDB::bind_integer_constant(get_class_static(), "PatternMatching", "VariableLen", DOJO::PatternMatching::VariableLen);
 
-        BIND_ENUM_CONSTANT(DOJO::ComparisonOperator::Eq);
-        BIND_ENUM_CONSTANT(DOJO::ComparisonOperator::Neq);
-        BIND_ENUM_CONSTANT(DOJO::ComparisonOperator::Gt);
-        BIND_ENUM_CONSTANT(DOJO::ComparisonOperator::Gte);
-        BIND_ENUM_CONSTANT(DOJO::ComparisonOperator::Lt);
-        BIND_ENUM_CONSTANT(DOJO::ComparisonOperator::Lte);
-        BIND_ENUM_CONSTANT(DOJO::ComparisonOperator::In);
-        BIND_ENUM_CONSTANT(DOJO::ComparisonOperator::NotIn);
-        BIND_ENUM_CONSTANT(DOJO::ComparisonOperator::Contains);
-        BIND_ENUM_CONSTANT(DOJO::ComparisonOperator::ContainsAll);
-        BIND_ENUM_CONSTANT(DOJO::ComparisonOperator::ContainsAny);
-        BIND_ENUM_CONSTANT(DOJO::ComparisonOperator::ArrayLengthEq);
-        BIND_ENUM_CONSTANT(DOJO::ComparisonOperator::ArrayLengthGt);
-        BIND_ENUM_CONSTANT(DOJO::ComparisonOperator::ArrayLengthLt);
+        ClassDB::bind_integer_constant(get_class_static(), "ComparisonOperator", "Eq", DOJO::ComparisonOperator::Eq);
+        ClassDB::bind_integer_constant(get_class_static(), "ComparisonOperator", "Neq", DOJO::ComparisonOperator::Neq);
+        ClassDB::bind_integer_constant(get_class_static(), "ComparisonOperator", "Gt", DOJO::ComparisonOperator::Gt);
+        ClassDB::bind_integer_constant(get_class_static(), "ComparisonOperator", "Gte", DOJO::ComparisonOperator::Gte);
+        ClassDB::bind_integer_constant(get_class_static(), "ComparisonOperator", "Lt", DOJO::ComparisonOperator::Lt);
+        ClassDB::bind_integer_constant(get_class_static(), "ComparisonOperator", "Lte", DOJO::ComparisonOperator::Lte);
+        ClassDB::bind_integer_constant(get_class_static(), "ComparisonOperator", "In", DOJO::ComparisonOperator::In);
+        ClassDB::bind_integer_constant(get_class_static(), "ComparisonOperator", "NotIn", DOJO::ComparisonOperator::NotIn);
+        ClassDB::bind_integer_constant(get_class_static(), "ComparisonOperator", "Contains", DOJO::ComparisonOperator::Contains);
+        ClassDB::bind_integer_constant(get_class_static(), "ComparisonOperator", "ContainsAll", DOJO::ComparisonOperator::ContainsAll);
+        ClassDB::bind_integer_constant(get_class_static(), "ComparisonOperator", "ContainsAny", DOJO::ComparisonOperator::ContainsAny);
+        ClassDB::bind_integer_constant(get_class_static(), "ComparisonOperator", "ArrayLengthEq", DOJO::ComparisonOperator::ArrayLengthEq);
+        ClassDB::bind_integer_constant(get_class_static(), "ComparisonOperator", "ArrayLengthGt", DOJO::ComparisonOperator::ArrayLengthGt);
+        ClassDB::bind_integer_constant(get_class_static(), "ComparisonOperator", "ArrayLengthLt", DOJO::ComparisonOperator::ArrayLengthLt);
 
-        BIND_ENUM_CONSTANT(DOJO::MemberValue_Tag::PrimitiveValue);
-        BIND_ENUM_CONSTANT(DOJO::MemberValue_Tag::String);
-        BIND_ENUM_CONSTANT(DOJO::MemberValue_Tag::List);
+        ClassDB::bind_integer_constant(get_class_static(), "MemberValueTag", "PrimitiveValue", DOJO::MemberValue_Tag::PrimitiveValue);
+        ClassDB::bind_integer_constant(get_class_static(), "MemberValueTag", "String", DOJO::MemberValue_Tag::String);
+        ClassDB::bind_integer_constant(get_class_static(), "MemberValueTag", "List", DOJO::MemberValue_Tag::List);
 
-        BIND_ENUM_CONSTANT(DOJO::LogicalOperator::And);
-        BIND_ENUM_CONSTANT(DOJO::LogicalOperator::Or);
+        ClassDB::bind_integer_constant(get_class_static(), "LogicalOperator", "And", DOJO::LogicalOperator::And);
+        ClassDB::bind_integer_constant(get_class_static(), "LogicalOperator", "Or", DOJO::LogicalOperator::Or);
 
-        BIND_ENUM_CONSTANT(DOJO::Primitive_Tag::I8);
-        BIND_ENUM_CONSTANT(DOJO::Primitive_Tag::I16);
-        BIND_ENUM_CONSTANT(DOJO::Primitive_Tag::I32);
-        BIND_ENUM_CONSTANT(DOJO::Primitive_Tag::I64);
-        BIND_ENUM_CONSTANT(DOJO::Primitive_Tag::I128);
-        BIND_ENUM_CONSTANT(DOJO::Primitive_Tag::U8);
-        BIND_ENUM_CONSTANT(DOJO::Primitive_Tag::U16);
-        BIND_ENUM_CONSTANT(DOJO::Primitive_Tag::U32);
-        BIND_ENUM_CONSTANT(DOJO::Primitive_Tag::U64);
-        BIND_ENUM_CONSTANT(DOJO::Primitive_Tag::U128);
-        BIND_ENUM_CONSTANT(DOJO::Primitive_Tag::U256_);
-        BIND_ENUM_CONSTANT(DOJO::Primitive_Tag::Bool);
-        BIND_ENUM_CONSTANT(DOJO::Primitive_Tag::Felt252);
-        BIND_ENUM_CONSTANT(DOJO::Primitive_Tag::ClassHash);
-        BIND_ENUM_CONSTANT(DOJO::Primitive_Tag::ContractAddress);
-        BIND_ENUM_CONSTANT(DOJO::Primitive_Tag::EthAddress);
+        ClassDB::bind_integer_constant(get_class_static(), "PrimitiveTag", "I8", DOJO::Primitive_Tag::I8);
+        ClassDB::bind_integer_constant(get_class_static(), "PrimitiveTag", "I16", DOJO::Primitive_Tag::I16);
+        ClassDB::bind_integer_constant(get_class_static(), "PrimitiveTag", "I32", DOJO::Primitive_Tag::I32);
+        ClassDB::bind_integer_constant(get_class_static(), "PrimitiveTag", "I64", DOJO::Primitive_Tag::I64);
+        ClassDB::bind_integer_constant(get_class_static(), "PrimitiveTag", "I128", DOJO::Primitive_Tag::I128);
+        ClassDB::bind_integer_constant(get_class_static(), "PrimitiveTag", "U8", DOJO::Primitive_Tag::U8);
+        ClassDB::bind_integer_constant(get_class_static(), "PrimitiveTag", "U16", DOJO::Primitive_Tag::U16);
+        ClassDB::bind_integer_constant(get_class_static(), "PrimitiveTag", "U32", DOJO::Primitive_Tag::U32);
+        ClassDB::bind_integer_constant(get_class_static(), "PrimitiveTag", "U64", DOJO::Primitive_Tag::U64);
+        ClassDB::bind_integer_constant(get_class_static(), "PrimitiveTag", "U128", DOJO::Primitive_Tag::U128);
+        ClassDB::bind_integer_constant(get_class_static(), "PrimitiveTag", "U256", DOJO::Primitive_Tag::U256_);
+        ClassDB::bind_integer_constant(get_class_static(), "PrimitiveTag", "Bool", DOJO::Primitive_Tag::Bool);
+        ClassDB::bind_integer_constant(get_class_static(), "PrimitiveTag", "Felt252", DOJO::Primitive_Tag::Felt252);
+        ClassDB::bind_integer_constant(get_class_static(), "PrimitiveTag", "ClassHash", DOJO::Primitive_Tag::ClassHash);
+        ClassDB::bind_integer_constant(get_class_static(), "PrimitiveTag", "ContractAddress", DOJO::Primitive_Tag::ContractAddress);
+        ClassDB::bind_integer_constant(get_class_static(), "PrimitiveTag", "EthAddress", DOJO::Primitive_Tag::EthAddress);
 
         // Tag
-        ClassDB::bind_method(D_METHOD("get_tag"), &OptionClause::get_tag);
-        ClassDB::bind_method(D_METHOD("set_tag", "p_tag"), &OptionClause::set_tag);
+        ClassDB::bind_method(D_METHOD("get_tag"), &DojoOptionClause::get_tag);
+        ClassDB::bind_method(D_METHOD("set_tag", "p_tag"), &DojoOptionClause::set_tag);
 
         // HashedKeys
-        ClassDB::bind_method(D_METHOD("get_hashed_keys"), &OptionClause::get_hashed_keys);
-        ClassDB::bind_method(D_METHOD("set_hashed_keys", "p_keys"), &OptionClause::set_hashed_keys);
+        ClassDB::bind_method(D_METHOD("get_hashed_keys"), &DojoOptionClause::get_hashed_keys);
+        ClassDB::bind_method(D_METHOD("set_hashed_keys", "p_keys"), &DojoOptionClause::set_hashed_keys);
 
         // Keys
-        ClassDB::bind_method(D_METHOD("get_keys"), &OptionClause::get_keys);
-        ClassDB::bind_method(D_METHOD("set_keys", "p_keys"), &OptionClause::set_keys);
-        ClassDB::bind_method(D_METHOD("get_pattern_matching"), &OptionClause::get_pattern_matching);
-        ClassDB::bind_method(D_METHOD("set_pattern_matching", "p_pm"), &OptionClause::set_pattern_matching);
-        ClassDB::bind_method(D_METHOD("get_models"), &OptionClause::get_models);
-        ClassDB::bind_method(D_METHOD("set_models", "p_models"), &OptionClause::set_models);
+        ClassDB::bind_method(D_METHOD("get_keys"), &DojoOptionClause::get_keys);
+        ClassDB::bind_method(D_METHOD("set_keys", "p_keys"), &DojoOptionClause::set_keys);
+        ClassDB::bind_method(D_METHOD("get_pattern_matching"), &DojoOptionClause::get_pattern_matching);
+        ClassDB::bind_method(D_METHOD("set_pattern_matching", "p_pm"), &DojoOptionClause::set_pattern_matching);
+        ClassDB::bind_method(D_METHOD("get_models"), &DojoOptionClause::get_models);
+        ClassDB::bind_method(D_METHOD("set_models", "p_models"), &DojoOptionClause::set_models);
 
         // Member
-        ClassDB::bind_method(D_METHOD("get_model"), &OptionClause::get_model);
-        ClassDB::bind_method(D_METHOD("set_model", "p_model"), &OptionClause::set_model);
-        ClassDB::bind_method(D_METHOD("get_member"), &OptionClause::get_member);
-        ClassDB::bind_method(D_METHOD("set_member", "p_member"), &OptionClause::set_member);
-        ClassDB::bind_method(D_METHOD("get_comparison_operator"), &OptionClause::get_comparison_operator);
-        ClassDB::bind_method(D_METHOD("set_comparison_operator", "p_op"), &OptionClause::set_comparison_operator);
-        ClassDB::bind_method(D_METHOD("get_member_tag"), &OptionClause::get_member_tag);
-        ClassDB::bind_method(D_METHOD("set_member_tag", "p_tag"), &OptionClause::set_member_tag);
-        ClassDB::bind_method(D_METHOD("get_primitive_tag"), &OptionClause::get_primitive_tag);
-        ClassDB::bind_method(D_METHOD("set_primitive_tag", "p_tag"), &OptionClause::set_primitive_tag);
-        ClassDB::bind_method(D_METHOD("get_value"), &OptionClause::get_value);
-        ClassDB::bind_method(D_METHOD("set_value", "p_value"), &OptionClause::set_value);
+        ClassDB::bind_method(D_METHOD("get_model"), &DojoOptionClause::get_model);
+        ClassDB::bind_method(D_METHOD("set_model", "p_model"), &DojoOptionClause::set_model);
+        ClassDB::bind_method(D_METHOD("get_member"), &DojoOptionClause::get_member);
+        ClassDB::bind_method(D_METHOD("set_member", "p_member"), &DojoOptionClause::set_member);
+        ClassDB::bind_method(D_METHOD("get_comparison_operator"), &DojoOptionClause::get_comparison_operator);
+        ClassDB::bind_method(D_METHOD("set_comparison_operator", "p_op"), &DojoOptionClause::set_comparison_operator);
+        ClassDB::bind_method(D_METHOD("get_member_tag"), &DojoOptionClause::get_member_tag);
+        ClassDB::bind_method(D_METHOD("set_member_tag", "p_tag"), &DojoOptionClause::set_member_tag);
+        ClassDB::bind_method(D_METHOD("get_primitive_tag"), &DojoOptionClause::get_primitive_tag);
+        ClassDB::bind_method(D_METHOD("set_primitive_tag", "p_tag"), &DojoOptionClause::set_primitive_tag);
+        ClassDB::bind_method(D_METHOD("get_value"), &DojoOptionClause::get_value);
+        ClassDB::bind_method(D_METHOD("set_value", "p_value"), &DojoOptionClause::set_value);
 
         // Composite
-        ClassDB::bind_method(D_METHOD("get_logical_operator"), &OptionClause::get_logical_operator);
-        ClassDB::bind_method(D_METHOD("set_logical_operator", "p_op"), &OptionClause::set_logical_operator);
-        ClassDB::bind_method(D_METHOD("get_clauses"), &OptionClause::get_clauses);
-        ClassDB::bind_method(D_METHOD("set_clauses", "p_clauses"), &OptionClause::set_clauses);
+        ClassDB::bind_method(D_METHOD("get_logical_operator"), &DojoOptionClause::get_logical_operator);
+        ClassDB::bind_method(D_METHOD("set_logical_operator", "p_op"), &DojoOptionClause::set_logical_operator);
+        ClassDB::bind_method(D_METHOD("get_clauses"), &DojoOptionClause::get_clauses);
+        ClassDB::bind_method(D_METHOD("set_clauses", "p_clauses"), &DojoOptionClause::set_clauses);
 
         // Overridden from DojoOption
-        ClassDB::bind_method(D_METHOD("to_json"), &OptionClause::to_json);
+        ClassDB::bind_method(D_METHOD("to_json"), &DojoOptionClause::to_json);
     }
 
     void _get_property_list(List<PropertyInfo>* p_list) const
@@ -650,11 +683,6 @@ protected:
 
     bool _get(const StringName& p_name, Variant& r_ret) const
     {
-        if (String(p_name) == "is_some")
-        {
-            r_ret = is_some();
-            return true;
-        }
 
         // if (!is_some()) return false;
 

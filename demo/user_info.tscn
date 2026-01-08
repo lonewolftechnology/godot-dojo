@@ -1,0 +1,55 @@
+[gd_scene load_steps=2 format=3 uid="uid://bctooef6mvfds"]
+
+[ext_resource type="Script" uid="uid://jykki6sg2h4u" path="res://user_info.gd" id="1_kl7b0"]
+
+[node name="UserInfo" type="VBoxContainer"]
+visible = false
+custom_minimum_size = Vector2(300, 0)
+offset_right = 40.0
+offset_bottom = 40.0
+script = ExtResource("1_kl7b0")
+
+[node name="Username" type="Label" parent="."]
+layout_mode = 2
+clip_text = true
+text_overrun_behavior = 3
+
+[node name="Address" type="Label" parent="."]
+layout_mode = 2
+clip_text = true
+text_overrun_behavior = 3
+
+[node name="ChainID" type="Label" parent="."]
+layout_mode = 2
+clip_text = true
+text_overrun_behavior = 3
+
+[node name="AppID" type="Label" parent="."]
+layout_mode = 2
+clip_text = true
+text_overrun_behavior = 3
+
+[node name="ExpiresAt" type="Label" parent="."]
+layout_mode = 2
+clip_text = true
+text_overrun_behavior = 3
+
+[node name="IsExpired" type="CheckButton" parent="."]
+layout_mode = 2
+mouse_filter = 2
+text = "Is Expired"
+
+[node name="IsRevoked" type="CheckButton" parent="."]
+layout_mode = 2
+mouse_filter = 2
+text = "Is Revoked"
+
+[node name="OwnerGuid" type="Label" parent="."]
+layout_mode = 2
+clip_text = true
+text_overrun_behavior = 3
+
+[node name="OwnerSessionId" type="Label" parent="."]
+layout_mode = 2
+clip_text = true
+text_overrun_behavior = 3

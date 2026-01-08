@@ -8,7 +8,6 @@
 #include "godot_cpp/classes/resource.hpp"
 #include "godot_cpp/core/class_db.hpp"
 #include "godot_cpp/variant/variant.hpp"
-#include "godot_cpp/core/version.hpp"
 #include "godot_cpp/variant/dictionary.hpp"
 
 using namespace godot;
@@ -30,7 +29,7 @@ public:
     DojoOption() : _value(Variant()) {}
     DojoOption(const Variant& p_value) : _value(p_value) {}
 
-    bool is_some() const {
+    virtual bool is_some() const {
         return _value.get_type() != Variant::NIL;
     }
 

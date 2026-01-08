@@ -19,6 +19,7 @@
 			The maximum number of items to return.
 		</member>
 		<member name="order_by" type="DojoOrderBy[]" setter="set_order_by" getter="get_order_by" default="[]">
+			The order in which to sort the results.
 		</member>
 	</members>
 	<constants>

@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="DojoOptionU64" inherits="DojoOption" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://raw.githubusercontent.com/godotengine/godot/master/doc/class.xsd">
+	<brief_description>
+		An optional 64-bit unsigned integer.
+	</brief_description>
+	<description>
+		This class represents an optional 64-bit unsigned integer. It can either contain a U64 value ([code]Some[/code]) or be empty ([code]None[/code]).
+	</description>
+	<tutorials>
+	</tutorials>
+</class>

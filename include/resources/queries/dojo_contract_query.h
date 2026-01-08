@@ -16,7 +16,7 @@ class DojoContractQuery : public DojoQueryBase {
     GDCLASS(DojoContractQuery, DojoQueryBase);
  
     TypedArray<String> contract_addresses;
-    Array contract_types; // Array of int (ContractType)
+    TypedArray<int64_t> contract_types; // Array of int (ContractType)
  
 public:
     DojoContractQuery() {}
@@ -41,7 +41,7 @@ public:
         if (contract_types.size() > 0) {
             DOJO::ContractType* types_data = new DOJO::ContractType[contract_types.size()];
             for (int i = 0; i < contract_types.size(); ++i) {
-                types_data[i] = static_cast<DOJO::ContractType>((int)contract_types[i]);
+                types_data[i] = static_cast<DOJO::ContractType>((int64_t)contract_types[i]);
             }
             query->contract_types.data = types_data;
             query->contract_types.data_len = contract_types.size();
@@ -56,19 +56,28 @@ public:
     TypedArray<String> get_contract_addresses() const { return contract_addresses; }
     void set_contract_addresses(const TypedArray<String>& p_addresses) { contract_addresses = p_addresses; }
  
-    Array get_contract_types() const { return contract_types; }
-    void set_contract_types(const Array& p_types) { contract_types = p_types; }
+    TypedArray<int64_t> get_contract_types() const { return contract_types; }
+    void set_contract_types(const TypedArray<int64_t>& p_types) { contract_types = p_types; }
  
 protected:
     static void _bind_methods() {
         ClassDB::bind_method(D_METHOD("get_contract_addresses"), &DojoContractQuery::get_contract_addresses);
         ClassDB::bind_method(D_METHOD("set_contract_addresses", "p_addresses"), &DojoContractQuery::set_contract_addresses);
         ADD_PROPERTY(PropertyInfo(Variant::PACKED_STRING_ARRAY, "contract_addresses"), "set_contract_addresses", "get_contract_addresses");
- 
+
         ClassDB::bind_method(D_METHOD("get_contract_types"), &DojoContractQuery::get_contract_types);
         ClassDB::bind_method(D_METHOD("set_contract_types", "p_types"), &DojoContractQuery::set_contract_types);
-        ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "contract_types", PROPERTY_HINT_ARRAY_TYPE, "int"), "set_contract_types", "get_contract_types");
+        ADD_PROPERTY(PropertyInfo(Variant::PACKED_INT64_ARRAY, "contract_types", PROPERTY_HINT_ARRAY_TYPE, vformat("%s/%s:", Variant::INT, "DojoContractQuery.ContractType")), "set_contract_types", "get_contract_types");
+
+	    BIND_ENUM_CONSTANT(DOJO::ContractType::WORLD);
+	    BIND_ENUM_CONSTANT(DOJO::ContractType::ERC20);
+	    BIND_ENUM_CONSTANT(DOJO::ContractType::ERC721);
+	    BIND_ENUM_CONSTANT(DOJO::ContractType::ERC1155);
+	    BIND_ENUM_CONSTANT(DOJO::ContractType::UDC);
+	    BIND_ENUM_CONSTANT(DOJO::ContractType::OTHER);
+
     }
 };
- 
+VARIANT_ENUM_CAST(DOJO::ContractType);
+
 #endif //DOJO_CONTRACT_QUERY_H
