@@ -20,4 +20,4 @@ protected:
     }
 };
 
-VARIANT_ENUM_CAST(DOJO::Clause_Tag)
+// VARIANT_ENUM_CAST(DOJO::Clause_Tag)
