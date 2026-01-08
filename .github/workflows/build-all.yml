@@ -116,7 +116,7 @@ jobs:
 
           # Parse controller-uniffi from [dependencies] in Cargo.toml
           CONTROLLER_LINE=$(awk '/\[dependencies\]/{f=1;next} /\[/{f=0} f && /controller-uniffi =/' Cargo.toml)
-          CONTROLLER_URL=$(echo "$CONTROLLER_LINE" | grep -o 'git = "[^"]*"' | sed 's/rev = "//;s/"//')
+          CONTROLLER_URL=$(echo "$CONTROLLER_LINE" | grep -o 'git = "[^"]*"' | sed 's/git = "//;s/"//')
           CONTROLLER_REV=$(echo "$CONTROLLER_LINE" | grep -o 'rev = "[^"]*"' | sed 's/rev = "//;s/"//')
           CONTROLLER_REV_SHORT=${CONTROLLER_REV:0:7}
 
@@ -252,12 +252,10 @@ jobs:
         with:
           targets: ${{ matrix.platform_id == 'ios' && 'aarch64-apple-ios,x86_64-apple-ios,aarch64-apple-ios-sim' || matrix.rust_target }}
 
-      - name: Restore Rust build artifacts (target folder)
-        id: cache-rust-build
-        uses: actions/cache/restore@v4
+      - name: Cache Rust build artifacts
+        uses: actions/cache@v4
         with:
-          path: |
-            godot-dojo-core/target
+          path: godot-dojo-core/target
           key: rust-build-${{ matrix.platform_id }}-${{ matrix.arch }}-${{ hashFiles('godot-dojo-core/Cargo.lock') }}
           restore-keys: |
             rust-build-${{ matrix.platform_id }}-${{ matrix.arch }}-
@@ -295,14 +293,6 @@ jobs:
         env:
           SKIP_BINDINGS_GENERATION: '1'
         run: cargo build --release --target aarch64-apple-ios-sim
-
-      - name: Save Rust build artifacts (target folder)
-        uses: actions/cache/save@v4
-        with:
-          path: |
-            godot-dojo-core/target
-          # The key must match the restore key.
-          key: rust-build-${{ matrix.platform_id }}-${{ matrix.arch }}-${{ hashFiles('godot-dojo-core/Cargo.lock') }}
 
       - name: Upload generated bindings
         if: matrix.rust_target == 'x86_64-unknown-linux-gnu'
@@ -407,16 +397,16 @@ jobs:
       matrix:
         precision: [single, double]
         include:
-           - os: macos-latest
-             arch: arm64
-             rust_target: aarch64-apple-darwin
-             macos_deployment_target: "14.0"
-             platform_id: macos
-           - os: macos-latest
-             arch: x86_64
-             rust_target: x86_64-apple-darwin
-             macos_deployment_target: "14.0"
-             platform_id: macos
+          - os: macos-latest
+            arch: arm64
+            rust_target: aarch64-apple-darwin
+            macos_deployment_target: "14.0"
+            platform_id: macos
+          - os: macos-latest
+            arch: x86_64
+            rust_target: x86_64-apple-darwin
+            macos_deployment_target: "14.0"
+            platform_id: macos
     with:
       os: ${{ matrix.os }}
       arch: ${{ matrix.arch }}
