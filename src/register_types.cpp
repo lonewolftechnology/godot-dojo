@@ -10,6 +10,7 @@
 #include "godot_cpp/godot.hpp"
 
 #include "ref_counted/query_builder.hpp"
+#include "ref_counted/dojo_utilities/clauses/member.hpp"
 #include "ref_counted/dojo_utilities/queries/pagination.hpp"
 #include "ref_counted/dojo_utilities/queries/order_by.hpp"
 
@@ -142,6 +143,9 @@ void initialize_godotdojo_module(ModuleInitializationLevel p_level) {
         GDREGISTER_CLASS(TokenBalanceQuery)
         GDREGISTER_CLASS(TokenTransferQuery)
         GDREGISTER_CLASS(TransactionQuery)
+
+        // Classes
+        GDREGISTER_CLASS(MemberClause)
         // -Experimental- //
 
         // Resources //
