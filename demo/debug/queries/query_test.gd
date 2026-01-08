@@ -8,9 +8,6 @@ extends Control
 @export var torii_client:ToriiClient
 
 func _ready() -> void:
-
-	var result = QueryBuilder.create(QueryBuilder.Achievement)
-	result.set_world_addresses([Constants.WORLD])
 #	printt("query" ,result.get_type(), result.get_type_as_string(), type_string(result.get_type()))
 	if get_parent() == get_tree().root:
 		torii_client = ToriiClient.new()

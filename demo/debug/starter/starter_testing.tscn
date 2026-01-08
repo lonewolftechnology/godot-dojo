@@ -62,11 +62,10 @@ layout_mode = 2
 size_flags_vertical = 3
 theme_override_styles/panel = SubResource("StyleBoxFlat_fx8p4")
 tab_alignment = 1
-current_tab = 1
+current_tab = 0
 
 [node name="SessionTesting" parent="CanvasLayer/VBoxContainer/TabContainer" node_paths=PackedStringArray("dojo_session_account", "torii_client") instance=ExtResource("2_nuvle")]
 unique_name_in_owner = true
-visible = false
 layout_mode = 2
 dojo_session_account = NodePath("../../../../DojoSessionAccount")
 torii_client = NodePath("../../../../ToriiClient")
@@ -74,6 +73,7 @@ entity_sub = SubResource("EntitySubscription_nuvle")
 message_sub = SubResource("MessageSubscription_nuvle")
 
 [node name="QueryTest" parent="CanvasLayer/VBoxContainer/TabContainer" node_paths=PackedStringArray("torii_client") instance=ExtResource("4_me0nv")]
+visible = false
 layout_mode = 2
 torii_client = NodePath("../../../../ToriiClient")
 metadata/_tab_index = 1

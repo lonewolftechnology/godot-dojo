@@ -16,7 +16,7 @@ signal subscription_created(subscription_name:String)
 @export var entity_sub: EntitySubscription
 @export var message_sub: MessageSubscription
 
-@onready var priv_key: String = "0x3f377826d5364b2b9740464524ed4d5758a6d45e8129cbd504704dd65468e32"
+@onready var priv_key: String = "0x5c442af2421e04a6b44067c986ce61915d4fb6ea64fc9e8a2988f44d60d6707"
 
 var full_policies:Dictionary = {
 	Constants.CONTRACT: {
@@ -174,3 +174,8 @@ func _on_iterative_calls_pressed() -> void:
 		else:
 			push_error("CURRENT CALL %s %s %s" % [_call["entrypoint"], _call["calldata"], result])
 		add_entry_to_output("EXECUTE OUTSIDE %s" % _call["entrypoint"], result)
+
+
+func _on_call_test_btn_pressed() -> void:
+	var result = dojo_session_account.execute_test(Constants.CONTRACT, "move", 2)
+	add_entry_to_output("EXECUTE", result)
