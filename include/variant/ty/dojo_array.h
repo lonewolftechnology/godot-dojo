@@ -92,8 +92,8 @@ namespace DojoArrayHelpers {
 
     inline void free_native_carray_option_field_element(DOJO::CArrayCOptionFieldElement& arr) {
         if (arr.data) {
-            // COptionFieldElement no tiene memoria interna que necesite ser liberada,
-            // por lo que solo necesitamos liberar el array principal.
+            // COptionFieldElement has no internal memory that needs to be freed,
+            // so we only need to free the main array.
             std::free(arr.data);
         }
         arr.data = nullptr;

@@ -124,6 +124,30 @@ String DojoSessionAccount::execute_from_outside_raw(const String &contract_addre
     return execute_from_outside(Array::make(_call_dict));
 }
 
+Variant DojoSessionAccount::execute_test( const Variant **args, GDExtensionInt arg_count,
+    GDExtensionCallError &error) {
+    if (arg_count < 2) {
+        error.error = GDEXTENSION_CALL_ERROR_TOO_FEW_ARGUMENTS;
+        error.expected = 2;
+        return {};
+    }
+    if (!internal) {
+        Logger::error("DojoSessionAccount is not initialized.");
+        return {};
+    }
+    Dictionary _call_dict;
+    _call_dict["contract_address"] = *args[0];
+    _call_dict["entrypoint"] = *args[1];
+    Array calldata = {};
+    for (int i = 2; i < arg_count; ++i) {
+        calldata.push_back(*args[i]);
+    }
+    _call_dict["calldata"] = calldata;
+    Logger::debug_extra("ExecuteTest", _call_dict);
+    return execute(Array::make(_call_dict));
+
+}
+
 
 uint64_t DojoSessionAccount::get_expires_at() const {
     if (!internal) {

@@ -40,6 +40,7 @@ public:
 
     String execute_from_outside(const TypedArray<Dictionary> &calls) const;
     String execute_from_outside_raw(const String &contract_address, const String &entrypoint, const Array &calldata) const;
+    Variant execute_test(const Variant **calldata, GDExtensionInt arg_count, GDExtensionCallError &error);
 
     uint64_t get_expires_at() const;
     bool is_expired() const;
@@ -89,6 +90,14 @@ protected:
         ClassDB::bind_method(D_METHOD("get_info"), &DojoSessionAccount::get_info);
         ClassDB::bind_method(D_METHOD("is_valid"), &DojoSessionAccount::is_valid);
 
+
+        {
+            MethodInfo mi;
+            mi.arguments.push_back(PropertyInfo(Variant::STRING, "contract_address"));
+            mi.arguments.push_back(PropertyInfo(Variant::STRING, "entrypoint"));
+            mi.name = "execute_test";
+            ClassDB::bind_vararg_method(METHOD_FLAGS_DEFAULT, "execute_test", &DojoSessionAccount::execute_test, mi);
+        }
 
         // Properties
         ClassDB::bind_method(D_METHOD("get_full_policies"), &DojoSessionAccount::get_full_policies);
