@@ -76,11 +76,23 @@ class DojoOptionClause : public DojoOption
         case DOJO::Primitive_Tag::Bool: primitive.bool_ = static_cast<bool>(p_value);
             break;
         case DOJO::Primitive_Tag::Felt252:
+        {
+            primitive.felt252 = FieldElement::from_string(str_val);
+            break;
+        }
         case DOJO::Primitive_Tag::ClassHash:
+        {
+            primitive.class_hash = FieldElement::from_string(str_val);
+            break;
+        }
         case DOJO::Primitive_Tag::ContractAddress:
+        {
+            primitive.contract_address = FieldElement::from_string(str_val);
+            break;
+        }
         case DOJO::Primitive_Tag::EthAddress:
             {
-                primitive.felt252 = FieldElement::from_string(str_val);
+                primitive.eth_address = FieldElement::from_string(str_val);
                 break;
             }
         }
