@@ -138,7 +138,7 @@ jobs:
             ### Commits Since Last Tag
             ${{ steps.get_commits.outputs.commits }}
             
-            ### Target dependecies:
+            ### Target dependencies:
             - Godot ${{ steps.get_godotcpp_version.outputs.GODOTCPP_VERSION }}
             - ${{ steps.get_core_deps.outputs.dojo_c_version }}
             - ${{ steps.get_core_deps.outputs.controller_c_version }}
@@ -462,8 +462,12 @@ jobs:
         run: |
           set -e
           mkdir -p godot-dojo-bin/addons/godot-dojo
-          # Copy the merged contents from the download step into the target directory.
-          cp -r single_bins/* godot-dojo-bin/addons/godot-dojo/
+          # Handle potential directory nesting from upload-artifact (demo/addons/godot-dojo vs flat)
+          if [ -d "single_bins/demo" ]; then
+            cp -r single_bins/demo/addons/godot-dojo/* godot-dojo-bin/addons/godot-dojo/
+          else
+            cp -r single_bins/* godot-dojo-bin/addons/godot-dojo/
+          fi
       - name: Package single precision into zip file
         run: |
           TAGNAME=${GITHUB_REF##*/}
@@ -474,7 +478,11 @@ jobs:
         run: |
           set -e
           mkdir -p dojo-starter-godot-project/addons/godot-dojo
-          cp -r single_bins/* dojo-starter-godot-project/addons/godot-dojo/
+          if [ -d "single_bins/demo" ]; then
+            cp -r single_bins/demo/addons/godot-dojo/* dojo-starter-godot-project/addons/godot-dojo/
+          else
+            cp -r single_bins/* dojo-starter-godot-project/addons/godot-dojo/
+          fi
 
       - name: Package starter project into zip file
         run: zip -r "dojo-starter-godot-project.zip" "dojo-starter-godot-project"
@@ -512,8 +520,12 @@ jobs:
         run: |
           set -e
           mkdir -p godot-dojo-double-bin/addons/godot-dojo
-          # Copy the merged contents from the download step into the target directory.
-          cp -r double_bins/* godot-dojo-double-bin/addons/godot-dojo/
+          # Handle potential directory nesting
+          if [ -d "double_bins/demo" ]; then
+            cp -r double_bins/demo/addons/godot-dojo/* godot-dojo-double-bin/addons/godot-dojo/
+          else
+            cp -r double_bins/* godot-dojo-double-bin/addons/godot-dojo/
+          fi
       - name: Package double precision into zip file
         run: |
           TAGNAME=${GITHUB_REF##*/}
