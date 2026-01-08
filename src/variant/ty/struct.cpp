@@ -29,7 +29,7 @@ Variant DojoStruct::StructToVariant(DOJO::Struct struct_)
         Ref<DojoTy> t_struct = memnew(DojoTy(struct_child_member));
         Dictionary data = {};
         data[child_name] = t_struct->get_value();
-        // data["type"] = t_struct->get_name();
+        data["type"] = t_struct->get_name();
         Logger::debug_extra("Struct", name, child_name, t_struct->get_name());
         result_array.merge(data);
     }
