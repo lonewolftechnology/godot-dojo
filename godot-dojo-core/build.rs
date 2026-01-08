@@ -80,6 +80,8 @@ fn handle_uniffi_dependency(dep_name: &str, udl_relative_path: &str, output_sub_
 // Polyfill for std::endian (C++20) when using C++17 or older.
 // UniFFI-generated code requires this.
 #if __cplusplus < 202002L
+#ifndef GODOT_DOJO_STD_ENDIAN_POLYFILL
+#define GODOT_DOJO_STD_ENDIAN_POLYFILL
 #include <cstdint>
 namespace std {
     enum class endian {
@@ -96,6 +98,7 @@ namespace std {
 #endif
     };
 }
+#endif
 #endif
 
 "#;
