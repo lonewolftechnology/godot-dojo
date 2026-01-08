@@ -537,6 +537,9 @@ def create_xcframework_action(target, source, env):
 
     cmd.extend(["-output", xcframework_path])
 
+    # Ensure the destination directory exists
+    os.makedirs(os.path.dirname(xcframework_path), exist_ok=True)
+
     try:
         subprocess.run(cmd, check=True, text=True, capture_output=False)
         print(f"{G}{check} XCFramework created successfully at: {xcframework_path}{X}")
@@ -555,7 +558,7 @@ if platform == "ios":
         output_base = f"build/ios/{target_out_dir}"
         is_simulator = env.get('ios_simulator', False)
         # The output path is always the same. The action will handle deletion to force recreation.
-        target_dir = f"build/ios/{target_out_dir}/godot-dojo.xcframework"
+        target_dir = f"demo/addons/godot-dojo/bin/ios/{target_out_dir}/godot-dojo.xcframework"
         # Always delete the existing XCFramework to force recreation.
         if os.path.exists(target_dir):
             print(f"{Y}{broom} Deleting existing XCFramework to ensure a clean build: {target_dir}{X}")
