@@ -1,13 +1,14 @@
 #pragma once
 
-#include "dojo_types.h"
+#include "dojo/dojo.hpp"
 #include "godot_cpp/classes/ref_counted.hpp"
-#include "variant/ty/dojo_array.h"
+#include "ref_counted/dojo_utilities/clause.hpp"
+#include "tools/logger.h"
 
 using namespace godot;
 
-class HashedKeysClause : public RefCounted {
-    GDCLASS(HashedKeysClause, RefCounted)
+class HashedKeysClause : public DojoClause {
+    GDCLASS(HashedKeysClause, DojoClause)
 
     TypedArray<String> p_hashed_keys;
 
@@ -15,30 +16,12 @@ public:
     HashedKeysClause();
     ~HashedKeysClause();
 
-    Ref<HashedKeysClause> add_key(const String& hashed_key) {
-        this->p_hashed_keys.push_back(hashed_key);
-        return this;
-    }
+    Ref<HashedKeysClause> add_key(const String& hashed_key);
+    Ref<HashedKeysClause> remove_key(const String& hashed_key);
+    Ref<HashedKeysClause> keys(const PackedStringArray& keys);
 
-    Ref<HashedKeysClause> remove_key(const String& hashed_key) {
-        this->p_hashed_keys.erase(hashed_key);
-        return this;
-    }
-
-    Ref<HashedKeysClause> keys(const PackedStringArray& keys) {
-        this->p_hashed_keys = keys;
-        return this;
-    }
-
-    DOJO::CArrayFieldElement get_native() const {
-        return DojoArrayHelpers::string_array_to_native_carray_felt(p_hashed_keys);
-    }
-
-    Dictionary to_dict() const {
-        Dictionary result = {};
-        result["hashed_keys"] = p_hashed_keys;
-        return result;
-    }
+    dojo::Clause get_native() const override;
+    Dictionary to_dict() const override;
 
 protected:
     static void _bind_methods() {

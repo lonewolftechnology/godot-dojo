@@ -3,7 +3,16 @@
 #include "tools/dojo_helper.h"
 #include "tools/logger.h"
 
-Dictionary MemberClause::to_dict() {
+MemberClause::MemberClause() : DojoClause(DojoClause::Member) {}
+MemberClause::~MemberClause() {}
+
+Dictionary MemberClause::to_dict() const {
+    Dictionary result;
+    result["model"] = p_model;
+    result["member"] = p_member;
+    result["operator"] = p_operator;
+    result["value"] = p_value;
+    return result;
 }
 
 // Recursive helper to convert Variant (Array/String/Primitive) to dojo::MemberValue (C++)
@@ -34,7 +43,7 @@ std::shared_ptr<dojo::MemberValue> variant_to_member_value(const Variant &val, M
     return std::make_shared<dojo::MemberValue>(dojo::MemberValue::kPrimitive{std::make_shared<dojo::Primitive>(p)});
 }
 
-dojo::MemberClause MemberClause::get_native() const {
+dojo::Clause MemberClause::get_native() const {
     dojo::MemberClause clause;
     clause.member = p_member.utf8().get_data();
     clause.model = p_model.utf8().get_data();
@@ -61,7 +70,7 @@ dojo::MemberClause MemberClause::get_native() const {
         val = std::make_shared<dojo::MemberValue>(dojo::MemberValue::kPrimitive{std::make_shared<dojo::Primitive>(p)});
     }
     clause.value = val;
-    return clause;
+    return dojo::Clause(dojo::Clause::kMember{std::make_shared<dojo::MemberClause>(clause)});
 }
 
 bool MemberClause::is_value_set() const {

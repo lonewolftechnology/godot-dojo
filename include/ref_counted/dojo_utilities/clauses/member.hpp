@@ -2,11 +2,12 @@
 
 #include "godot_cpp/classes/ref_counted.hpp"
 #include "dojo/dojo.hpp"
+#include "ref_counted/dojo_utilities/clause.hpp"
 
 using namespace godot;
 
-class MemberClause : public RefCounted {
-    GDCLASS(MemberClause, RefCounted)
+class MemberClause : public DojoClause {
+    GDCLASS(MemberClause, DojoClause)
 
 public:
     enum PrimitiveTag {
@@ -38,12 +39,12 @@ private:
 
 
 public:
-    MemberClause(){}
-    ~MemberClause(){}
+    MemberClause();
+    ~MemberClause();
 
-    Dictionary to_dict();
+    Dictionary to_dict() const override;
 
-    dojo::MemberClause get_native() const;
+    dojo::Clause get_native() const override;
 
     Ref<MemberClause> string(const String &value);
     Ref<MemberClause> list(const Variant **args, GDExtensionInt arg_count, GDExtensionCallError &error);

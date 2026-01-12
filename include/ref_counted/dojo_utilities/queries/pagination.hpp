@@ -1,6 +1,6 @@
-#pragma once
+ #pragma once
 
-#include "dojo_types.h"
+#include "dojo/dojo.hpp"
 #include "godot_cpp/classes/ref_counted.hpp"
 #include "order_by.hpp"
 
@@ -10,8 +10,9 @@ class DojoPagination : public RefCounted {
     GDCLASS(DojoPagination, RefCounted)
     String p_cursor;
     int64_t p_limit = 0;
-    int64_t p_direction = DOJO::PaginationDirection::Forward;
-    Ref<DojoOrderBy> p_order_by;
+    int64_t p_direction = static_cast<int64_t>(dojo::PaginationDirection::kForward);
+    // Ref<DojoOrderBy> p_order_by;
+    TypedArray<DojoOrderBy> p_order_by;
 
 public:
     DojoPagination() {
@@ -36,27 +37,28 @@ public:
     }
 
     Ref<DojoPagination> order_by(const Ref<DojoOrderBy> &order_by) {
-        this->p_order_by = order_by;
+        p_order_by.append(order_by);
         return this;
     }
 
-    DOJO::Pagination get_native() {
-        DOJO::Pagination pagination = {};
+    dojo::Pagination get_native() {
+        dojo::Pagination pagination;
 
-        pagination.cursor.tag = p_cursor.is_empty() ? DOJO::Nonec_char : DOJO::Somec_char;
-        if (pagination.cursor.tag == DOJO::Somec_char) {
-            pagination.cursor.some = strdup(p_cursor.utf8().get_data());
+        if (!p_cursor.is_empty()) {
+            pagination.cursor = p_cursor.utf8().get_data();
         }
 
-        pagination.limit.tag = p_limit > 0 ? DOJO::Someu32 : DOJO::Noneu32;
-        if (pagination.limit.tag == DOJO::Someu32) {
-            pagination.limit.some = p_limit;
+        if (p_limit > 0) {
+            pagination.limit = static_cast<uint32_t>(p_limit);
         }
 
-        pagination.direction = static_cast<DOJO::PaginationDirection>(p_direction);
+        pagination.direction = static_cast<dojo::PaginationDirection>(p_direction);
 
-        if (p_order_by.is_valid()) {
-            pagination.order_by = p_order_by->get_native();
+        for (int i = 0; i < p_order_by.size(); i++) {
+            Ref<DojoOrderBy> order_by = p_order_by[i];
+            if (order_by.is_valid()) {
+                pagination.order_by.push_back(std::make_shared<dojo::OrderBy>(order_by->get_native()));
+            }
         }
 
         return pagination;
@@ -68,7 +70,16 @@ public:
         _pagination["cursor"] = p_cursor;
         _pagination["limit"] = p_limit;
         _pagination["direction"] = p_direction;
-        _pagination.merge(p_order_by->to_dict());
+
+        Array order_by_array;
+        for (int i = 0; i < p_order_by.size(); i++) {
+            Ref<DojoOrderBy> order_by = p_order_by[i];
+            if (order_by.is_valid()) {
+                order_by_array.append(order_by->to_dict());
+            }
+        }
+        _pagination["order_by"] = order_by_array;
+
         Dictionary result = {};
         result["pagination"] = _pagination;
 
@@ -79,9 +90,9 @@ protected:
     static void _bind_methods() {
         // PaginationDirection
         ClassDB::bind_integer_constant(get_class_static(), "PaginationDirection", "Forward",
-                                       DOJO::PaginationDirection::Forward);
+                                       static_cast<GDExtensionInt>(dojo::PaginationDirection::kForward));
         ClassDB::bind_integer_constant(get_class_static(), "PaginationDirection", "Backward",
-                                       DOJO::PaginationDirection::Backward);
+                                       static_cast<GDExtensionInt>(dojo::PaginationDirection::kBackward));
 
         ClassDB::bind_method(D_METHOD("cursor", "cursor"), &DojoPagination::cursor);
         ClassDB::bind_method(D_METHOD("limit", "limit"), &DojoPagination::limit);

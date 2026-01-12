@@ -1,79 +1,47 @@
 #pragma once
 
-#include "dojo_types.h"
+#include "dojo/dojo.hpp"
 #include "godot_cpp/classes/ref_counted.hpp"
-#include "variant/ty/dojo_array.h"
+#include "ref_counted/dojo_utilities/clause.hpp"
 
 using namespace godot;
 
-class KeysClause : public RefCounted {
-    GDCLASS(KeysClause, RefCounted)
+class KeysClause : public DojoClause {
+    GDCLASS(KeysClause, DojoClause)
 
     TypedArray<String> p_keys; // Option Felt
-    DOJO::PatternMatching p_patter_matching;
+    dojo::PatternMatching p_patter_matching;
     TypedArray<String> p_models;
 
 public:
     KeysClause();
     ~KeysClause();
 
-    Ref<KeysClause> add_key(const String& hashed_key) {
-        this->p_keys.push_back(hashed_key);
-        return this;
-    }
+    Ref<KeysClause> add_key(const String& hashed_key);
+    Ref<KeysClause> remove_key(const String& hashed_key);
+    Ref<KeysClause> keys(const PackedStringArray& keys);
+    Ref<KeysClause> add_model(const String& model);
+    Ref<KeysClause> remove_model(const String& model);
+    Ref<KeysClause> models(const PackedStringArray& models);
+    Ref<KeysClause> pattern(const int64_t& pattern);
 
-    Ref<KeysClause> remove_key(const String& hashed_key) {
-        this->p_keys.erase(hashed_key);
-        return this;
-    }
-
-    Ref<KeysClause> keys(const PackedStringArray& keys) {
-        this->p_keys = keys;
-        return this;
-    }
-
-    Ref<KeysClause> add_model(const String& model) {
-        this->p_models.push_back(model);
-        return this;
-    }
-
-    Ref<KeysClause> remove_model(const String& model) {
-        this->p_models.erase(model);
-        return this;
-    }
-
-    Ref<KeysClause> models(const PackedStringArray& models) {
-        this->p_models = models;
-        return this;
-    }
-
-    Ref<KeysClause> pattern(const int64_t& pattern) {
-        this->p_patter_matching = static_cast<DOJO::PatternMatching>(pattern);
-        return this;
-    }
-
-    DOJO::KeysClause get_native() {
-        DOJO::KeysClause clause = {};
-        clause.keys = DojoArrayHelpers::option_field_element_array_to_native_carray(p_keys);
-        clause.pattern_matching = p_patter_matching;
-        clause.models = DojoArrayHelpers::string_array_to_native_carray_str(p_models);
-        return clause;
-    }
-
-    Dictionary to_dict() {
-        Dictionary result = {};
-        result["keys"] = p_keys;
-        result["pattern"] = p_patter_matching;
-        result["models"] = p_models;
-        return result;
-    }
+    dojo::Clause get_native() const override;
+    Dictionary to_dict() const override;
 
 protected:
     static void _bind_methods() {
-        ClassDB::bind_integer_constant(get_class_static(), "PatternMatching", "FixedLen", DOJO::PatternMatching::FixedLen);
-        ClassDB::bind_integer_constant(get_class_static(), "PatternMatching", "VariableLen", DOJO::PatternMatching::VariableLen);
+        ClassDB::bind_integer_constant(get_class_static(), "PatternMatching", "FixedLen", (int)dojo::PatternMatching::kFixedLen);
+        ClassDB::bind_integer_constant(get_class_static(), "PatternMatching", "VariableLen", (int)dojo::PatternMatching::kVariableLen);
 
+        ClassDB::bind_method(D_METHOD("add_key", "hashed_key"), &KeysClause::add_key);
+        ClassDB::bind_method(D_METHOD("remove_key", "hashed_key"), &KeysClause::remove_key);
+        ClassDB::bind_method(D_METHOD("keys", "keys"), &KeysClause::keys);
+        ClassDB::bind_method(D_METHOD("add_model", "model"), &KeysClause::add_model);
+        ClassDB::bind_method(D_METHOD("remove_model", "model"), &KeysClause::remove_model);
+        ClassDB::bind_method(D_METHOD("models", "models"), &KeysClause::models);
+        ClassDB::bind_method(D_METHOD("pattern", "pattern"), &KeysClause::pattern);
+        ClassDB::bind_method(D_METHOD("to_dict"), &KeysClause::to_dict);
     }
 };
 
-VARIANT_ENUM_CAST(DOJO::PatternMatching)
+VARIANT_ENUM_CAST(dojo::PatternMatching)
