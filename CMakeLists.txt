@@ -65,6 +65,9 @@ configure_file(plugin_template.gdextension.in godot-dojo.gdextension)
 
 target_include_directories(godot-dojo PRIVATE include src
     ${CMAKE_CURRENT_SOURCE_DIR}/bindings
+    ${CMAKE_CURRENT_SOURCE_DIR}/external/godot-cpp/include
+    ${CMAKE_CURRENT_SOURCE_DIR}/external/godot-cpp/gen/include
+    ${CMAKE_CURRENT_SOURCE_DIR}/external/godot-cpp/gdextension
 )
 
 # --- Rust Integration (Matching SConstruct) ---

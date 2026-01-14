@@ -2,7 +2,7 @@
 
 #include "ref_counted/query_builder.hpp"
 #include "ref_counted/dojo_utilities/clause.hpp"
-
+// TODO: Refactor: EntityQuery -> Query
 class EntityQuery : public QueryBuilder {
     GDCLASS(EntityQuery, QueryBuilder)
 
