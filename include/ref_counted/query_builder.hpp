@@ -21,6 +21,7 @@ public:
         Search,
         Token,
         TokenBalance,
+        TokenContract,
         TokenTransfer,
         Transaction
     };
