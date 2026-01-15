@@ -6,7 +6,7 @@
 #include "godot_cpp/classes/project_settings.hpp"
 #include "godot_cpp/variant/utility_functions.hpp"
 #include "godot_cpp/core/error_macros.hpp"
-#include "tools/dojo_helper.h"
+#include "tools/godot_helper.hpp"
 using namespace godot;
 
 namespace logger_internal
@@ -51,7 +51,7 @@ class Logger
 {
     static bool is_level_enabled(const String& level)
     {
-        return DojoHelpers::get_log_level_enabled(level);
+        return GodotHelper::get_log_level_enabled(level);
     }
 
 private:
