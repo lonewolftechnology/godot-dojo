@@ -6,10 +6,12 @@
 #include "ref_counted/queries/contract.hpp"
 #include "ref_counted/queries/controller.hpp"
 #include "ref_counted/queries/entity.hpp"
+#include "ref_counted/queries/event.hpp"
 #include "ref_counted/queries/player_achievement.hpp"
 #include "ref_counted/queries/search.hpp"
 #include "ref_counted/queries/token.hpp"
 #include "ref_counted/queries/token_balance.hpp"
+#include "ref_counted/queries/token_contract.hpp"
 #include "ref_counted/queries/token_transfer.hpp"
 #include "ref_counted/queries/transaction.hpp"
 
@@ -37,7 +39,10 @@ Ref<QueryBuilder> QueryBuilder::create(const int64_t &p_type) {
             return memnew(ControllerQuery);
         }
         case Entity: {
-            return memnew(EntityQuery);
+            return memnew(DojoQuery);
+        }
+        case Event: {
+            return memnew(EventQuery);
         }
         case PlayerAchievement: {
             return memnew(PlayerAchievementQuery);
@@ -50,6 +55,9 @@ Ref<QueryBuilder> QueryBuilder::create(const int64_t &p_type) {
         }
         case TokenBalance: {
             return memnew(TokenBalanceQuery);
+        }
+        case TokenContract: {
+            return memnew(TokenContractQuery);
         }
         case TokenTransfer: {
             return memnew(TokenTransferQuery);
@@ -70,4 +78,29 @@ Ref<QueryBuilder> QueryBuilder::set_type(const int64_t &_type) {
 
 int64_t QueryBuilder::get_type() const {
     return this->type;
+}
+
+Ref<QueryBuilder> QueryBuilder::pagination(const uint32_t& limit, const String& cursor) {
+    this->p_pagination.limit = limit;
+    this->p_pagination.cursor = cursor;
+    return this;
+}
+
+Ref<QueryBuilder> QueryBuilder::order_by(const String& field, const int64_t& direction) {
+    OrderBy ob;
+    ob.field = field;
+    ob.direction = static_cast<dojo::OrderDirection>(direction);
+    p_order_by.push_back(ob);
+    return this;
+}
+
+std::vector<std::shared_ptr<dojo::OrderBy>> QueryBuilder::get_order_by() const {
+    std::vector<std::shared_ptr<dojo::OrderBy>> result;
+    for (const auto& ob : p_order_by) {
+        auto native_ob = std::make_shared<dojo::OrderBy>();
+        native_ob->field = ob.field.utf8().get_data();
+        native_ob->direction = ob.direction;
+        result.push_back(native_ob);
+    }
+    return result;
 }
