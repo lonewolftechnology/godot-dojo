@@ -44,4 +44,4 @@ protected:
     }
 };
 
-VARIANT_ENUM_CAST(dojo::PatternMatching)
+// VARIANT_ENUM_CAST(dojo::PatternMatching)
