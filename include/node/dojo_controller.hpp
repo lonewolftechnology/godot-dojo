@@ -1,5 +1,4 @@
-#ifndef DOJO_CONTROLLER_H
-#define DOJO_CONTROLLER_H
+#pragma once
 
 #include "godot_cpp/classes/node.hpp"
 #include "godot_cpp/core/class_db.hpp"
@@ -7,7 +6,7 @@
 #include "godot_cpp/variant/string.hpp"
 #include "godot_cpp/variant/typed_array.hpp"
 
-#include "classes/dojo_owner.h"
+#include "ref_counted/controller_utilities/dojo_owner.hpp"
 #include "controller/controller.hpp"
 #include "tools/controller_helper.h"
 #include "tools/logger.h"
@@ -69,5 +68,3 @@ protected:
         ClassDB::bind_method(D_METHOD("is_valid"), &DojoController::is_valid);
     }
 };
-
-#endif // DOJO_CONTROLLER_H

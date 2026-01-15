@@ -1,6 +1,4 @@
-#ifndef DOJO_OWNER_H
-#define DOJO_OWNER_H
-
+#pragma once
 #include "godot_cpp/classes/ref_counted.hpp"
 #include "godot_cpp/core/class_db.hpp"
 #include "godot_cpp/variant/string.hpp"
@@ -33,5 +31,3 @@ protected:
         ClassDB::bind_static_method("DojoOwner", D_METHOD("init", "private_key"), &DojoOwner::init);
     }
 };
-
-#endif // DOJO_OWNER_H
