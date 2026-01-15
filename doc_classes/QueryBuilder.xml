@@ -13,6 +13,20 @@
 			<description>
 			</description>
 		</method>
+		<method name="order_by">
+			<return type="QueryBuilder" />
+			<param index="0" name="field" type="String" />
+			<param index="1" name="direction" type="int" />
+			<description>
+			</description>
+		</method>
+		<method name="pagination">
+			<return type="QueryBuilder" />
+			<param index="0" name="limit" type="int" />
+			<param index="1" name="cursor" type="String" />
+			<description>
+			</description>
+		</method>
 		<method name="set_type">
 			<return type="QueryBuilder" />
 			<param index="0" name="type" type="int" />
@@ -37,19 +51,27 @@
 		</constant>
 		<constant name="Controller" value="5" enum="Type">
 		</constant>
-		<constant name="PlayerAchievement" value="7" enum="Type">
-		</constant>
 		<constant name="Entity" value="6" enum="Type">
 		</constant>
-		<constant name="Search" value="8" enum="Type">
+		<constant name="Event" value="7" enum="Type">
 		</constant>
-		<constant name="Token" value="9" enum="Type">
+		<constant name="PlayerAchievement" value="8" enum="Type">
 		</constant>
-		<constant name="TokenBalance" value="10" enum="Type">
+		<constant name="Search" value="9" enum="Type">
 		</constant>
-		<constant name="TokenTransfer" value="11" enum="Type">
+		<constant name="Token" value="10" enum="Type">
 		</constant>
-		<constant name="Transaction" value="12" enum="Type">
+		<constant name="TokenBalance" value="11" enum="Type">
+		</constant>
+		<constant name="TokenContract" value="12" enum="Type">
+		</constant>
+		<constant name="TokenTransfer" value="13" enum="Type">
+		</constant>
+		<constant name="Transaction" value="14" enum="Type">
+		</constant>
+		<constant name="Asc" value="1" enum="OrderDirection">
+		</constant>
+		<constant name="Desc" value="2" enum="OrderDirection">
 		</constant>
 	</constants>
 </class>

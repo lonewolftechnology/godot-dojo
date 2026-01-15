@@ -6,7 +6,51 @@
 	</description>
 	<tutorials>
 	</tutorials>
+	<methods>
+		<method name="caller_addresses">
+			<return type="TransactionQuery" />
+			<param index="0" name="addresses" type="PackedStringArray" />
+			<description>
+			</description>
+		</method>
+		<method name="contract_addresses">
+			<return type="TransactionQuery" />
+			<param index="0" name="addresses" type="PackedStringArray" />
+			<description>
+			</description>
+		</method>
+		<method name="entrypoints">
+			<return type="TransactionQuery" />
+			<param index="0" name="entrypoints" type="PackedStringArray" />
+			<description>
+			</description>
+		</method>
+		<method name="from_block">
+			<return type="TransactionQuery" />
+			<param index="0" name="block" type="int" />
+			<description>
+			</description>
+		</method>
+		<method name="model_selectors">
+			<return type="TransactionQuery" />
+			<param index="0" name="selectors" type="PackedStringArray" />
+			<description>
+			</description>
+		</method>
+		<method name="to_block">
+			<return type="TransactionQuery" />
+			<param index="0" name="block" type="int" />
+			<description>
+			</description>
+		</method>
+		<method name="transaction_hashes">
+			<return type="TransactionQuery" />
+			<param index="0" name="hashes" type="PackedStringArray" />
+			<description>
+			</description>
+		</method>
+	</methods>
 	<members>
-		<member name="type" type="int" setter="set_type" getter="get_type" overrides="QueryBuilder" default="12" />
+		<member name="type" type="int" setter="set_type" getter="get_type" overrides="QueryBuilder" default="14" />
 	</members>
 </class>

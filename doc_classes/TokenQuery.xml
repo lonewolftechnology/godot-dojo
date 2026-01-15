@@ -6,7 +6,28 @@
 	</description>
 	<tutorials>
 	</tutorials>
+	<methods>
+		<method name="attribute_filter">
+			<return type="TokenQuery" />
+			<param index="0" name="trait_name" type="String" />
+			<param index="1" name="trait_value" type="String" />
+			<description>
+			</description>
+		</method>
+		<method name="contract_addresses">
+			<return type="TokenQuery" />
+			<param index="0" name="addresses" type="PackedStringArray" />
+			<description>
+			</description>
+		</method>
+		<method name="token_ids">
+			<return type="TokenQuery" />
+			<param index="0" name="ids" type="PackedStringArray" />
+			<description>
+			</description>
+		</method>
+	</methods>
 	<members>
-		<member name="type" type="int" setter="set_type" getter="get_type" overrides="QueryBuilder" default="9" />
+		<member name="type" type="int" setter="set_type" getter="get_type" overrides="QueryBuilder" default="10" />
 	</members>
 </class>

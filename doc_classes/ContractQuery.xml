@@ -6,6 +6,20 @@
 	</description>
 	<tutorials>
 	</tutorials>
+	<methods>
+		<method name="contract_addresses">
+			<return type="ContractQuery" />
+			<param index="0" name="addresses" type="PackedStringArray" />
+			<description>
+			</description>
+		</method>
+		<method name="contract_types">
+			<return type="ContractQuery" />
+			<param index="0" name="types" type="int[]" />
+			<description>
+			</description>
+		</method>
+	</methods>
 	<members>
 		<member name="type" type="int" setter="set_type" getter="get_type" overrides="QueryBuilder" default="4" />
 	</members>

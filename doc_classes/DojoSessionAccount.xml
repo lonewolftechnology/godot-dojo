@@ -1,10 +1,8 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="DojoSessionAccount" inherits="Node" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://raw.githubusercontent.com/godotengine/godot/master/doc/class.xsd">
 	<brief_description>
-		Represents a session account.
 	</brief_description>
 	<description>
-		This class is used to interact with a session account. It allows you to execute transactions, query account information, and manage account state.
 	</description>
 	<tutorials>
 	</tutorials>
@@ -17,7 +15,6 @@
 			<param index="3" name="chain_id" type="String" />
 			<param index="4" name="session_expiration" type="int" />
 			<description>
-				Initializes the session account with the given parameters.
 			</description>
 		</method>
 		<method name="create_from_subscribe">
@@ -27,21 +24,18 @@
 			<param index="2" name="cartridge_api_url" type="String" />
 			<param index="3" name="policies" type="Dictionary" default="{}" />
 			<description>
-				Initializes the session account from a subscription.
 			</description>
 		</method>
 		<method name="execute" qualifiers="const">
 			<return type="String" />
 			<param index="0" name="calls" type="Dictionary[]" />
 			<description>
-				Executes a transaction with the given calls.
 			</description>
 		</method>
 		<method name="execute_from_outside" qualifiers="const">
 			<return type="String" />
 			<param index="0" name="calls" type="Dictionary[]" />
 			<description>
-				Executes a transaction from outside the session.
 			</description>
 		</method>
 		<method name="execute_from_outside_raw" qualifiers="const">
@@ -50,7 +44,6 @@
 			<param index="1" name="entrypoint" type="String" />
 			<param index="2" name="calldata" type="Array" />
 			<description>
-				Executes a single call from outside the session. This is a convenience method that wraps [method execute_from_outside].
 			</description>
 		</method>
 		<method name="execute_raw" qualifiers="const">
@@ -59,7 +52,13 @@
 			<param index="1" name="entrypoint" type="String" />
 			<param index="2" name="calldata" type="Array" />
 			<description>
-				Executes a single call. This is a convenience method that wraps [method execute].
+			</description>
+		</method>
+		<method name="execute_test" qualifiers="const vararg">
+			<return type="Variant" />
+			<param index="0" name="contract_address" type="String" />
+			<param index="1" name="entrypoint" type="String" />
+			<description>
 			</description>
 		</method>
 		<method name="generate_session_request_url" qualifiers="const">
@@ -71,70 +70,58 @@
 			<param index="4" name="redirect_uri" type="String" default="&quot;&quot;" />
 			<param index="5" name="redirect_query_name" type="String" default="&quot;&quot;" />
 			<description>
-				Generates a URL to request a session.
 			</description>
 		</method>
 		<method name="get_address" qualifiers="const">
 			<return type="String" />
 			<description>
-				Returns the address of the session account.
 			</description>
 		</method>
 		<method name="get_chain_id" qualifiers="const">
 			<return type="String" />
 			<description>
-				Returns the chain ID of the network.
 			</description>
 		</method>
 		<method name="get_expires_at" qualifiers="const">
 			<return type="int" />
 			<description>
-				Returns the expiration timestamp of the session.
 			</description>
 		</method>
 		<method name="get_info" qualifiers="const">
 			<return type="Dictionary" />
 			<description>
-				Returns a dictionary with information about the session account.
 			</description>
 		</method>
 		<method name="get_register_session_policy" qualifiers="const">
 			<return type="Dictionary" />
 			<description>
-				Returns the policy for registering a session.
 			</description>
 		</method>
 		<method name="get_session_policy" qualifiers="const">
 			<return type="Dictionary" />
 			<description>
-				Returns the policy of the session.
 			</description>
 		</method>
 		<method name="is_expired" qualifiers="const">
 			<return type="bool" />
 			<description>
-				Returns true if the session is expired.
 			</description>
 		</method>
 		<method name="is_revoked" qualifiers="const">
 			<return type="bool" />
 			<description>
-				Returns true if the session is revoked.
 			</description>
 		</method>
 		<method name="is_valid" qualifiers="const">
 			<return type="bool" />
 			<description>
-				Returns true if the session is valid.
 			</description>
 		</method>
 	</methods>
 	<members>
 		<member name="full_policies" type="Dictionary" setter="set_full_policies" getter="get_full_policies" default="{}">
-			The full policies of the session.
 		</member>
 		<member name="max_fee" type="String" setter="set_max_fee" getter="get_max_fee" default="&quot;&quot;">
-			The maximum fee for transactions.
 		</member>
 	</members>
 </class>

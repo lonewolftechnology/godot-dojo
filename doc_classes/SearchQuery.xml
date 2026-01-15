@@ -6,7 +6,41 @@
 	</description>
 	<tutorials>
 	</tutorials>
+	<methods>
+		<method name="cursor">
+			<return type="SearchQuery" />
+			<param index="0" name="cursor" type="String" />
+			<description>
+			</description>
+		</method>
+		<method name="limit">
+			<return type="SearchQuery" />
+			<param index="0" name="limit" type="int" />
+			<description>
+			</description>
+		</method>
+		<method name="order_by">
+			<return type="SearchQuery" />
+			<param index="0" name="field" type="String" />
+			<param index="1" name="direction" type="int" />
+			<description>
+			</description>
+		</method>
+		<method name="pagination">
+			<return type="SearchQuery" />
+			<param index="0" name="limit" type="int" />
+			<param index="1" name="cursor" type="String" />
+			<description>
+			</description>
+		</method>
+		<method name="query">
+			<return type="SearchQuery" />
+			<param index="0" name="query" type="String" />
+			<description>
+			</description>
+		</method>
+	</methods>
 	<members>
-		<member name="type" type="int" setter="set_type" getter="get_type" overrides="QueryBuilder" default="8" />
+		<member name="type" type="int" setter="set_type" getter="get_type" overrides="QueryBuilder" default="9" />
 	</members>
 </class>

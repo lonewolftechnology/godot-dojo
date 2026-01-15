@@ -6,7 +6,27 @@
 	</description>
 	<tutorials>
 	</tutorials>
+	<methods>
+		<method name="account_addresses">
+			<return type="TokenTransferQuery" />
+			<param index="0" name="addresses" type="PackedStringArray" />
+			<description>
+			</description>
+		</method>
+		<method name="contract_addresses">
+			<return type="TokenTransferQuery" />
+			<param index="0" name="addresses" type="PackedStringArray" />
+			<description>
+			</description>
+		</method>
+		<method name="token_ids">
+			<return type="TokenTransferQuery" />
+			<param index="0" name="ids" type="PackedStringArray" />
+			<description>
+			</description>
+		</method>
+	</methods>
 	<members>
-		<member name="type" type="int" setter="set_type" getter="get_type" overrides="QueryBuilder" default="11" />
+		<member name="type" type="int" setter="set_type" getter="get_type" overrides="QueryBuilder" default="13" />
 	</members>
 </class>

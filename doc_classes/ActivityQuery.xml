@@ -6,6 +6,38 @@
 	</description>
 	<tutorials>
 	</tutorials>
+	<methods>
+		<method name="caller_addresses">
+			<return type="ActivityQuery" />
+			<param index="0" name="callers" type="PackedStringArray" />
+			<description>
+			</description>
+		</method>
+		<method name="from_time">
+			<return type="ActivityQuery" />
+			<param index="0" name="time" type="int" />
+			<description>
+			</description>
+		</method>
+		<method name="namespaces">
+			<return type="ActivityQuery" />
+			<param index="0" name="namespaces" type="PackedStringArray" />
+			<description>
+			</description>
+		</method>
+		<method name="to_time">
+			<return type="ActivityQuery" />
+			<param index="0" name="time" type="int" />
+			<description>
+			</description>
+		</method>
+		<method name="world_addresses">
+			<return type="ActivityQuery" />
+			<param index="0" name="worlds" type="PackedStringArray" />
+			<description>
+			</description>
+		</method>
+	</methods>
 	<members>
 		<member name="type" type="int" setter="set_type" getter="get_type" overrides="QueryBuilder" default="2" />
 	</members>

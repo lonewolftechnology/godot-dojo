@@ -6,6 +6,20 @@
 	</description>
 	<tutorials>
 	</tutorials>
+	<methods>
+		<method name="aggregator_ids">
+			<return type="AggregationQuery" />
+			<param index="0" name="ids" type="PackedStringArray" />
+			<description>
+			</description>
+		</method>
+		<method name="entity_ids">
+			<return type="AggregationQuery" />
+			<param index="0" name="ids" type="PackedStringArray" />
+			<description>
+			</description>
+		</method>
+	</methods>
 	<members>
 		<member name="type" type="int" setter="set_type" getter="get_type" overrides="QueryBuilder" default="3" />
 	</members>
