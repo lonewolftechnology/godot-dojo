@@ -1,6 +1,5 @@
-#include "classes/dojo_controller.h"
+#include "node/dojo_controller.hpp"
 #include "tools/controller_helper.h"
-#include "tools/dojo_helper.h"
 
 void DojoController::set_internal(std::shared_ptr<controller::ControllerAccount> p_internal) {
     internal = p_internal;

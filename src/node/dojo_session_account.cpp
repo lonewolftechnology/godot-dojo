@@ -1,4 +1,4 @@
-#include "classes/dojo_session_account.h"
+#include "node/dojo_session_account.hpp"
 
 #include <godot_cpp/classes/json.hpp>
 #include <utility>
