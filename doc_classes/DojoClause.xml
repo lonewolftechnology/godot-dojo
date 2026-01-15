@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="DojoClause" inherits="RefCounted" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://raw.githubusercontent.com/godotengine/godot/master/doc/class.xsd">
+	<brief_description>
+	</brief_description>
+	<description>
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="to_dict" qualifiers="const">
+			<return type="Dictionary" />
+			<description>
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="type" type="int" setter="" getter="get_type" enum="DojoClause.Type" default="1">
+		</member>
+	</members>
+	<constants>
+		<constant name="HashedKeys" value="0" enum="Type">
+		</constant>
+		<constant name="Keys" value="1" enum="Type">
+		</constant>
+		<constant name="Member" value="2" enum="Type">
+		</constant>
+		<constant name="Composite" value="3" enum="Type">
+		</constant>
+	</constants>
+</class>

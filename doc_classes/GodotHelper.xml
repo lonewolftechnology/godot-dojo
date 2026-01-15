@@ -1,0 +1,157 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="GodotHelper" inherits="Object" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://raw.githubusercontent.com/godotengine/godot/master/doc/class.xsd">
+	<brief_description>
+	</brief_description>
+	<description>
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="double_to_variant_fp" qualifiers="static">
+			<return type="Variant" />
+			<param index="0" name="value" type="float" />
+			<param index="1" name="precision" type="int" />
+			<description>
+			</description>
+		</method>
+		<method name="fixed_to_float" qualifiers="static">
+			<return type="float" />
+			<param index="0" name="value" type="int" />
+			<param index="1" name="precision" type="int" default="24" />
+			<description>
+			</description>
+		</method>
+		<method name="fixed_to_float_64" qualifiers="static">
+			<return type="float" />
+			<param index="0" name="value" type="int" />
+			<description>
+			</description>
+		</method>
+		<method name="fixed_to_float_128" qualifiers="static">
+			<return type="float" />
+			<param index="0" name="value" type="int" />
+			<description>
+			</description>
+		</method>
+		<method name="fixed_to_float_256" qualifiers="static">
+			<return type="float" />
+			<param index="0" name="value" type="int" />
+			<description>
+			</description>
+		</method>
+		<method name="float_to_fixed" qualifiers="static">
+			<return type="int" />
+			<param index="0" name="value" type="float" />
+			<param index="1" name="precision" type="int" default="24" />
+			<description>
+			</description>
+		</method>
+		<method name="float_to_fixed_64" qualifiers="static">
+			<return type="int" />
+			<param index="0" name="value" type="float" />
+			<description>
+			</description>
+		</method>
+		<method name="float_to_fixed_128" qualifiers="static">
+			<return type="int" />
+			<param index="0" name="value" type="float" />
+			<description>
+			</description>
+		</method>
+		<method name="float_to_fixed_256" qualifiers="static">
+			<return type="int" />
+			<param index="0" name="value" type="float" />
+			<description>
+			</description>
+		</method>
+		<method name="get_custom_setting" qualifiers="static">
+			<return type="Variant" />
+			<param index="0" name="category" type="String" />
+			<param index="1" name="setting" type="String" />
+			<description>
+			</description>
+		</method>
+		<method name="get_dojo_setting" qualifiers="static">
+			<return type="Variant" />
+			<param index="0" name="setting" type="String" />
+			<param index="1" name="default_value" type="Variant" default="null" />
+			<description>
+			</description>
+		</method>
+		<method name="get_katana_url" qualifiers="static">
+			<return type="String" />
+			<description>
+			</description>
+		</method>
+		<method name="get_log_level_enabled" qualifiers="static">
+			<return type="bool" />
+			<param index="0" name="level" type="String" />
+			<description>
+			</description>
+		</method>
+		<method name="get_policies" qualifiers="static">
+			<return type="Dictionary" />
+			<param index="0" name="p_custom" type="String" default="&quot;&quot;" />
+			<description>
+			</description>
+		</method>
+		<method name="get_setting" qualifiers="static">
+			<return type="Variant" />
+			<param index="0" name="setting" type="String" />
+			<param index="1" name="default_value" type="Variant" default="null" />
+			<description>
+			</description>
+		</method>
+		<method name="get_torii_setting" qualifiers="static">
+			<return type="Variant" />
+			<param index="0" name="setting" type="String" />
+			<param index="1" name="default_value" type="Variant" default="null" />
+			<description>
+			</description>
+		</method>
+		<method name="set_debug_enabled" qualifiers="static">
+			<return type="void" />
+			<param index="0" name="enabled" type="bool" />
+			<description>
+			</description>
+		</method>
+		<method name="set_error_enabled" qualifiers="static">
+			<return type="void" />
+			<param index="0" name="enabled" type="bool" />
+			<description>
+			</description>
+		</method>
+		<method name="set_info_enabled" qualifiers="static">
+			<return type="void" />
+			<param index="0" name="enabled" type="bool" />
+			<description>
+			</description>
+		</method>
+		<method name="set_log_level_enabled" qualifiers="static">
+			<return type="void" />
+			<param index="0" name="level" type="String" />
+			<param index="1" name="enabled" type="bool" />
+			<description>
+			</description>
+		</method>
+		<method name="set_success_enabled" qualifiers="static">
+			<return type="void" />
+			<param index="0" name="enabled" type="bool" />
+			<description>
+			</description>
+		</method>
+		<method name="set_warning_enabled" qualifiers="static">
+			<return type="void" />
+			<param index="0" name="enabled" type="bool" />
+			<description>
+			</description>
+		</method>
+		<method name="variant_to_double_fp" qualifiers="static">
+			<return type="float" />
+			<param index="0" name="value" type="Variant" />
+			<param index="1" name="precision" type="int" />
+			<description>
+			</description>
+		</method>
+	</methods>
+</class>

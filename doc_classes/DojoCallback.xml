@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="DojoCallback" inherits="RefCounted" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://raw.githubusercontent.com/godotengine/godot/master/doc/class.xsd">
+	<brief_description>
+	</brief_description>
+	<description>
+	</description>
+	<tutorials>
+	</tutorials>
+	<members>
+		<member name="on_error" type="Callable" setter="set_on_error" getter="get_on_error" default="Callable()">
+		</member>
+		<member name="on_update" type="Callable" setter="set_on_update" getter="get_on_update" default="Callable()">
+		</member>
+	</members>
+</class>

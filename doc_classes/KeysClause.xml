@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="KeysClause" inherits="DojoClause" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://raw.githubusercontent.com/godotengine/godot/master/doc/class.xsd">
+	<brief_description>
+	</brief_description>
+	<description>
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="add_key">
+			<return type="KeysClause" />
+			<param index="0" name="hashed_key" type="String" />
+			<description>
+			</description>
+		</method>
+		<method name="add_model">
+			<return type="KeysClause" />
+			<param index="0" name="model" type="String" />
+			<description>
+			</description>
+		</method>
+		<method name="keys">
+			<return type="KeysClause" />
+			<param index="0" name="keys" type="PackedStringArray" />
+			<description>
+			</description>
+		</method>
+		<method name="models">
+			<return type="KeysClause" />
+			<param index="0" name="models" type="PackedStringArray" />
+			<description>
+			</description>
+		</method>
+		<method name="pattern">
+			<return type="KeysClause" />
+			<param index="0" name="pattern" type="int" />
+			<description>
+			</description>
+		</method>
+		<method name="remove_key">
+			<return type="KeysClause" />
+			<param index="0" name="hashed_key" type="String" />
+			<description>
+			</description>
+		</method>
+		<method name="remove_model">
+			<return type="KeysClause" />
+			<param index="0" name="model" type="String" />
+			<description>
+			</description>
+		</method>
+		<method name="to_dict" qualifiers="const">
+			<return type="Dictionary" />
+			<description>
+			</description>
+		</method>
+	</methods>
+	<constants>
+		<constant name="FixedLen" value="1" enum="PatternMatching">
+		</constant>
+		<constant name="VariableLen" value="2" enum="PatternMatching">
+		</constant>
+	</constants>
+</class>

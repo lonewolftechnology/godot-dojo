@@ -1,0 +1,137 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="MemberClause" inherits="DojoClause" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://raw.githubusercontent.com/godotengine/godot/master/doc/class.xsd">
+	<brief_description>
+	</brief_description>
+	<description>
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="bool">
+			<return type="MemberClause" />
+			<param index="0" name="value" type="bool" />
+			<description>
+			</description>
+		</method>
+		<method name="get_value">
+			<return type="Variant" />
+			<description>
+			</description>
+		</method>
+		<method name="hex">
+			<return type="MemberClause" />
+			<param index="0" name="value" type="String" />
+			<param index="1" name="tag" type="int" enum="MemberClause.PrimitiveTag" default="-1" />
+			<description>
+			</description>
+		</method>
+		<method name="int">
+			<return type="MemberClause" />
+			<param index="0" name="value" type="int" />
+			<param index="1" name="tag" type="int" enum="MemberClause.PrimitiveTag" default="-1" />
+			<description>
+			</description>
+		</method>
+		<method name="list" qualifiers="const vararg">
+			<return type="MemberClause" />
+			<description>
+			</description>
+		</method>
+		<method name="member">
+			<return type="MemberClause" />
+			<param index="0" name="value" type="Variant" />
+			<description>
+			</description>
+		</method>
+		<method name="model">
+			<return type="MemberClause" />
+			<param index="0" name="value" type="Variant" />
+			<description>
+			</description>
+		</method>
+		<method name="op">
+			<return type="MemberClause" />
+			<param index="0" name="value" type="int" />
+			<description>
+			</description>
+		</method>
+		<method name="string">
+			<return type="MemberClause" />
+			<param index="0" name="value" type="String" />
+			<description>
+			</description>
+		</method>
+		<method name="to_dict" qualifiers="const">
+			<return type="Dictionary" />
+			<description>
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="type" type="int" setter="" getter="get_type" overrides="DojoClause" enum="DojoClause.Type" default="2" />
+	</members>
+	<constants>
+		<constant name="Nil" value="-1" enum="PrimitiveTag">
+		</constant>
+		<constant name="I8" value="0" enum="PrimitiveTag">
+		</constant>
+		<constant name="I16" value="1" enum="PrimitiveTag">
+		</constant>
+		<constant name="I32" value="2" enum="PrimitiveTag">
+		</constant>
+		<constant name="I64" value="3" enum="PrimitiveTag">
+		</constant>
+		<constant name="I128" value="4" enum="PrimitiveTag">
+		</constant>
+		<constant name="U8" value="5" enum="PrimitiveTag">
+		</constant>
+		<constant name="U16" value="6" enum="PrimitiveTag">
+		</constant>
+		<constant name="U32" value="7" enum="PrimitiveTag">
+		</constant>
+		<constant name="U64" value="8" enum="PrimitiveTag">
+		</constant>
+		<constant name="U128" value="9" enum="PrimitiveTag">
+		</constant>
+		<constant name="U256" value="10" enum="PrimitiveTag">
+		</constant>
+		<constant name="Bool" value="11" enum="PrimitiveTag">
+		</constant>
+		<constant name="Felt252" value="12" enum="PrimitiveTag">
+		</constant>
+		<constant name="ClassHash" value="13" enum="PrimitiveTag">
+		</constant>
+		<constant name="ContractAddress" value="14" enum="PrimitiveTag">
+		</constant>
+		<constant name="EthAddress" value="15" enum="PrimitiveTag">
+		</constant>
+		<constant name="Eq" value="1" enum="ComparisonOperator">
+		</constant>
+		<constant name="Neq" value="2" enum="ComparisonOperator">
+		</constant>
+		<constant name="Gt" value="3" enum="ComparisonOperator">
+		</constant>
+		<constant name="Gte" value="4" enum="ComparisonOperator">
+		</constant>
+		<constant name="Lt" value="5" enum="ComparisonOperator">
+		</constant>
+		<constant name="Lte" value="6" enum="ComparisonOperator">
+		</constant>
+		<constant name="In" value="7" enum="ComparisonOperator">
+		</constant>
+		<constant name="NotIn" value="8" enum="ComparisonOperator">
+		</constant>
+		<constant name="Contains" value="9" enum="ComparisonOperator">
+		</constant>
+		<constant name="ContainsAll" value="10" enum="ComparisonOperator">
+		</constant>
+		<constant name="ContainsAny" value="11" enum="ComparisonOperator">
+		</constant>
+		<constant name="ArrayLengthEq" value="12" enum="ComparisonOperator">
+		</constant>
+		<constant name="ArrayLengthGt" value="13" enum="ComparisonOperator">
+		</constant>
+		<constant name="ArrayLengthLt" value="14" enum="ComparisonOperator">
+		</constant>
+	</constants>
+</class>
