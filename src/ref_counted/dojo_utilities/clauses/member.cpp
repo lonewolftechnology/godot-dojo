@@ -1,7 +1,7 @@
 #include "ref_counted/dojo_utilities/clauses/member.hpp"
+#include <boost/multiprecision/cpp_int.hpp>
 
-#include "tools/dojo_helper.h"
-#include "tools/logger.h"
+using namespace boost::multiprecision;
 
 MemberClause::MemberClause() : DojoClause(DojoClause::Member) {}
 MemberClause::~MemberClause() {}
@@ -10,7 +10,7 @@ Dictionary MemberClause::to_dict() const {
     Dictionary result;
     result["model"] = p_model;
     result["member"] = p_member;
-    result["operator"] = p_operator;
+    result["operator"] = (int)p_operator;
     result["value"] = p_value;
     return result;
 }
@@ -27,10 +27,6 @@ std::shared_ptr<dojo::MemberValue> variant_to_member_value(const Variant &val, M
         return std::make_shared<dojo::MemberValue>(dojo::MemberValue::kList{list});
     }
 
-    // If it is a String and we don't have a primitive tag indicating otherwise (like Felt), it is a String
-    // Note: We assume that if prim_tag is valid and points to a numeric/felt primitive, we want a primitive.
-    // If the user used 'string()', the tag should be irrelevant here if we are inside a mixed list,
-    // but Dojo usually uses typed lists. We use prim_tag as a "hint" for the elements.
     bool is_primitive_hint = (prim_tag >= MemberClause::I8 && prim_tag <= MemberClause::EthAddress);
 
     if (val.get_type() == Variant::STRING && !is_primitive_hint) {
@@ -78,32 +74,20 @@ bool MemberClause::is_value_set() const {
 }
 
 Ref<MemberClause> MemberClause::string(const String &value) {
-    if (is_value_set()) {
-        WARN_PRINT("MemberClause: Value already set. Overwriting with 'string'.");
-    }
     this->p_value = value;
     return this;
 }
 
 Ref<MemberClause> MemberClause::list(const Variant **args, GDExtensionInt arg_count, GDExtensionCallError &error) {
-    if (is_value_set()) {
-        WARN_PRINT("MemberClause: Value already set. Overwriting with 'list'.");
-    }
-
     Array array;
     for (int i = 0; i < arg_count; i++) {
         array.append(*args[i]);
     }
     this->p_value = array;
-    Logger::info(arg_count);
     return this;
 }
 
 Ref<MemberClause> MemberClause::int_(const int &value, PrimitiveTag tag) {
-    if (is_value_set()) {
-        WARN_PRINT("MemberClause: Value already set. Overwriting with 'int'.");
-    }
-    Logger::debug_extra("MemberClause", value);
     this->p_value = value;
     if (tag == Nil) {
         this->p_primitive_tag = I64;
@@ -114,20 +98,12 @@ Ref<MemberClause> MemberClause::int_(const int &value, PrimitiveTag tag) {
 }
 
 Ref<MemberClause> MemberClause::bool_(const bool &value) {
-    if (is_value_set()) {
-        WARN_PRINT("MemberClause: Value already set. Overwriting with 'bool'.");
-    }
-    Logger::debug_extra("MemberClause", value);
     this->p_value = value;
     this->p_primitive_tag = Bool;
     return this;
 }
 
 Ref<MemberClause> MemberClause::hex(const String &value, PrimitiveTag tag) {
-    if (is_value_set()) {
-        WARN_PRINT("MemberClause: Value already set. Overwriting with 'hex'.");
-    }
-    Logger::debug_extra("MemberClause", value);
     this->p_value = value;
     if (tag == Nil) {
         this->p_primitive_tag = Felt252;
@@ -167,12 +143,10 @@ dojo::Primitive MemberClause::to_native_primitive(const Variant &p_value, Primit
             return dojo::Primitive(dojo::Primitive::kI64{static_cast<int64_t>(p_value)});
         }
         case I128: {
-            // dojo.hpp uses std::vector<uint8_t> for i128
-            // TODO: Need to adapt DojoHelpers::string_to_i128 to return vector or copy
-            const String str_val = p_value;
-            uint8_t buf[16];
-            DojoHelpers::string_to_i128(str_val, buf);
-            const std::vector<uint8_t> vec(buf, buf + 16);
+            String str_val = p_value;
+            int128_t val(str_val.utf8().get_data());
+            std::vector<uint8_t> vec;
+            export_bits(val, std::back_inserter(vec), 8);
             return dojo::Primitive(dojo::Primitive::kI128{vec});
         }
         case U8: return dojo::Primitive(dojo::Primitive::kU8{static_cast<uint8_t>(p_value)});
@@ -180,10 +154,10 @@ dojo::Primitive MemberClause::to_native_primitive(const Variant &p_value, Primit
         case U32: return dojo::Primitive(dojo::Primitive::kU32{static_cast<uint32_t>(p_value)});
         case U64: return dojo::Primitive(dojo::Primitive::kU64{static_cast<uint64_t>(p_value)});
         case U128: {
-            const String str_val = p_value;
-            uint8_t buf[16];
-            DojoHelpers::string_to_u128(str_val, buf);
-            const std::vector<uint8_t> vec(buf, buf + 16);
+            String str_val = p_value;
+            uint128_t val(str_val.utf8().get_data());
+            std::vector<uint8_t> vec;
+            export_bits(val, std::back_inserter(vec), 8);
             return dojo::Primitive(dojo::Primitive::kU128{vec});
         }
         case U256: {
@@ -192,7 +166,6 @@ dojo::Primitive MemberClause::to_native_primitive(const Variant &p_value, Primit
         }
         case Bool: return dojo::Primitive(dojo::Primitive::kBool{static_cast<bool>(p_value)});
 
-        // For Felt, ClassHash, etc., dojo.hpp uses std::string (FieldElement typedef)
         case Felt252: {
             String str_val = p_value;
             return dojo::Primitive(dojo::Primitive::kFelt252{str_val.utf8().get_data()});
