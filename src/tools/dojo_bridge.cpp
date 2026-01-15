@@ -2,7 +2,6 @@
 
 #include "godot_cpp/classes/json.hpp"
 #include "tools/logger.h"
-#include "ref_counted/dojo_option.h"
 #include "godot_cpp/core/version.hpp"
 #include "godot_cpp/classes/java_script_object.hpp"
 
@@ -38,25 +37,27 @@ void DojoBridge::call_async(const String& function_name, const Variant& args, co
 }
 
 Variant DojoBridge::process_js_arg(const Variant& arg) {
-    if (arg.get_type() == Variant::OBJECT) {
-        Ref<DojoOption> dojo_option = arg;
-        if (dojo_option.is_valid()) {
-            return "json:" + JSON::stringify(dojo_option->to_json());
-        }
-    }
-
-    if (arg.get_type() == Variant::DICTIONARY) {
-        return "json:" + JSON::stringify(arg);
-    }
-
-    if (arg.get_type() == Variant::NIL) {
-        if (js_bridge) {
-            return js_bridge->create_object("undefined", Variant());
-        }
-        return arg;
-    }
-
-    return arg;
+    //TODO: Reimplement when web is supported
+    return {};
+    // if (arg.get_type() == Variant::OBJECT) {
+    //     Ref<DojoOption> dojo_option = arg;
+    //     if (dojo_option.is_valid()) {
+    //         return "json:" + JSON::stringify(dojo_option->to_json());
+    //     }
+    // }
+    //
+    // if (arg.get_type() == Variant::DICTIONARY) {
+    //     return "json:" + JSON::stringify(arg);
+    // }
+    //
+    // if (arg.get_type() == Variant::NIL) {
+    //     if (js_bridge) {
+    //         return js_bridge->create_object("undefined", Variant());
+    //     }
+    //     return arg;
+    // }
+    //
+    // return arg;
 }
 
 void DojoBridge::call_async(const Ref<JavaScriptObject>& target, const String& function_name, const Variant& args,
