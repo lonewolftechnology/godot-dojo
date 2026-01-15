@@ -417,7 +417,7 @@ else:
 all_sources = glob.glob("src/**/*.cpp", recursive=True)
 generated_doc_file = "src/gen/doc_data.gen.cpp"
 sources = [s for s in all_sources if os.path.normpath(s) != os.path.normpath(generated_doc_file)]
-sources = sorted(sources) + ["bindings/controller/controller.cpp"]
+sources = sorted(sources) + ["bindings/controller/controller.cpp", "bindings/dojo/dojo.cpp"]
 
 _godot_min = _detect_godot_min_requirement()
 _godot_tag = _get_git_submodule_version("external/godot-cpp")
