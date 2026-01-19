@@ -1,8 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="EventQuery" inherits="QueryBuilder" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://raw.githubusercontent.com/godotengine/godot/master/doc/class.xsd">
 	<brief_description>
+		A query builder for Starknet events.
 	</brief_description>
 	<description>
+		The EventQuery class allows constructing queries for fetching Starknet events from the Torii indexer, supporting filtering by keys.
 	</description>
 	<tutorials>
 	</tutorials>
@@ -11,6 +13,7 @@
 			<return type="EventQuery" />
 			<param index="0" name="keys" type="KeysClause" />
 			<description>
+				Adds a keys clause to the query.
 			</description>
 		</method>
 	</methods>

@@ -1,8 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="MemberClause" inherits="DojoClause" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://raw.githubusercontent.com/godotengine/godot/master/doc/class.xsd">
 	<brief_description>
+		A clause for filtering by member values.
 	</brief_description>
 	<description>
+		The MemberClause class allows filtering entities based on the values of their members, supporting various comparison operators and data types.
 	</description>
 	<tutorials>
 	</tutorials>
@@ -11,11 +13,13 @@
 			<return type="MemberClause" />
 			<param index="0" name="value" type="bool" />
 			<description>
+				Sets the value to a boolean.
 			</description>
 		</method>
 		<method name="get_value">
 			<return type="Variant" />
 			<description>
+				Returns the current value of the clause.
 			</description>
 		</method>
 		<method name="hex">
@@ -23,6 +27,7 @@
 			<param index="0" name="value" type="String" />
 			<param index="1" name="tag" type="int" enum="MemberClause.PrimitiveTag" default="-1" />
 			<description>
+				Sets the value to a hexadecimal string, optionally specifying a primitive tag.
 			</description>
 		</method>
 		<method name="int">
@@ -30,40 +35,47 @@
 			<param index="0" name="value" type="int" />
 			<param index="1" name="tag" type="int" enum="MemberClause.PrimitiveTag" default="-1" />
 			<description>
+				Sets the value to an integer, optionally specifying a primitive tag.
 			</description>
 		</method>
 		<method name="list" qualifiers="const vararg">
 			<return type="MemberClause" />
 			<description>
+				Creates a list of values for the clause.
 			</description>
 		</method>
 		<method name="member">
 			<return type="MemberClause" />
 			<param index="0" name="value" type="Variant" />
 			<description>
+				Sets the member name to filter by.
 			</description>
 		</method>
 		<method name="model">
 			<return type="MemberClause" />
 			<param index="0" name="value" type="Variant" />
 			<description>
+				Sets the model name to filter by.
 			</description>
 		</method>
 		<method name="op">
 			<return type="MemberClause" />
 			<param index="0" name="value" type="int" />
 			<description>
+				Sets the comparison operator.
 			</description>
 		</method>
 		<method name="string">
 			<return type="MemberClause" />
 			<param index="0" name="value" type="String" />
 			<description>
+				Sets the value to a string.
 			</description>
 		</method>
 		<method name="to_dict" qualifiers="const">
 			<return type="Dictionary" />
 			<description>
+				Converts the clause to a dictionary representation.
 			</description>
 		</method>
 	</methods>
@@ -72,66 +84,97 @@
 	</members>
 	<constants>
 		<constant name="Nil" value="-1" enum="PrimitiveTag">
+			Represents a nil or unspecified type.
 		</constant>
 		<constant name="I8" value="0" enum="PrimitiveTag">
+			Represents an 8-bit signed integer.
 		</constant>
 		<constant name="I16" value="1" enum="PrimitiveTag">
+			Represents a 16-bit signed integer.
 		</constant>
 		<constant name="I32" value="2" enum="PrimitiveTag">
+			Represents a 32-bit signed integer.
 		</constant>
 		<constant name="I64" value="3" enum="PrimitiveTag">
+			Represents a 64-bit signed integer.
 		</constant>
 		<constant name="I128" value="4" enum="PrimitiveTag">
+			Represents a 128-bit signed integer.
 		</constant>
 		<constant name="U8" value="5" enum="PrimitiveTag">
+			Represents an 8-bit unsigned integer.
 		</constant>
 		<constant name="U16" value="6" enum="PrimitiveTag">
+			Represents a 16-bit unsigned integer.
 		</constant>
 		<constant name="U32" value="7" enum="PrimitiveTag">
+			Represents a 32-bit unsigned integer.
 		</constant>
 		<constant name="U64" value="8" enum="PrimitiveTag">
+			Represents a 64-bit unsigned integer.
 		</constant>
 		<constant name="U128" value="9" enum="PrimitiveTag">
+			Represents a 128-bit unsigned integer.
 		</constant>
 		<constant name="U256" value="10" enum="PrimitiveTag">
+			Represents a 256-bit unsigned integer.
 		</constant>
 		<constant name="Bool" value="11" enum="PrimitiveTag">
+			Represents a boolean value.
 		</constant>
 		<constant name="Felt252" value="12" enum="PrimitiveTag">
+			Represents a Felt252 value.
 		</constant>
 		<constant name="ClassHash" value="13" enum="PrimitiveTag">
+			Represents a class hash.
 		</constant>
 		<constant name="ContractAddress" value="14" enum="PrimitiveTag">
+			Represents a contract address.
 		</constant>
 		<constant name="EthAddress" value="15" enum="PrimitiveTag">
+			Represents an Ethereum address.
 		</constant>
 		<constant name="Eq" value="1" enum="ComparisonOperator">
+			Equal to operator.
 		</constant>
 		<constant name="Neq" value="2" enum="ComparisonOperator">
+			Not equal to operator.
 		</constant>
 		<constant name="Gt" value="3" enum="ComparisonOperator">
+			Greater than operator.
 		</constant>
 		<constant name="Gte" value="4" enum="ComparisonOperator">
+			Greater than or equal to operator.
 		</constant>
 		<constant name="Lt" value="5" enum="ComparisonOperator">
+			Less than operator.
 		</constant>
 		<constant name="Lte" value="6" enum="ComparisonOperator">
+			Less than or equal to operator.
 		</constant>
 		<constant name="In" value="7" enum="ComparisonOperator">
+			In operator.
 		</constant>
 		<constant name="NotIn" value="8" enum="ComparisonOperator">
+			Not in operator.
 		</constant>
 		<constant name="Contains" value="9" enum="ComparisonOperator">
+			Contains operator.
 		</constant>
 		<constant name="ContainsAll" value="10" enum="ComparisonOperator">
+			Contains all operator.
 		</constant>
 		<constant name="ContainsAny" value="11" enum="ComparisonOperator">
+			Contains any operator.
 		</constant>
 		<constant name="ArrayLengthEq" value="12" enum="ComparisonOperator">
+			Array length equal to operator.
 		</constant>
 		<constant name="ArrayLengthGt" value="13" enum="ComparisonOperator">
+			Array length greater than operator.
 		</constant>
 		<constant name="ArrayLengthLt" value="14" enum="ComparisonOperator">
+			Array length less than operator.
 		</constant>
 	</constants>
 </class>

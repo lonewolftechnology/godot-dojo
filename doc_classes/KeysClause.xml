@@ -1,8 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="KeysClause" inherits="DojoClause" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://raw.githubusercontent.com/godotengine/godot/master/doc/class.xsd">
 	<brief_description>
+		A clause for filtering by keys.
 	</brief_description>
 	<description>
+		The KeysClause class allows filtering entities or events based on their keys and models.
 	</description>
 	<tutorials>
 	</tutorials>
@@ -11,54 +13,64 @@
 			<return type="KeysClause" />
 			<param index="0" name="hashed_key" type="String" />
 			<description>
+				Adds a key to the clause.
 			</description>
 		</method>
 		<method name="add_model">
 			<return type="KeysClause" />
 			<param index="0" name="model" type="String" />
 			<description>
+				Adds a model to the clause.
 			</description>
 		</method>
 		<method name="keys">
 			<return type="KeysClause" />
 			<param index="0" name="keys" type="PackedStringArray" />
 			<description>
+				Sets the keys for the clause.
 			</description>
 		</method>
 		<method name="models">
 			<return type="KeysClause" />
 			<param index="0" name="models" type="PackedStringArray" />
 			<description>
+				Sets the models for the clause.
 			</description>
 		</method>
 		<method name="pattern">
 			<return type="KeysClause" />
 			<param index="0" name="pattern" type="int" />
 			<description>
+				Sets the pattern matching mode.
 			</description>
 		</method>
 		<method name="remove_key">
 			<return type="KeysClause" />
 			<param index="0" name="hashed_key" type="String" />
 			<description>
+				Removes a key from the clause.
 			</description>
 		</method>
 		<method name="remove_model">
 			<return type="KeysClause" />
 			<param index="0" name="model" type="String" />
 			<description>
+				Removes a model from the clause.
 			</description>
 		</method>
 		<method name="to_dict" qualifiers="const">
 			<return type="Dictionary" />
 			<description>
+				Converts the clause to a dictionary representation.
 			</description>
 		</method>
 	</methods>
 	<constants>
 		<constant name="FixedLen" value="1" enum="PatternMatching">
+			Matches keys with a fixed length.
 		</constant>
 		<constant name="VariableLen" value="2" enum="PatternMatching">
+			Matches keys with a variable length.
 		</constant>
 	</constants>
 </class>

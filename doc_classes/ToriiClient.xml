@@ -1,8 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="ToriiClient" inherits="Node" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://raw.githubusercontent.com/godotengine/godot/master/doc/class.xsd">
 	<brief_description>
+		A client for interacting with the Torii indexer.
 	</brief_description>
 	<description>
+		The ToriiClient class provides methods to query and subscribe to various data from the Torii indexer, such as entities, events, tokens, and transactions.
 	</description>
 	<tutorials>
 	</tutorials>
@@ -11,42 +13,49 @@
 			<return type="Dictionary" />
 			<param index="0" name="query" type="AchievementQuery" />
 			<description>
+				Queries achievements based on the provided query parameters.
 			</description>
 		</method>
 		<method name="activities">
 			<return type="Dictionary" />
 			<param index="0" name="query" type="ActivityQuery" />
 			<description>
+				Queries activities based on the provided query parameters.
 			</description>
 		</method>
 		<method name="aggregations">
 			<return type="Dictionary" />
 			<param index="0" name="query" type="AggregationQuery" />
 			<description>
+				Queries aggregations based on the provided query parameters.
 			</description>
 		</method>
 		<method name="cancel_subscription">
 			<return type="void" />
 			<param index="0" name="subscription_id" type="int" />
 			<description>
+				Cancels an active subscription using its ID.
 			</description>
 		</method>
 		<method name="contracts">
 			<return type="Dictionary[]" />
 			<param index="0" name="query" type="ContractQuery" />
 			<description>
+				Queries contracts based on the provided query parameters.
 			</description>
 		</method>
 		<method name="controllers">
 			<return type="Dictionary" />
 			<param index="0" name="query" type="ControllerQuery" />
 			<description>
+				Queries controllers based on the provided query parameters.
 			</description>
 		</method>
 		<method name="create" qualifiers="static">
 			<return type="ToriiClient" />
 			<param index="0" name="torii_url" type="String" />
 			<description>
+				Creates a new ToriiClient instance connected to the specified Torii URL.
 			</description>
 		</method>
 		<method name="create_with_config" qualifiers="static">
@@ -54,24 +63,28 @@
 			<param index="0" name="torii_url" type="String" />
 			<param index="1" name="max_message_size" type="int" />
 			<description>
+				Creates a new ToriiClient instance with a custom configuration.
 			</description>
 		</method>
 		<method name="entities">
 			<return type="Dictionary" />
 			<param index="0" name="query" type="DojoQuery" />
 			<description>
+				Queries entities based on the provided query parameters.
 			</description>
 		</method>
 		<method name="event_messages">
 			<return type="Dictionary" />
 			<param index="0" name="query" type="DojoQuery" />
 			<description>
+				Queries event messages based on the provided query parameters.
 			</description>
 		</method>
 		<method name="player_achievements">
 			<return type="Dictionary" />
 			<param index="0" name="query" type="PlayerAchievementQuery" />
 			<description>
+				Queries player achievements based on the provided query parameters.
 			</description>
 		</method>
 		<method name="publish_message">
@@ -80,30 +93,35 @@
 			<param index="1" name="signature" type="PackedStringArray" />
 			<param index="2" name="world_address" type="String" />
 			<description>
+				Publishes a message to the Torii indexer.
 			</description>
 		</method>
 		<method name="publish_message_batch">
 			<return type="PackedStringArray" />
 			<param index="0" name="messages" type="Array" />
 			<description>
+				Publishes a batch of messages to the Torii indexer.
 			</description>
 		</method>
 		<method name="search">
 			<return type="Dictionary" />
 			<param index="0" name="query" type="SearchQuery" />
 			<description>
+				Performs a search query.
 			</description>
 		</method>
 		<method name="sql">
 			<return type="Dictionary[]" />
 			<param index="0" name="query" type="String" />
 			<description>
+				Executes a raw SQL query against the Torii indexer.
 			</description>
 		</method>
 		<method name="starknet_events">
 			<return type="Dictionary" />
 			<param index="0" name="query" type="EventQuery" />
 			<description>
+				Queries Starknet events based on the provided query parameters.
 			</description>
 		</method>
 		<method name="subscribe_entity_updates">
@@ -112,6 +130,7 @@
 			<param index="1" name="world_addresses" type="PackedStringArray" />
 			<param index="2" name="callback" type="DojoCallback" />
 			<description>
+				Subscribes to entity updates.
 			</description>
 		</method>
 		<method name="subscribe_event_updates">
@@ -119,6 +138,7 @@
 			<param index="0" name="keys" type="Array" />
 			<param index="1" name="callback" type="DojoCallback" />
 			<description>
+				Subscribes to event updates.
 			</description>
 		</method>
 		<method name="subscribe_token_balance_updates">
@@ -128,6 +148,7 @@
 			<param index="2" name="token_ids" type="PackedStringArray" />
 			<param index="3" name="callback" type="DojoCallback" />
 			<description>
+				Subscribes to token balance updates.
 			</description>
 		</method>
 		<method name="subscribe_token_updates">
@@ -136,6 +157,7 @@
 			<param index="1" name="token_ids" type="PackedStringArray" />
 			<param index="2" name="callback" type="DojoCallback" />
 			<description>
+				Subscribes to token updates.
 			</description>
 		</method>
 		<method name="subscribe_transaction_updates">
@@ -143,42 +165,49 @@
 			<param index="0" name="filter" type="Dictionary" />
 			<param index="1" name="callback" type="DojoCallback" />
 			<description>
+				Subscribes to transaction updates.
 			</description>
 		</method>
 		<method name="token_balances">
 			<return type="Dictionary" />
 			<param index="0" name="query" type="TokenBalanceQuery" />
 			<description>
+				Queries token balances based on the provided query parameters.
 			</description>
 		</method>
 		<method name="token_contracts">
 			<return type="Dictionary" />
 			<param index="0" name="query" type="TokenContractQuery" />
 			<description>
+				Queries token contracts based on the provided query parameters.
 			</description>
 		</method>
 		<method name="token_transfers">
 			<return type="Dictionary" />
 			<param index="0" name="query" type="TokenTransferQuery" />
 			<description>
+				Queries token transfers based on the provided query parameters.
 			</description>
 		</method>
 		<method name="tokens">
 			<return type="Dictionary" />
 			<param index="0" name="query" type="TokenQuery" />
 			<description>
+				Queries tokens based on the provided query parameters.
 			</description>
 		</method>
 		<method name="transactions">
 			<return type="Dictionary" />
 			<param index="0" name="query" type="TransactionQuery" />
 			<description>
+				Queries transactions based on the provided query parameters.
 			</description>
 		</method>
 		<method name="worlds">
 			<return type="Dictionary[]" />
 			<param index="0" name="world_addresses" type="PackedStringArray" />
 			<description>
+				Queries worlds based on the provided world addresses.
 			</description>
 		</method>
 	</methods>

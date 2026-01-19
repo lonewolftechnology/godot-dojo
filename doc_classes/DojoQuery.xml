@@ -1,8 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="DojoQuery" inherits="QueryBuilder" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://raw.githubusercontent.com/godotengine/godot/master/doc/class.xsd">
 	<brief_description>
+		A query builder for Dojo entities.
 	</brief_description>
 	<description>
+		The DojoQuery class allows constructing queries for fetching entities from the Torii indexer, supporting filtering by world addresses, models, and clauses.
 	</description>
 	<tutorials>
 	</tutorials>
@@ -11,36 +13,42 @@
 			<return type="DojoQuery" />
 			<param index="0" name="world" type="String" />
 			<description>
+				Adds a world address to the query.
 			</description>
 		</method>
 		<method name="hashed_keys">
 			<return type="DojoQuery" />
 			<param index="0" name="hashed_keys" type="bool" />
 			<description>
+				Sets whether to use hashed keys in the query.
 			</description>
 		</method>
 		<method name="historical">
 			<return type="DojoQuery" />
 			<param index="0" name="historical" type="bool" />
 			<description>
+				Sets whether to include historical data in the query.
 			</description>
 		</method>
 		<method name="models">
 			<return type="DojoQuery" />
 			<param index="0" name="models" type="PackedStringArray" />
 			<description>
+				Sets the models to filter by.
 			</description>
 		</method>
 		<method name="with_clause">
 			<return type="DojoQuery" />
 			<param index="0" name="clause" type="DojoClause" />
 			<description>
+				Adds a clause to the query for more complex filtering.
 			</description>
 		</method>
 		<method name="world_addresses">
 			<return type="DojoQuery" />
 			<param index="0" name="worlds" type="PackedStringArray" />
 			<description>
+				Sets the world addresses to filter by.
 			</description>
 		</method>
 	</methods>

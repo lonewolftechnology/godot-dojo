@@ -1,8 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="DojoClause" inherits="RefCounted" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://raw.githubusercontent.com/godotengine/godot/master/doc/class.xsd">
 	<brief_description>
+		Base class for query clauses.
 	</brief_description>
 	<description>
+		The DojoClause class serves as the base class for different types of clauses used in Dojo queries, such as KeysClause, MemberClause, and CompositeClause.
 	</description>
 	<tutorials>
 	</tutorials>
@@ -10,21 +12,27 @@
 		<method name="to_dict" qualifiers="const">
 			<return type="Dictionary" />
 			<description>
+				Converts the clause to a dictionary representation.
 			</description>
 		</method>
 	</methods>
 	<members>
 		<member name="type" type="int" setter="" getter="get_type" enum="DojoClause.Type" default="1">
+			The type of the clause.
 		</member>
 	</members>
 	<constants>
 		<constant name="HashedKeys" value="0" enum="Type">
+			Represents a hashed keys clause.
 		</constant>
 		<constant name="Keys" value="1" enum="Type">
+			Represents a keys clause.
 		</constant>
 		<constant name="Member" value="2" enum="Type">
+			Represents a member clause.
 		</constant>
 		<constant name="Composite" value="3" enum="Type">
+			Represents a composite clause.
 		</constant>
 	</constants>
 </class>

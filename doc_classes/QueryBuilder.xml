@@ -1,8 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="QueryBuilder" inherits="RefCounted" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://raw.githubusercontent.com/godotengine/godot/master/doc/class.xsd">
 	<brief_description>
+		Base class for building queries.
 	</brief_description>
 	<description>
+		The QueryBuilder class serves as the base class for various query types, providing common functionality such as pagination and sorting.
 	</description>
 	<tutorials>
 	</tutorials>
@@ -11,6 +13,7 @@
 			<return type="QueryBuilder" />
 			<param index="0" name="type" type="int" />
 			<description>
+				Creates a new QueryBuilder instance of the specified type.
 			</description>
 		</method>
 		<method name="order_by">
@@ -18,6 +21,7 @@
 			<param index="0" name="field" type="String" />
 			<param index="1" name="direction" type="int" />
 			<description>
+				Sets the sorting order for the query results.
 			</description>
 		</method>
 		<method name="pagination">
@@ -25,53 +29,73 @@
 			<param index="0" name="limit" type="int" />
 			<param index="1" name="cursor" type="String" />
 			<description>
+				Sets the pagination parameters (limit and cursor).
 			</description>
 		</method>
 		<method name="set_type">
 			<return type="QueryBuilder" />
 			<param index="0" name="type" type="int" />
 			<description>
+				Sets the type of the query.
 			</description>
 		</method>
 	</methods>
 	<members>
 		<member name="type" type="int" setter="set_type" getter="get_type" default="0">
+			The type of the query.
 		</member>
 	</members>
 	<constants>
 		<constant name="None" value="0" enum="Type">
+			Represents no specific query type.
 		</constant>
 		<constant name="Achievement" value="1" enum="Type">
+			Represents an achievement query.
 		</constant>
 		<constant name="Activity" value="2" enum="Type">
+			Represents an activity query.
 		</constant>
 		<constant name="Aggregation" value="3" enum="Type">
+			Represents an aggregation query.
 		</constant>
 		<constant name="Contract" value="4" enum="Type">
+			Represents a contract query.
 		</constant>
 		<constant name="Controller" value="5" enum="Type">
+			Represents a controller query.
 		</constant>
 		<constant name="Entity" value="6" enum="Type">
+			Represents an entity query.
 		</constant>
 		<constant name="Event" value="7" enum="Type">
+			Represents an event query.
 		</constant>
 		<constant name="PlayerAchievement" value="8" enum="Type">
+			Represents a player achievement query.
 		</constant>
 		<constant name="Search" value="9" enum="Type">
+			Represents a search query.
 		</constant>
 		<constant name="Token" value="10" enum="Type">
+			Represents a token query.
 		</constant>
 		<constant name="TokenBalance" value="11" enum="Type">
+			Represents a token balance query.
 		</constant>
 		<constant name="TokenContract" value="12" enum="Type">
+			Represents a token contract query.
 		</constant>
 		<constant name="TokenTransfer" value="13" enum="Type">
+			Represents a token transfer query.
 		</constant>
 		<constant name="Transaction" value="14" enum="Type">
+			Represents a transaction query.
 		</constant>
 		<constant name="Asc" value="1" enum="OrderDirection">
+			Ascending order.
 		</constant>
 		<constant name="Desc" value="2" enum="OrderDirection">
+			Descending order.
 		</constant>
 	</constants>
 </class>

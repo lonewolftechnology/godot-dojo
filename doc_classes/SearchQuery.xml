@@ -1,8 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="SearchQuery" inherits="QueryBuilder" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://raw.githubusercontent.com/godotengine/godot/master/doc/class.xsd">
 	<brief_description>
+		A query builder for search operations.
 	</brief_description>
 	<description>
+		The SearchQuery class allows constructing search queries for the Torii indexer, supporting filtering by query string, pagination, and sorting.
 	</description>
 	<tutorials>
 	</tutorials>
@@ -11,12 +13,14 @@
 			<return type="SearchQuery" />
 			<param index="0" name="cursor" type="String" />
 			<description>
+				Sets the cursor for pagination.
 			</description>
 		</method>
 		<method name="limit">
 			<return type="SearchQuery" />
 			<param index="0" name="limit" type="int" />
 			<description>
+				Sets the limit for the number of results.
 			</description>
 		</method>
 		<method name="order_by">
@@ -24,6 +28,7 @@
 			<param index="0" name="field" type="String" />
 			<param index="1" name="direction" type="int" />
 			<description>
+				Sets the sorting order for the results.
 			</description>
 		</method>
 		<method name="pagination">
@@ -31,12 +36,14 @@
 			<param index="0" name="limit" type="int" />
 			<param index="1" name="cursor" type="String" />
 			<description>
+				Sets the pagination parameters (limit and cursor).
 			</description>
 		</method>
 		<method name="query">
 			<return type="SearchQuery" />
 			<param index="0" name="query" type="String" />
 			<description>
+				Sets the search query string.
 			</description>
 		</method>
 	</methods>

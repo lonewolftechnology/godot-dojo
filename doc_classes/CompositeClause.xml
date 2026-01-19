@@ -1,8 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="CompositeClause" inherits="DojoClause" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://raw.githubusercontent.com/godotengine/godot/master/doc/class.xsd">
 	<brief_description>
+		A clause that combines multiple clauses.
 	</brief_description>
 	<description>
+		The CompositeClause class allows combining multiple DojoClauses using logical operators (AND, OR) to create complex query filters.
 	</description>
 	<tutorials>
 	</tutorials>
@@ -11,17 +13,20 @@
 			<return type="CompositeClause" />
 			<param index="0" name="clause" type="DojoClause" />
 			<description>
+				Adds a clause to the composite clause.
 			</description>
 		</method>
 		<method name="set_operator">
 			<return type="CompositeClause" />
 			<param index="0" name="operator" type="int" />
 			<description>
+				Sets the logical operator for combining the clauses.
 			</description>
 		</method>
 		<method name="to_dict" qualifiers="const">
 			<return type="Dictionary" />
 			<description>
+				Converts the clause to a dictionary representation.
 			</description>
 		</method>
 	</methods>
@@ -30,8 +35,10 @@
 	</members>
 	<constants>
 		<constant name="And" value="1" enum="LogicalOperator">
+			Logical AND operator.
 		</constant>
 		<constant name="Or" value="2" enum="LogicalOperator">
+			Logical OR operator.
 		</constant>
 	</constants>
 </class>
