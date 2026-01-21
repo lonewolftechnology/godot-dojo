@@ -144,9 +144,44 @@ enum class OrderDirection: int32_t {
 };
 
 
-enum class LogicalOperator: int32_t {
-    kAnd = 1,
-    kOr = 2
+struct ActionCount {
+    std::string action_name;
+    uint32_t count;
+};
+
+
+struct PlayerAchievementStats {
+    uint32_t total_points;
+    uint32_t completed_achievements;
+    uint32_t total_achievements;
+    double completion_percentage;
+    std::optional<uint64_t> last_achievement_at;
+    uint64_t created_at;
+    uint64_t updated_at;
+};
+
+
+enum class CallType: int32_t {
+    kExecute = 1,
+    kExecuteFromOutside = 2
+};
+
+
+struct SearchField {
+    std::string key;
+    std::string value;
+};
+
+
+struct AttributeFilter {
+    std::string trait_name;
+    std::string trait_value;
+};
+
+
+enum class PaginationDirection: int32_t {
+    kForward = 1,
+    kBackward = 2
 };
 
 
@@ -157,16 +192,6 @@ enum class ContractType: int32_t {
     kErc1155 = 4,
     kUdc = 5,
     kOther = 6
-};
-
-
-struct AchievementTask {
-    std::string task_id;
-    std::string description;
-    uint32_t total;
-    uint32_t total_completions;
-    double completion_rate;
-    uint64_t created_at;
 };
 
 namespace uniffi {
@@ -222,60 +247,6 @@ private:
 };
 
 
-struct PlayerAchievementStats {
-    uint32_t total_points;
-    uint32_t completed_achievements;
-    uint32_t total_achievements;
-    double completion_percentage;
-    std::optional<uint64_t> last_achievement_at;
-    uint64_t created_at;
-    uint64_t updated_at;
-};
-
-
-enum class PaginationDirection: int32_t {
-    kForward = 1,
-    kBackward = 2
-};
-
-
-struct AttributeFilter {
-    std::string trait_name;
-    std::string trait_value;
-};
-
-
-struct ActionCount {
-    std::string action_name;
-    uint32_t count;
-};
-
-
-struct TaskProgress {
-    std::string task_id;
-    uint32_t count;
-    bool completed;
-};
-
-
-enum class PatternMatching: int32_t {
-    kFixedLen = 1,
-    kVariableLen = 2
-};
-
-
-struct SearchField {
-    std::string key;
-    std::string value;
-};
-
-
-enum class CallType: int32_t {
-    kExecute = 1,
-    kExecuteFromOutside = 2
-};
-
-
 enum class ComparisonOperator: int32_t {
     kEq = 1,
     kNeq = 2,
@@ -294,55 +265,45 @@ enum class ComparisonOperator: int32_t {
 };
 
 
-struct Token {
-    FieldElement contract_address;
-    std::optional<U256> token_id;
-    std::string name;
-    std::string symbol;
-    uint8_t decimals;
-    std::string metadata;
-    std::optional<U256> total_supply;
+struct TaskProgress {
+    std::string task_id;
+    uint32_t count;
+    bool completed;
 };
 
 
-struct TokenTransfer {
-    std::string id;
-    FieldElement contract_address;
-    FieldElement from_address;
-    FieldElement to_address;
-    U256 amount;
-    std::optional<U256> token_id;
-    uint64_t executed_at;
-    std::optional<std::string> event_id;
-};
-
-
-struct Contract {
-    FieldElement contract_address;
-    ContractType contract_type;
-    std::optional<uint64_t> head;
-    std::optional<uint64_t> tps;
-    std::optional<uint64_t> last_block_timestamp;
-    std::optional<FieldElement> last_pending_block_tx;
-    uint64_t updated_at;
+struct AchievementTask {
+    std::string task_id;
+    std::string description;
+    uint32_t total;
+    uint32_t total_completions;
+    double completion_rate;
     uint64_t created_at;
 };
 
 
-struct TokenContract {
-    FieldElement contract_address;
-    std::string name;
-    std::string symbol;
-    uint8_t decimals;
-    std::string metadata;
-    std::string token_metadata;
-    std::optional<U256> total_supply;
+enum class PatternMatching: int32_t {
+    kFixedLen = 1,
+    kVariableLen = 2
 };
 
 
-struct OrderBy {
-    std::string field;
-    OrderDirection direction;
+enum class LogicalOperator: int32_t {
+    kAnd = 1,
+    kOr = 2
+};
+
+
+struct Event {
+    std::vector<FieldElement> keys;
+    std::vector<FieldElement> data;
+    FieldElement transaction_hash;
+};
+
+
+struct SqlField {
+    std::string name;
+    std::shared_ptr<SqlValue> value;
 };
 
 
@@ -359,12 +320,43 @@ struct Activity {
 };
 
 
+struct TokenBalance {
+    U256 balance;
+    FieldElement account_address;
+    FieldElement contract_address;
+    std::optional<U256> token_id;
+};
+
+
 struct TransactionCall {
     FieldElement contract_address;
     std::string entrypoint;
     std::vector<FieldElement> calldata;
     CallType call_type;
     FieldElement caller_address;
+};
+
+
+struct TransactionFilter {
+    std::vector<FieldElement> transaction_hashes;
+    std::vector<FieldElement> caller_addresses;
+    std::vector<FieldElement> contract_addresses;
+    std::vector<std::string> entrypoints;
+    std::vector<FieldElement> model_selectors;
+    std::optional<uint64_t> from_block;
+    std::optional<uint64_t> to_block;
+};
+
+
+struct Contract {
+    FieldElement contract_address;
+    ContractType contract_type;
+    std::optional<uint64_t> head;
+    std::optional<uint64_t> tps;
+    std::optional<uint64_t> last_block_timestamp;
+    std::optional<FieldElement> last_pending_block_tx;
+    uint64_t updated_at;
+    uint64_t created_at;
 };
 
 
@@ -375,10 +367,22 @@ struct Controller {
 };
 
 
-struct SearchMatch {
+struct OrderBy {
+    std::string field;
+    OrderDirection direction;
+};
+
+
+struct AggregationEntry {
     std::string id;
-    std::vector<std::shared_ptr<SearchField>> fields;
-    std::optional<double> score;
+    std::string aggregator_id;
+    std::string entity_id;
+    U256 value;
+    std::string display_value;
+    uint64_t position;
+    std::string model_id;
+    uint64_t created_at;
+    uint64_t updated_at;
 };
 
 namespace uniffi {
@@ -479,89 +483,9 @@ private:
 };
 
 
-struct TransactionFilter {
-    std::vector<FieldElement> transaction_hashes;
-    std::vector<FieldElement> caller_addresses;
-    std::vector<FieldElement> contract_addresses;
-    std::vector<std::string> entrypoints;
-    std::vector<FieldElement> model_selectors;
-    std::optional<uint64_t> from_block;
-    std::optional<uint64_t> to_block;
-};
-
-
 struct ContractQuery {
     std::vector<FieldElement> contract_addresses;
     std::vector<ContractType> contract_types;
-};
-
-
-struct KeysClause {
-    std::vector<std::optional<FieldElement>> keys;
-    PatternMatching pattern_matching;
-    std::vector<std::string> models;
-};
-
-
-struct Event {
-    std::vector<FieldElement> keys;
-    std::vector<FieldElement> data;
-    FieldElement transaction_hash;
-};
-
-
-struct AchievementProgression {
-    std::string id;
-    std::string achievement_id;
-    std::string task_id;
-    FieldElement world_address;
-    std::string namespace_;
-    FieldElement player_id;
-    uint32_t count;
-    bool completed;
-    std::optional<uint64_t> completed_at;
-    uint64_t created_at;
-    uint64_t updated_at;
-};
-
-
-struct Message {
-    std::string message;
-    std::vector<FieldElement> signature;
-    FieldElement world_address;
-};
-
-
-struct TokenBalance {
-    U256 balance;
-    FieldElement account_address;
-    FieldElement contract_address;
-    std::optional<U256> token_id;
-};
-
-
-struct SqlField {
-    std::string name;
-    std::shared_ptr<SqlValue> value;
-};
-
-
-struct Signature {
-    FieldElement r;
-    FieldElement s;
-};
-
-
-struct AggregationEntry {
-    std::string id;
-    std::string aggregator_id;
-    std::string entity_id;
-    U256 value;
-    std::string display_value;
-    uint64_t position;
-    std::string model_id;
-    uint64_t created_at;
-    uint64_t updated_at;
 };
 
 
@@ -588,14 +512,135 @@ struct Achievement {
 };
 
 
+struct Token {
+    FieldElement contract_address;
+    std::optional<U256> token_id;
+    std::string name;
+    std::string symbol;
+    uint8_t decimals;
+    std::string metadata;
+    std::optional<U256> total_supply;
+};
+
+
+struct SearchMatch {
+    std::string id;
+    std::vector<std::shared_ptr<SearchField>> fields;
+    std::optional<double> score;
+};
+
+
+struct KeysClause {
+    std::vector<std::optional<FieldElement>> keys;
+    PatternMatching pattern_matching;
+    std::vector<std::string> models;
+};
+
+
+struct Signature {
+    FieldElement r;
+    FieldElement s;
+};
+
+
+struct TokenContract {
+    FieldElement contract_address;
+    std::string name;
+    std::string symbol;
+    uint8_t decimals;
+    std::string metadata;
+    std::string token_metadata;
+    std::optional<U256> total_supply;
+};
+
+
+struct Message {
+    std::string message;
+    std::vector<FieldElement> signature;
+    FieldElement world_address;
+};
+
+
+struct AchievementProgression {
+    std::string id;
+    std::string achievement_id;
+    std::string task_id;
+    FieldElement world_address;
+    std::string namespace_;
+    FieldElement player_id;
+    uint32_t count;
+    bool completed;
+    std::optional<uint64_t> completed_at;
+    uint64_t created_at;
+    uint64_t updated_at;
+};
+
+
+struct TokenTransfer {
+    std::string id;
+    FieldElement contract_address;
+    FieldElement from_address;
+    FieldElement to_address;
+    U256 amount;
+    std::optional<U256> token_id;
+    uint64_t executed_at;
+    std::optional<std::string> event_id;
+};
+
+
+struct Pagination {
+    std::optional<std::string> cursor;
+    std::optional<uint32_t> limit;
+    PaginationDirection direction;
+    std::vector<std::shared_ptr<OrderBy>> order_by;
+};
+
+
+struct SqlRow {
+    std::vector<std::shared_ptr<SqlField>> fields;
+};
+
+
+struct PageAggregationEntry {
+    std::vector<std::shared_ptr<AggregationEntry>> items;
+    std::optional<std::string> next_cursor;
+};
+
+
+struct TableSearchResults {
+    std::string table;
+    uint32_t count;
+    std::vector<std::shared_ptr<SearchMatch>> matches;
+};
+
+
+struct PageToken {
+    std::vector<std::shared_ptr<Token>> items;
+    std::optional<std::string> next_cursor;
+};
+
+
+struct PageTokenContract {
+    std::vector<std::shared_ptr<TokenContract>> items;
+    std::optional<std::string> next_cursor;
+};
+
+
 struct PageTokenBalance {
     std::vector<std::shared_ptr<TokenBalance>> items;
     std::optional<std::string> next_cursor;
 };
 
 
-struct SqlRow {
-    std::vector<std::shared_ptr<SqlField>> fields;
+struct PageAchievement {
+    std::vector<std::shared_ptr<Achievement>> items;
+    std::optional<std::string> next_cursor;
+};
+
+
+struct PageController {
+    std::vector<std::shared_ptr<Controller>> items;
+    std::optional<std::string> next_cursor;
 };
 
 
@@ -614,26 +659,20 @@ struct Transaction {
 };
 
 
-struct PageAchievement {
-    std::vector<std::shared_ptr<Achievement>> items;
-    std::optional<std::string> next_cursor;
-};
-
-
-struct PageTokenContract {
-    std::vector<std::shared_ptr<TokenContract>> items;
-    std::optional<std::string> next_cursor;
-};
-
-
 struct PageTokenTransfer {
     std::vector<std::shared_ptr<TokenTransfer>> items;
     std::optional<std::string> next_cursor;
 };
 
 
-struct PageToken {
-    std::vector<std::shared_ptr<Token>> items;
+struct PageActivity {
+    std::vector<std::shared_ptr<Activity>> items;
+    std::optional<std::string> next_cursor;
+};
+
+
+struct PageEvent {
+    std::vector<std::shared_ptr<Event>> items;
     std::optional<std::string> next_cursor;
 };
 
@@ -646,56 +685,22 @@ struct PlayerAchievementProgress {
 };
 
 
-struct Pagination {
-    std::optional<std::string> cursor;
-    std::optional<uint32_t> limit;
-    PaginationDirection direction;
-    std::vector<std::shared_ptr<OrderBy>> order_by;
-};
-
-
-struct PageActivity {
-    std::vector<std::shared_ptr<Activity>> items;
+struct PageTransaction {
+    std::vector<std::shared_ptr<Transaction>> items;
     std::optional<std::string> next_cursor;
 };
 
 
-struct PageAggregationEntry {
-    std::vector<std::shared_ptr<AggregationEntry>> items;
-    std::optional<std::string> next_cursor;
-};
-
-
-struct PageController {
-    std::vector<std::shared_ptr<Controller>> items;
-    std::optional<std::string> next_cursor;
-};
-
-
-struct TableSearchResults {
-    std::string table;
-    uint32_t count;
-    std::vector<std::shared_ptr<SearchMatch>> matches;
-};
-
-
-struct PageEvent {
-    std::vector<std::shared_ptr<Event>> items;
-    std::optional<std::string> next_cursor;
-};
-
-
-struct AggregationQuery {
-    std::vector<std::string> aggregator_ids;
-    std::vector<std::string> entity_ids;
+struct TransactionQuery {
+    std::optional<std::shared_ptr<TransactionFilter>> filter;
     std::shared_ptr<Pagination> pagination;
 };
 
 
-struct TokenContractQuery {
+struct ControllerQuery {
+    std::shared_ptr<Pagination> pagination;
     std::vector<FieldElement> contract_addresses;
-    std::vector<ContractType> contract_types;
-    std::shared_ptr<Pagination> pagination;
+    std::vector<std::string> usernames;
 };
 
 
@@ -707,44 +712,35 @@ struct TokenTransferQuery {
 };
 
 
+struct EventQuery {
+    std::optional<std::shared_ptr<KeysClause>> keys;
+    std::shared_ptr<Pagination> pagination;
+};
+
+
+struct AggregationQuery {
+    std::vector<std::string> aggregator_ids;
+    std::vector<std::string> entity_ids;
+    std::shared_ptr<Pagination> pagination;
+};
+
+
 struct SearchResponse {
     uint32_t total;
     std::vector<std::shared_ptr<TableSearchResults>> results;
 };
 
 
-struct TransactionQuery {
-    std::optional<std::shared_ptr<TransactionFilter>> filter;
-    std::shared_ptr<Pagination> pagination;
+struct PlayerAchievementEntry {
+    FieldElement player_address;
+    std::shared_ptr<PlayerAchievementStats> stats;
+    std::vector<std::shared_ptr<PlayerAchievementProgress>> achievements;
 };
 
 
-struct PageTransaction {
-    std::vector<std::shared_ptr<Transaction>> items;
-    std::optional<std::string> next_cursor;
-};
-
-
-struct PlayerAchievementQuery {
-    std::vector<FieldElement> world_addresses;
-    std::vector<std::string> namespaces;
-    std::vector<FieldElement> player_addresses;
-    std::shared_ptr<Pagination> pagination;
-};
-
-
-struct TokenQuery {
+struct TokenContractQuery {
     std::vector<FieldElement> contract_addresses;
-    std::vector<U256> token_ids;
-    std::vector<std::shared_ptr<AttributeFilter>> attribute_filters;
-    std::shared_ptr<Pagination> pagination;
-};
-
-
-struct TokenBalanceQuery {
-    std::vector<FieldElement> contract_addresses;
-    std::vector<FieldElement> account_addresses;
-    std::vector<U256> token_ids;
+    std::vector<ContractType> contract_types;
     std::shared_ptr<Pagination> pagination;
 };
 
@@ -759,10 +755,11 @@ struct ActivityQuery {
 };
 
 
-struct PlayerAchievementEntry {
-    FieldElement player_address;
-    std::shared_ptr<PlayerAchievementStats> stats;
-    std::vector<std::shared_ptr<PlayerAchievementProgress>> achievements;
+struct TokenBalanceQuery {
+    std::vector<FieldElement> contract_addresses;
+    std::vector<FieldElement> account_addresses;
+    std::vector<U256> token_ids;
+    std::shared_ptr<Pagination> pagination;
 };
 
 
@@ -774,16 +771,19 @@ struct AchievementQuery {
 };
 
 
-struct EventQuery {
-    std::optional<std::shared_ptr<KeysClause>> keys;
+struct TokenQuery {
+    std::vector<FieldElement> contract_addresses;
+    std::vector<U256> token_ids;
+    std::vector<std::shared_ptr<AttributeFilter>> attribute_filters;
     std::shared_ptr<Pagination> pagination;
 };
 
 
-struct ControllerQuery {
+struct PlayerAchievementQuery {
+    std::vector<FieldElement> world_addresses;
+    std::vector<std::string> namespaces;
+    std::vector<FieldElement> player_addresses;
     std::shared_ptr<Pagination> pagination;
-    std::vector<FieldElement> contract_addresses;
-    std::vector<std::string> usernames;
 };
 
 

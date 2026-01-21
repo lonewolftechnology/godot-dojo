@@ -58,16 +58,16 @@ enum class Version;
 typedef std::string ControllerFieldElement;
 
 
+struct SessionPolicy {
+    ControllerFieldElement contract_address;
+    std::string entrypoint;
+};
+
+
 struct Call {
     ControllerFieldElement contract_address;
     std::string entrypoint;
     std::vector<ControllerFieldElement> calldata;
-};
-
-
-struct SessionPolicy {
-    ControllerFieldElement contract_address;
-    std::string entrypoint;
 };
 
 
