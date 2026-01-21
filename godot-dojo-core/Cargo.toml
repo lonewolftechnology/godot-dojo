@@ -8,17 +8,17 @@ crate-type = ["cdylib", "rlib", "staticlib"]
 
 [dependencies]
 dojo-c = { git = "https://github.com/dojoengine/dojo.c", tag = "v1.8.7" }
-controller-uniffi = { git = "https://github.com/cartridge-gg/controller.c", rev = "b9ad2c6" }
+controller-uniffi = { git = "https://github.com/cartridge-gg/controller.c", rev = "88b355e" }
 dojo-uniffi = { git = "https://github.com/dojoengine/dojo.c", tag = "v1.8.7" }
 
 [build-dependencies]
 dojo-uniffi = { git = "https://github.com/dojoengine/dojo.c", tag = "v1.8.7", artifact = "bin:uniffi-bindgen-cpp" }
-controller-uniffi = { git = "https://github.com/cartridge-gg/controller.c", rev = "b9ad2c6", artifact = "bin:uniffi-bindgen-cpp" }
+controller-uniffi = { git = "https://github.com/cartridge-gg/controller.c", rev = "88b355e", artifact = "bin:uniffi-bindgen-cpp" }
 cargo_metadata = "0.23.0"
 build-print = "1.0.1"
 
 [target.'cfg(target_arch = "wasm32")'.dependencies]
-controller-uniffi = { git = "https://github.com/cartridge-gg/controller.c", rev = "b9ad2c6", artifact = "bin:uniffi-bindgen-react-native" }
+controller-uniffi = { git = "https://github.com/cartridge-gg/controller.c", rev = "88b355e", artifact = "bin:uniffi-bindgen-react-native" }
 
 [patch.crates-io]
 starknet-crypto = { git = "https://github.com/glihm/starknet-rs", rev = "c1e7e19f45f9fad6ea2796da9b7b3dcf8f9f2b82" } # Force to fix crate version mismatch
