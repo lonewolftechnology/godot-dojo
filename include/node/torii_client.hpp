@@ -60,6 +60,7 @@ public:
 
     TypedArray<Dictionary> sql(const String& query);
 
+    // Subscriptions
     uint64_t subscribe_entity_updates(const Ref<DojoClause> &clause, const PackedStringArray &world_addresses, const Ref<DojoCallback> &callback);
     uint64_t subscribe_event_updates(const Array &keys, const Ref<DojoCallback> &callback);
     uint64_t subscribe_token_balance_updates(const PackedStringArray &contract_addresses, const PackedStringArray &account_addresses, const PackedStringArray &token_ids, const Ref<DojoCallback> &callback);
