@@ -19,6 +19,10 @@ DojoEditorPlugin::~DojoEditorPlugin()
 
 void DojoEditorPlugin::_enter_tree()
 {
+    if (!Engine::get_singleton()->is_editor_hint())
+    {
+        return;
+    }
     init_config();
     add_tool_menu_item("Reset Dojo ProjectSettings to default", callable_mp(this, &DojoEditorPlugin::reset_project_settings));
 }
@@ -40,54 +44,59 @@ void DojoEditorPlugin::init_config(bool reset)
 {
     if (Engine::get_singleton()->is_editor_hint())
     {
-        set_setting("dojo/config/katana_url", "http://localhost:5050", reset);
-        set_setting("dojo/config/contract_address", "0x0", reset);
+        set_setting("dojo/config/katana_url", "http://localhost:5050", reset, false);
+        set_setting("dojo/config/contract_address", "0x0", reset, false);
         // Torii Config
         // TODO: multiple contracts
-        set_setting("dojo/config/torii/torii_url", "http://localhost:8080", reset);
+        set_setting("dojo/config/torii/torii_url", "http://localhost:8080", reset, false);
         // set_setting("dojo/config/torii/contract_addresses", TypedArray<String>(), reset);
-        set_setting("dojo/config/torii/worlds", TypedArray<String>(), reset);
+        set_setting("dojo/config/torii/worlds", TypedArray<String>(), reset, false);
         // Account
         set_setting("dojo/config/account/address", "0x0",
-                    reset);
+                    reset, false);
         set_setting("dojo/config/account/public_key",
-                    "0x0", reset);
+                    "0x0", reset, false);
         set_setting("dojo/config/account/private_key",
-                    "0x0", reset);
+                    "0x0", reset, false);
 
         // Fixed Point
-        set_setting("dojo/config/fixed_point/default", 128, reset);
-        set_setting("dojo/config/fixed_point/64", 40, reset);
-        set_setting("dojo/config/fixed_point/128", 60, reset);
-        set_setting("dojo/config/fixed_point/256", 123, reset);
+        set_setting("dojo/config/fixed_point/default", 128, reset, false);
+        set_setting("dojo/config/fixed_point/64", 40, reset, false);
+        set_setting("dojo/config/fixed_point/128", 60, reset, false);
+        set_setting("dojo/config/fixed_point/256", 123, reset, false);
 
         // Debug
-        set_setting("dojo/config/debug/error", true, reset);
-        set_setting("dojo/config/debug/warning", true, reset);
-        set_setting("dojo/config/debug/info", false, reset);
-        set_setting("dojo/config/debug/debug", false, reset);
-        set_setting("dojo/config/debug/success", true, reset);
+        set_setting("dojo/config/debug/error", true, reset, false);
+        set_setting("dojo/config/debug/warning", true, reset, false);
+        set_setting("dojo/config/debug/info", false, reset, false);
+        set_setting("dojo/config/debug/debug", false, reset, false);
+        set_setting("dojo/config/debug/success", true, reset, false);
 
-
+        ProjectSettings::get_singleton()->save();
     }
 }
 
-void DojoEditorPlugin::set_setting(const String& setting, const Variant& value, const bool& force)
+void DojoEditorPlugin::set_setting(const String& setting, const Variant& value, const bool& force, bool p_save)
 {
     ProjectSettings* settings = ProjectSettings::get_singleton();
+    bool changed = false;
     if (force)
     {
         Logger::info("Forcing init of config", setting);
         settings->set_setting(setting, value);
-
+        changed = true;
     }
-    if (settings->has_setting(setting) == false)
+    else if (!settings->has_setting(setting))
     {
         settings->set_setting(setting, value);
         settings->set_as_basic(setting, true);
         // settings->set_initial_value(setting, value);
         Logger::info("Inited config", setting, "with value", value);
-
+        changed = true;
     }
-    settings->save();
+    
+    if (changed && p_save)
+    {
+        settings->save();
+    }
 }

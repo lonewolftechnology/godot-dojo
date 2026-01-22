@@ -44,6 +44,14 @@
 				Queries contracts based on the provided query parameters.
 			</description>
 		</method>
+		<method name="connect">
+			<return type="bool" />
+			<param index="0" name="torii_url" type="String" />
+			<param index="1" name="max_message_size" type="int" default="-1" />
+			<description>
+				Connects the client to the specified Torii URL.
+			</description>
+		</method>
 		<method name="controllers">
 			<return type="Dictionary" />
 			<param index="0" name="query" type="ControllerQuery" />
@@ -54,16 +62,9 @@
 		<method name="create" qualifiers="static">
 			<return type="ToriiClient" />
 			<param index="0" name="torii_url" type="String" />
+			<param index="1" name="max_message_size" type="int" default="-1" />
 			<description>
 				Creates a new ToriiClient instance connected to the specified Torii URL.
-			</description>
-		</method>
-		<method name="create_with_config" qualifiers="static">
-			<return type="ToriiClient" />
-			<param index="0" name="torii_url" type="String" />
-			<param index="1" name="max_message_size" type="int" />
-			<description>
-				Creates a new ToriiClient instance with a custom configuration.
 			</description>
 		</method>
 		<method name="entities">

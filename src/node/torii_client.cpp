@@ -1,4 +1,5 @@
 #include "node/torii_client.hpp"
+#include <list>
 #include "ref_counted/dojo_utilities/callback_utils.hpp"
 #include "ref_counted/dojo_utilities/clauses/keys.hpp"
 #include "tools/logger.h"
@@ -22,26 +23,26 @@ using namespace godot;
 ToriiClient::ToriiClient() {}
 ToriiClient::~ToriiClient() {}
 
-ToriiClient* ToriiClient::create(const String& torii_url) {
-    ToriiClient* node = memnew(ToriiClient);
+bool ToriiClient::connect(const String& torii_url, int64_t max_message_size) {
     try {
-        node->client = dojo::ToriiClient::init(torii_url.utf8().get_data());
-        Logger::success("ToriiClient created: ", torii_url);
+        CharString url = torii_url.utf8();
+        if (max_message_size == -1) {
+            client = dojo::ToriiClient::init(url.get_data());
+            Logger::success("ToriiClient connected: ", torii_url);
+        } else {
+            client = dojo::ToriiClient::new_with_config(url.get_data(), (uint64_t)max_message_size);
+            Logger::success("ToriiClient connected with config: ", torii_url);
+        }
+        return true;
     } catch (const std::exception& e) {
-        Logger::error("ToriiClient creation failed: ", e.what());
-        memdelete(node);
-        return nullptr;
+        Logger::error("ToriiClient connection failed: ", e.what());
+        return false;
     }
-    return node;
 }
 
-ToriiClient* ToriiClient::create_with_config(const String& torii_url, uint64_t max_message_size) {
+ToriiClient* ToriiClient::create(const String& torii_url, int64_t max_message_size) {
     ToriiClient* node = memnew(ToriiClient);
-    try {
-        node->client = dojo::ToriiClient::new_with_config(torii_url.utf8().get_data(), max_message_size);
-        Logger::success("ToriiClient created with config: ", torii_url);
-    } catch (const std::exception& e) {
-        Logger::error("ToriiClient creation with config failed: ", e.what());
+    if (!node->connect(torii_url, max_message_size)) {
         memdelete(node);
         return nullptr;
     }
@@ -437,13 +438,19 @@ void ToriiClient::cancel_subscription(uint64_t subscription_id) {
 String ToriiClient::publish_message(const String& message, const PackedStringArray& signature, const String& world_address) {
     try {
         dojo::Message msg;
-        msg.message = message.utf8().get_data();
-        msg.world_address = world_address.utf8().get_data();
+        CharString msg_str = message.utf8();
+        msg.message = msg_str.get_data();
+        CharString wa_str = world_address.utf8();
+        msg.world_address = wa_str.get_data();
 
         std::vector<dojo::FieldElement> sig_vec;
+        std::vector<std::string> sig_store;
+        sig_store.reserve(signature.size());
         for (int i = 0; i < signature.size(); i++) {
-            sig_vec.push_back(signature[i].utf8().get_data());
+            sig_store.push_back(signature[i].utf8().get_data());
         }
+        sig_vec.reserve(sig_store.size());
+        for (const auto& s : sig_store) sig_vec.push_back(s.c_str());
         msg.signature = sig_vec;
 
         String res = String(client->publish_message(msg).c_str());
@@ -458,16 +465,21 @@ String ToriiClient::publish_message(const String& message, const PackedStringArr
 PackedStringArray ToriiClient::publish_message_batch(const Array& messages) {
     try {
         std::vector<std::shared_ptr<dojo::Message>> msgs;
+        std::list<std::string> keep_alive;
+
         for (int i = 0; i < messages.size(); i++) {
             Dictionary m = messages[i];
             auto msg = std::make_shared<dojo::Message>();
-            msg->message = String(m["message"]).utf8().get_data();
-            msg->world_address = String(m["world_address"]).utf8().get_data();
+            keep_alive.push_back(String(m["message"]).utf8().get_data());
+            msg->message = keep_alive.back().c_str();
+            keep_alive.push_back(String(m["world_address"]).utf8().get_data());
+            msg->world_address = keep_alive.back().c_str();
 
             PackedStringArray sig = m["signature"];
             std::vector<dojo::FieldElement> sig_vec;
             for (int j = 0; j < sig.size(); j++) {
-                sig_vec.push_back(sig[j].utf8().get_data());
+                keep_alive.push_back(sig[j].utf8().get_data());
+                sig_vec.push_back(keep_alive.back().c_str());
             }
             msg->signature = sig_vec;
 
@@ -489,7 +501,8 @@ PackedStringArray ToriiClient::publish_message_batch(const Array& messages) {
 
 TypedArray<Dictionary> ToriiClient::sql(const String& query) {
     try {
-        std::vector<std::shared_ptr<dojo::SqlRow>> rows = client->sql(query.utf8().get_data());
+        CharString q = query.utf8();
+        std::vector<std::shared_ptr<dojo::SqlRow>> rows = client->sql(q.get_data());
         TypedArray<Dictionary> result;
 
         for (const auto& row : rows) {
@@ -512,9 +525,13 @@ TypedArray<Dictionary> ToriiClient::sql(const String& query) {
 uint64_t ToriiClient::subscribe_entity_updates(const Ref<DojoClause> &clause, const PackedStringArray &world_addresses, const Ref<DojoCallback> &callback) {
     try {
         std::vector<dojo::FieldElement> wa;
+        std::vector<std::string> wa_store;
+        wa_store.reserve(world_addresses.size());
         for (int i = 0; i < world_addresses.size(); i++) {
-            wa.push_back(world_addresses[i].utf8().get_data());
+            wa_store.push_back(world_addresses[i].utf8().get_data());
         }
+        wa.reserve(wa_store.size());
+        for (const auto& s : wa_store) wa.push_back(s.c_str());
 
         std::optional<std::shared_ptr<dojo::Clause>> c;
         if (clause.is_valid()) {
@@ -557,13 +574,31 @@ uint64_t ToriiClient::subscribe_event_updates(const Array &keys, const Ref<DojoC
 uint64_t ToriiClient::subscribe_token_balance_updates(const PackedStringArray &contract_addresses, const PackedStringArray &account_addresses, const PackedStringArray &token_ids, const Ref<DojoCallback> &callback) {
     try {
         std::vector<dojo::FieldElement> ca;
-        for (int i = 0; i < contract_addresses.size(); i++) ca.push_back(contract_addresses[i].utf8().get_data());
+        std::vector<std::string> ca_store;
+        ca_store.reserve(contract_addresses.size());
+        for (int i = 0; i < contract_addresses.size(); i++) {
+            ca_store.push_back(contract_addresses[i].utf8().get_data());
+        }
+        ca.reserve(ca_store.size());
+        for (const auto& s : ca_store) ca.push_back(s.c_str());
 
         std::vector<dojo::FieldElement> aa;
-        for (int i = 0; i < account_addresses.size(); i++) aa.push_back(account_addresses[i].utf8().get_data());
+        std::vector<std::string> aa_store;
+        aa_store.reserve(account_addresses.size());
+        for (int i = 0; i < account_addresses.size(); i++) {
+            aa_store.push_back(account_addresses[i].utf8().get_data());
+        }
+        aa.reserve(aa_store.size());
+        for (const auto& s : aa_store) aa.push_back(s.c_str());
 
         std::vector<dojo::U256> tids;
-        for (int i = 0; i < token_ids.size(); i++) tids.push_back(token_ids[i].utf8().get_data());
+        std::vector<std::string> tids_store;
+        tids_store.reserve(token_ids.size());
+        for (int i = 0; i < token_ids.size(); i++) {
+            tids_store.push_back(token_ids[i].utf8().get_data());
+        }
+        tids.reserve(tids_store.size());
+        for (const auto& s : tids_store) tids.push_back(s.c_str());
 
         uint64_t id = client->subscribe_token_balance_updates(ca, aa, tids, callback->create_token_balance_callback());
         Logger::success("Subscribed to token balance updates. ID: ", id);
@@ -577,10 +612,22 @@ uint64_t ToriiClient::subscribe_token_balance_updates(const PackedStringArray &c
 uint64_t ToriiClient::subscribe_token_updates(const PackedStringArray &contract_addresses, const PackedStringArray &token_ids, const Ref<DojoCallback> &callback) {
     try {
         std::vector<dojo::FieldElement> ca;
-        for (int i = 0; i < contract_addresses.size(); i++) ca.push_back(contract_addresses[i].utf8().get_data());
+        std::vector<std::string> ca_store;
+        ca_store.reserve(contract_addresses.size());
+        for (int i = 0; i < contract_addresses.size(); i++) {
+            ca_store.push_back(contract_addresses[i].utf8().get_data());
+        }
+        ca.reserve(ca_store.size());
+        for (const auto& s : ca_store) ca.push_back(s.c_str());
 
         std::vector<dojo::U256> tids;
-        for (int i = 0; i < token_ids.size(); i++) tids.push_back(token_ids[i].utf8().get_data());
+        std::vector<std::string> tids_store;
+        tids_store.reserve(token_ids.size());
+        for (int i = 0; i < token_ids.size(); i++) {
+            tids_store.push_back(token_ids[i].utf8().get_data());
+        }
+        tids.reserve(tids_store.size());
+        for (const auto& s : tids_store) tids.push_back(s.c_str());
 
         uint64_t id = client->subscribe_token_updates(ca, tids, callback->create_token_callback());
         Logger::success("Subscribed to token updates. ID: ", id);
@@ -594,28 +641,44 @@ uint64_t ToriiClient::subscribe_token_updates(const PackedStringArray &contract_
 uint64_t ToriiClient::subscribe_transaction_updates(const Dictionary &filter, const Ref<DojoCallback> &callback) {
     try {
         std::optional<std::shared_ptr<dojo::TransactionFilter>> f;
+        std::list<std::string> keep_alive;
         if (!filter.is_empty()) {
             auto tf = std::make_shared<dojo::TransactionFilter>();
 
             if (filter.has("transaction_hashes")) {
                 PackedStringArray th = filter["transaction_hashes"];
-                for (int i = 0; i < th.size(); i++) tf->transaction_hashes.push_back(th[i].utf8().get_data());
+                for (int i = 0; i < th.size(); i++) {
+                    keep_alive.push_back(th[i].utf8().get_data());
+                    tf->transaction_hashes.push_back(keep_alive.back().c_str());
+                }
             }
             if (filter.has("caller_addresses")) {
                 PackedStringArray ca = filter["caller_addresses"];
-                for (int i = 0; i < ca.size(); i++) tf->caller_addresses.push_back(ca[i].utf8().get_data());
+                for (int i = 0; i < ca.size(); i++) {
+                    keep_alive.push_back(ca[i].utf8().get_data());
+                    tf->caller_addresses.push_back(keep_alive.back().c_str());
+                }
             }
             if (filter.has("contract_addresses")) {
                 PackedStringArray cta = filter["contract_addresses"];
-                for (int i = 0; i < cta.size(); i++) tf->contract_addresses.push_back(cta[i].utf8().get_data());
+                for (int i = 0; i < cta.size(); i++) {
+                    keep_alive.push_back(cta[i].utf8().get_data());
+                    tf->contract_addresses.push_back(keep_alive.back().c_str());
+                }
             }
             if (filter.has("entrypoints")) {
                 PackedStringArray ep = filter["entrypoints"];
-                for (int i = 0; i < ep.size(); i++) tf->entrypoints.push_back(ep[i].utf8().get_data());
+                for (int i = 0; i < ep.size(); i++) {
+                    keep_alive.push_back(ep[i].utf8().get_data());
+                    tf->entrypoints.push_back(keep_alive.back().c_str());
+                }
             }
             if (filter.has("model_selectors")) {
                 PackedStringArray ms = filter["model_selectors"];
-                for (int i = 0; i < ms.size(); i++) tf->model_selectors.push_back(ms[i].utf8().get_data());
+                for (int i = 0; i < ms.size(); i++) {
+                    keep_alive.push_back(ms[i].utf8().get_data());
+                    tf->model_selectors.push_back(keep_alive.back().c_str());
+                }
             }
             if (filter.has("from_block")) {
                 tf->from_block = filter["from_block"];
@@ -638,9 +701,13 @@ uint64_t ToriiClient::subscribe_transaction_updates(const Dictionary &filter, co
 TypedArray<Dictionary> ToriiClient::worlds(const PackedStringArray& world_addresses) {
     try {
         std::vector<dojo::FieldElement> wa;
+        std::vector<std::string> wa_store;
+        wa_store.reserve(world_addresses.size());
         for (int i = 0; i < world_addresses.size(); i++) {
-            wa.push_back(world_addresses[i].utf8().get_data());
+            wa_store.push_back(world_addresses[i].utf8().get_data());
         }
+        wa.reserve(wa_store.size());
+        for (const auto& s : wa_store) wa.push_back(s.c_str());
 
         std::vector<std::shared_ptr<dojo::World>> worlds = client->worlds(wa);
         TypedArray<Dictionary> result;
@@ -682,8 +749,8 @@ std::shared_ptr<dojo::ToriiClient> ToriiClient::get_client() const {
 }
 
 void ToriiClient::_bind_methods() {
-    ClassDB::bind_static_method(get_class_static(), D_METHOD("create", "torii_url"), &ToriiClient::create);
-    ClassDB::bind_static_method(get_class_static(), D_METHOD("create_with_config", "torii_url", "max_message_size"), &ToriiClient::create_with_config);
+    ClassDB::bind_static_method(get_class_static(), D_METHOD("create", "torii_url", "max_message_size"), &ToriiClient::create, DEFVAL(-1));
+    ClassDB::bind_method(D_METHOD("connect", "torii_url", "max_message_size"), &ToriiClient::connect, DEFVAL(-1));
 
     ClassDB::bind_method(D_METHOD("achievements", "query"), &ToriiClient::achievements);
     ClassDB::bind_method(D_METHOD("activities", "query"), &ToriiClient::activities);

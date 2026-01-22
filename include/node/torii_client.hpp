@@ -33,8 +33,8 @@ public:
     ToriiClient();
     ~ToriiClient();
 
-    static ToriiClient* create(const String& torii_url);
-    static ToriiClient* create_with_config(const String& torii_url, uint64_t max_message_size);
+    bool connect(const String& torii_url, int64_t max_message_size = -1);
+    static ToriiClient* create(const String& torii_url, int64_t max_message_size = -1);
 
     // Queries
     Dictionary achievements(const Ref<AchievementQuery>& query);
