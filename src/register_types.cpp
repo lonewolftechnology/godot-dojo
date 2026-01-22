@@ -24,6 +24,7 @@
 #include "ref_counted/dojo_utilities/callback_utils.hpp"
 #include "tools/godot_helper.hpp"
 #include "tools/controller_helper.h"
+#include "tools/http_pinger.hpp"
 
 #include "ref_counted/queries/achievement.hpp"
 #include "ref_counted/queries/activity.hpp"
@@ -57,6 +58,7 @@ void initialize_godotdojo_module(ModuleInitializationLevel p_level) {
         GDREGISTER_CLASS(CallbackUtils);
         GDREGISTER_CLASS(GodotHelper);
         GDREGISTER_CLASS(ControllerHelper);
+        GDREGISTER_CLASS(HttpPinger);
 
         // Clauses
         GDREGISTER_CLASS(DojoClause);
