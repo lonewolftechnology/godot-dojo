@@ -32,7 +32,7 @@ public:
 
     void reset_project_settings();
     void init_config(bool reset = false);
-    void set_setting(const String& setting, const Variant& value, const bool& force = false);
+    void set_setting(const String& setting, const Variant& value, const bool& force = false, bool p_save = true);
 
 protected:
     static void _bind_methods()
@@ -43,8 +43,8 @@ protected:
 
         ClassDB::bind_method(D_METHOD("reset_project_settings"), &DojoEditorPlugin::reset_project_settings);
         ClassDB::bind_method(D_METHOD("init_config", "reset"), &DojoEditorPlugin::init_config);
-        ClassDB::bind_method(D_METHOD("init_setting", "setting", "value", "force"),
-                                    &DojoEditorPlugin::set_setting);
+        ClassDB::bind_method(D_METHOD("init_setting", "setting", "value", "force", "save"),
+                                    &DojoEditorPlugin::set_setting, DEFVAL(true), DEFVAL(false));
     }
 };
 

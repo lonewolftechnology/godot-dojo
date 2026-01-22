@@ -10,6 +10,7 @@
 #include "godot_cpp/godot.hpp"
 
 // New implementation
+#include "editor/dojo_editor_plugin.h"
 #include "node/torii_client.hpp"
 #include "node/dojo_controller.hpp"
 #include "node/dojo_session_account.hpp"
@@ -88,10 +89,15 @@ void initialize_godotdojo_module(ModuleInitializationLevel p_level) {
 
     if (p_level == MODULE_INITIALIZATION_LEVEL_EDITOR) {
         // Editor plugins if any
+        GDREGISTER_CLASS(DojoEditorPlugin)
+        EditorPlugins::add_by_type<DojoEditorPlugin>();
     }
 }
 
 void uninitialize_godotdojo_module(ModuleInitializationLevel p_level) {
+    if (p_level == MODULE_INITIALIZATION_LEVEL_EDITOR) {
+        EditorPlugins::remove_by_type<DojoEditorPlugin>();
+    }
 }
 
 extern "C" {
