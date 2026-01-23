@@ -138,6 +138,16 @@ print(f"{B}Building: {build_info}{X}")
 # Compile Rust
 # Se usa más adelante, pero se importa aquí para que esté disponible
 import re
+def get_git_version():
+    try:
+        return subprocess.check_output(
+            ["git", "describe", "--tags", "--always", "--dirty"],
+            stderr=subprocess.DEVNULL,
+            text=True
+        ).strip()
+    except Exception:
+        return "0.0.0-unknown"
+
 def _get_git_submodule_version(submodule_path):
     """
     Detects the version of a git submodule by trying to find a tag, then a branch name,
@@ -205,12 +215,6 @@ targets = {
 # Use CARGO_BUILD_TARGET from environment if set, otherwise use the target from the platform/arch
 rust_target = os.environ.get("CARGO_BUILD_TARGET", targets.get((platform, arch), "x86_64-unknown-linux-gnu"))
 
-# Override for macOS x86_64 to ensure it uses the correct target
-if platform == "macos" and arch == "x86_64":
-    rust_target = "x86_64-apple-darwin"
-elif platform == "macos" and arch == "arm64":
-    rust_target = "aarch64-apple-darwin"
-
 # Ensure the Rust target is installed
 try:
     targets_to_check = rust_target if isinstance(rust_target, list) else [rust_target]
@@ -239,8 +243,7 @@ except subprocess.CalledProcessError as e:
 
 def _compile_rust_library(lib_name, lib_path, is_release, cargo_flags=None, rustc_flags=None):
     """Logic to compile a Rust library, handling normal, universal, and web builds."""
-    lib_version = _get_git_submodule_version(lib_path) or "unknown"
-    print(f"{Y}{package} Compiling {lib_name} ({lib_version})...{X}")
+    print(f"{Y}{package} Compiling {lib_name}...{X}")
 
     build_mode = "release" if is_release else "debug"
     base_cmd = ["cargo", "build"]
@@ -331,6 +334,10 @@ if env["platform"] != "android":
     # we remove it to have a consistent naming scheme (e.g., 'godot-dojo.windows.dll').
     env['SHLIBPREFIX'] = ''
 prefix = env.subst('$SHLIBPREFIX')
+
+project_version = get_git_version()
+env.Append(CPPDEFINES=[('VERSION_STR', f'\\"{project_version}\\"')])
+
 env.Append(CPPPATH=["src/", "include/", "bindings/", "external/boost/include"])
 if platform == "macos":
     deployment_target = os.environ.get("MACOSX_DEPLOYMENT_TARGET", "14.0")
@@ -421,7 +428,7 @@ sources = sorted(sources) + ["bindings/controller/controller.cpp", "bindings/doj
 
 _godot_min = _detect_godot_min_requirement()
 _godot_tag = _get_git_submodule_version("external/godot-cpp")
-print(f"{Y}{clipboard} Building with {_godot_tag}.{X}")
+print(f"{Y}{clipboard} Building with {_godot_tag}. Project Version: {project_version}{X}")
 
 # Add documentation (the correct way)
 if target in ["editor", "template_debug"]:
@@ -467,6 +474,7 @@ gdext = gdext.replace("${ENTRY_POINT}", "godotdojo_library_init")
 
 
 gdext = gdext.replace("${GODOT_MIN_REQUIREMENT}", _godot_min)
+gdext = gdext.replace("${VERSION}", project_version)
 
 with open("demo/addons/godot-dojo/godot-dojo.gdextension", 'w') as f:
     f.write(gdext)

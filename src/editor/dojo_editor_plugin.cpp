@@ -2,7 +2,7 @@
 // Created by hazel on 26/9/25.
 //
 
-#include "editor/dojo_editor_plugin.h"
+#include "editor/dojo_editor_plugin.hpp"
 #include "godot_cpp/classes/project_settings.hpp"
 #include "godot_cpp/classes/engine.hpp"
 #include "tools/logger.h"
@@ -25,19 +25,36 @@ void DojoEditorPlugin::_enter_tree()
     }
     init_config();
     add_tool_menu_item("Reset Dojo ProjectSettings to default", callable_mp(this, &DojoEditorPlugin::reset_project_settings));
+    add_tool_menu_item("Print godot-dojo Version", callable_mp(this, &DojoEditorPlugin::print_version));
+    Logger::success_extra("GodotDojo", _get_plugin_version());
 }
 
 void DojoEditorPlugin::_exit_tree()
 {
     Logger::success_extra("DojoEditorPlugin", "Exiting Tree");
     remove_tool_menu_item("Reset Dojo ProjectSettings to default");
+    remove_tool_menu_item("Print godot-dojo Version");
     Logger::success_extra("DojoEditorPlugin", "Tree exited");
+}
+
+String DojoEditorPlugin::_get_plugin_version() const
+{
+#ifdef VERSION_STR
+    return VERSION_STR;
+#else
+    return "0.0.0";
+#endif
 }
 
 void DojoEditorPlugin::reset_project_settings()
 {
     Logger::debug_extra("Dojo", "Resetting Dojo ProjectSettings");
     init_config(true);
+}
+
+void DojoEditorPlugin::print_version()
+{
+    Logger::_print_typed("green","GodotDojo", _get_plugin_version());
 }
 
 void DojoEditorPlugin::init_config(bool reset)
