@@ -17,13 +17,7 @@ dojo::EventQuery EventQuery::get_native() const {
         }
     }
 
-    auto pagination = std::make_shared<dojo::Pagination>();
-    if (get_limit() > 0) {
-        pagination->limit = get_limit();
-    }
-    if (!get_cursor().is_empty()) {
-        pagination->cursor = get_cursor().utf8().get_data();
-    }
+    auto pagination = get_native_pagination();
     pagination->order_by = get_order_by();
     query.pagination = pagination;
 

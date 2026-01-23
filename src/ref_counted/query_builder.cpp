@@ -87,6 +87,15 @@ Ref<QueryBuilder> QueryBuilder::pagination(const uint32_t& limit, const String& 
     return this;
 }
 
+std::shared_ptr<dojo::Pagination> QueryBuilder::get_native_pagination() const {
+    auto pagination = std::make_shared<dojo::Pagination>();
+    pagination->limit = get_limit();
+    p_pagination.cursor_utf8 = get_cursor().utf8();
+    pagination->cursor = p_pagination.cursor_utf8.get_data();
+    pagination->direction = get_direction();
+    return pagination;
+}
+
 Ref<QueryBuilder> QueryBuilder::order_by(const String& field, const int64_t& direction) {
     OrderBy ob;
     ob.field = field;

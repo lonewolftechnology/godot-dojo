@@ -35,9 +35,10 @@ private:
     struct Pagination {
         uint32_t limit = 0;
         String cursor = "";
+        CharString cursor_utf8;
         dojo::PaginationDirection direction = dojo::PaginationDirection::kForward;
     };
-    Pagination p_pagination;
+    mutable Pagination p_pagination;
 
     // OrderBy
     struct OrderBy {
@@ -61,6 +62,7 @@ public:
 
     // Pagination
     Ref<QueryBuilder> pagination(const uint32_t& limit, const String& cursor, const int64_t& direction);
+    std::shared_ptr<dojo::Pagination> get_native_pagination() const;
 
     // OrderBy
     Ref<QueryBuilder> order_by(const String& field, const int64_t& direction);
