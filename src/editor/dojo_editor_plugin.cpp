@@ -5,7 +5,7 @@
 #include "editor/dojo_editor_plugin.hpp"
 #include "godot_cpp/classes/project_settings.hpp"
 #include "godot_cpp/classes/engine.hpp"
-#include "tools/logger.h"
+#include "tools/logger.hpp"
 
 DojoEditorPlugin::DojoEditorPlugin()
 {

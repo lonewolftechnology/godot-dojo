@@ -4,7 +4,7 @@
 #include "godot_cpp/classes/node.hpp"
 #include "godot_cpp/classes/tcp_server.hpp"
 #include "godot_cpp/classes/stream_peer_tcp.hpp"
-#include "tools/logger.h"
+#include "tools/logger.hpp"
 using namespace godot;
 
 class DojoHttp : public Node {

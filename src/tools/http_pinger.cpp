@@ -3,7 +3,7 @@
 #include "godot_cpp/classes/scene_tree.hpp"
 #include "godot_cpp/classes/window.hpp"
 #include "godot_cpp/classes/json.hpp"
-#include "tools/logger.h"
+#include "tools/logger.hpp"
 
 HttpPinger* HttpPinger::ping(const String& url) {
     SceneTree* tree = Object::cast_to<SceneTree>(Engine::get_singleton()->get_main_loop());

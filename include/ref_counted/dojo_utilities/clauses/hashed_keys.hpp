@@ -3,7 +3,7 @@
 #include "dojo/dojo.hpp"
 #include "godot_cpp/classes/ref_counted.hpp"
 #include "ref_counted/dojo_utilities/clause.hpp"
-#include "tools/logger.h"
+#include "tools/logger.hpp"
 
 using namespace godot;
 

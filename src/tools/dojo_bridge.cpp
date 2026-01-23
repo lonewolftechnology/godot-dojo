@@ -1,7 +1,7 @@
 #include "tools/dojo_bridge.h"
 
 #include "godot_cpp/classes/json.hpp"
-#include "tools/logger.h"
+#include "tools/logger.hpp"
 #include "godot_cpp/core/version.hpp"
 #include "godot_cpp/classes/java_script_object.hpp"
 

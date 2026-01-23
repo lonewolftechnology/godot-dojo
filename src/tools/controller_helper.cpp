@@ -6,7 +6,7 @@
 #include <sstream>
 #include <random>
 #include <deque>
-#include "tools/logger.h"
+#include "tools/logger.hpp"
 #include <boost/multiprecision/cpp_int.hpp>
 
 using boost::multiprecision::cpp_int;

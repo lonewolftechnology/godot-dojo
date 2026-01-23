@@ -9,7 +9,7 @@
 
 #include "controller/controller.hpp"
 #include "tools/controller_helper.h"
-#include "tools/logger.h"
+#include "tools/logger.hpp"
 
 using namespace godot;
 

@@ -1,11 +1,7 @@
-//
-// Created by hazel on 26/9/25.
-//
-#ifndef DOJO_EDITOR_PLUGIN_H
-#define DOJO_EDITOR_PLUGIN_H
+#pragma once
 
 #include "godot_cpp/classes/editor_plugin.hpp"
-#include "tools/logger.h"
+#include "tools/logger.hpp"
 
 using namespace godot;
 
@@ -51,5 +47,3 @@ protected:
                                     &DojoEditorPlugin::set_setting, DEFVAL(true), DEFVAL(false));
     }
 };
-
-#endif // DOJO_EDITOR_PLUGIN_H

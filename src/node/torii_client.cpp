@@ -2,7 +2,7 @@
 #include <list>
 #include "ref_counted/dojo_utilities/callback_utils.hpp"
 #include "ref_counted/dojo_utilities/clauses/keys.hpp"
-#include "tools/logger.h"
+#include "tools/logger.hpp"
 #include "ref_counted/queries/achievement.hpp"
 #include "ref_counted/queries/activity.hpp"
 #include "ref_counted/queries/aggregation.hpp"

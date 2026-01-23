@@ -10,7 +10,7 @@
 #include "godot_cpp/godot.hpp"
 
 // New implementation
-#include "editor/dojo_editor_plugin.h"
+#include "editor/dojo_editor_plugin.hpp"
 #include "node/torii_client.hpp"
 #include "node/dojo_controller.hpp"
 #include "node/dojo_session_account.hpp"

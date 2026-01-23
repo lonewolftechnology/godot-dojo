@@ -1,5 +1,5 @@
 #include "ref_counted/queries/search.hpp"
-#include "tools/logger.h"
+#include "tools/logger.hpp"
 
 Ref<SearchQuery> SearchQuery::query(const String& query) {
     this->p_query = query;

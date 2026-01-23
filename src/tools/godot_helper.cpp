@@ -2,7 +2,7 @@
 
 #include "godot_cpp/classes/engine.hpp"
 #include "godot_cpp/classes/project_settings.hpp"
-#include "tools/logger.h"
+#include "tools/logger.hpp"
 #include <boost/multiprecision/cpp_dec_float.hpp>
 
 GodotHelper *GodotHelper::singleton = nullptr;
