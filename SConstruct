@@ -121,6 +121,10 @@ os.makedirs("demo/addons/godot-dojo", exist_ok=True)
 
 # Initialize the godot-cpp build environment
 env = SConscript("external/godot-cpp/SConstruct")
+
+# Cloning env to avoid godot-cpp recompilation caused by using git for setting extension version
+env = env.Clone()
+
 platform, arch, target = env["platform"], env["arch"], env.get("target", "template_debug")
 
 # Validate that 'assemble-ios' is used with 'platform=ios'
