@@ -35,6 +35,7 @@
 			<return type="SearchQuery" />
 			<param index="0" name="limit" type="int" />
 			<param index="1" name="cursor" type="String" />
+			<param index="2" name="_unnamed_arg2" type="int" />
 			<description>
 				Sets the pagination parameters (limit and cursor).
 			</description>

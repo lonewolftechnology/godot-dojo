@@ -28,6 +28,7 @@
 			<return type="QueryBuilder" />
 			<param index="0" name="limit" type="int" />
 			<param index="1" name="cursor" type="String" />
+			<param index="2" name="direction" type="int" />
 			<description>
 				Sets the pagination parameters (limit and cursor).
 			</description>
@@ -96,6 +97,10 @@
 		</constant>
 		<constant name="Desc" value="2" enum="OrderDirection">
 			Descending order.
+		</constant>
+		<constant name="Forward" value="1" enum="PaginationDirection">
+		</constant>
+		<constant name="Backward" value="2" enum="PaginationDirection">
 		</constant>
 	</constants>
 </class>

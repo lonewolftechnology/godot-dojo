@@ -7,6 +7,11 @@
 	<tutorials>
 	</tutorials>
 	<methods>
+		<method name="check_for_updates">
+			<return type="void" />
+			<description>
+			</description>
+		</method>
 		<method name="init_config">
 			<return type="void" />
 			<param index="0" name="reset" type="bool" />
