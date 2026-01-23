@@ -10,9 +10,9 @@ class DojoQuery : public QueryBuilder {
     // Query (entities)
     PackedStringArray p_world_addresses{};
     Ref<DojoClause> p_clause{}; // Option
-    bool p_no_hashed_keys = true;
+    bool p_no_hashed_keys = false;
     PackedStringArray p_models{};
-    bool p_historical = true;
+    bool p_historical = false;
 
 public:
     DojoQuery() : QueryBuilder(Entity){}
