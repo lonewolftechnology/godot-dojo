@@ -1,3 +1,16 @@
+## [v0.5.3](https://github.com/lonewolftechnology/godot-dojo/tree/v0.5.3) (2026-01-23)
+**Commits:**
+- [[7f16531](https://github.com/lonewolftechnology/godot-dojo/commit/7f1653194deb6555f31aeadf0de24adce94700a2)] chore: update Readme and makefile
+- [[6f3a41a](https://github.com/lonewolftechnology/godot-dojo/commit/6f3a41ae8b3e72a0d81edc56dea09be61b52d8c1)] chore: update docs
+- [[1db61f6](https://github.com/lonewolftechnology/godot-dojo/commit/1db61f6aa06d47232414584a9d63cb0d4dc7d09b)] feat: reorganized tools menu and added check for new releases
+- [[4d07651](https://github.com/lonewolftechnology/godot-dojo/commit/4d076512eacf5f8501d3b3cca90581944177c996)] fix: Queries now correctly uses Pagination
+- [[cfaff9b](https://github.com/lonewolftechnology/godot-dojo/commit/cfaff9b28e0a324ef91ad03484602456b80d34eb)] scons: avoid excessive godot-cpp recompilation by cloning env
+- [[6b2adf3](https://github.com/lonewolftechnology/godot-dojo/commit/6b2adf34cf5a5d9a7fbe9993e27a65283fb75fc9)] fix: added missing PaginationDirection to QueryBuilder
+- [[5ad62f0](https://github.com/lonewolftechnology/godot-dojo/commit/5ad62f0c9c1e8e58a65205e2902ee4959a64abc0)] .idea
+- [[6e86563](https://github.com/lonewolftechnology/godot-dojo/commit/6e86563882de10ce946b726a1cd75347e5a8bdb4)] update changelog + minor cleanup
+- [[c4076aa](https://github.com/lonewolftechnology/godot-dojo/commit/c4076aa822d79a6e00120567b9c5be5eb06ac299)] update docs
+- [[21008b6](https://github.com/lonewolftechnology/godot-dojo/commit/21008b613d2f6d87cb0a45481ddcadb00137cdca)] update docs
+
 ## [v0.5.2](https://github.com/lonewolftechnology/godot-dojo/tree/v0.5.2) (2026-01-22)
 **Commits:**
 - [[21008b6](https://github.com/lonewolftechnology/godot-dojo/commit/21008b613d2f6d87cb0a45481ddcadb00137cdca)] update docs
