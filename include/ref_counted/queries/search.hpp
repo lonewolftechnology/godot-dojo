@@ -16,7 +16,7 @@ public:
     Ref<SearchQuery> limit(const uint32_t& limit);
 
     // Override to warn about usage
-    Ref<SearchQuery> pagination(const uint32_t& limit, const String& cursor);
+    Ref<SearchQuery> pagination(const uint32_t& limit, const String& cursor, const int64_t& direction);
     Ref<SearchQuery> cursor(const String& cursor);
     Ref<SearchQuery> order_by(const String& field, const int64_t& direction);
 

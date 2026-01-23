@@ -11,7 +11,7 @@ Ref<SearchQuery> SearchQuery::limit(const uint32_t& limit) {
     return this;
 }
 
-Ref<SearchQuery> SearchQuery::pagination(const uint32_t& limit, const String& cursor) {
+Ref<SearchQuery> SearchQuery::pagination(const uint32_t& limit, const String& cursor, const int64_t& direction) {
     Logger::warning("SearchQuery does not support pagination (cursor). Use limit() instead.");
     this->p_limit = limit; // We can at least set the limit
     return this;

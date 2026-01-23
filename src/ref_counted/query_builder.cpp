@@ -80,9 +80,10 @@ int64_t QueryBuilder::get_type() const {
     return this->type;
 }
 
-Ref<QueryBuilder> QueryBuilder::pagination(const uint32_t& limit, const String& cursor) {
+Ref<QueryBuilder> QueryBuilder::pagination(const uint32_t& limit, const String& cursor, const int64_t& direction) {
     this->p_pagination.limit = limit;
     this->p_pagination.cursor = cursor;
+    this->p_pagination.direction = static_cast<dojo::PaginationDirection>(direction);
     return this;
 }
 
