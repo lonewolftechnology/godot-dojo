@@ -1,3 +1,24 @@
+## [v0.5.2](https://github.com/lonewolftechnology/godot-dojo/tree/v0.5.2) (2026-01-22)
+**Commits:**
+- [[21008b6](https://github.com/lonewolftechnology/godot-dojo/commit/21008b613d2f6d87cb0a45481ddcadb00137cdca)] update docs
+- [[39dc0c8](https://github.com/lonewolftechnology/godot-dojo/commit/39dc0c89774190d29411ccc079d6c92b85747238)] chore: update include for logger.hpp
+- [[c80de86](https://github.com/lonewolftechnology/godot-dojo/commit/c80de8646e39447fdea7d885350cceb7b3449428)] chore: Logger -> cpp and added DojoEditorPlugin as friend
+- [[51485b5](https://github.com/lonewolftechnology/godot-dojo/commit/51485b541094050bf8cf2712db7ddfb1bfff34b7)] feat: add plugin version based on git-tag
+
+## [v0.5.1](https://github.com/lonewolftechnology/godot-dojo/tree/v0.5.1) (2026-01-22)
+**Commits:**
+- [[bd7dc16](https://github.com/lonewolftechnology/godot-dojo/commit/bd7dc162e0b3476ee1a31f6f7957a50abe2e073d)] chore: update bindings
+- [[87d11d5](https://github.com/lonewolftechnology/godot-dojo/commit/87d11d573720805bec7e7af2f032425c746cf80f)] fix: register DojoEditorPlugin
+- [[ed63736](https://github.com/lonewolftechnology/godot-dojo/commit/ed63736acffaab8ab57cca3627c57e6b341ae204)] chore: register HttPinger
+- [[f5fe671](https://github.com/lonewolftechnology/godot-dojo/commit/f5fe671219f880e319d8ce91f78c633b1bed2bb9)] wip: HttPinger for getting katana/torii status
+- [[d6d0b0a](https://github.com/lonewolftechnology/godot-dojo/commit/d6d0b0aa76ccf0952d030f505a4754227ead0d78)] ToriiClient: - improved setup - fixed memory corruption from string pointers
+- [[b2ceb75](https://github.com/lonewolftechnology/godot-dojo/commit/b2ceb75563bd86cc11db4c1cf795a410b3dee20a)] chore: update bindings
+- [[f8cfdbb](https://github.com/lonewolftechnology/godot-dojo/commit/f8cfdbbbe728485bd299f269ed20531ddeff67b2)] chore: update `controller.c`
+- [[34cf0c0](https://github.com/lonewolftechnology/godot-dojo/commit/34cf0c01f2278cfb9e12f250baed4384b97319f3)] chore: add logging to ToriiClient
+- [[5e7ec41](https://github.com/lonewolftechnology/godot-dojo/commit/5e7ec41225326764b568e40891764960d38a08a8)] update docs
+- [[17c2dca](https://github.com/lonewolftechnology/godot-dojo/commit/17c2dca55ef04e0f809f47f42cdb54b03fe89f05)] scons: ensure ios xcframework is added to addon folder
+- [[daac079](https://github.com/lonewolftechnology/godot-dojo/commit/daac079ec3e44141f778870ecff4560342adbf1e)] update `CHANGELOG.md`
+
 ## [v0.5-experimental](https://github.com/lonewolftechnology/godot-dojo/tree/v0.5-experimental) (2026-01-15)
 **Commits:**
 - [[dbccefb](https://github.com/lonewolftechnology/godot-dojo/commit/dbccefb16dbe629481517bd8ad83ea579d485734)] docs: added placeholders
