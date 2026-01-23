@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="DojoEditorPlugin" inherits="EditorPlugin" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://raw.githubusercontent.com/godotengine/godot/master/doc/class.xsd">
+	<brief_description>
+	</brief_description>
+	<description>
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="init_config">
+			<return type="void" />
+			<param index="0" name="reset" type="bool" />
+			<description>
+			</description>
+		</method>
+		<method name="init_setting">
+			<return type="void" />
+			<param index="0" name="setting" type="String" />
+			<param index="1" name="value" type="Variant" />
+			<param index="2" name="force" type="bool" default="true" />
+			<param index="3" name="save" type="bool" default="false" />
+			<description>
+			</description>
+		</method>
+		<method name="print_version">
+			<return type="void" />
+			<description>
+			</description>
+		</method>
+		<method name="reset_project_settings">
+			<return type="void" />
+			<description>
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="is_enabled" type="bool" setter="set_enabled" getter="get_enabled" default="true">
+		</member>
+	</members>
+</class>
