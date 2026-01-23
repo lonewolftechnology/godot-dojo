@@ -49,12 +49,13 @@ namespace logger_internal
 
 class Logger
 {
+    friend class DojoEditorPlugin;
+
     static bool is_level_enabled(const String& level)
     {
         return GodotHelper::get_log_level_enabled(level);
     }
 
-private:
     template <typename... Args>
     static void _print_typed(const String& color, const String& type, Args... args)
     {
