@@ -1,3 +1,14 @@
+## [v0.5.4.1](https://github.com/lonewolftechnology/godot-dojo/tree/v0.5.4.1) (2026-01-26)
+**Commits:**
+- [[f2e9e25](https://github.com/lonewolftechnology/godot-dojo/commit/f2e9e25d3d084f54669904c317f5c353e1a941e6)] feat(Scons): Split target and precision object location. Fixes build issues when testing single and double precision without a clean build.
+- [[3662fa0](https://github.com/lonewolftechnology/godot-dojo/commit/3662fa0bdb533e44298b85c8eb5730b12a0f7e96)] chore(GodotDojoHelper): use get_static_class() instead of class name as string
+- [[e3fd713](https://github.com/lonewolftechnology/godot-dojo/commit/e3fd713008395a28b997ed4daaea4f3ec26bf50b)] Revert "fix(DojoSessionAccount): fixed memory issue on Godot 4.6 (needs more research)"
+- [[06b0df5](https://github.com/lonewolftechnology/godot-dojo/commit/06b0df553ce5b10cddb9274485320794d247c3a1)] Revert "fix(4.6): fix memory issue"
+- [[8ed620a](https://github.com/lonewolftechnology/godot-dojo/commit/8ed620a05df76254bfbc873f5b666136247c2add)] ci: update scons cache handling
+- [[d1573d4](https://github.com/lonewolftechnology/godot-dojo/commit/d1573d4aa30a6add1925cb38a75a05d2275cf0ea)] ci: update rust cache handling
+- [[9585356](https://github.com/lonewolftechnology/godot-dojo/commit/95853569ca95762a1ee9d034d4528b53705838c4)] feat(ChangelogGen): commit changelog file after generating it
+- [[fbc92ea](https://github.com/lonewolftechnology/godot-dojo/commit/fbc92ea22a0f0fbb562667441add7ce603cb756e)] chore: update CHANGELOG.md
+
 ## [v0.5.4](https://github.com/lonewolftechnology/godot-dojo/tree/v0.5.4) (2026-01-26)
 **Commits:**
 - [[991323c](https://github.com/lonewolftechnology/godot-dojo/commit/991323c7e5ea7d384f95bc43af34a7214f433122)] update(StarterProject): godot-dojo v0.5.4
