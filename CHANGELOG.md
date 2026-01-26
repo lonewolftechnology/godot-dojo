@@ -1,3 +1,19 @@
+## [v0.5.4](https://github.com/lonewolftechnology/godot-dojo/tree/v0.5.4) (2026-01-26)
+**Commits:**
+- [[991323c](https://github.com/lonewolftechnology/godot-dojo/commit/991323c7e5ea7d384f95bc43af34a7214f433122)] update(StarterProject): godot-dojo v0.5.4
+- [[4827c8d](https://github.com/lonewolftechnology/godot-dojo/commit/4827c8da9447fcc54c8f6cc537d68d6254e83fe5)] cchore: update docs
+- [[2e484ef](https://github.com/lonewolftechnology/godot-dojo/commit/2e484eff800af9851d7c78af6430e0c9e1f30b94)] fix(4.6): fix memory issue
+- [[0f4c930](https://github.com/lonewolftechnology/godot-dojo/commit/0f4c930ea9ab8dd97a205bf11110ee590b8fd5ec)] fix(DemoProject): fix to use latest version
+- [[cfbb922](https://github.com/lonewolftechnology/godot-dojo/commit/cfbb9221b88eb9e0b4a2532caef91ddec6562c3b)] chore: update docs
+- [[a8efe1f](https://github.com/lonewolftechnology/godot-dojo/commit/a8efe1f09c4d3890fd31d2a3d62cf027a285c0cc)] fix(DojoSessionAccount): fixed memory issue on Godot 4.6 (needs more research)
+- [[f31bbd0](https://github.com/lonewolftechnology/godot-dojo/commit/f31bbd09dd193def79dbf032caf0ea9e7b329b56)] feat(GodotDojoHelper): GodotHelper -> GodotDojoHelper
+- [[a72ba2d](https://github.com/lonewolftechnology/godot-dojo/commit/a72ba2dbec57bb0988872b7d437dcdbe97b16600)] feat(ToriiClient): add is_connected utility
+
+## [v0.5.3.1](https://github.com/lonewolftechnology/godot-dojo/tree/v0.5.3.1) (2026-01-23)
+**Commits:**
+- [[8a24440](https://github.com/lonewolftechnology/godot-dojo/commit/8a2444042471ca372f2dd7d1ec52d0578e452ced)] fix: DojoQuery initial values
+- [[43644bd](https://github.com/lonewolftechnology/godot-dojo/commit/43644bd8709c116fd464fbf4e1fae78dd48f51ad)] chore: update Changelog
+
 ## [v0.5.3](https://github.com/lonewolftechnology/godot-dojo/tree/v0.5.3) (2026-01-23)
 **Commits:**
 - [[7f16531](https://github.com/lonewolftechnology/godot-dojo/commit/7f1653194deb6555f31aeadf0de24adce94700a2)] chore: update Readme and makefile
