@@ -44,7 +44,7 @@ void DojoSessionAccount::create_from_subscribe(const String &_private_key,
         Logger::info("Using session_key_guid: " + session_key_guid);
         Logger::info("Attempting to subscribe with cartridge_api_url: " + _cartridge_api_url);
         
-        Dictionary policies_to_use = _policies.is_empty() ? get_session_policy() : _policies;
+        const Variant policies_to_use = _policies.is_empty() ? get_session_policy() : _policies;
         controller::SessionPolicies c_policies = ControllerHelper::to_c_policies(policies_to_use);
 
         auto internal_account = controller::SessionAccount::create_from_subscribe(
@@ -136,14 +136,18 @@ Variant DojoSessionAccount::execute_test( const Variant **args, GDExtensionInt a
         return {};
     }
     Dictionary _call_dict;
-    _call_dict["contract_address"] = *args[0];
-    _call_dict["entrypoint"] = *args[1];
+    const Variant contract_address = *args[0];
+    _call_dict["contract_address"] = contract_address;
+    const Variant entrypoint = *args[1];
+    _call_dict["entrypoint"] = entrypoint;
     Array calldata = {};
     for (int i = 2; i < arg_count; ++i) {
         calldata.push_back(*args[i]);
     }
-    _call_dict["calldata"] = calldata;
-    Logger::debug_extra("ExecuteTest", _call_dict);
+    const Variant calldata_var = calldata;
+    _call_dict["calldata"] = calldata_var;
+    const Variant call_dict_var = _call_dict;
+    Logger::debug_extra("ExecuteTest", call_dict_var);
     return execute(Array::make(_call_dict));
 
 }
@@ -220,15 +224,26 @@ Dictionary DojoSessionAccount::get_info() const {
     }
 
     Dictionary info;
-    info["address"] = get_address();
-    info["chain_id"] = get_chain_id();
-    info["app_id"] = get_app_id();
-    info["expires_at"] = get_expires_at();
-    info["is_expired"] = is_expired();
-    info["is_revoked"] = is_revoked();
-    info["owner_guid"] = get_owner_guid();
-    info["session_id"] = get_session_id();
-    info["username"] = get_username();
+    // Use named Variant variables to force copy assignment and avoid move semantics (swap)
+    // which causes invalid reads due to potential ABI size mismatch or off-by-one in GDExtension.
+    const Variant address = get_address();
+    info["address"] = address;
+    const Variant chain_id = get_chain_id();
+    info["chain_id"] = chain_id;
+    const Variant app_id = get_app_id();
+    info["app_id"] = app_id;
+    const Variant expires_at = get_expires_at();
+    info["expires_at"] = expires_at;
+    const Variant is_expired_val = is_expired();
+    info["is_expired"] = is_expired_val;
+    const Variant is_revoked_val = is_revoked();
+    info["is_revoked"] = is_revoked_val;
+    const Variant owner_guid = get_owner_guid();
+    info["owner_guid"] = owner_guid;
+    const Variant session_id = get_session_id();
+    info["session_id"] = session_id;
+    const Variant username = get_username();
+    info["username"] = username;
     return info;
 }
 
@@ -267,34 +282,41 @@ String DojoSessionAccount::generate_session_request_url(const String &base_url, 
 Dictionary DojoSessionAccount::get_session_policy() const
 {
     Dictionary session_policy;
-    session_policy["max_fee"] = max_fee;
+    const Variant _max_fee = max_fee;
+    session_policy["max_fee"] = _max_fee;
 
     Array policies_array;
     const Array contracts = full_policies.keys();
     for (int i = 0; i < contracts.size(); ++i) {
-        const String& contract_address = contracts[i];
-        const Dictionary& contract_details = full_policies[contract_address];
-        const Array& methods = contract_details["methods"];
+        String contract_address = contracts[i];
+        Dictionary contract_details = full_policies[contract_address];
+        Array methods = contract_details["methods"];
 
         Array entrypoints;
         for (int j = 0; j < methods.size(); ++j) {
-            const Dictionary& method = methods[j];
-            entrypoints.push_back(method["entrypoint"]);
+            Dictionary method = methods[j];
+            const Variant entrypoint_val = method["entrypoint"];
+            entrypoints.push_back(entrypoint_val);
         }
 
         Dictionary policy_group;
-        policy_group["contract_address"] = contract_address;
-        policy_group["entrypoints"] = entrypoints;
-        policies_array.push_back(policy_group);
+        const Variant contract_address_var = contract_address;
+        policy_group["contract_address"] = contract_address_var;
+        const Variant entrypoints_var = entrypoints;
+        policy_group["entrypoints"] = entrypoints_var;
+        const Variant policy_group_var = policy_group;
+        policies_array.push_back(policy_group_var);
     }
 
-    session_policy["policies"] = policies_array;
+    const Variant policies_array_var = policies_array;
+    session_policy["policies"] = policies_array_var;
     return session_policy;
 }
 
 Dictionary DojoSessionAccount::get_register_session_policy() const
 {
     Dictionary register_session_policy;
-    register_session_policy["contracts"] = full_policies;
+    const Variant policies = full_policies;
+    register_session_policy["contracts"] = policies;
     return register_session_policy;
 }
