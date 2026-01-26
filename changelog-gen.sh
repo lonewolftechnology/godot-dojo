@@ -33,3 +33,7 @@ for i in $(seq $((${#TAGS[@]} - 2)) -1 0); do
 done
 
 echo "Changelog complete generated in ${CHANGELOG_FILE}"
+
+# Add and commit the changelog
+git add "$CHANGELOG_FILE"
+git commit -m "chore: update changelog"
