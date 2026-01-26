@@ -60,15 +60,12 @@ Dictionary ToriiClient::achievements(const Ref<AchievementQuery>& query) {
                 items.append(CallbackUtils::achievement_to_dict(*item));
             }
         }
-        const Variant items_variant = items;
-        result["items"] = items_variant;
+        result["items"] = items;
 
         if (page.next_cursor.has_value()) {
-            const Variant nc = String(page.next_cursor.value().c_str());
-            result["next_cursor"] = nc;
+            result["next_cursor"] = String(page.next_cursor.value().c_str());
         } else {
-            const Variant nc;
-            result["next_cursor"] = nc;
+            result["next_cursor"] = Variant();
         }
         Logger::success("Achievements query executed successfully.");
         return result;
@@ -89,15 +86,12 @@ Dictionary ToriiClient::activities(const Ref<ActivityQuery>& query) {
                 items.append(CallbackUtils::activity_to_dict(*item));
             }
         }
-        const Variant items_variant = items;
-        result["items"] = items_variant;
+        result["items"] = items;
 
         if (page.next_cursor.has_value()) {
-            const Variant nc = String(page.next_cursor.value().c_str());
-            result["next_cursor"] = nc;
+            result["next_cursor"] = String(page.next_cursor.value().c_str());
         } else {
-            const Variant nc;
-            result["next_cursor"] = nc;
+            result["next_cursor"] = Variant();
         }
         Logger::success("Activities query executed successfully.");
         return result;
@@ -118,15 +112,12 @@ Dictionary ToriiClient::aggregations(const Ref<AggregationQuery>& query) {
                 items.append(CallbackUtils::aggregation_entry_to_dict(*item));
             }
         }
-        const Variant items_variant = items;
-        result["items"] = items_variant;
+        result["items"] = items;
 
         if (page.next_cursor.has_value()) {
-            const Variant nc = String(page.next_cursor.value().c_str());
-            result["next_cursor"] = nc;
+            result["next_cursor"] = String(page.next_cursor.value().c_str());
         } else {
-            const Variant nc;
-            result["next_cursor"] = nc;
+            result["next_cursor"] = Variant();
         }
         Logger::success("Aggregations query executed successfully.");
         return result;
@@ -164,15 +155,12 @@ Dictionary ToriiClient::controllers(const Ref<ControllerQuery>& query) {
                 items.append(CallbackUtils::controller_to_dict(*item));
             }
         }
-        const Variant items_variant = items;
-        result["items"] = items_variant;
+        result["items"] = items;
 
         if (page.next_cursor.has_value()) {
-            const Variant nc = String(page.next_cursor.value().c_str());
-            result["next_cursor"] = nc;
+            result["next_cursor"] = String(page.next_cursor.value().c_str());
         } else {
-            const Variant nc;
-            result["next_cursor"] = nc;
+            result["next_cursor"] = Variant();
         }
         Logger::success("Controllers query executed successfully.");
         return result;
@@ -193,15 +181,12 @@ Dictionary ToriiClient::entities(const Ref<DojoQuery>& query) {
                 items.append(CallbackUtils::entity_to_dict(*entity));
             }
         }
-        const Variant items_variant = items;
-        result["items"] = items_variant;
+        result["items"] = items;
 
         if (page.next_cursor.has_value()) {
-            const Variant nc = String(page.next_cursor.value().c_str());
-            result["next_cursor"] = nc;
+            result["next_cursor"] = String(page.next_cursor.value().c_str());
         } else {
-            const Variant nc;
-            result["next_cursor"] = nc;
+            result["next_cursor"] = Variant();
         }
         Logger::success("Entities query executed successfully.");
         return result;
@@ -222,15 +207,12 @@ Dictionary ToriiClient::event_messages(const Ref<DojoQuery>& query) {
                 items.append(CallbackUtils::entity_to_dict(*entity));
             }
         }
-        const Variant items_variant = items;
-        result["items"] = items_variant;
+        result["items"] = items;
 
         if (page.next_cursor.has_value()) {
-            const Variant nc = String(page.next_cursor.value().c_str());
-            result["next_cursor"] = nc;
+            result["next_cursor"] = String(page.next_cursor.value().c_str());
         } else {
-            const Variant nc;
-            result["next_cursor"] = nc;
+            result["next_cursor"] = Variant();
         }
         Logger::success("Event messages query executed successfully.");
         return result;
@@ -251,15 +233,12 @@ Dictionary ToriiClient::player_achievements(const Ref<PlayerAchievementQuery>& q
                 items.append(CallbackUtils::player_achievement_entry_to_dict(*item));
             }
         }
-        const Variant items_variant = items;
-        result["items"] = items_variant;
+        result["items"] = items;
 
         if (page.next_cursor.has_value()) {
-            const Variant nc = String(page.next_cursor.value().c_str());
-            result["next_cursor"] = nc;
+            result["next_cursor"] = String(page.next_cursor.value().c_str());
         } else {
-            const Variant nc;
-            result["next_cursor"] = nc;
+            result["next_cursor"] = Variant();
         }
         Logger::success("Player achievements query executed successfully.");
         return result;
@@ -274,8 +253,7 @@ Dictionary ToriiClient::search(const Ref<SearchQuery>& query) {
         dojo::SearchResponse response = client->search(query->get_native());
         Dictionary result;
 
-        const Variant total_val = response.total;
-        result["total"] = total_val;
+        result["total"] = response.total;
 
         Array results;
         for (const auto& item : response.results) {
@@ -283,8 +261,7 @@ Dictionary ToriiClient::search(const Ref<SearchQuery>& query) {
                 results.append(CallbackUtils::table_search_results_to_dict(*item));
             }
         }
-        const Variant results_variant = results;
-        result["results"] = results_variant;
+        result["results"] = results;
         Logger::success("Search executed successfully.");
         return result;
     } catch (const std::exception& e) {
@@ -304,15 +281,12 @@ Dictionary ToriiClient::starknet_events(const Ref<EventQuery>& query) {
                 items.append(CallbackUtils::event_to_dict(*item));
             }
         }
-        const Variant items_variant = items;
-        result["items"] = items_variant;
+        result["items"] = items;
 
         if (page.next_cursor.has_value()) {
-            const Variant nc = String(page.next_cursor.value().c_str());
-            result["next_cursor"] = nc;
+            result["next_cursor"] = String(page.next_cursor.value().c_str());
         } else {
-            const Variant nc;
-            result["next_cursor"] = nc;
+            result["next_cursor"] = Variant();
         }
         Logger::success("Starknet events query executed successfully.");
         return result;
@@ -333,15 +307,12 @@ Dictionary ToriiClient::token_balances(const Ref<TokenBalanceQuery>& query) {
                 items.append(CallbackUtils::token_balance_to_dict(*item));
             }
         }
-        const Variant items_variant = items;
-        result["items"] = items_variant;
+        result["items"] = items;
 
         if (page.next_cursor.has_value()) {
-            const Variant nc = String(page.next_cursor.value().c_str());
-            result["next_cursor"] = nc;
+            result["next_cursor"] = String(page.next_cursor.value().c_str());
         } else {
-            const Variant nc;
-            result["next_cursor"] = nc;
+            result["next_cursor"] = Variant();
         }
         Logger::success("Token balances query executed successfully.");
         return result;
@@ -362,15 +333,12 @@ Dictionary ToriiClient::token_contracts(const Ref<TokenContractQuery>& query) {
                 items.append(CallbackUtils::token_contract_to_dict(*item));
             }
         }
-        const Variant items_variant = items;
-        result["items"] = items_variant;
+        result["items"] = items;
 
         if (page.next_cursor.has_value()) {
-            const Variant nc = String(page.next_cursor.value().c_str());
-            result["next_cursor"] = nc;
+            result["next_cursor"] = String(page.next_cursor.value().c_str());
         } else {
-            const Variant nc;
-            result["next_cursor"] = nc;
+            result["next_cursor"] = Variant();
         }
         Logger::success("Token contracts query executed successfully.");
         return result;
@@ -391,15 +359,12 @@ Dictionary ToriiClient::token_transfers(const Ref<TokenTransferQuery>& query) {
                 items.append(CallbackUtils::token_transfer_to_dict(*item));
             }
         }
-        const Variant items_variant = items;
-        result["items"] = items_variant;
+        result["items"] = items;
 
         if (page.next_cursor.has_value()) {
-            const Variant nc = String(page.next_cursor.value().c_str());
-            result["next_cursor"] = nc;
+            result["next_cursor"] = String(page.next_cursor.value().c_str());
         } else {
-            const Variant nc;
-            result["next_cursor"] = nc;
+            result["next_cursor"] = Variant();
         }
         Logger::success("Token transfers query executed successfully.");
         return result;
@@ -420,15 +385,12 @@ Dictionary ToriiClient::tokens(const Ref<TokenQuery>& query) {
                 items.append(CallbackUtils::token_to_dict(*item));
             }
         }
-        const Variant items_variant = items;
-        result["items"] = items_variant;
+        result["items"] = items;
 
         if (page.next_cursor.has_value()) {
-            const Variant nc = String(page.next_cursor.value().c_str());
-            result["next_cursor"] = nc;
+            result["next_cursor"] = String(page.next_cursor.value().c_str());
         } else {
-            const Variant nc;
-            result["next_cursor"] = nc;
+            result["next_cursor"] = Variant();
         }
         Logger::success("Tokens query executed successfully.");
         return result;
@@ -449,15 +411,12 @@ Dictionary ToriiClient::transactions(const Ref<TransactionQuery>& query) {
                 items.append(CallbackUtils::transaction_to_dict(*item));
             }
         }
-        const Variant items_variant = items;
-        result["items"] = items_variant;
+        result["items"] = items;
 
         if (page.next_cursor.has_value()) {
-            const Variant nc = String(page.next_cursor.value().c_str());
-            result["next_cursor"] = nc;
+            result["next_cursor"] = String(page.next_cursor.value().c_str());
         } else {
-            const Variant nc;
-            result["next_cursor"] = nc;
+            result["next_cursor"] = Variant();
         }
         Logger::success("Transactions query executed successfully.");
         return result;
@@ -550,8 +509,7 @@ TypedArray<Dictionary> ToriiClient::sql(const String& query) {
             Dictionary r;
             for (const auto& field : row->fields) {
                 if (field && field->value) {
-                    const Variant val = CallbackUtils::sql_value_to_dict(*field->value);
-                    r[String(field->name.c_str())] = val;
+                    r[String(field->name.c_str())] = CallbackUtils::sql_value_to_dict(*field->value);
                 }
             }
             result.append(r);
@@ -755,37 +713,26 @@ TypedArray<Dictionary> ToriiClient::worlds(const PackedStringArray& world_addres
         TypedArray<Dictionary> result;
         for (const auto& w : worlds) {
             Dictionary world_dict;
-            const Variant wa = String(w->world_address.c_str());
-            world_dict["world_address"] = wa;
+            world_dict["world_address"] = String(w->world_address.c_str());
 
             Dictionary models;
             for (const auto& model : w->models) {
                 if (model) {
                     Dictionary m;
-                    const Variant ns = String(model->namespace_.c_str());
-                    m["namespace"] = ns;
-                    const Variant name = String(model->name.c_str());
-                    m["name"] = name;
-                    const Variant ch = String(model->class_hash.c_str());
-                    m["class_hash"] = ch;
-                    const Variant ca = String(model->contract_address.c_str());
-                    m["contract_address"] = ca;
-                    const Variant ps = model->packed_size;
-                    m["packed_size"] = ps;
-                    const Variant us = model->unpacked_size;
-                    m["unpacked_size"] = us;
-                    const Variant layout = String(model->layout.c_str());
-                    m["layout"] = layout;
+                    m["namespace"] = String(model->namespace_.c_str());
+                    m["name"] = String(model->name.c_str());
+                    m["class_hash"] = String(model->class_hash.c_str());
+                    m["contract_address"] = String(model->contract_address.c_str());
+                    m["packed_size"] = model->packed_size;
+                    m["unpacked_size"] = model->unpacked_size;
+                    m["layout"] = String(model->layout.c_str());
                     if (model->schema) {
-                        const Variant schema_val = CallbackUtils::ty_to_variant(model->schema);
-                        m["schema"] = schema_val;
+                        m["schema"] = CallbackUtils::ty_to_variant(model->schema);
                     }
-                    const Variant m_variant = m;
-                    models[String(model->name.c_str())] = m_variant;
+                    models[String(model->name.c_str())] = m;
                 }
             }
-            const Variant models_variant = models;
-            world_dict["models"] = models_variant;
+            world_dict["models"] = models;
 
             result.append(world_dict);
         }
