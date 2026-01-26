@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="GodotHelper" inherits="Object" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://raw.githubusercontent.com/godotengine/godot/master/doc/class.xsd">
+<class name="GodotDojoHelper" inherits="Object" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://raw.githubusercontent.com/godotengine/godot/master/doc/class.xsd">
 	<brief_description>
 		Helper class for Godot-Dojo integration.
 	</brief_description>
 	<description>
-		The GodotHelper class provides utility methods for converting data types, accessing settings, and managing logging within the Godot-Dojo integration.
+		The GodotDojoHelper class provides utility methods for converting data types, accessing settings, and managing logging within the Godot-Dojo integration.
 	</description>
 	<tutorials>
 	</tutorials>

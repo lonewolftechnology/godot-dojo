@@ -81,6 +81,11 @@
 				Queries event messages based on the provided query parameters.
 			</description>
 		</method>
+		<method name="is_connected" qualifiers="const">
+			<return type="bool" />
+			<description>
+			</description>
+		</method>
 		<method name="player_achievements">
 			<return type="Dictionary" />
 			<param index="0" name="query" type="PlayerAchievementQuery" />
