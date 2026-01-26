@@ -253,12 +253,10 @@ jobs:
           targets: ${{ matrix.platform_id == 'ios' && 'aarch64-apple-ios,x86_64-apple-ios,aarch64-apple-ios-sim' || matrix.rust_target }}
 
       - name: Cache Rust build artifacts
-        uses: actions/cache@v4
+        uses: swatinem/rust-cache@v2
         with:
-          path: godot-dojo-core/target
-          key: rust-build-${{ matrix.platform_id }}-${{ matrix.arch }}-${{ hashFiles('godot-dojo-core/Cargo.lock') }}
-          restore-keys: |
-            rust-build-${{ matrix.platform_id }}-${{ matrix.arch }}-
+          workspaces: godot-dojo-core
+          key: ${{ matrix.platform_id }}-${{ matrix.arch }}
 
       - name: Build godot-dojo-core (non-iOS)
         if: matrix.platform_id != 'ios'
