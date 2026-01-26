@@ -13,10 +13,10 @@ signal subscription_created(subscription_name:String)
 @onready var main_container:BoxContainer = %MainContainer
 @onready var menu_container:VBoxContainer = %MenuContainer
 
-@export var entity_sub: EntitySubscription
-@export var message_sub: MessageSubscription
+var entity_sub: int
+var message_sub: int
 
-@onready var priv_key: String = "0x5c442af2421e04a6b44067c986ce61915d4fb6ea64fc9e8a2988f44d60d6707"
+@onready var priv_key: String = "0xb3545fec66b27719f663ceacd832ea9bb399a4ecfb705f6e06d1e50e7adcb1"
 
 var full_policies:Dictionary = {
 	Constants.CONTRACT: {
@@ -67,11 +67,9 @@ func setup():
 
 	dojo_session_account.max_fee = "0x100000"
 	dojo_session_account.full_policies = full_policies
-	if not torii_client.client_connected.is_connected(_on_client_connected):
-		torii_client.client_connected.connect(_on_client_connected)
+	#if not torii_client.client_connected.is_connected(_on_client_connected):
+		#torii_client.client_connected.connect(_on_client_connected)
 			
-	entity_sub.world_addresses.append(Constants.WORLD)
-	message_sub.world_addresses.append(Constants.WORLD)
 	
 	if OS.has_feature("android"):
 		main_container.vertical = true
@@ -79,11 +77,11 @@ func setup():
 		DisplayServer.screen_set_orientation(DisplayServer.ScreenOrientation.SCREEN_PORTRAIT)
 		priv_key = ""
 		
-	if not torii_client.is_client_connected():
-		torii_client.create_client(Constants.TORII_URL)
+	if not torii_client.is_connected():
+		torii_client.connect(Constants.TORII_URL)
 	
 	if priv_key.is_empty():
-		priv_key = DojoHelpers.generate_private_key()
+		priv_key = ControllerHelper.generate_private_key()
 		
 	custom_priv_key.text = priv_key
 
@@ -92,15 +90,11 @@ func _on_client_connected(success:bool):
 		_register_subs()
 
 func _register_subs():
-	torii_client.on_entity_state_update(
-		callback.bind("Entity"),
-		entity_sub
-	)
-	subscription_created.emit("entity_state_update")
-	torii_client.on_event_message_update(
-		callback.bind("Event"),
-		message_sub
-	)
+	var _dojo_callback:DojoCallback = DojoCallback.new()
+	_dojo_callback.on_update = callback.bind("Entity")
+	entity_sub = torii_client.subscribe_entity_updates(DojoClause.new(), [Constants.WORLD], _dojo_callback)
+
+
 	subscription_created.emit("event_message_update")
 
 func _on_session_btn_pressed() -> void:
@@ -129,8 +123,8 @@ func _on_login_btn_pressed() -> void:
 func get_session_url():
 	var base_url = "https://x.cartridge.gg/session"
 	var public_key = ControllerHelper.get_public_key(priv_key)
-	var redirect_uri = "about:blank"
-	var redirect_query_name = "startapp"
+	#var redirect_uri = "about:blank"
+	#var redirect_query_name = "startapp"
 	
 	var session_url = dojo_session_account.generate_session_request_url(
 		base_url, 
@@ -163,7 +157,7 @@ func add_entry_to_output(_identifier:String, _entry) -> void:
 
 
 func _on_refresh_key_pressed() -> void:
-	priv_key = DojoHelpers.generate_private_key()
+	priv_key = ControllerHelper.generate_private_key()
 	custom_priv_key.text = priv_key
 	
 func _on_iterative_calls_pressed() -> void:
