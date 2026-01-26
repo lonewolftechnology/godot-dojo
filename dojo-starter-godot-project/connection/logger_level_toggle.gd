@@ -14,8 +14,8 @@ func _ready() -> void:
 	toggled.connect(_set_btn_level)
 
 func _get_level_status() -> bool:
-	return DojoHelpers.get_log_level_enabled(_level)
+	return GodotDojoHelper.get_log_level_enabled(_level)
 	
 func _set_btn_level(_pressed:bool):
-	DojoHelpers.set_log_level_enabled(_level, _pressed)
+	GodotDojoHelper.set_log_level_enabled(_level, _pressed)
 	print_rich("[color=Green]%s[/color] log level changed to [color=Yellow]%s[/color]" % [_level.to_upper(),_pressed])
