@@ -71,6 +71,8 @@ public:
 
     std::shared_ptr<dojo::ToriiClient> get_client() const;
 
+    bool is_connected() const;
+
 protected:
     static void _bind_methods();
 };

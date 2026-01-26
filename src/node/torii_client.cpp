@@ -748,6 +748,11 @@ std::shared_ptr<dojo::ToriiClient> ToriiClient::get_client() const {
     return client;
 }
 
+bool ToriiClient::is_connected() const
+{
+    return client != nullptr;
+}
+
 void ToriiClient::_bind_methods() {
     ClassDB::bind_static_method(get_class_static(), D_METHOD("create", "torii_url", "max_message_size"), &ToriiClient::create, DEFVAL(-1));
     ClassDB::bind_method(D_METHOD("connect", "torii_url", "max_message_size"), &ToriiClient::connect, DEFVAL(-1));
@@ -780,4 +785,5 @@ void ToriiClient::_bind_methods() {
     ClassDB::bind_method(D_METHOD("subscribe_transaction_updates", "filter", "callback"), &ToriiClient::subscribe_transaction_updates);
 
     ClassDB::bind_method(D_METHOD("worlds", "world_addresses"), &ToriiClient::worlds);
+    ClassDB::bind_method(D_METHOD("is_connected"), &ToriiClient::is_connected);
 }
