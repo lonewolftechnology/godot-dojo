@@ -7,17 +7,17 @@
 using namespace godot;
 using boost::multiprecision::cpp_int;
 
-class GodotHelper : public Object {
-    GDCLASS(GodotHelper, Object)
+class GodotDojoHelper : public Object {
+    GDCLASS(GodotDojoHelper, Object)
 
 public:
-    GodotHelper();
-    ~GodotHelper();
+    GodotDojoHelper();
+    ~GodotDojoHelper();
 
     static const cpp_int STARK_PRIME;
     static cpp_int to_starknet_negative_felt(cpp_int val);
 
-    static GodotHelper *get_singleton() { return singleton; };
+    static GodotDojoHelper *get_singleton() { return singleton; };
 
     static String get_katana_url();
 
@@ -50,7 +50,7 @@ public:
     static void set_success_enabled(bool enabled);
 
 protected:
-    static GodotHelper *singleton;
+    static GodotDojoHelper *singleton;
 
     static void _bind_methods();
 };

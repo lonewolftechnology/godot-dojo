@@ -53,7 +53,7 @@ class Logger
 
     static bool is_level_enabled(const String& level)
     {
-        return GodotHelper::get_log_level_enabled(level);
+        return GodotDojoHelper::get_log_level_enabled(level);
     }
 
     template <typename... Args>

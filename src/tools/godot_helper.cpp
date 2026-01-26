@@ -5,59 +5,59 @@
 #include "tools/logger.hpp"
 #include <boost/multiprecision/cpp_dec_float.hpp>
 
-GodotHelper *GodotHelper::singleton = nullptr;
+GodotDojoHelper *GodotDojoHelper::singleton = nullptr;
 
 using boost::multiprecision::cpp_int;
 typedef boost::multiprecision::number<boost::multiprecision::cpp_dec_float<100> > cpp_dec_float_100;
 
 // The STARK prime P, as a constant.
 // P = 2^251 + 17 * 2^192 + 1
-const cpp_int GodotHelper::STARK_PRIME = (cpp_int(1) << 251) + (cpp_int(17) * (cpp_int(1) << 192)) + 1;
+const cpp_int GodotDojoHelper::STARK_PRIME = (cpp_int(1) << 251) + (cpp_int(17) * (cpp_int(1) << 192)) + 1;
 
-cpp_int GodotHelper::to_starknet_negative_felt(cpp_int val) {
+cpp_int GodotDojoHelper::to_starknet_negative_felt(cpp_int val) {
     if (val < 0) {
         val += STARK_PRIME;
     }
     return val;
 }
 
-GodotHelper::GodotHelper() {
+GodotDojoHelper::GodotDojoHelper() {
     singleton = this;
 }
 
-GodotHelper::~GodotHelper() {
+GodotDojoHelper::~GodotDojoHelper() {
     singleton = nullptr;
 }
 
-String GodotHelper::get_katana_url() {
+String GodotDojoHelper::get_katana_url() {
     return get_setting("dojo/config/katana_url");
 }
 
-Variant GodotHelper::get_setting(const String &setting, const Variant &default_value) {
+Variant GodotDojoHelper::get_setting(const String &setting, const Variant &default_value) {
     if (default_value.get_type() == Variant::NIL) {
         return ProjectSettings::get_singleton()->get_setting(setting);
     }
     return ProjectSettings::get_singleton()->get_setting(setting, default_value);
 }
 
-Variant GodotHelper::get_custom_setting(const String& category, const String &setting) {
+Variant GodotDojoHelper::get_custom_setting(const String& category, const String &setting) {
     Variant result = get_setting(vformat("%s/config/%s", category, setting));
     if (result.get_type() == Variant::NIL) {
-        Logger::debug_extra("GodotHelper", vformat("%s not found, trying dojo setting", setting));
+        Logger::debug_extra("GodotDojoHelper", vformat("%s not found, trying dojo setting", setting));
         result = get_dojo_setting(setting);
     }
     return result;
 }
 
-Variant GodotHelper::get_dojo_setting(const String &setting, const Variant& default_value) {
+Variant GodotDojoHelper::get_dojo_setting(const String &setting, const Variant& default_value) {
     return get_setting("dojo/config/" + setting, default_value);
 }
 
-Variant GodotHelper::get_torii_setting(const String &setting, const Variant& default_value) {
+Variant GodotDojoHelper::get_torii_setting(const String &setting, const Variant& default_value) {
     return get_setting("dojo/config/torii/" + setting, default_value);
 }
 
-Dictionary GodotHelper::get_policies(const String& custom) {
+Dictionary GodotDojoHelper::get_policies(const String& custom) {
     Dictionary policies = {};
 
     if (custom.is_empty()) {
@@ -69,39 +69,39 @@ Dictionary GodotHelper::get_policies(const String& custom) {
     return policies;
 }
 
-int64_t GodotHelper::float_to_fixed(const double &value, const int &precision) {
+int64_t GodotDojoHelper::float_to_fixed(const double &value, const int &precision) {
     return static_cast<int64_t>(value * (1LL << precision));
 }
 
-double GodotHelper::fixed_to_float(const int &value, const int &precision) {
+double GodotDojoHelper::fixed_to_float(const int &value, const int &precision) {
     return value / static_cast<double>(1LL << precision);
 }
 
-int64_t GodotHelper::float_to_fixed_64(const float &value) {
+int64_t GodotDojoHelper::float_to_fixed_64(const float &value) {
     return float_to_fixed(value, get_setting("dojo/config/fixed_point/64"));
 }
 
-double GodotHelper::fixed_to_float_64(const int &value) {
+double GodotDojoHelper::fixed_to_float_64(const int &value) {
     return fixed_to_float(value, get_setting("dojo/config/fixed_point/64"));
 }
 
-int64_t GodotHelper::float_to_fixed_128(const float &value) {
+int64_t GodotDojoHelper::float_to_fixed_128(const float &value) {
     return float_to_fixed(value, get_setting("dojo/config/fixed_point/128"));
 }
 
-double GodotHelper::fixed_to_float_128(const int &value) {
+double GodotDojoHelper::fixed_to_float_128(const int &value) {
     return fixed_to_float(value, get_setting("dojo/config/fixed_point/128"));
 }
 
-int64_t GodotHelper::float_to_fixed_256(const float &value) {
+int64_t GodotDojoHelper::float_to_fixed_256(const float &value) {
     return float_to_fixed(value, get_setting("dojo/config/fixed_point/256"));
 }
 
-double GodotHelper::fixed_to_float_256(const int &value) {
+double GodotDojoHelper::fixed_to_float_256(const int &value) {
     return fixed_to_float(value, get_setting("dojo/config/fixed_point/256"));
 }
 
-double GodotHelper::variant_to_double_fp(const Variant &value, const int &precision) {
+double GodotDojoHelper::variant_to_double_fp(const Variant &value, const int &precision) {
     cpp_int int_val;
     switch (value.get_type()) {
         case Variant::BOOL:
@@ -131,7 +131,7 @@ double GodotHelper::variant_to_double_fp(const Variant &value, const int &precis
     return static_cast<double>(result);
 }
 
-Variant GodotHelper::double_to_variant_fp(const double &value, const int &precision) {
+Variant GodotDojoHelper::double_to_variant_fp(const double &value, const int &precision) {
     cpp_int shift = 1;
     shift <<= precision;
     cpp_dec_float_100 val_100 = value;
@@ -155,13 +155,13 @@ Variant GodotHelper::double_to_variant_fp(const double &value, const int &precis
     return {arr};
 }
 
-bool GodotHelper::get_log_level_enabled(const String& level)
+bool GodotDojoHelper::get_log_level_enabled(const String& level)
 {
     String setting_path = "dojo/config/debug/" + level;
     return ProjectSettings::get_singleton()->get_setting(setting_path);
 }
 
-void GodotHelper::set_log_level_enabled(const String& level, bool enabled)
+void GodotDojoHelper::set_log_level_enabled(const String& level, bool enabled)
 {
     ProjectSettings* settings = ProjectSettings::get_singleton();
     String setting_path = "dojo/config/debug/" + level;
@@ -171,75 +171,75 @@ void GodotHelper::set_log_level_enabled(const String& level, bool enabled)
     }
 }
 
-void GodotHelper::set_error_enabled(bool enabled)
+void GodotDojoHelper::set_error_enabled(bool enabled)
 {
     set_log_level_enabled("error", enabled);
 }
 
-void GodotHelper::set_warning_enabled(bool enabled)
+void GodotDojoHelper::set_warning_enabled(bool enabled)
 {
     set_log_level_enabled("warning", enabled);
 }
 
-void GodotHelper::set_info_enabled(bool enabled)
+void GodotDojoHelper::set_info_enabled(bool enabled)
 {
     set_log_level_enabled("info", enabled);
 }
 
-void GodotHelper::set_debug_enabled(bool enabled)
+void GodotDojoHelper::set_debug_enabled(bool enabled)
 {
     set_log_level_enabled("debug", enabled);
 }
 
-void GodotHelper::set_success_enabled(bool enabled)
+void GodotDojoHelper::set_success_enabled(bool enabled)
 {
     set_log_level_enabled("success", enabled);
 }
 
-void GodotHelper::_bind_methods() {
-    ClassDB::bind_static_method("GodotHelper", D_METHOD("get_katana_url"), &GodotHelper::get_katana_url);
-    ClassDB::bind_static_method("GodotHelper", D_METHOD("get_setting", "setting", "default_value"),
-                                &GodotHelper::get_setting, DEFVAL(Variant()));
-    ClassDB::bind_static_method("GodotHelper", D_METHOD("get_dojo_setting", "setting", "default_value"),
-                                &GodotHelper::get_dojo_setting, DEFVAL(Variant()));
-    ClassDB::bind_static_method("GodotHelper", D_METHOD("get_torii_setting", "setting", "default_value"),
-                        &GodotHelper::get_torii_setting, DEFVAL(Variant()));
-    ClassDB::bind_static_method("GodotHelper", D_METHOD("get_policies", "p_custom"),
-                                &GodotHelper::get_policies, DEFVAL(String()));
-    ClassDB::bind_static_method("GodotHelper", D_METHOD("get_custom_setting", "category", "setting"),
-                                &GodotHelper::get_custom_setting);
+void GodotDojoHelper::_bind_methods() {
+    ClassDB::bind_static_method("GodotDojoHelper", D_METHOD("get_katana_url"), &GodotDojoHelper::get_katana_url);
+    ClassDB::bind_static_method("GodotDojoHelper", D_METHOD("get_setting", "setting", "default_value"),
+                                &GodotDojoHelper::get_setting, DEFVAL(Variant()));
+    ClassDB::bind_static_method("GodotDojoHelper", D_METHOD("get_dojo_setting", "setting", "default_value"),
+                                &GodotDojoHelper::get_dojo_setting, DEFVAL(Variant()));
+    ClassDB::bind_static_method("GodotDojoHelper", D_METHOD("get_torii_setting", "setting", "default_value"),
+                        &GodotDojoHelper::get_torii_setting, DEFVAL(Variant()));
+    ClassDB::bind_static_method("GodotDojoHelper", D_METHOD("get_policies", "p_custom"),
+                                &GodotDojoHelper::get_policies, DEFVAL(String()));
+    ClassDB::bind_static_method("GodotDojoHelper", D_METHOD("get_custom_setting", "category", "setting"),
+                                &GodotDojoHelper::get_custom_setting);
 
     // Generic. Default to precision 24
-    ClassDB::bind_static_method("GodotHelper", D_METHOD("float_to_fixed", "value", "precision"),
-                                &GodotHelper::float_to_fixed, DEFVAL(24));
-    ClassDB::bind_static_method("GodotHelper", D_METHOD("fixed_to_float", "value", "precision"),
-                                &GodotHelper::fixed_to_float, DEFVAL(24));
+    ClassDB::bind_static_method("GodotDojoHelper", D_METHOD("float_to_fixed", "value", "precision"),
+                                &GodotDojoHelper::float_to_fixed, DEFVAL(24));
+    ClassDB::bind_static_method("GodotDojoHelper", D_METHOD("fixed_to_float", "value", "precision"),
+                                &GodotDojoHelper::fixed_to_float, DEFVAL(24));
     // 64
-    ClassDB::bind_static_method("GodotHelper", D_METHOD("float_to_fixed_64", "value"),
-                                &GodotHelper::float_to_fixed_64);
-    ClassDB::bind_static_method("GodotHelper", D_METHOD("fixed_to_float_64", "value"),
-                                &GodotHelper::fixed_to_float_64);
+    ClassDB::bind_static_method("GodotDojoHelper", D_METHOD("float_to_fixed_64", "value"),
+                                &GodotDojoHelper::float_to_fixed_64);
+    ClassDB::bind_static_method("GodotDojoHelper", D_METHOD("fixed_to_float_64", "value"),
+                                &GodotDojoHelper::fixed_to_float_64);
     // 128
-    ClassDB::bind_static_method("GodotHelper", D_METHOD("float_to_fixed_128", "value"),
-                                &GodotHelper::float_to_fixed_128);
-    ClassDB::bind_static_method("GodotHelper", D_METHOD("fixed_to_float_128", "value"),
-                                &GodotHelper::fixed_to_float_128);
+    ClassDB::bind_static_method("GodotDojoHelper", D_METHOD("float_to_fixed_128", "value"),
+                                &GodotDojoHelper::float_to_fixed_128);
+    ClassDB::bind_static_method("GodotDojoHelper", D_METHOD("fixed_to_float_128", "value"),
+                                &GodotDojoHelper::fixed_to_float_128);
     // 256
-    ClassDB::bind_static_method("GodotHelper", D_METHOD("float_to_fixed_256", "value"),
-                                &GodotHelper::float_to_fixed_256);
-    ClassDB::bind_static_method("GodotHelper", D_METHOD("fixed_to_float_256", "value"),
-                                &GodotHelper::fixed_to_float_256);
+    ClassDB::bind_static_method("GodotDojoHelper", D_METHOD("float_to_fixed_256", "value"),
+                                &GodotDojoHelper::float_to_fixed_256);
+    ClassDB::bind_static_method("GodotDojoHelper", D_METHOD("fixed_to_float_256", "value"),
+                                &GodotDojoHelper::fixed_to_float_256);
 
-    ClassDB::bind_static_method("GodotHelper", D_METHOD("double_to_variant_fp", "value", "precision"),
-                                &GodotHelper::double_to_variant_fp);
-    ClassDB::bind_static_method("GodotHelper", D_METHOD("variant_to_double_fp", "value", "precision"),
-                                &GodotHelper::variant_to_double_fp);
+    ClassDB::bind_static_method("GodotDojoHelper", D_METHOD("double_to_variant_fp", "value", "precision"),
+                                &GodotDojoHelper::double_to_variant_fp);
+    ClassDB::bind_static_method("GodotDojoHelper", D_METHOD("variant_to_double_fp", "value", "precision"),
+                                &GodotDojoHelper::variant_to_double_fp);
 
-    ClassDB::bind_static_method("GodotHelper", D_METHOD("get_log_level_enabled", "level"), &GodotHelper::get_log_level_enabled);
-    ClassDB::bind_static_method("GodotHelper", D_METHOD("set_log_level_enabled", "level", "enabled"), &GodotHelper::set_log_level_enabled);
-    ClassDB::bind_static_method("GodotHelper", D_METHOD("set_error_enabled", "enabled"), &GodotHelper::set_error_enabled);
-    ClassDB::bind_static_method("GodotHelper", D_METHOD("set_warning_enabled", "enabled"), &GodotHelper::set_warning_enabled);
-    ClassDB::bind_static_method("GodotHelper", D_METHOD("set_info_enabled", "enabled"), &GodotHelper::set_info_enabled);
-    ClassDB::bind_static_method("GodotHelper", D_METHOD("set_debug_enabled", "enabled"), &GodotHelper::set_debug_enabled);
-    ClassDB::bind_static_method("GodotHelper", D_METHOD("set_success_enabled", "enabled"), &GodotHelper::set_success_enabled);
+    ClassDB::bind_static_method("GodotDojoHelper", D_METHOD("get_log_level_enabled", "level"), &GodotDojoHelper::get_log_level_enabled);
+    ClassDB::bind_static_method("GodotDojoHelper", D_METHOD("set_log_level_enabled", "level", "enabled"), &GodotDojoHelper::set_log_level_enabled);
+    ClassDB::bind_static_method("GodotDojoHelper", D_METHOD("set_error_enabled", "enabled"), &GodotDojoHelper::set_error_enabled);
+    ClassDB::bind_static_method("GodotDojoHelper", D_METHOD("set_warning_enabled", "enabled"), &GodotDojoHelper::set_warning_enabled);
+    ClassDB::bind_static_method("GodotDojoHelper", D_METHOD("set_info_enabled", "enabled"), &GodotDojoHelper::set_info_enabled);
+    ClassDB::bind_static_method("GodotDojoHelper", D_METHOD("set_debug_enabled", "enabled"), &GodotDojoHelper::set_debug_enabled);
+    ClassDB::bind_static_method("GodotDojoHelper", D_METHOD("set_success_enabled", "enabled"), &GodotDojoHelper::set_success_enabled);
 }

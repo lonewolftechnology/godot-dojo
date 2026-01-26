@@ -57,7 +57,7 @@ void initialize_godotdojo_module(ModuleInitializationLevel p_level) {
         // Utilities
         GDREGISTER_CLASS(DojoCallback);
         GDREGISTER_CLASS(CallbackUtils);
-        GDREGISTER_CLASS(GodotHelper);
+        GDREGISTER_CLASS(GodotDojoHelper);
         GDREGISTER_CLASS(ControllerHelper);
         GDREGISTER_CLASS(HttpPinger);
 

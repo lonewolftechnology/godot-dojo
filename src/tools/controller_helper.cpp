@@ -82,7 +82,7 @@ std::vector<std::shared_ptr<controller::Call>> ControllerHelper::prepare_calls(c
                     continue;
                 }
                 case Variant::Type::FLOAT: {
-                    worklist.push_front(GodotHelper::double_to_variant_fp(arg, GodotHelper::get_dojo_setting("fixed_point/default")));
+                    worklist.push_front(GodotDojoHelper::double_to_variant_fp(arg, GodotDojoHelper::get_dojo_setting("fixed_point/default")));
                     continue;
                 }
                 case Variant::Type::VECTOR2: {
