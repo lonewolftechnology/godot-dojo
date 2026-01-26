@@ -9,7 +9,6 @@ class DojoCallback : public RefCounted
 {
     GDCLASS(DojoCallback, RefCounted)
 
-private:
     Callable on_update;
     Callable on_error;
 
