@@ -85,6 +85,7 @@ jobs:
         with:
           path: | # Note: These paths are relative to the checkout directory
             .sconsign.dblite
+            build/
             external/godot-cpp/bin/
             external/godot-cpp/.sconsign.dblite
             external/godot-cpp/gen/
