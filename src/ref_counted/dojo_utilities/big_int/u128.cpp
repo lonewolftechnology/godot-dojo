@@ -1,0 +1,159 @@
+#include "ref_counted/dojo_utilities/big_int/u128.hpp"
+#include "godot_cpp/classes/project_settings.hpp"
+#include <boost/multiprecision/cpp_dec_float.hpp>
+
+// Suppress false positive warning from GCC/Boost interaction
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wstringop-overflow"
+
+using boost::multiprecision::cpp_int;
+
+void U128::_init_from_int(int64_t p_value) {
+    int p_precision = ProjectSettings::get_singleton()->get_setting("dojo/config/fixed_point/default", 40);
+    if (p_precision > 2048) {
+        p_precision = 2048;
+    }
+    if (p_precision < 0) {
+        p_precision = 0;
+    }
+    cpp_int val = p_value;
+    val <<= p_precision;
+    
+    if (p_value < 0) {
+        is_signed = true;
+        signed_value = val.convert_to<int128_t>();
+    } else {
+        is_signed = false;
+        signed_value = 0;
+    }
+
+    if (val < 0) {
+        val += (cpp_int(1) << 128);
+    }
+    value = val.convert_to<uint128_t>();
+}
+
+void U128::_init_from_string(const String& p_value)
+{
+    value = uint128_t(p_value.utf8().get_data());
+}
+
+void U128::_init_from_float(double p_value, int p_precision) {
+    if (p_precision < 0) {
+        p_precision = ProjectSettings::get_singleton()->get_setting("dojo/config/fixed_point/default", 40);
+    }
+    if (p_precision > 2048) {
+        p_precision = 2048;
+    }
+    if (p_precision < 0) {
+        p_precision = 0;
+    }
+    typedef boost::multiprecision::number<boost::multiprecision::cpp_dec_float<100> > cpp_dec_float_100;
+    cpp_dec_float_100 float_val(p_value);
+    cpp_int multiplier = 1;
+    multiplier <<= p_precision;
+    cpp_int val = static_cast<cpp_int>(float_val * cpp_dec_float_100(multiplier));
+
+    if (p_value < 0) {
+        is_signed = true;
+        signed_value = val.convert_to<int128_t>();
+    } else {
+        is_signed = false;
+        signed_value = 0;
+    }
+
+    if (val < 0) {
+        val += (cpp_int(1) << 128);
+    }
+    value = val.convert_to<uint128_t>();
+}
+
+String U128::to_string() const {
+    std::stringstream ss;
+    ss << "0x" << std::hex << value;
+    return String(ss.str().c_str());
+}
+
+PackedStringArray U128::to_calldata() const {
+    PackedStringArray arr;
+    arr.append(to_string());
+    return arr;
+}
+
+double U128::to_float(int p_precision) const {
+    if (p_precision < 0) {
+        p_precision = ProjectSettings::get_singleton()->get_setting("dojo/config/fixed_point/default", 40);
+    }
+
+    if (p_precision > 2048) {
+        p_precision = 2048;
+    }
+
+    typedef boost::multiprecision::number<boost::multiprecision::cpp_dec_float<100> > cpp_dec_float_100;
+    
+    cpp_dec_float_100 float_val;
+    if (is_signed) {
+        float_val = cpp_dec_float_100(signed_value);
+    } else {
+        float_val = cpp_dec_float_100(value);
+    }
+    
+    float_val = boost::multiprecision::ldexp(float_val, -p_precision);
+    return static_cast<double>(float_val);
+}
+
+Ref<U128> U128::from_int(int64_t p_value) {
+    Ref<U128> instance = memnew(U128);
+    instance->_init_from_int(p_value);
+    return instance;
+}
+
+Ref<U128> U128::from_string(const String& p_value)
+{
+    Ref<U128> instance = memnew(U128);
+    instance->_init_from_string(p_value);
+    return instance;
+}
+
+Ref<U128> U128::from_float(double p_value, int p_precision) {
+    Ref<U128> instance = memnew(U128);
+    instance->_init_from_float(p_value, p_precision);
+    return instance;
+}
+
+Ref<U128> U128::from_variant(const Variant& p_value) {
+    if (p_value.get_type() == Variant::OBJECT) {
+        Ref<U128> casted = p_value;
+        if (casted.is_valid()) {
+            return casted;
+        }
+    }
+
+    Ref<U128> instance = memnew(U128);
+    switch (p_value.get_type()) {
+        case Variant::INT:
+            instance->_init_from_int(p_value);
+            break;
+        case Variant::FLOAT:
+            instance->_init_from_float(p_value, -1);
+            break;
+        case Variant::STRING:
+            instance->_init_from_string(p_value);
+            break;
+        default:
+            break;
+    }
+    return instance;
+}
+
+void U128::_bind_methods() {
+    ClassDB::bind_method(D_METHOD("to_string"), &U128::to_string);
+    ClassDB::bind_method(D_METHOD("to_float", "precision"), &U128::to_float, DEFVAL(-1));
+    ClassDB::bind_method(D_METHOD("to_calldata"), &U128::to_calldata);
+    ClassDB::bind_static_method("U128", D_METHOD("from_int", "value"), &U128::from_int);
+    ClassDB::bind_static_method("U128", D_METHOD("from_string", "value"), &U128::from_string);
+    ClassDB::bind_static_method("U128", D_METHOD("from_float", "value", "precision"), &U128::from_float, DEFVAL(-1));
+    ClassDB::bind_static_method("U128", D_METHOD("from_variant", "value"), &U128::from_variant);
+}
+
+#pragma GCC diagnostic pop
