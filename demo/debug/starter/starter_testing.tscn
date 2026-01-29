@@ -224,6 +224,7 @@ type_name = "EntityUpdates"
 
 [node name="EventStatus" parent="CanvasLayer/VBoxContainer/PanelContainer/HBoxContainer" unique_id=195944436 instance=ExtResource("4_n1jwj")]
 unique_name_in_owner = true
+visible = false
 layout_mode = 2
 size_flags_horizontal = 3
 type_name = "EventUpdates"
@@ -232,4 +233,7 @@ type_name = "EventUpdates"
 
 [node name="ToriiClient" type="ToriiClient" parent="." unique_id=1595714277]
 
+[connection signal="session_connected" from="." to="CanvasLayer/VBoxContainer/PanelContainer/HBoxContainer/SessionStatus" method="set_status"]
+[connection signal="sub_created" from="." to="." method="_on_sub_created"]
+[connection signal="torii_connected" from="." to="CanvasLayer/VBoxContainer/PanelContainer/HBoxContainer/ClientStatus" method="set_status"]
 [connection signal="pressed" from="CanvasLayer/VBoxContainer/TabContainer/Settings/HBoxContainer/VBoxContainer/PanelContainer2/LoggerStatus/SaveLog" to="." method="_on_save_log_pressed"]

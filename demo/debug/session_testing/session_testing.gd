@@ -14,21 +14,50 @@ signal subscription_created(subscription_name:String)
 @onready var menu_container:VBoxContainer = %MenuContainer
 
 var entity_sub: int
-var message_sub: int
+var message_sub
 
-@onready var priv_key: String = "0xb3545fec66b27719f663ceacd832ea9bb399a4ecfb705f6e06d1e50e7adcb1"
+@onready var priv_key: String = "0xb6c159ded577cff3a1a734976f29ec654d44d70636ca781c62b0e11fa68d5c"
 
 var full_policies:Dictionary = {
-	Constants.CONTRACT: {
+#	Constants.CONTRACT: {
+#		"methods": [
+#			{
+#				"name" : "Spawn in world", # Optional
+#				"description": "Can Spawn in the world", # Optional
+#				"entrypoint": "spawn",
+#			},
+#			{
+#				"entrypoint": "move",
+#			}
+#			]
+#		},
+	Constants.CONTRACT:{
 		"methods": [
-			{
-				"name" : "Spawn in world", # Optional
-				"description": "Can Spawn in the world", # Optional
-				"entrypoint": "spawn",
-			},
-			{
-				"entrypoint": "move",
-			}
+			{"entrypoint": "reset_spawn"},
+			{"entrypoint": "spawn"},
+			{"entrypoint": "move"},
+			{"entrypoint": "move_signed"},
+			{"entrypoint": "move_to"},
+			{"entrypoint": "move_to_signed"},
+			{"entrypoint": "validate"},
+			{"entrypoint": "validate_i8"},
+			{"entrypoint": "validate_i16"},
+			{"entrypoint": "validate_i32"},
+			{"entrypoint": "validate_i64"},
+			{"entrypoint": "validate_i128"},
+			{"entrypoint": "validate_u8"},
+			{"entrypoint": "validate_u16"},
+			{"entrypoint": "validate_u32"},
+			{"entrypoint": "validate_u64"},
+			{"entrypoint": "validate_u128"},
+			{"entrypoint": "validate_u256"},
+			{"entrypoint": "validate_bool"},
+			{"entrypoint": "validate_felt252"},
+			{"entrypoint": "validate_class_hash"},
+			{"entrypoint": "validate_contract_address"},
+			{"entrypoint": "validate_eth_address"},
+			{"entrypoint": "validate_vec3"},
+			{"entrypoint": "validate_fp_40"}
 		]
 	}
 }
@@ -48,28 +77,59 @@ var move_call:Dictionary = {
 var calldata:Array = [
 		spawn_call,		
 		move_call
-
 	]
 
+var is_standalone: bool:
+	get:
+		return get_parent() == get_tree().root
+
+#FP40
+var FRACTIONAL_BITS:
+	get:
+		return ProjectSettings.get_setting("dojo/config/fixed_point/default", 40)
+
+
+
+#const events = [
+#	"dojo_starter-ValidatedI8",
+#	"dojo_starter-ValidatedI16",
+#	"dojo_starter-ValidatedI32",
+#	"dojo_starter-ValidatedI64",
+#	"dojo_starter-ValidatedI128",
+#	"dojo_starter-ValidatedVec3",
+#	"dojo_starter-ValidatedU8",
+#	"dojo_starter-ValidatedU16",
+#	"dojo_starter-ValidatedU32",
+#	"dojo_starter-ValidatedU64",
+#	"dojo_starter-ValidatedU128",
+#	"dojo_starter-ValidatedU256",
+#	"dojo_starter-ValidatedBool",
+#	"dojo_starter-ValidatedFP40",
+#]
+
 func callback(data:Dictionary, type:String):
-	var result = data["models"]
-	add_entry_to_output("%s CALLBACK" % type, result)
+	if type == "Entity":
+		var result = data["models"]
+		add_entry_to_output("%s CALLBACK" % type, result)
+	if type == "Message":
+		var _data = data["data"]
+		for _key in _data:
+			printt("**",_key)
+#			if _key is DojoBigInt:
+#				push_warning(_key.to_float())
 
 func _ready() -> void:
-	if get_parent() == get_tree().root:
+	if is_standalone:
 		torii_client = ToriiClient.new()
 		add_child(torii_client)
 		dojo_session_account = DojoSessionAccount.new()
 		add_child(dojo_session_account)
-	setup()
+		setup()
 	
 func setup():
 
 	dojo_session_account.max_fee = "0x100000"
 	dojo_session_account.full_policies = full_policies
-	#if not torii_client.client_connected.is_connected(_on_client_connected):
-		#torii_client.client_connected.connect(_on_client_connected)
-			
 	
 	if OS.has_feature("android"):
 		main_container.vertical = true
@@ -78,24 +138,30 @@ func setup():
 		priv_key = ""
 		
 	if not torii_client.is_connected():
-		torii_client.connect(Constants.TORII_URL)
+		var _success = torii_client.connect(Constants.TORII_URL)
+		if _success:
+			_register_subs()
+		_update_parent_status_indicator("torii_connected",_success)
 	
 	if priv_key.is_empty():
 		priv_key = ControllerHelper.generate_private_key()
 		
 	custom_priv_key.text = priv_key
 
-func _on_client_connected(success:bool):
-	if success:
-		_register_subs()
+func _update_parent_status_indicator(_signal:String, _value):
+	var _current_scene:Node = get_tree().current_scene
+	if not is_standalone and _current_scene is DojoTesting:
+		_current_scene.emit_signal(_signal, _value)
 
 func _register_subs():
 	var _dojo_callback:DojoCallback = DojoCallback.new()
 	_dojo_callback.on_update = callback.bind("Entity")
 	entity_sub = torii_client.subscribe_entity_updates(DojoClause.new(), [Constants.WORLD], _dojo_callback)
-
-
-	subscription_created.emit("event_message_update")
+	_update_parent_status_indicator("sub_created", "entity")
+	
+	var _dojo_callback_message:DojoCallback = DojoCallback.new()
+	_dojo_callback_message.on_update = callback.bind("Message")
+	message_sub = torii_client.subscribe_event_updates([], _dojo_callback_message)
 
 func _on_session_btn_pressed() -> void:
 	if custom_priv_key.text != priv_key:
@@ -113,6 +179,7 @@ func _on_session_btn_pressed() -> void:
 		Constants.RPC_URL,
 		"https://api.cartridge.gg",
 	)
+	_update_parent_status_indicator("session_connected", dojo_session_account.is_valid())
 	if (dojo_session_account.is_valid()):
 		_on_info_btn_pressed()
 		session_connected.emit()
@@ -161,15 +228,61 @@ func _on_refresh_key_pressed() -> void:
 	custom_priv_key.text = priv_key
 	
 func _on_iterative_calls_pressed() -> void:
-	for _call in calldata:
-		var result = dojo_session_account.execute_from_outside([_call])
-		if result.begins_with("0x"):
-			push_warning("CURRENT CALL %s %s %s" % [_call["entrypoint"], _call["calldata"], result])
-		else:
-			push_error("CURRENT CALL %s %s %s" % [_call["entrypoint"], _call["calldata"], result])
-		add_entry_to_output("EXECUTE OUTSIDE %s" % _call["entrypoint"], result)
+	var int_test = [
+#		"validate_fp_40",
+		#"validate_i8",
+		#"validate_i16",
+		#"validate_i32",
+#		"validate_i64",
+		"validate_i128",
+		#"validate_u8",
+		#"validate_u16",
+		#"validate_u32",
+#		"validate_u64",
+		"validate_u128",
+		"validate_u256",
+
+	]
+	var felt_test = [
+		#"validate_bool",
+		#"validate_felt252,
+		#"validate_class_hash,
+		#"validate_contract_address,
+		#"validate_eth_address,
+		]
+	for _entrypoint in int_test:
+		var _call = {
+				"contract_address": Constants.CONTRACT,
+				"entrypoint": _entrypoint,
+				"calldata": []
+		}
+		var _test_number = [
+			2,
+			-2,
+			1.9,
+			-1.9,
+		]
+		
+		var result
+		for n in _test_number:
+			_call["calldata"] = [n]
+			if _entrypoint == "validate_i128":
+				var _i128:I128 = I128.from_int(n) if n is int else I128.from_float(n)           
+				printt("creating from int", n, _entrypoint, _i128.to_float(), _i128.to_string())
+				_call["calldata"] = [_i128]			
+			if _entrypoint == "validate_u128":
+				var _u128:U128 = U128.from_int(n) if n is int else U128.from_float(n) 
+				printt("creating from int", n, _entrypoint, _u128.to_float(), _u128.to_string())
+				_call["calldata"] = [_u128]
+			if _entrypoint == "validate_u256":
+				var _u256:U256 = U256.from_int(n) if n is int else U256.from_float(n) 
+				printt("creating from int", n, _entrypoint, _u256.to_float(), _u256.to_string())
+				_call["calldata"] = [_u256]				
+						
+			result = dojo_session_account.execute_from_outside([_call])
+			add_entry_to_output("EXECUTE %s %s" % [_call["entrypoint"], n], result)
 
 
 func _on_call_test_btn_pressed() -> void:
-	var result = dojo_session_account.execute_test(Constants.CONTRACT, "move", 2)
+	var result = dojo_session_account.execute_test(Constants.CONTRACT, "validate_i64", 2)
 	add_entry_to_output("EXECUTE", result)

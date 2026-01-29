@@ -27,7 +27,7 @@ func _on_query_pressed() -> void:
 #	clause.member = member_input.text
 #	clause.value = address_input.text
 #	query.models = [model_input.text]
-	query.clause = clause
+	query.with_clause(clause)
 	_send_query(query)
 
 

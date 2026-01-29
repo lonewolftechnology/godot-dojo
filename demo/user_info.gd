@@ -15,7 +15,7 @@ func update_info(_data:Dictionary) -> void:
 	if not visible:
 		show()
 		
-	print_rich("[color=green]%s[/color]" % _data)
+	print_rich("[color=orange]%s[/color]" % _data)
 	update_label(username_label, _data["username"])
 	update_label(address_label, _data["address"])
 	update_label(chain_id_label, _data["chain_id"])
