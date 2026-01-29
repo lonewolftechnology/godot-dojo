@@ -9,7 +9,6 @@
 #include "godot_cpp/core/defs.hpp"
 #include "godot_cpp/godot.hpp"
 
-// New implementation
 #include "editor/dojo_editor_plugin.hpp"
 #include "node/torii_client.hpp"
 #include "node/dojo_controller.hpp"
@@ -23,6 +22,9 @@
 #include "ref_counted/dojo_utilities/clauses/member.hpp"
 #include "ref_counted/dojo_utilities/clauses/composite.hpp"
 #include "ref_counted/dojo_utilities/callback_utils.hpp"
+#include "ref_counted/dojo_utilities/big_int/i128.hpp"
+#include "ref_counted/dojo_utilities/big_int/u128.hpp"
+#include "ref_counted/dojo_utilities/big_int/u256.hpp"
 #include "tools/godot_helper.hpp"
 #include "tools/controller_helper.h"
 #include "tools/http_pinger.hpp"
@@ -60,6 +62,9 @@ void initialize_godotdojo_module(ModuleInitializationLevel p_level) {
         GDREGISTER_CLASS(GodotDojoHelper);
         GDREGISTER_CLASS(ControllerHelper);
         GDREGISTER_CLASS(HttpPinger);
+        GDREGISTER_CLASS(I128)
+        GDREGISTER_CLASS(U128)
+        GDREGISTER_CLASS(U256)
 
         // Clauses
         GDREGISTER_CLASS(DojoClause);
