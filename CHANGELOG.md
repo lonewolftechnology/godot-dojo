@@ -1,3 +1,15 @@
+## [v0.5.5](https://github.com/lonewolftechnology/godot-dojo/tree/v0.5.5) (2026-01-29)
+**Commits:**
+- [[1b20a50](https://github.com/lonewolftechnology/godot-dojo/commit/1b20a50d9ff7cde14d86e9bc5cda6d9a8090f633)] wip(TestingProject): added session execute's calldata testing with custom contract
+- [[b718c47](https://github.com/lonewolftechnology/godot-dojo/commit/b718c4794be605e35c702e81c6ce5f19ae548065)] feat: register new bigint classes
+- [[78a9a46](https://github.com/lonewolftechnology/godot-dojo/commit/78a9a46b9b38487562a3d5ecce51e6e4d67b4cdc)] update: add new bigint wrappers to calldata and callbacks
+- [[52734d8](https://github.com/lonewolftechnology/godot-dojo/commit/52734d81429418780f899afe105ca5f36a88825c)] feat(GodotDojoHelper): add conversion from packedbytearray to double
+- [[1780ba1](https://github.com/lonewolftechnology/godot-dojo/commit/1780ba10ad0f4d2ee339f368b48d48c9a23c6508)] feat: add reworked bigint wrappers
+- [[36d5bcd](https://github.com/lonewolftechnology/godot-dojo/commit/36d5bcd0885e50003cbe12ce4f0876380e3475fd)] ci: remove bindings and ignore them, those should be auto-generated
+- [[1523e4a](https://github.com/lonewolftechnology/godot-dojo/commit/1523e4aca22deed9e731627f66d6bac8b8a972c7)] update gitignre
+- [[315ba38](https://github.com/lonewolftechnology/godot-dojo/commit/315ba38b4b2034780a6f08b172b8898147dbc934)] ci: update scons cache
+- [[a84c2d4](https://github.com/lonewolftechnology/godot-dojo/commit/a84c2d4363c6ee24349ed93fdd0f5d8247cdba4d)] chore: update changelog
+
 ## [v0.5.4.1](https://github.com/lonewolftechnology/godot-dojo/tree/v0.5.4.1) (2026-01-26)
 **Commits:**
 - [[f2e9e25](https://github.com/lonewolftechnology/godot-dojo/commit/f2e9e25d3d084f54669904c317f5c353e1a941e6)] feat(Scons): Split target and precision object location. Fixes build issues when testing single and double precision without a clean build.
