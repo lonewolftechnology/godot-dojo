@@ -39,6 +39,7 @@ public:
 
     static Variant double_to_variant_fp(const double &value, const int &precision);
     static double variant_to_double_fp(const Variant &value, const int &precision);
+    static double bytes_to_double(const PackedByteArray& bytes, bool is_signed = false, int precision = 0);
 
     // Log levels
     static bool get_log_level_enabled(const String& level);

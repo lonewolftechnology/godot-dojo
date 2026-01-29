@@ -131,6 +131,38 @@ double GodotDojoHelper::variant_to_double_fp(const Variant &value, const int &pr
     return static_cast<double>(result);
 }
 
+double GodotDojoHelper::bytes_to_double(const PackedByteArray &bytes, bool is_signed, int precision) {
+    if (bytes.is_empty()) {
+        return 0.0;
+    }
+
+    cpp_int int_val = 0;
+
+    for (int i = bytes.size() - 1; i >= 0; i--) {
+        int_val <<= 8;
+        int_val |= bytes[i];
+    }
+
+    if (is_signed && (bytes[bytes.size() - 1] & 0x80)) {
+        cpp_int subtrahend = 1;
+        subtrahend <<= (bytes.size() * 8);
+        int_val -= subtrahend;
+    }
+
+    if (precision < 0) {
+        precision = get_setting("dojo/config/fixed_point/default", 24);
+    }
+
+    if (precision > 0) {
+        cpp_int divisor = 1;
+        divisor <<= precision;
+        cpp_dec_float_100 result = cpp_dec_float_100(int_val) / cpp_dec_float_100(divisor);
+        return static_cast<double>(result);
+    }
+
+    return static_cast<double>(int_val);
+}
+
 Variant GodotDojoHelper::double_to_variant_fp(const double &value, const int &precision) {
     cpp_int shift = 1;
     shift <<= precision;
@@ -217,7 +249,7 @@ void GodotDojoHelper::_bind_methods() {
     // 64
     ClassDB::bind_static_method(get_class_static(), D_METHOD("float_to_fixed_64", "value"),
                                 &GodotDojoHelper::float_to_fixed_64);
-    ClassDB::bind_static_method("GodotDojoHelper", D_METHOD("fixed_to_float_64", "value"),
+    ClassDB::bind_static_method(get_class_static(), D_METHOD("fixed_to_float_64", "value"),
                                 &GodotDojoHelper::fixed_to_float_64);
     // 128
     ClassDB::bind_static_method(get_class_static(), D_METHOD("float_to_fixed_128", "value"),
@@ -234,6 +266,9 @@ void GodotDojoHelper::_bind_methods() {
                                 &GodotDojoHelper::double_to_variant_fp);
     ClassDB::bind_static_method(get_class_static(), D_METHOD("variant_to_double_fp", "value", "precision"),
                                 &GodotDojoHelper::variant_to_double_fp);
+    
+    ClassDB::bind_static_method(get_class_static(), D_METHOD("bytes_to_double", "bytes", "is_signed", "precision"),
+                                &GodotDojoHelper::bytes_to_double, DEFVAL(false), DEFVAL(0));
 
     ClassDB::bind_static_method(get_class_static(), D_METHOD("get_log_level_enabled", "level"), &GodotDojoHelper::get_log_level_enabled);
     ClassDB::bind_static_method(get_class_static(), D_METHOD("set_log_level_enabled", "level", "enabled"), &GodotDojoHelper::set_log_level_enabled);
