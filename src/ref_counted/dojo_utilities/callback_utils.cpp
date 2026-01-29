@@ -1,4 +1,8 @@
 #include "ref_counted/dojo_utilities/callback_utils.hpp"
+#include "ref_counted/dojo_utilities/big_int/u128.hpp"
+#include "ref_counted/dojo_utilities/big_int/i128.hpp"
+#include "ref_counted/dojo_utilities/big_int/u256.hpp"
+#include "ref_counted/dojo_utilities/felt.hpp"
 
 // Helper para std::visit
 template<class... Ts> struct overloaded : Ts... { using Ts::operator()...; };
@@ -321,24 +325,26 @@ Variant CallbackUtils::primitive_to_variant(const std::shared_ptr<dojo::Primitiv
         [](const dojo::Primitive::kI32& v) { return Variant(v.value); },
         [](const dojo::Primitive::kI64& v) { return Variant(v.value); },
         [](const dojo::Primitive::kI128& v) { 
-             PackedByteArray bytes;
-             bytes.resize(v.value.size());
-             memcpy(bytes.ptrw(), v.value.data(), v.value.size());
-             return Variant(bytes);
+             String hex = "0x";
+             for (size_t i = 0; i < v.value.size(); ++i) {
+                 hex += String::num_uint64(v.value[i], 16).lpad(2, "0");
+             }
+             return Variant(I128::from_string(hex));
         },
         [](const dojo::Primitive::kU8& v) { return Variant(v.value); },
         [](const dojo::Primitive::kU16& v) { return Variant(v.value); },
         [](const dojo::Primitive::kU32& v) { return Variant(v.value); },
         [](const dojo::Primitive::kU64& v) { return Variant(v.value); },
         [](const dojo::Primitive::kU128& v) {
-             PackedByteArray bytes;
-             bytes.resize(v.value.size());
-             memcpy(bytes.ptrw(), v.value.data(), v.value.size());
-             return Variant(bytes);
+             String hex = "0x";
+             for (size_t i = 0; i < v.value.size(); ++i) {
+                 hex += String::num_uint64(v.value[i], 16).lpad(2, "0");
+             }
+             return Variant(U128::from_string(hex));
         },
-        [](const dojo::Primitive::kU256& v) { return Variant(String(v.value.c_str())); },
+        [](const dojo::Primitive::kU256& v) { return Variant(U256::from_string(String(v.value.c_str()))); },
         [](const dojo::Primitive::kBool& v) { return Variant(v.value); },
-        [](const dojo::Primitive::kFelt252& v) { return Variant(String(v.value.c_str())); },
+        [](const dojo::Primitive::kFelt252& v) { return Variant(Felt::from_string(String(v.value.c_str()))); },
         [](const dojo::Primitive::kClassHash& v) { return Variant(String(v.value.c_str())); },
         [](const dojo::Primitive::kContractAddress& v) { return Variant(String(v.value.c_str())); },
         [](const dojo::Primitive::kEthAddress& v) { return Variant(String(v.value.c_str())); }
