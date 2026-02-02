@@ -1,3 +1,9 @@
+## [v0.5.5.1](https://github.com/lonewolftechnology/godot-dojo/tree/v0.5.5.1) (2026-02-02)
+**Commits:**
+- [[3f6262d](https://github.com/lonewolftechnology/godot-dojo/commit/3f6262d51251b330bedbcab23fccf493245c5746)] feat(BigInt): add _to_string so it prints its hex when using print directly to the object
+- [[55a4d37](https://github.com/lonewolftechnology/godot-dojo/commit/55a4d373058107e57e9192a675c51ea4f8145dba)] feat(DojoSessionAccount): add close method to force renew login without deleting the node
+- [[46535ca](https://github.com/lonewolftechnology/godot-dojo/commit/46535cabd99321cb801d37c63f6c7e6977835628)] chore: update changelog
+
 ## [v0.5.5](https://github.com/lonewolftechnology/godot-dojo/tree/v0.5.5) (2026-01-29)
 **Commits:**
 - [[1b20a50](https://github.com/lonewolftechnology/godot-dojo/commit/1b20a50d9ff7cde14d86e9bc5cda6d9a8090f633)] wip(TestingProject): added session execute's calldata testing with custom contract
