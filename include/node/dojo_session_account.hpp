@@ -1,6 +1,4 @@
-#ifndef DOJO_SESSION_ACCOUNT_H
-#define DOJO_SESSION_ACCOUNT_H
-
+#pragma once
 #include "godot_cpp/classes/node.hpp"
 #include "godot_cpp/core/class_db.hpp"
 #include "godot_cpp/variant/dictionary.hpp"
@@ -50,6 +48,7 @@ public:
     String get_username() const;
     Dictionary get_info() const;
     bool is_valid() const;
+    void close();
 
     String generate_session_request_url(const String &base_url, const String &public_key,
                                         const String &rpc_url, const Dictionary &policies = Dictionary(),
@@ -89,6 +88,7 @@ protected:
         ClassDB::bind_method(D_METHOD("get_chain_id"), &DojoSessionAccount::get_chain_id);
         ClassDB::bind_method(D_METHOD("get_info"), &DojoSessionAccount::get_info);
         ClassDB::bind_method(D_METHOD("is_valid"), &DojoSessionAccount::is_valid);
+        ClassDB::bind_method(D_METHOD("close"), &DojoSessionAccount::close);
 
 
         {
@@ -119,4 +119,3 @@ protected:
     }
 };
 //VARIANT_ENUM_CAST(controller::SignerType);
-#endif //DOJO_SESSION_ACTION_H

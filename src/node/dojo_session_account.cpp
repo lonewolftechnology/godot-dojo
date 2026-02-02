@@ -220,6 +220,7 @@ Dictionary DojoSessionAccount::get_info() const {
     }
 
     Dictionary info;
+    info["username"] = get_username();
     info["address"] = get_address();
     info["chain_id"] = get_chain_id();
     info["app_id"] = get_app_id();
@@ -228,7 +229,6 @@ Dictionary DojoSessionAccount::get_info() const {
     info["is_revoked"] = is_revoked();
     info["owner_guid"] = get_owner_guid();
     info["session_id"] = get_session_id();
-    info["username"] = get_username();
     return info;
 }
 
@@ -237,6 +237,16 @@ bool DojoSessionAccount::is_valid() const {
         return false;
     }
     return true;
+}
+
+void DojoSessionAccount::close()
+{
+    internal.reset();
+
+    full_policies.clear();
+    max_fee = "";
+
+    Logger::info("DojoSessionAccount locally closed.");
 }
 
 String DojoSessionAccount::generate_session_request_url(const String &base_url, const String &public_key,
