@@ -181,6 +181,11 @@ jobs:
             arch: x86_64
             rust_target: x86_64-pc-windows-gnu
             macos_deployment_target: ""
+          - platform_id: windows-msvc
+            os_image: windows-latest
+            arch: x86_64
+            rust_target: x86_64-pc-windows-msvc
+            macos_deployment_target: ""
           - platform_id: android
             os_image: ubuntu-latest
             arch: arm64
@@ -417,7 +422,7 @@ jobs:
       previous_tag: ${{ needs.create_release.outputs.previous_tag }}
 
   build-gdextension-windows:
-    name: Build GDExtension (windows-gnu-${{ matrix.arch }}-${{ matrix.precision }})
+    name: Build GDExtension (${{ matrix.platform_id }}-${{ matrix.arch }}-${{ matrix.precision }})
     needs: [create_release, build-rust-core]
     if: needs.create_release.result == 'success' && needs.build-rust-core.result == 'success'
     uses: ./.github/workflows/reusable-build.yml
@@ -430,6 +435,10 @@ jobs:
             platform_id: windows-gnu
             arch: x86_64
             rust_target: x86_64-pc-windows-gnu
+          - os: windows-latest
+            platform_id: windows-msvc
+            arch: x86_64
+            rust_target: x86_64-pc-windows-msvc
     with:
       os: ${{ matrix.os }}
       arch: ${{ matrix.arch }}
