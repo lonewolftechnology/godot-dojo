@@ -19,6 +19,7 @@ public:
     void _init_from_string(const String& p_value);
     void _init_from_float(double p_value, int p_precision);
     String to_string() const;
+    String _to_string() const;
     Ref<U128> get_low() const;
     Ref<U128> get_high() const;
     PackedStringArray to_calldata() const;

@@ -74,6 +74,11 @@ String U128::to_string() const {
     return String(ss.str().c_str());
 }
 
+String U128::_to_string() const
+{
+    return to_string();
+}
+
 PackedStringArray U128::to_calldata() const {
     PackedStringArray arr;
     arr.append(to_string());
@@ -148,6 +153,7 @@ Ref<U128> U128::from_variant(const Variant& p_value) {
 
 void U128::_bind_methods() {
     ClassDB::bind_method(D_METHOD("to_string"), &U128::to_string);
+    ClassDB::bind_method(D_METHOD("_to_string"), &U128::_to_string);
     ClassDB::bind_method(D_METHOD("to_float", "precision"), &U128::to_float, DEFVAL(-1));
     ClassDB::bind_method(D_METHOD("to_calldata"), &U128::to_calldata);
     ClassDB::bind_static_method("U128", D_METHOD("from_int", "value"), &U128::from_int);

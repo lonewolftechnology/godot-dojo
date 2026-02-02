@@ -18,6 +18,7 @@ public:
     void _init_from_float(double p_value, int p_precision);
 
     String to_string() const;
+    String _to_string() const;
     PackedStringArray to_calldata() const;
     double to_float(int p_precision = -1) const;
 

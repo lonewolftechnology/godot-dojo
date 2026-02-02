@@ -60,6 +60,11 @@ String U256::to_string() const {
     return {ss.str().c_str()};
 }
 
+String U256::_to_string() const
+{
+    return to_string();
+}
+
 Ref<U128> U256::get_low() const {
     Ref<U128> u128 = memnew(U128);
     u128->set_value(value.convert_to<uint128_t>());
@@ -147,6 +152,7 @@ Ref<U256> U256::from_variant(const Variant& p_value) {
 
 void U256::_bind_methods() {
     ClassDB::bind_method(D_METHOD("to_string"), &U256::to_string);
+    ClassDB::bind_method(D_METHOD("_to_string"), &U256::_to_string);
     ClassDB::bind_method(D_METHOD("to_float", "precision"), &U256::to_float, DEFVAL(-1));
     ClassDB::bind_method(D_METHOD("get_low"), &U256::get_low);
     ClassDB::bind_method(D_METHOD("get_high"), &U256::get_high);

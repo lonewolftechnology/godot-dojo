@@ -22,6 +22,7 @@ public:
 
     void set_value(const uint128_t& p_value) { value = p_value; }
     String to_string() const;
+    String _to_string() const;
     PackedStringArray to_calldata() const;
     double to_float(int p_precision = -1) const;
 
