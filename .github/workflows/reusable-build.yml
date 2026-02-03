@@ -111,8 +111,12 @@ jobs:
             export RUSTFLAGS="${RUSTFLAGS:+$RUSTFLAGS }-C link-arg=-mmacosx-version-min=${{ inputs.macos_deployment_target }}"
           fi
           mkdir -p demo/addons/godot-dojo
+          EXTRA_SCONS_ARGS=""
+          if [ "${{ inputs.platform_id }}" = "windows-msvc" ]; then
+            EXTRA_SCONS_ARGS="CXXFLAGS=/std:c++20"
+          fi
           SCONS_PLATFORM=${{ (inputs.platform_id == 'windows-gnu' || inputs.platform_id == 'windows-msvc') && 'windows' || inputs.platform_id }}
-          scons platform=${SCONS_PLATFORM} arch=${{ inputs.arch }} target=editor precision=${{ inputs.precision }} -j2
+          scons platform=${SCONS_PLATFORM} arch=${{ inputs.arch }} target=editor precision=${{ inputs.precision }} $EXTRA_SCONS_ARGS -j2
 
       - name: Build GDExtension (template debug)
         if: inputs.platform_id != 'ios'
@@ -131,8 +135,12 @@ jobs:
             export RUSTFLAGS="${RUSTFLAGS:+$RUSTFLAGS }-C link-arg=-mmacosx-version-min=${{ inputs.macos_deployment_target }}"
           fi
           mkdir -p demo/addons/godot-dojo
+          EXTRA_SCONS_ARGS=""
+          if [ "${{ inputs.platform_id }}" = "windows-msvc" ]; then
+            EXTRA_SCONS_ARGS="CXXFLAGS=/std:c++20"
+          fi
           SCONS_PLATFORM=${{ (inputs.platform_id == 'windows-gnu' || inputs.platform_id == 'windows-msvc') && 'windows' || inputs.platform_id }}
-          scons platform=${SCONS_PLATFORM} arch=${{ inputs.arch }} target=template_debug precision=${{ inputs.precision }} -j2
+          scons platform=${SCONS_PLATFORM} arch=${{ inputs.arch }} target=template_debug precision=${{ inputs.precision }} $EXTRA_SCONS_ARGS -j2
 
       - name: Build GDExtension (template release)
         if: inputs.platform_id != 'ios'
@@ -151,8 +159,12 @@ jobs:
             export RUSTFLAGS="${RUSTFLAGS:+$RUSTFLAGS }-C link-arg=-mmacosx-version-min=${{ inputs.macos_deployment_target }}"
           fi
           mkdir -p demo/addons/godot-dojo
+          EXTRA_SCONS_ARGS=""
+          if [ "${{ inputs.platform_id }}" = "windows-msvc" ]; then
+            EXTRA_SCONS_ARGS="CXXFLAGS=/std:c++20"
+          fi
           SCONS_PLATFORM=${{ (inputs.platform_id == 'windows-gnu' || inputs.platform_id == 'windows-msvc') && 'windows' || inputs.platform_id }}
-          scons platform=${SCONS_PLATFORM} arch=${{ inputs.arch }} target=template_release precision=${{ inputs.precision }} -j2
+          scons platform=${SCONS_PLATFORM} arch=${{ inputs.arch }} target=template_release precision=${{ inputs.precision }} $EXTRA_SCONS_ARGS -j2
 
       - name: Build for iOS Device (arm64)
         if: inputs.platform_id == 'ios'
