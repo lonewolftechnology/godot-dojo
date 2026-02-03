@@ -4,6 +4,8 @@ on:
   push:
     tags:
       - "v*"
+    branches:
+      - "main"
 
 env:
   CARGO_TERM_COLOR: always
@@ -156,7 +158,7 @@ jobs:
     name: Build Core Crate (${{ matrix.platform_id }}-${{ matrix.arch }})
     runs-on: ${{ matrix.os_image }}
     needs: [create_release]
-    if: needs.create_release.result == 'success'
+    if: needs.create_release.result == 'success' || needs.create_release.result == 'skipped'
     strategy:
       fail-fast: false
       matrix:
@@ -324,7 +326,7 @@ jobs:
   build-gdextension-android:
     name: Build GDExtension (android-${{ matrix.arch }}-${{ matrix.precision }})
     needs: [create_release, build-rust-core]
-    if: needs.create_release.result == 'success' && needs.build-rust-core.result == 'success'
+    if: (needs.create_release.result == 'success' || needs.create_release.result == 'skipped') && needs.build-rust-core.result == 'success'
     uses: ./.github/workflows/reusable-build.yml
     strategy:
       fail-fast: false
@@ -348,7 +350,7 @@ jobs:
   build-gdextension-ios:
     name: Build GDExtension (ios-${{ matrix.arch }}-${{ matrix.precision }})
     needs: [create_release, build-rust-core]
-    if: needs.create_release.result == 'success' && needs.build-rust-core.result == 'success'
+    if: (needs.create_release.result == 'success' || needs.create_release.result == 'skipped') && needs.build-rust-core.result == 'success'
     uses: ./.github/workflows/reusable-build.yml
     strategy:
       fail-fast: false
@@ -368,7 +370,7 @@ jobs:
   build-gdextension-linux:
     name: Build GDExtension (linux-${{ matrix.arch }}-${{ matrix.precision }})
     needs: [create_release, build-rust-core]
-    if: needs.create_release.result == 'success' && needs.build-rust-core.result == 'success'
+    if: (needs.create_release.result == 'success' || needs.create_release.result == 'skipped') && needs.build-rust-core.result == 'success'
     uses: ./.github/workflows/reusable-build.yml
     strategy:
       fail-fast: false
@@ -393,7 +395,7 @@ jobs:
   build-gdextension-macos:
     name: Build GDExtension (macos-${{ matrix.arch }}-${{ matrix.precision }})
     needs: [create_release, build-rust-core]
-    if: needs.create_release.result == 'success' && needs.build-rust-core.result == 'success'
+    if: (needs.create_release.result == 'success' || needs.create_release.result == 'skipped') && needs.build-rust-core.result == 'success'
     uses: ./.github/workflows/reusable-build.yml
     strategy:
       fail-fast: false
@@ -424,7 +426,7 @@ jobs:
   build-gdextension-windows:
     name: Build GDExtension (${{ matrix.platform_id }}-${{ matrix.arch }}-${{ matrix.precision }})
     needs: [create_release, build-rust-core]
-    if: needs.create_release.result == 'success' && needs.build-rust-core.result == 'success'
+    if: (needs.create_release.result == 'success' || needs.create_release.result == 'skipped') && needs.build-rust-core.result == 'success'
     uses: ./.github/workflows/reusable-build.yml
     strategy:
       fail-fast: false
