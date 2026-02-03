@@ -323,8 +323,8 @@ jobs:
 
   build-gdextension-android:
     name: Build GDExtension (android-${{ matrix.arch }}-${{ matrix.precision }})
-    needs: [create_release, build-rust-core]
-    if: (needs.create_release.result == 'success' || needs.create_release.result == 'skipped') && needs.build-rust-core.result == 'success'
+    needs: [build-rust-core]
+    if: needs.build-rust-core.result == 'success'
     uses: ./.github/workflows/reusable-build.yml
     strategy:
       fail-fast: false
@@ -342,13 +342,10 @@ jobs:
       precision: ${{ matrix.precision }}
       platform_id: ${{ matrix.platform_id }}
       macos_deployment_target: ''
-
-      current_tag: ${{ needs.create_release.outputs.current_tag }}
-      previous_tag: ${{ needs.create_release.outputs.previous_tag }}
   build-gdextension-ios:
     name: Build GDExtension (ios-${{ matrix.arch }}-${{ matrix.precision }})
-    needs: [create_release, build-rust-core]
-    if: (needs.create_release.result == 'success' || needs.create_release.result == 'skipped') && needs.build-rust-core.result == 'success'
+    needs: [build-rust-core]
+    if: needs.build-rust-core.result == 'success'
     uses: ./.github/workflows/reusable-build.yml
     strategy:
       fail-fast: false
@@ -362,13 +359,10 @@ jobs:
       platform_id: ios
       macos_deployment_target: ''
 
-      current_tag: ${{ needs.create_release.outputs.current_tag }}
-      previous_tag: ${{ needs.create_release.outputs.previous_tag }}
-
   build-gdextension-linux:
     name: Build GDExtension (linux-${{ matrix.arch }}-${{ matrix.precision }})
-    needs: [create_release, build-rust-core]
-    if: (needs.create_release.result == 'success' || needs.create_release.result == 'skipped') && needs.build-rust-core.result == 'success'
+    needs: [build-rust-core]
+    if: needs.build-rust-core.result == 'success'
     uses: ./.github/workflows/reusable-build.yml
     strategy:
       fail-fast: false
@@ -387,13 +381,10 @@ jobs:
       platform_id: ${{ matrix.platform_id }}
       macos_deployment_target: ''
 
-      current_tag: ${{ needs.create_release.outputs.current_tag }}
-      previous_tag: ${{ needs.create_release.outputs.previous_tag }}
-
   build-gdextension-macos:
     name: Build GDExtension (macos-${{ matrix.arch }}-${{ matrix.precision }})
-    needs: [create_release, build-rust-core]
-    if: (needs.create_release.result == 'success' || needs.create_release.result == 'skipped') && needs.build-rust-core.result == 'success'
+    needs: [build-rust-core]
+    if: needs.build-rust-core.result == 'success'
     uses: ./.github/workflows/reusable-build.yml
     strategy:
       fail-fast: false
@@ -418,13 +409,10 @@ jobs:
       platform_id: ${{ matrix.platform_id }}
       macos_deployment_target: ${{ matrix.macos_deployment_target }}
 
-      current_tag: ${{ needs.create_release.outputs.current_tag }}
-      previous_tag: ${{ needs.create_release.outputs.previous_tag }}
-
   build-gdextension-windows:
     name: Build GDExtension (${{ matrix.platform_id }}-${{ matrix.arch }}-${{ matrix.precision }})
-    needs: [create_release, build-rust-core]
-    if: (needs.create_release.result == 'success' || needs.create_release.result == 'skipped') && needs.build-rust-core.result == 'success'
+    needs: [build-rust-core]
+    if: needs.build-rust-core.result == 'success'
     uses: ./.github/workflows/reusable-build.yml
     strategy:
       fail-fast: false
@@ -446,8 +434,6 @@ jobs:
       precision: ${{ matrix.precision }}
       platform_id: ${{ matrix.platform_id }}
       macos_deployment_target: ''
-      current_tag: ${{ needs.create_release.outputs.current_tag }}
-      previous_tag: ${{ needs.create_release.outputs.previous_tag }}
 
   package-single:
     name: Package Single Precision Binaries
