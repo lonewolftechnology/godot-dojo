@@ -72,7 +72,7 @@ jobs:
             fi
           fi
 
-          # Set output using multiline string
+          # Set output using multiline string.
           echo "commits<<EOF" >> $GITHUB_OUTPUT
           echo -e "$COMMITS" >> $GITHUB_OUTPUT
           echo "EOF" >> $GITHUB_OUTPUT
