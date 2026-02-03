@@ -9,8 +9,8 @@ extends Node
 @onready var menu_container:VBoxContainer = %MenuContainer
 @onready var dojo_controller:DojoController = $DojoController
 
-@export var entity_sub: EntitySubscription
-@export var message_sub: MessageSubscription
+var entity_sub: int
+var message_sub: int
 
 #const CONTRACT = "0x01ae76ae877518f905b73b643d96731e71e6b848ba68824adb4f1a77760fc3c7" # Dojo Starter
 const CONTRACT: String = "0x023b0d96f2617d1be29e5ee6ec4b7b4da312d0eb28d6c83f5ef1c2ba254f3a6f"
@@ -87,8 +87,6 @@ func callback(data:Dictionary, type:String):
 	add_entry_to_output("%s CALLBACK" % type, result)
 
 func _ready() -> void:
-	entity_sub.world_addresses.append(WORLD)
-	message_sub.world_addresses.append(WORLD)
 	if OS.has_feature("android"):
 		main_container.vertical = true
 		menu_container.size_flags_vertical = Control.SIZE_EXPAND_FILL
@@ -106,7 +104,7 @@ func _ready() -> void:
 		message_sub
 	)
 	if priv_key.is_empty():
-		priv_key = DojoHelpers.generate_private_key()
+		priv_key = ControllerHelper.generate_private_key()
 		
 	custom_priv_key.text = priv_key
 
@@ -210,7 +208,7 @@ func add_entry_to_output(_identifier:String, _entry) -> void:
 
 
 func _on_refresh_key_pressed() -> void:
-	priv_key = DojoHelpers.generate_private_key()
+	priv_key = ControllerHelper.generate_private_key()
 	custom_priv_key.text = priv_key
 	
 

@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="TransactionQuery" inherits="QueryBuilder" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://raw.githubusercontent.com/godotengine/godot/master/doc/class.xsd">
+	<brief_description>
+		A query builder for transactions.
+	</brief_description>
+	<description>
+		The TransactionQuery class allows constructing queries for fetching transactions from the Torii indexer, supporting filtering by caller addresses, contract addresses, entrypoints, block range, model selectors, and transaction hashes.
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="caller_addresses">
+			<return type="TransactionQuery" />
+			<param index="0" name="addresses" type="PackedStringArray" />
+			<description>
+				Sets the caller addresses to filter by.
+			</description>
+		</method>
+		<method name="contract_addresses">
+			<return type="TransactionQuery" />
+			<param index="0" name="addresses" type="PackedStringArray" />
+			<description>
+				Sets the contract addresses to filter by.
+			</description>
+		</method>
+		<method name="entrypoints">
+			<return type="TransactionQuery" />
+			<param index="0" name="entrypoints" type="PackedStringArray" />
+			<description>
+				Sets the entrypoints to filter by.
+			</description>
+		</method>
+		<method name="from_block">
+			<return type="TransactionQuery" />
+			<param index="0" name="block" type="int" />
+			<description>
+				Sets the starting block number for the query.
+			</description>
+		</method>
+		<method name="model_selectors">
+			<return type="TransactionQuery" />
+			<param index="0" name="selectors" type="PackedStringArray" />
+			<description>
+				Sets the model selectors to filter by.
+			</description>
+		</method>
+		<method name="to_block">
+			<return type="TransactionQuery" />
+			<param index="0" name="block" type="int" />
+			<description>
+				Sets the ending block number for the query.
+			</description>
+		</method>
+		<method name="transaction_hashes">
+			<return type="TransactionQuery" />
+			<param index="0" name="hashes" type="PackedStringArray" />
+			<description>
+				Sets the transaction hashes to filter by.
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="type" type="int" setter="set_type" getter="get_type" overrides="QueryBuilder" default="14" />
+	</members>
+</class>

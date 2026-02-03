@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="DojoOwner" inherits="RefCounted" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://raw.githubusercontent.com/godotengine/godot/master/doc/class.xsd">
 	<brief_description>
-		Represents the owner of a controller.
+		A class representing the owner of a Dojo account.
 	</brief_description>
 	<description>
-		This class is used to manage the owner of a controller account.
+		The DojoOwner class is used to manage the ownership of a Dojo account, typically initialized with a private key.
 	</description>
 	<tutorials>
 	</tutorials>
@@ -13,7 +13,7 @@
 			<return type="DojoOwner" />
 			<param index="0" name="private_key" type="String" />
 			<description>
-				Initializes a new owner with the given private key.
+				Initializes a new DojoOwner instance using the provided private key.
 			</description>
 		</method>
 	</methods>

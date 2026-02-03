@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="DojoController" inherits="Node" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://raw.githubusercontent.com/godotengine/godot/master/doc/class.xsd">
 	<brief_description>
-		Represents a controller account.
+		A controller class for managing Dojo accounts and interactions.
 	</brief_description>
 	<description>
-		This class is used to interact with a controller account. It allows you to execute transactions, query account information, and manage account state.
+		The DojoController class provides methods to manage Dojo accounts, including initialization, execution of calls, and handling of account details.
 	</description>
 	<tutorials>
 	</tutorials>
@@ -12,25 +12,25 @@
 		<method name="address">
 			<return type="String" />
 			<description>
-				Returns the address of the controller.
+				Returns the address of the controller account.
 			</description>
 		</method>
 		<method name="app_id">
 			<return type="String" />
 			<description>
-				Returns the app ID of the controller.
+				Returns the application ID associated with the controller.
 			</description>
 		</method>
 		<method name="chain_id">
 			<return type="String" />
 			<description>
-				Returns the chain ID of the network.
+				Returns the chain ID of the network the controller is connected to.
 			</description>
 		</method>
 		<method name="clear_last_error">
 			<return type="void" />
 			<description>
-				Clears the last error message.
+				Clears the last error message stored in the controller.
 			</description>
 		</method>
 		<method name="delegate_account">
@@ -48,14 +48,14 @@
 		<method name="error_message">
 			<return type="String" />
 			<description>
-				Returns the last error message.
+				Returns the last error message, if any.
 			</description>
 		</method>
 		<method name="execute" qualifiers="const">
 			<return type="String" />
 			<param index="0" name="calls" type="Dictionary[]" />
 			<description>
-				Executes a transaction with the given calls.
+				Executes a list of calls.
 			</description>
 		</method>
 		<method name="execute_raw" qualifiers="const">
@@ -64,20 +64,20 @@
 			<param index="1" name="entrypoint" type="String" />
 			<param index="2" name="calldata" type="Array" />
 			<description>
-				Executes a single call. This is a convenience method that wraps [method execute].
+				Executes a raw call to a contract.
 			</description>
 		</method>
 		<method name="from_storage" qualifiers="static">
 			<return type="DojoController" />
 			<param index="0" name="app_id" type="String" />
 			<description>
-				Loads a controller from storage.
+				Creates a DojoController instance from storage using the application ID.
 			</description>
 		</method>
 		<method name="get_info">
 			<return type="Dictionary" />
 			<description>
-				Returns a dictionary with information about the controller.
+				Returns a dictionary containing information about the controller, such as address, app_id, chain_id, delegate_account, and username.
 			</description>
 		</method>
 		<method name="init" qualifiers="static">
@@ -90,13 +90,13 @@
 			<param index="5" name="address" type="String" />
 			<param index="6" name="chain_id" type="String" />
 			<description>
-				Initializes a new controller.
+				Initializes a new DojoController instance.
 			</description>
 		</method>
 		<method name="is_valid">
 			<return type="bool" />
 			<description>
-				Returns true if the controller is valid.
+				Checks if the controller is valid (initialized).
 			</description>
 		</method>
 		<method name="new_headless" qualifiers="static">
@@ -108,7 +108,7 @@
 			<param index="4" name="owner" type="DojoOwner" />
 			<param index="5" name="chain_id" type="String" />
 			<description>
-				Creates a new headless controller.
+				Creates a new headless DojoController instance.
 			</description>
 		</method>
 		<method name="signup">
@@ -117,14 +117,14 @@
 			<param index="1" name="session_expiration" type="Variant" />
 			<param index="2" name="cartridge_api_url" type="String" />
 			<description>
-				Signs up a new controller.
+				Signs up a new user.
 			</description>
 		</method>
 		<method name="switch_chain">
 			<return type="void" />
 			<param index="0" name="rpc_url" type="String" />
 			<description>
-				Switches the chain of the controller.
+				Switches the chain to the specified RPC URL.
 			</description>
 		</method>
 		<method name="transfer">
@@ -138,7 +138,7 @@
 		<method name="username">
 			<return type="String" />
 			<description>
-				Returns the username of the controller.
+				Returns the username associated with the controller.
 			</description>
 		</method>
 	</methods>

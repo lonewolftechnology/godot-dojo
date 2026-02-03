@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="PlayerAchievementQuery" inherits="QueryBuilder" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://raw.githubusercontent.com/godotengine/godot/master/doc/class.xsd">
+	<brief_description>
+		A query builder for player achievements.
+	</brief_description>
+	<description>
+		The PlayerAchievementQuery class allows constructing queries for fetching player achievements from the Torii indexer, supporting filtering by namespaces, player addresses, and world addresses.
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="namespaces">
+			<return type="PlayerAchievementQuery" />
+			<param index="0" name="namespaces" type="PackedStringArray" />
+			<description>
+				Sets the namespaces to filter by.
+			</description>
+		</method>
+		<method name="player_addresses">
+			<return type="PlayerAchievementQuery" />
+			<param index="0" name="players" type="PackedStringArray" />
+			<description>
+				Sets the player addresses to filter by.
+			</description>
+		</method>
+		<method name="world_addresses">
+			<return type="PlayerAchievementQuery" />
+			<param index="0" name="worlds" type="PackedStringArray" />
+			<description>
+				Sets the world addresses to filter by.
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="type" type="int" setter="set_type" getter="get_type" overrides="QueryBuilder" default="8" />
+	</members>
+</class>

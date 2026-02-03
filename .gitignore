@@ -189,10 +189,7 @@ export_presets.cfg
 # Vim
 *.swp
 *.swo
-*~
-
 # Emacs
-*~
 \#*\#
 /.emacs.desktop
 /.emacs.desktop.lock
@@ -207,7 +204,7 @@ tramp
 # ============================================================================
 # MISC
 # ============================================================================
-
+build
 # Temp doc
 dojo_methods.md
 notes.md

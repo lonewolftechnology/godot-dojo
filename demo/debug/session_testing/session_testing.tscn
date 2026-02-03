@@ -80,6 +80,11 @@ layout_mode = 2
 size_flags_vertical = 3
 text = "Execute from outside"
 
+[node name="CallTestBtn" type="Button" parent="CenterContainer/MainContainer/MenuContainer"]
+layout_mode = 2
+size_flags_vertical = 3
+text = "Execute test"
+
 [node name="InfoBtn" type="Button" parent="CenterContainer/MainContainer/MenuContainer"]
 visible = false
 layout_mode = 2
@@ -130,5 +135,6 @@ horizontal_alignment = 1
 [connection signal="pressed" from="CenterContainer/MainContainer/MenuContainer/SessionBtn" to="." method="_on_session_btn_pressed"]
 [connection signal="pressed" from="CenterContainer/MainContainer/MenuContainer/CallBtn" to="." method="_on_call_btn_pressed"]
 [connection signal="pressed" from="CenterContainer/MainContainer/MenuContainer/CallOutsideBtn" to="." method="_on_call_outside_btn_pressed"]
+[connection signal="pressed" from="CenterContainer/MainContainer/MenuContainer/CallTestBtn" to="." method="_on_call_test_btn_pressed"]
 [connection signal="pressed" from="CenterContainer/MainContainer/MenuContainer/InfoBtn" to="." method="_on_info_btn_pressed"]
 [connection signal="pressed" from="CenterContainer/MainContainer/MenuContainer/IterativeCalls" to="." method="_on_iterative_calls_pressed"]

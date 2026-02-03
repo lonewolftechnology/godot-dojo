@@ -149,11 +149,11 @@
     -   **iOS:** (No editor build for iOS)
         -   Debug Export:
             ```bash
-            scons platform=ios arch=universal target=template_debug
+            scons platform=ios arch=universal target=template_debug assemble-ios
             ```
         -   Release Export:
             ```bash
-            scons platform=ios arch=universal target=template_release
+            scons platform=ios arch=universal target=template_release assemble-ios
             ```
     </details>
 

@@ -9,7 +9,6 @@ enum Directions {
 }
 
 @export var connection : DojoConnection
-@export var controller_query:DojoControllerQuery
 
 var _player_address : String = ""
 
@@ -31,26 +30,24 @@ func _on_controller_current_user_info(data:Dictionary) -> void:
 	var player_entity := controllers_manager.spawn_entity(address,true)
 	player_entity.set_username(username)
 
-func _on_events(args:Dictionary) -> void:
-	push_warning("CALLBACK EVENTS", args)
-
 func _on_entities(args:Dictionary) -> void:
 	_handle_callback(args)
 
 func _handle_callback(args:Dictionary) -> void:
+	
 	var data = args["models"]
 	# This is contract specific
-	var result_data : Dictionary
-	for entry : Dictionary in data:
-		result_data.merge(entry)
+	#var result_data : Dictionary
+	#for entry in data.keys():
+		#result_data.merge(data[entry])
 	await get_tree().process_frame
-	if result_data.has("dojo_starter-Position"):
-		var position_model = result_data["dojo_starter-Position"]
+	if data.has("dojo_starter-Position"):
+		var position_model = data["dojo_starter-Position"]
 		var pos := Vector2(position_model['vec']['x'], position_model['vec']['y'] )
 		var id : String = position_model['player']
 		controllers_manager.move_controller(id, pos)
-	if result_data.has("dojo_starter-Moves"):
-		var moves_model = result_data["dojo_starter-Moves"]
+	if data.has("dojo_starter-Moves"):
+		var moves_model = data["dojo_starter-Moves"]
 		var id : String = moves_model['player']
 		if id == _player_address:
 			label_moves.text = "Moves: %s" % moves_model['remaining']
@@ -68,7 +65,7 @@ func _on_start_screen_entered() -> void:
 
 func start() -> void:
 	await get_tree().create_timer(0.1).timeout
-	connection.create_subscriptions(_on_events,_on_entities)
+	connection.create_subscriptions(_on_entities)
 	
 	await get_tree().create_timer(0.1).timeout
 	await get_tree().create_timer(0.1).timeout
@@ -83,8 +80,9 @@ func start() -> void:
 	spawn()
 
 func get_controllers(addrs:Array = []) -> void:
-	var data = connection.torii_client.get_controllers(controller_query)
-	for controller in data:
+	var data = connection.torii_client.controllers(ControllerQuery.new())
+	print()
+	for controller:Dictionary in data['items']:
 		var id : String = controller["address"]
 		var username : String = controller["username"]
 		var entity : GenericEntity = controllers_manager.get_entity(id)
@@ -94,49 +92,50 @@ func get_controllers(addrs:Array = []) -> void:
 		entity.set_username(username)
 
 func get_entities() -> Dictionary:
-	var data = connection.torii_client.get_entities(DojoQuery.new())
+	var data = connection.torii_client.entities(DojoQuery.new())
 	var parsed_entities : Dictionary = {}
-	for entity in data:
-		for model:Dictionary in entity.models:
+	var items:Array = data["items"]
+	for entity in items:
+		var _models:Dictionary = entity["models"]
+		for key in _models.keys():
 			var id : String = ""
 			var position : Vector2 = Vector2.ZERO
 			var can_move : bool = true
 			var remaining : int = 100
-			for key in model:
-				var entry:Dictionary = model[key]
-				id = entry["player"]
-				match key:
-					"dojo_starter-Position":
-						var v : Dictionary = {}
-						
-						if entry.has("vec"):
-							v = entry["vec"]
-						elif entry.has("Vector2"):
-							v = entry["Vector2"]
-						
-						var x := v["x"] as float
-						var y := v["y"] as float
-						position = Vector2(x,y)
-						
-						if not parsed_entities.has(id):
-							parsed_entities[id] = {}
+			var entry:Dictionary = _models[key]
+			id = entry["player"]
+			match key:
+				"dojo_starter-Position":
+					var v : Dictionary = {}
+					
+					if entry.has("vec"):
+						v = entry["vec"]
+					elif entry.has("Vector2"):
+						v = entry["Vector2"]
+					
+					var x := v["x"] as float
+					var y := v["y"] as float
+					position = Vector2(x,y)
+					
+					if not parsed_entities.has(id):
 						parsed_entities[id] = {}
-						parsed_entities[id].merge({"position": position})
+					parsed_entities[id] = {}
+					parsed_entities[id].merge({"position": position})
+				
+				"dojo_starter-Moves":
+					remaining = entry["remaining"] as int
+					can_move = entry["can_move"] as bool
 					
-					"dojo_starter-Moves":
-						remaining = entry["remaining"] as int
-						can_move = entry["can_move"] as bool
+					if not parsed_entities.has(id):
+						parsed_entities[id] = {}
 						
-						if not parsed_entities.has(id):
-							parsed_entities[id] = {}
-							
-						parsed_entities[id]["remaining"] = remaining
-						parsed_entities[id]["can_move"] = can_move
-					
-					"dojo_starter-U128Value":
-						pass
-					"dojo_starter-U256Value":
-						pass
+					parsed_entities[id]["remaining"] = remaining
+					parsed_entities[id]["can_move"] = can_move
+				
+				"dojo_starter-U128Value":
+					pass
+				"dojo_starter-U256Value":
+					pass
 	return parsed_entities
 
 func _update_entities(parsed_entities:Dictionary) -> void:

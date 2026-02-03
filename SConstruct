@@ -113,6 +113,11 @@ if GetOption('clean'):
     subprocess.run(["scons", "-C", "external/godot-cpp", "--clean"], check=False, capture_output=False)
     print(f"{G}     {check} godot-cpp cleanup complete.{X}")
 
+    # Eliminar directorio de objetos intermedios
+    print(f"{B}  -> Deleting intermediate object directory: build/obj{X}")
+    shutil.rmtree("build/obj", ignore_errors=True)
+    print(f"{G}     {check} Intermediate object directory deleted.{X}")
+
     print(f"\n{G}{check} Cleanup process finished.{X}")
     Return()
 
@@ -121,6 +126,10 @@ os.makedirs("demo/addons/godot-dojo", exist_ok=True)
 
 # Initialize the godot-cpp build environment
 env = SConscript("external/godot-cpp/SConstruct")
+
+# Cloning env to avoid godot-cpp recompilation caused by using git for setting extension version
+env = env.Clone()
+
 platform, arch, target = env["platform"], env["arch"], env.get("target", "template_debug")
 
 # Validate that 'assemble-ios' is used with 'platform=ios'
@@ -138,6 +147,16 @@ print(f"{B}Building: {build_info}{X}")
 # Compile Rust
 # Se usa más adelante, pero se importa aquí para que esté disponible
 import re
+def get_git_version():
+    try:
+        return subprocess.check_output(
+            ["git", "describe", "--tags", "--always", "--dirty"],
+            stderr=subprocess.DEVNULL,
+            text=True
+        ).strip()
+    except Exception:
+        return "0.0.0-unknown"
+
 def _get_git_submodule_version(submodule_path):
     """
     Detects the version of a git submodule by trying to find a tag, then a branch name,
@@ -205,12 +224,6 @@ targets = {
 # Use CARGO_BUILD_TARGET from environment if set, otherwise use the target from the platform/arch
 rust_target = os.environ.get("CARGO_BUILD_TARGET", targets.get((platform, arch), "x86_64-unknown-linux-gnu"))
 
-# Override for macOS x86_64 to ensure it uses the correct target
-if platform == "macos" and arch == "x86_64":
-    rust_target = "x86_64-apple-darwin"
-elif platform == "macos" and arch == "arm64":
-    rust_target = "aarch64-apple-darwin"
-
 # Ensure the Rust target is installed
 try:
     targets_to_check = rust_target if isinstance(rust_target, list) else [rust_target]
@@ -239,8 +252,7 @@ except subprocess.CalledProcessError as e:
 
 def _compile_rust_library(lib_name, lib_path, is_release, cargo_flags=None, rustc_flags=None):
     """Logic to compile a Rust library, handling normal, universal, and web builds."""
-    lib_version = _get_git_submodule_version(lib_path) or "unknown"
-    print(f"{Y}{package} Compiling {lib_name} ({lib_version})...{X}")
+    print(f"{Y}{package} Compiling {lib_name}...{X}")
 
     build_mode = "release" if is_release else "debug"
     base_cmd = ["cargo", "build"]
@@ -331,6 +343,10 @@ if env["platform"] != "android":
     # we remove it to have a consistent naming scheme (e.g., 'godot-dojo.windows.dll').
     env['SHLIBPREFIX'] = ''
 prefix = env.subst('$SHLIBPREFIX')
+
+project_version = get_git_version()
+env.Append(CPPDEFINES=[('VERSION_STR', f'\\"{project_version}\\"')])
+
 env.Append(CPPPATH=["src/", "include/", "bindings/", "external/boost/include"])
 if platform == "macos":
     deployment_target = os.environ.get("MACOSX_DEPLOYMENT_TARGET", "14.0")
@@ -417,11 +433,35 @@ else:
 all_sources = glob.glob("src/**/*.cpp", recursive=True)
 generated_doc_file = "src/gen/doc_data.gen.cpp"
 sources = [s for s in all_sources if os.path.normpath(s) != os.path.normpath(generated_doc_file)]
-sources = sorted(sources) + ["bindings/controller/controller.cpp"]
+sources = sorted(sources) + ["bindings/controller/controller.cpp", "bindings/dojo/dojo.cpp"]
+
+# --- SMART BUILD: VariantDir ---
+# Define a dedicated build directory for objects based on configuration (including precision).
+# This prevents object file conflicts when switching between single/double precision without cleaning.
+precision = env.get("precision", "single")
+obj_dir = f"build/obj/{platform}/{target}/{arch}/{precision}"
+
+env.VariantDir(f"{obj_dir}/src", "src", duplicate=0)
+env.VariantDir(f"{obj_dir}/bindings", "bindings", duplicate=0)
+
+# Remap source files to the new object directory
+new_sources = []
+for s in sources:
+    s_path = str(s).replace(os.sep, '/')
+    if s_path.startswith("src/"):
+        new_sources.append(s_path.replace("src/", f"{obj_dir}/src/", 1))
+    elif s_path.startswith("bindings/"):
+        new_sources.append(s_path.replace("bindings/", f"{obj_dir}/bindings/", 1))
+    else:
+        new_sources.append(s)
+sources = new_sources
+
+# Update generated doc file path to be inside the build dir so it doesn't conflict
+generated_doc_file = f"{obj_dir}/src/gen/doc_data.gen.cpp"
 
 _godot_min = _detect_godot_min_requirement()
 _godot_tag = _get_git_submodule_version("external/godot-cpp")
-print(f"{Y}{clipboard} Building with {_godot_tag}.{X}")
+print(f"{Y}{clipboard} Building with {_godot_tag}. Project Version: {project_version}{X}")
 
 # Add documentation (the correct way)
 if target in ["editor", "template_debug"]:
@@ -467,6 +507,7 @@ gdext = gdext.replace("${ENTRY_POINT}", "godotdojo_library_init")
 
 
 gdext = gdext.replace("${GODOT_MIN_REQUIREMENT}", _godot_min)
+gdext = gdext.replace("${VERSION}", project_version)
 
 with open("demo/addons/godot-dojo/godot-dojo.gdextension", 'w') as f:
     f.write(gdext)
@@ -537,6 +578,9 @@ def create_xcframework_action(target, source, env):
 
     cmd.extend(["-output", xcframework_path])
 
+    # Ensure the destination directory exists
+    os.makedirs(os.path.dirname(xcframework_path), exist_ok=True)
+
     try:
         subprocess.run(cmd, check=True, text=True, capture_output=False)
         print(f"{G}{check} XCFramework created successfully at: {xcframework_path}{X}")
@@ -555,7 +599,7 @@ if platform == "ios":
         output_base = f"build/ios/{target_out_dir}"
         is_simulator = env.get('ios_simulator', False)
         # The output path is always the same. The action will handle deletion to force recreation.
-        target_dir = f"build/ios/{target_out_dir}/godot-dojo.xcframework"
+        target_dir = f"demo/addons/godot-dojo/bin/ios/{target_out_dir}/godot-dojo.xcframework"
         # Always delete the existing XCFramework to force recreation.
         if os.path.exists(target_dir):
             print(f"{Y}{broom} Deleting existing XCFramework to ensure a clean build: {target_dir}{X}")

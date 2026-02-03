@@ -1,4 +1,4 @@
-[gd_scene load_steps=18 format=3 uid="uid://cn1gdwiythfn2"]
+[gd_scene format=3 uid="uid://cn1gdwiythfn2"]
 
 [ext_resource type="Script" uid="uid://dvbwyukos638c" path="res://game/game.gd" id="1_hb504"]
 [ext_resource type="PackedScene" uid="uid://b75yggsnay1mo" path="res://connection/connection.tscn" id="2_ee6o4"]
@@ -16,8 +16,6 @@
 [ext_resource type="Texture2D" uid="uid://dn0lmukjhns5l" path="res://assets/arrow_right_p.png" id="14_jdpby"]
 [ext_resource type="PackedScene" uid="uid://d1loujwy6tlp4" path="res://ui/screens/start_screen.tscn" id="15_58yx1"]
 
-[sub_resource type="DojoControllerQuery" id="DojoControllerQuery_hb504"]
-
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_k3cyb"]
 content_margin_left = 4.0
 content_margin_top = 4.0
@@ -25,23 +23,22 @@ content_margin_right = 4.0
 content_margin_bottom = 4.0
 bg_color = Color(0.2484, 0.2484, 0.2484, 1)
 
-[node name="DemoGame" type="Node" node_paths=PackedStringArray("connection")]
+[node name="DemoGame" type="Node" unique_id=1497933358 node_paths=PackedStringArray("connection")]
 script = ExtResource("1_hb504")
 connection = NodePath("Connection")
-controller_query = SubResource("DojoControllerQuery_hb504")
 
-[node name="Connection" parent="." instance=ExtResource("2_ee6o4")]
+[node name="Connection" parent="." unique_id=771337244 instance=ExtResource("2_ee6o4")]
 
-[node name="Parallax" type="ParallaxBackground" parent="."]
+[node name="Parallax" type="ParallaxBackground" parent="." unique_id=523330446]
 layer = -1
 
-[node name="ParallaxLayer" type="ParallaxLayer" parent="Parallax"]
+[node name="ParallaxLayer" type="ParallaxLayer" parent="Parallax" unique_id=744793614]
 
-[node name="Parallax2D" type="Parallax2D" parent="Parallax/ParallaxLayer"]
+[node name="Parallax2D" type="Parallax2D" parent="Parallax/ParallaxLayer" unique_id=2118378619]
 repeat_size = Vector2(2048, 2048)
 repeat_times = 128
 
-[node name="Bg" type="Sprite2D" parent="Parallax/ParallaxLayer/Parallax2D"]
+[node name="Bg" type="Sprite2D" parent="Parallax/ParallaxLayer/Parallax2D" unique_id=1873328141]
 texture_filter = 1
 texture_repeat = 2
 scale = Vector2(2, 2)
@@ -51,22 +48,22 @@ offset = Vector2(32, 32)
 region_enabled = true
 region_rect = Rect2(0, 0, 1024, 1024)
 
-[node name="World" type="Node2D" parent="."]
+[node name="World" type="Node2D" parent="." unique_id=185229916]
 metadata/_edit_lock_ = true
 
-[node name="ControllersManager" type="Node2D" parent="World"]
+[node name="ControllersManager" type="Node2D" parent="World" unique_id=1061631284]
 unique_name_in_owner = true
 script = ExtResource("4_ln7ps")
 generic_entity_scene = ExtResource("5_pxxsx")
 player_entity_scene = ExtResource("6_u8s88")
 
-[node name="Camera2D" type="Camera2D" parent="World"]
+[node name="Camera2D" type="Camera2D" parent="World" unique_id=1587729845]
 position_smoothing_enabled = true
 position_smoothing_speed = 4.0
 
-[node name="UI" type="CanvasLayer" parent="."]
+[node name="UI" type="CanvasLayer" parent="." unique_id=1735007082]
 
-[node name="Arrows" type="MarginContainer" parent="UI"]
+[node name="Arrows" type="MarginContainer" parent="UI" unique_id=395129342]
 anchors_preset = 7
 anchor_left = 0.5
 anchor_top = 1.0
@@ -82,45 +79,45 @@ theme_override_constants/margin_top = 32
 theme_override_constants/margin_right = 32
 theme_override_constants/margin_bottom = 64
 
-[node name="VBoxContainer" type="VBoxContainer" parent="UI/Arrows"]
+[node name="VBoxContainer" type="VBoxContainer" parent="UI/Arrows" unique_id=697924177]
 layout_mode = 2
 
-[node name="HBoxContainer" type="HBoxContainer" parent="UI/Arrows/VBoxContainer"]
+[node name="HBoxContainer" type="HBoxContainer" parent="UI/Arrows/VBoxContainer" unique_id=1950292250]
 texture_filter = 1
 layout_mode = 2
 alignment = 1
 
-[node name="ArrowLeft" type="TextureButton" parent="UI/Arrows/VBoxContainer/HBoxContainer"]
+[node name="ArrowLeft" type="TextureButton" parent="UI/Arrows/VBoxContainer/HBoxContainer" unique_id=121644538]
 layout_mode = 2
 size_flags_vertical = 12
 texture_normal = ExtResource("7_dxwpq")
 texture_pressed = ExtResource("8_mhvfb")
 texture_hover = ExtResource("7_dxwpq")
 
-[node name="VBoxContainer" type="VBoxContainer" parent="UI/Arrows/VBoxContainer/HBoxContainer"]
+[node name="VBoxContainer" type="VBoxContainer" parent="UI/Arrows/VBoxContainer/HBoxContainer" unique_id=850746520]
 layout_mode = 2
 alignment = 2
 
-[node name="ArrowUp" type="TextureButton" parent="UI/Arrows/VBoxContainer/HBoxContainer/VBoxContainer"]
+[node name="ArrowUp" type="TextureButton" parent="UI/Arrows/VBoxContainer/HBoxContainer/VBoxContainer" unique_id=1503309281]
 layout_mode = 2
 texture_normal = ExtResource("9_5e03w")
 texture_pressed = ExtResource("10_leid8")
 texture_hover = ExtResource("9_5e03w")
 
-[node name="ArrowDown" type="TextureButton" parent="UI/Arrows/VBoxContainer/HBoxContainer/VBoxContainer"]
+[node name="ArrowDown" type="TextureButton" parent="UI/Arrows/VBoxContainer/HBoxContainer/VBoxContainer" unique_id=941167722]
 layout_mode = 2
 texture_normal = ExtResource("11_8bboj")
 texture_pressed = ExtResource("12_q52ks")
 texture_hover = ExtResource("11_8bboj")
 
-[node name="ArrowRight" type="TextureButton" parent="UI/Arrows/VBoxContainer/HBoxContainer"]
+[node name="ArrowRight" type="TextureButton" parent="UI/Arrows/VBoxContainer/HBoxContainer" unique_id=444106763]
 layout_mode = 2
 size_flags_vertical = 12
 texture_normal = ExtResource("13_jucfl")
 texture_pressed = ExtResource("14_jdpby")
 texture_hover = ExtResource("13_jucfl")
 
-[node name="Panel" type="PanelContainer" parent="UI"]
+[node name="Panel" type="PanelContainer" parent="UI" unique_id=1929938117]
 anchors_preset = 7
 anchor_left = 0.5
 anchor_top = 1.0
@@ -134,30 +131,30 @@ grow_vertical = 0
 size_flags_horizontal = 4
 theme_override_styles/panel = SubResource("StyleBoxFlat_k3cyb")
 
-[node name="HBoxContainer" type="HBoxContainer" parent="UI/Panel"]
+[node name="HBoxContainer" type="HBoxContainer" parent="UI/Panel" unique_id=587184127]
 layout_mode = 2
 
-[node name="LabelUsername" type="Label" parent="UI/Panel/HBoxContainer"]
+[node name="LabelUsername" type="Label" parent="UI/Panel/HBoxContainer" unique_id=312654318]
 unique_name_in_owner = true
 layout_mode = 2
 text = "Username:"
 
-[node name="LabelAddress" type="Label" parent="UI/Panel/HBoxContainer"]
+[node name="LabelAddress" type="Label" parent="UI/Panel/HBoxContainer" unique_id=1536266683]
 unique_name_in_owner = true
 visible = false
 layout_mode = 2
 text = "Username:"
 
-[node name="LabelMoves" type="Label" parent="UI/Panel/HBoxContainer"]
+[node name="LabelMoves" type="Label" parent="UI/Panel/HBoxContainer" unique_id=251005112]
 unique_name_in_owner = true
 layout_mode = 2
 text = "Moves:"
 
-[node name="Disconnect" type="Button" parent="UI/Panel/HBoxContainer"]
+[node name="Disconnect" type="Button" parent="UI/Panel/HBoxContainer" unique_id=1577584812]
 layout_mode = 2
 text = "Disconnect"
 
-[node name="StartScreen" parent="UI" node_paths=PackedStringArray("connection") instance=ExtResource("15_58yx1")]
+[node name="StartScreen" parent="UI" unique_id=187435681 node_paths=PackedStringArray("connection") instance=ExtResource("15_58yx1")]
 visible = false
 connection = NodePath("../../Connection")
 

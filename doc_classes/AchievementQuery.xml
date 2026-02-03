@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="AchievementQuery" inherits="QueryBuilder" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://raw.githubusercontent.com/godotengine/godot/master/doc/class.xsd">
+	<brief_description>
+		A query builder for achievements.
+	</brief_description>
+	<description>
+		The AchievementQuery class allows constructing queries for fetching achievements from the Torii indexer, supporting filtering by hidden status, namespaces, and world addresses.
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="hidden">
+			<return type="AchievementQuery" />
+			<param index="0" name="hidden" type="bool" />
+			<description>
+				Sets whether to include hidden achievements in the query.
+			</description>
+		</method>
+		<method name="namespaces">
+			<return type="AchievementQuery" />
+			<param index="0" name="namespaces" type="PackedStringArray" />
+			<description>
+				Sets the namespaces to filter by.
+			</description>
+		</method>
+		<method name="world_addresses">
+			<return type="AchievementQuery" />
+			<param index="0" name="worlds" type="PackedStringArray" />
+			<description>
+				Sets the world addresses to filter by.
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="type" type="int" setter="set_type" getter="get_type" overrides="QueryBuilder" default="1" />
+	</members>
+</class>

@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="TokenBalanceQuery" inherits="QueryBuilder" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://raw.githubusercontent.com/godotengine/godot/master/doc/class.xsd">
+	<brief_description>
+		A query builder for token balances.
+	</brief_description>
+	<description>
+		The TokenBalanceQuery class allows constructing queries for fetching token balances from the Torii indexer, supporting filtering by account addresses, contract addresses, and token IDs.
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="account_addresses">
+			<return type="TokenBalanceQuery" />
+			<param index="0" name="addresses" type="PackedStringArray" />
+			<description>
+				Sets the account addresses to filter by.
+			</description>
+		</method>
+		<method name="contract_addresses">
+			<return type="TokenBalanceQuery" />
+			<param index="0" name="addresses" type="PackedStringArray" />
+			<description>
+				Sets the contract addresses to filter by.
+			</description>
+		</method>
+		<method name="token_ids">
+			<return type="TokenBalanceQuery" />
+			<param index="0" name="ids" type="PackedStringArray" />
+			<description>
+				Sets the token IDs to filter by.
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="type" type="int" setter="set_type" getter="get_type" overrides="QueryBuilder" default="11" />
+	</members>
+</class>

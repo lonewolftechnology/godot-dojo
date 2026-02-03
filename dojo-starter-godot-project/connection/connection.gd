@@ -11,9 +11,8 @@ const ACTIONS_CONTRACT = "0x16de9d5d6d7f39930330d9cccb224d741794b3723cb7d50ddf23
 const rpc_url = "https://api.cartridge.gg/x/godot-dojo-starter/katana"
 const torii_url = "https://api.cartridge.gg/x/godot-dojo-starter/torii"
 
-@export var query : DojoQuery
-@export var entity_sub : EntitySubscription
-@export var message_sub : MessageSubscription
+var query : DojoQuery
+var entity_sub : int
 @export_placeholder("0x0") var priv_key : String
 
 @onready var torii_client: ToriiClient = $ToriiClient
@@ -41,7 +40,9 @@ var full_policies:Dictionary = {
 }
 
 func connect_client() -> void:
-	torii_client.create_client(torii_url)
+	#TODO: Refactor to make more readable
+	var _result:bool = torii_client.connect(torii_url)
+	_on_torii_client_client_connected(_result)
 
 func connect_session() -> void:
 	session_account.create_from_subscribe(
@@ -51,9 +52,10 @@ func connect_session() -> void:
 	)
 	session_created.emit(session_account.get_info())
 
-func create_subscriptions(events:Callable,entities:Callable) -> void:
-	torii_client.on_entity_state_update(entities, entity_sub)
-	torii_client.on_event_message_update(events, message_sub)
+func create_subscriptions(entities:Callable) -> void:
+	var _entities_callback:DojoCallback = DojoCallback.new()
+	_entities_callback.on_update = entities
+	entity_sub = torii_client.subscribe_entity_updates(DojoClause.new(), [WORLD_CONTRACT], _entities_callback)
 
 func _ready() -> void:	
 	# For debugging purposes
@@ -63,9 +65,6 @@ func _ready() -> void:
 	DisplayServer.enable_for_stealing_focus(OS.get_process_id())
 	get_window().focus_entered.connect(_on_window_focus)
 	
-	entity_sub.world_addresses = [WORLD_CONTRACT]
-	message_sub.world_addresses = [WORLD_CONTRACT]
-
 	session_account.max_fee = "0x100000"
 	session_account.full_policies = full_policies
 
@@ -78,12 +77,8 @@ func _on_window_focus():
 			connected.emit()
 		url_open = false
 
-func _torii_logger(_msg:String):
-	prints("[TORII LOGGER]", _msg)
-
 func _on_torii_client_client_connected(success: bool) -> void:
 	_client_status.set_status(success)
-	torii_client.set_logger_callback(_torii_logger)
 	if success:
 		url_open = true
 		var session_url: String = _get_session_url()
@@ -100,7 +95,7 @@ func _on_torii_client_subscription_created(subscription_name: String) -> void:
 
 func _get_session_url() -> String:
 	if priv_key.is_empty():
-		priv_key = DojoHelpers.generate_private_key()
+		priv_key = ControllerHelper.generate_private_key()
 	
 		
 	var base_url = "https://x.cartridge.gg/session"
