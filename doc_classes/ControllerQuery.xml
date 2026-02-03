@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="ControllerQuery" inherits="QueryBuilder" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://raw.githubusercontent.com/godotengine/godot/master/doc/class.xsd">
+	<brief_description>
+		A query builder for controllers.
+	</brief_description>
+	<description>
+		The ControllerQuery class allows constructing queries for fetching controllers from the Torii indexer, supporting filtering by contract addresses and usernames.
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="contract_addresses">
+			<return type="ControllerQuery" />
+			<param index="0" name="addresses" type="PackedStringArray" />
+			<description>
+				Sets the contract addresses to filter by.
+			</description>
+		</method>
+		<method name="usernames">
+			<return type="ControllerQuery" />
+			<param index="0" name="usernames" type="PackedStringArray" />
+			<description>
+				Sets the usernames to filter by.
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="type" type="int" setter="set_type" getter="get_type" overrides="QueryBuilder" default="5" />
+	</members>
+</class>

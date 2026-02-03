@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="AggregationQuery" inherits="QueryBuilder" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://raw.githubusercontent.com/godotengine/godot/master/doc/class.xsd">
+	<brief_description>
+		A query builder for aggregations.
+	</brief_description>
+	<description>
+		The AggregationQuery class allows constructing queries for fetching aggregations from the Torii indexer, supporting filtering by aggregator IDs and entity IDs.
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="aggregator_ids">
+			<return type="AggregationQuery" />
+			<param index="0" name="ids" type="PackedStringArray" />
+			<description>
+				Sets the aggregator IDs to filter by.
+			</description>
+		</method>
+		<method name="entity_ids">
+			<return type="AggregationQuery" />
+			<param index="0" name="ids" type="PackedStringArray" />
+			<description>
+				Sets the entity IDs to filter by.
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="type" type="int" setter="set_type" getter="get_type" overrides="QueryBuilder" default="3" />
+	</members>
+</class>

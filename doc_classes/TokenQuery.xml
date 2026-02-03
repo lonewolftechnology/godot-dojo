@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="TokenQuery" inherits="QueryBuilder" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://raw.githubusercontent.com/godotengine/godot/master/doc/class.xsd">
+	<brief_description>
+		A query builder for tokens.
+	</brief_description>
+	<description>
+		The TokenQuery class allows constructing queries for fetching tokens from the Torii indexer, supporting filtering by contract addresses, token IDs, and attributes.
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="attribute_filter">
+			<return type="TokenQuery" />
+			<param index="0" name="trait_name" type="String" />
+			<param index="1" name="trait_value" type="String" />
+			<description>
+				Adds an attribute filter to the query.
+			</description>
+		</method>
+		<method name="contract_addresses">
+			<return type="TokenQuery" />
+			<param index="0" name="addresses" type="PackedStringArray" />
+			<description>
+				Sets the contract addresses to filter by.
+			</description>
+		</method>
+		<method name="token_ids">
+			<return type="TokenQuery" />
+			<param index="0" name="ids" type="PackedStringArray" />
+			<description>
+				Sets the token IDs to filter by.
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="type" type="int" setter="set_type" getter="get_type" overrides="QueryBuilder" default="10" />
+	</members>
+</class>

@@ -1,40 +1,45 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="DojoEditorPlugin" inherits="EditorPlugin" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://raw.githubusercontent.com/godotengine/godot/master/doc/class.xsd">
 	<brief_description>
-		The editor plugin for the Dojo SDK.
 	</brief_description>
 	<description>
-		This class provides the editor functionality for the Dojo SDK, including tools for managing project settings.
 	</description>
 	<tutorials>
 	</tutorials>
 	<methods>
+		<method name="check_for_updates">
+			<return type="void" />
+			<description>
+			</description>
+		</method>
 		<method name="init_config">
 			<return type="void" />
 			<param index="0" name="reset" type="bool" />
 			<description>
-				Initializes the configuration settings. If [param reset] is true, it resets the settings to their default values.
 			</description>
 		</method>
 		<method name="init_setting">
 			<return type="void" />
 			<param index="0" name="setting" type="String" />
 			<param index="1" name="value" type="Variant" />
-			<param index="2" name="force" type="bool" />
+			<param index="2" name="force" type="bool" default="true" />
+			<param index="3" name="save" type="bool" default="false" />
 			<description>
-				Initializes a specific setting with a given value. If [param force] is true, it overwrites any existing value.
+			</description>
+		</method>
+		<method name="print_version">
+			<return type="void" />
+			<description>
 			</description>
 		</method>
 		<method name="reset_project_settings">
 			<return type="void" />
 			<description>
-				Resets the Dojo-related project settings to their default values.
 			</description>
 		</method>
 	</methods>
 	<members>
 		<member name="is_enabled" type="bool" setter="set_enabled" getter="get_enabled" default="true">
-			Whether the plugin is enabled.
 		</member>
 	</members>
 </class>

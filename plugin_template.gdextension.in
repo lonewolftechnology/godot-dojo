@@ -3,6 +3,7 @@
 entry_symbol = "${ENTRY_POINT}"
 compatibility_minimum = "${GODOT_MIN_REQUIREMENT}"
 reloadable = true
+version = "${VERSION}"
 [libraries]
 
 macos.editor.x86_64 = "./bin/macos/editor/${PROJECT_NAME}.macos.editor.x86_64.dylib"

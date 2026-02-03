@@ -8,9 +8,6 @@ extends Control
 @export var torii_client:ToriiClient
 
 func _ready() -> void:
-
-	var result = QueryBuilder.create(QueryBuilder.Achievement)
-	result.set_world_addresses([Constants.WORLD])
 #	printt("query" ,result.get_type(), result.get_type_as_string(), type_string(result.get_type()))
 	if get_parent() == get_tree().root:
 		torii_client = ToriiClient.new()
@@ -19,10 +16,9 @@ func _ready() -> void:
 
 func _on_query_pressed() -> void:
 	var query:DojoQuery = DojoQuery.new()
-	var clause = DojoOptionClause.new()
-	clause.tag = DojoOptionClause.ClauseTag.Keys
-	clause.keys = [address_input.text]
-	clause.models = [model_input.text]
+	var clause = KeysClause.new()
+	clause.add_key(address_input.text)
+	clause.add_model(model_input.text)
 #	clause.tag = DojoOptionClause.ClauseTag.Member
 #	clause.comparison_operator = DojoOptionClause.ComparisonOperator.Eq
 #	clause.member_tag = DojoOptionClause.MemberValueTag.PrimitiveValue
@@ -31,8 +27,7 @@ func _on_query_pressed() -> void:
 #	clause.member = member_input.text
 #	clause.value = address_input.text
 #	query.models = [model_input.text]
-	query.clause = clause
-	ResourceSaver.save(query, "res://new_dojo_query.tres")
+	query.with_clause(clause)
 	_send_query(query)
 
 

@@ -23,7 +23,10 @@ func get_entity(id:String) -> GenericEntity:
 func _find_user(id:String) -> GenericEntity:
 	var children = get_children()
 	var filter = children.filter(
-		func(c): return c.id == id
+		func(c): 
+			var _id = id.replace("0x0", "")
+			var _c_id = c.id.replace("0x", "")
+			return _c_id == _id
 	)
 	if filter.is_empty():
 		return null

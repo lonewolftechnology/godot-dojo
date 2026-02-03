@@ -7,6 +7,7 @@
 .PHONY: linux-x64 windows-x64 macos-x64 macos-arm64 web-wasm32
 .PHONY: quick dev-linux dev-windows dev-macos clean-build clean-cache
 .PHONY: android android-template_debug android-template_release
+.PHONY: ios ios-template_debug ios-template_release
 
 # Configuration
 NPROC := $(shell nproc 2>/dev/null || sysctl -n hw.ncpu 2>/dev/null || echo 4)
@@ -266,7 +267,6 @@ _install-rust-targets:
 	@rustup target add x86_64-apple-darwin 2>/dev/null || true
 	@rustup target add aarch64-apple-darwin 2>/dev/null || true
 	@rustup target add wasm32-unknown-unknown 2>/dev/null || true
-	@rustup component add rustfmt clippy 2>/dev/null || true
 	@echo "$(G)  ✅ Rust targets and components installed$(X)"
 
 _install-cross-tools:
@@ -345,6 +345,8 @@ help:
 	@echo "  make linux-all    - Linux x64 debug + release"
 	@echo "  make windows-all  - Windows x64 debug + release"
 	@echo "  make macos-all    - macOS (x64 + arm64) debug + release"
+	@echo "  make android      - Android arm64 debug + release"
+	@echo "  make ios          - iOS universal debug + release"
 	@echo "  make web-all      - WebAssembly debug + release $(R)[EXPERIMENTAL - NON-FUNCTIONAL]$(X)"
 	@echo ""
 	@echo "$(G)Platform debug/release only:$(X)"
@@ -549,12 +551,27 @@ android: android-template_debug android-template_release
 
 android-template_debug:
 	@echo "$(B)📦 Compilando Android: template_debug...$(X)"
-	@$(SCONS) platform=android target=template_debug
+	@$(SCONS) platform=android arch=arm64 target=template_debug
 	@echo "$(G)✅ Build de Android (template_debug) completado.$(X)"
 
 android-template_release:
 	@echo "$(B)📦 Compilando Android: template_release...$(X)"
-	@$(SCONS) platform=android target=template_release
+	@$(SCONS) platform=android arch=arm64 target=template_release
 	@echo "$(G)✅ Build de Android (template_release) completado.$(X)"
 
-.DEFAULT_GOAL := help
+# ============================================================================
+# IOS TARGETS
+# ============================================================================
+
+ios: ios-template_debug ios-template_release
+	@echo "$(G)✅ Builds de iOS (debug y release) completadas.$(X)"
+
+ios-template_debug:
+	@echo "$(B)📦 Compilando iOS: template_debug...$(X)"
+	@$(SCONS) platform=ios arch=universal target=template_debug assemble-ios
+	@echo "$(G)✅ Build de iOS (template_debug) completado.$(X)"
+
+ios-template_release:
+	@echo "$(B)📦 Compilando iOS: template_release...$(X)"
+	@$(SCONS) platform=ios arch=universal target=template_release assemble-ios
+	@echo "$(G)✅ Build de iOS (template_release) completado.$(X)"

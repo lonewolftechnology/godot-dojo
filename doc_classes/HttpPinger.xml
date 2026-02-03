@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="HttpPinger" inherits="HTTPRequest" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://raw.githubusercontent.com/godotengine/godot/master/doc/class.xsd">
+	<brief_description>
+	</brief_description>
+	<description>
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="ping" qualifiers="static">
+			<return type="HttpPinger" />
+			<param index="0" name="url" type="String" />
+			<description>
+			</description>
+		</method>
+	</methods>
+	<signals>
+		<signal name="response_received">
+			<param index="0" name="response" type="Dictionary" />
+			<description>
+			</description>
+		</signal>
+	</signals>
+</class>
