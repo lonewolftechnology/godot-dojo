@@ -5,8 +5,10 @@
 #include <sstream>
 
 // Suppress false positive warning from GCC/Boost interaction
+#ifdef __GNUC__
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wstringop-overflow"
+#endif
 
 using boost::multiprecision::cpp_int;
 
@@ -149,4 +151,6 @@ void I128::_bind_methods() {
     ClassDB::bind_static_method("I128", D_METHOD("from_variant", "value"), &I128::from_variant);
 }
 
+#ifdef __GNUC__
 #pragma GCC diagnostic pop
+#endif

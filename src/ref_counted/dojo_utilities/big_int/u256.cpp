@@ -6,8 +6,10 @@
 #include <boost/multiprecision/cpp_dec_float.hpp>
 
 // Suppress false positive warning from GCC/Boost interaction
+#ifdef __GNUC__
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wstringop-overflow"
+#endif
 
 using boost::multiprecision::cpp_int;
 
@@ -163,4 +165,6 @@ void U256::_bind_methods() {
     ClassDB::bind_static_method("U256", D_METHOD("from_variant", "value"), &U256::from_variant);
 }
 
+#ifdef __GNUC__
 #pragma GCC diagnostic pop
+#endif
