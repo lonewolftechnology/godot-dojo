@@ -157,8 +157,6 @@ jobs:
   build-rust-core:
     name: Build Core Crate (${{ matrix.platform_id }}-${{ matrix.arch }})
     runs-on: ${{ matrix.os_image }}
-    needs: [create_release]
-    if: needs.create_release.result == 'success' || needs.create_release.result == 'skipped'
     strategy:
       fail-fast: false
       matrix:
