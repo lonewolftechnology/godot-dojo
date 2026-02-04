@@ -17,6 +17,7 @@ public:
     ~DojoEditorPlugin();
 
     PopupMenu* tool_menu;
+    uint64_t tool_menu_id;
 
     void _enter_tree() override;
     void _exit_tree() override;

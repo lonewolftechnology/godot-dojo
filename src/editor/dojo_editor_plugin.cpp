@@ -17,6 +17,7 @@
 DojoEditorPlugin::DojoEditorPlugin()
 {
     tool_menu = nullptr;
+    tool_menu_id = 0;
     enabled = true;
 }
 
@@ -35,6 +36,7 @@ void DojoEditorPlugin::_enter_tree()
 
     tool_menu = memnew(PopupMenu);
     tool_menu->set_name("DojoToolsMenu");
+    tool_menu_id = tool_menu->get_instance_id();
     tool_menu->add_item("Reset Dojo ProjectSettings to default", 0);
     tool_menu->add_item("Print godot-dojo Version", 1);
     tool_menu->add_item("Check for Updates", 2);
@@ -48,11 +50,18 @@ void DojoEditorPlugin::_exit_tree()
 {
     Logger::success_extra("DojoEditorPlugin", "Exiting Tree");
     remove_tool_menu_item("Godot Dojo Tools");
-    if (tool_menu)
-    {
-        tool_menu->queue_free();
+
+    if (tool_menu_id) {
+        Object *obj = UtilityFunctions::instance_from_id(tool_menu_id);
+        if (obj) {
+            Node *node = cast_to<Node>(obj);
+            if (node) {
+                node->queue_free();
+            }
+        }
     }
     tool_menu = nullptr;
+    tool_menu_id = 0;
     Logger::success_extra("DojoEditorPlugin", "Tree exited");
 }
 
