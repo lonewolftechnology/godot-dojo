@@ -43,12 +43,6 @@ jobs:
           submodules: true
           fetch-depth: 0
 
-      - name: Patch godot-cpp for C++20 (Windows MSVC)
-        if: inputs.platform_id == 'windows-msvc'
-        shell: bash
-        run: |
-          sed -i 's|env.Append(CCFLAGS=\["/utf-8"\])|env.Append(CCFLAGS=\["/utf-8", "/std:c++20"\])|' external/godot-cpp/tools/windows.py
-
       - name: Download generated bindings
         uses: actions/download-artifact@v4
         with:

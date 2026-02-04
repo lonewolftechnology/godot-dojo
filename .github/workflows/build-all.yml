@@ -181,11 +181,6 @@ jobs:
             arch: x86_64
             rust_target: x86_64-pc-windows-gnu
             macos_deployment_target: ""
-          - platform_id: windows-msvc
-            os_image: windows-latest
-            arch: x86_64
-            rust_target: x86_64-pc-windows-msvc
-            macos_deployment_target: ""
           - platform_id: android
             os_image: ubuntu-latest
             arch: arm64
@@ -423,10 +418,6 @@ jobs:
             platform_id: windows-gnu
             arch: x86_64
             rust_target: x86_64-pc-windows-gnu
-          - os: windows-latest
-            platform_id: windows-msvc
-            arch: x86_64
-            rust_target: x86_64-pc-windows-msvc
     with:
       os: ${{ matrix.os }}
       arch: ${{ matrix.arch }}
@@ -547,7 +538,7 @@ jobs:
           - platform_id: macos
             arch: x86_64
             precision: [single, double]
-          - platform_id: windows-msvc
+          - platform_id: windows-gnu
             arch: x86_64
             precision: [single, double]
     steps:
