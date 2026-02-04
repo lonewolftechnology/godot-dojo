@@ -305,7 +305,9 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: core-build-${{ matrix.platform_id }}-${{ matrix.arch }}-release
-          path: godot-dojo-core/target
+          path: |
+            godot-dojo-core/target/**/release/libgodot_dojo_core.a
+            godot-dojo-core/target/**/release/*.lib
           if-no-files-found: error
 
       - name: Upload core artifacts (iOS)
@@ -313,7 +315,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: core-build-ios-universal
-          path: godot-dojo-core/target
+          path: godot-dojo-core/target/**/release/libgodot_dojo_core.a
           if-no-files-found: error
 
   build-gdextension-android:
