@@ -6,6 +6,7 @@
 
 #include <godot_cpp/classes/editor_interface.hpp>
 
+#include "godot_cpp/variant/utility_functions.hpp"
 #include "godot_cpp/classes/project_settings.hpp"
 #include "godot_cpp/classes/engine.hpp"
 #include "godot_cpp/classes/json.hpp"
@@ -15,6 +16,7 @@
 
 DojoEditorPlugin::DojoEditorPlugin()
 {
+    tool_menu = nullptr;
     enabled = true;
 }
 
@@ -31,15 +33,14 @@ void DojoEditorPlugin::_enter_tree()
     }
     init_config();
 
-    PopupMenu* menu = memnew(PopupMenu);
-    menu->set_name("DojoToolsMenu");
-    menu->add_item("Reset Dojo ProjectSettings to default", 0);
-    menu->add_item("Print godot-dojo Version", 1);
-    menu->add_item("Check for Updates", 2);
-    menu->connect("id_pressed", callable_mp(this, &DojoEditorPlugin::_on_menu_item_pressed));
+    tool_menu = memnew(PopupMenu);
+    tool_menu->set_name("DojoToolsMenu");
+    tool_menu->add_item("Reset Dojo ProjectSettings to default", 0);
+    tool_menu->add_item("Print godot-dojo Version", 1);
+    tool_menu->add_item("Check for Updates", 2);
+    tool_menu->connect("id_pressed", callable_mp(this, &DojoEditorPlugin::_on_menu_item_pressed));
 
-    add_tool_submenu_item("Godot Dojo Tools", menu);
-    set_meta("DojoToolsMenu", menu);
+    add_tool_submenu_item("Godot Dojo Tools", tool_menu);
     Logger::success_extra("GodotDojo", _get_plugin_version());
 }
 
@@ -47,12 +48,11 @@ void DojoEditorPlugin::_exit_tree()
 {
     Logger::success_extra("DojoEditorPlugin", "Exiting Tree");
     remove_tool_menu_item("Godot Dojo Tools");
-    if (has_meta("DojoToolsMenu")) {
-        if (Node* menu = Object::cast_to<Node>(get_meta("DojoToolsMenu"))) {
-            menu->queue_free();
-        }
-        remove_meta("DojoToolsMenu");
+    if (tool_menu)
+    {
+        tool_menu->queue_free();
     }
+    tool_menu = nullptr;
     Logger::success_extra("DojoEditorPlugin", "Tree exited");
 }
 
