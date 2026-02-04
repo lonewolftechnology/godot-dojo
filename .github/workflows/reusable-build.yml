@@ -53,9 +53,10 @@ jobs:
         if: runner.os == 'Linux'
         run: |
           sudo apt-get update
-          PACKAGES="scons build-essential pkg-config dbus libdbus-1-dev protobuf-compiler libprotobuf-dev"
+          PACKAGES="build-essential pkg-config dbus libdbus-1-dev protobuf-compiler libprotobuf-dev"
           if [ "${{ inputs.platform_id }}" = "windows-gnu" ]; then PACKAGES="$PACKAGES mingw-w64"; fi
           sudo apt-get install -y $PACKAGES
+          python3 -m pip install scons protobuf
 
       - name: Install dependencies (macOS)
         if: runner.os == 'macOS'
