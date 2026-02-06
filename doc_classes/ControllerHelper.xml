@@ -52,32 +52,32 @@
 		</method>
 	</methods>
 	<constants>
-		<constant name="SignerType::Webauthn" value="1" enum="SignerType">
-			Represents a WebAuthn signer.
+		<constant name="Webauthn" value="1" enum="SignerType">
+			WebAuthn signer type.
 		</constant>
-		<constant name="SignerType::Starknet" value="2" enum="SignerType">
-			Represents a Starknet signer.
+		<constant name="Starknet" value="2" enum="SignerType">
+			Starknet signer type.
 		</constant>
-		<constant name="Version::V104" value="1" enum="Version">
+		<constant name="V104" value="1" enum="Version">
 			Controller version 1.0.4.
 		</constant>
-		<constant name="Version::V105" value="2" enum="Version">
+		<constant name="V105" value="2" enum="Version">
 			Controller version 1.0.5.
 		</constant>
-		<constant name="Version::V106" value="3" enum="Version">
+		<constant name="V106" value="3" enum="Version">
 			Controller version 1.0.6.
 		</constant>
-		<constant name="Version::V107" value="4" enum="Version">
+		<constant name="V107" value="4" enum="Version">
 			Controller version 1.0.7.
 		</constant>
-		<constant name="Version::V108" value="5" enum="Version">
+		<constant name="V108" value="5" enum="Version">
 			Controller version 1.0.8.
 		</constant>
-		<constant name="Version::V109" value="6" enum="Version">
+		<constant name="V109" value="6" enum="Version">
 			Controller version 1.0.9.
 		</constant>
-		<constant name="Version::Latest" value="7" enum="Version">
-			The latest controller version.
+		<constant name="Latest" value="7" enum="Version">
+			Latest controller version.
 		</constant>
 	</constants>
 </class>

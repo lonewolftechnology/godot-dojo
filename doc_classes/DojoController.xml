@@ -93,6 +93,31 @@
 				Initializes a new DojoController instance.
 			</description>
 		</method>
+		<method name="initialize">
+			<return type="bool" />
+			<param index="0" name="app_id" type="String" />
+			<param index="1" name="username" type="String" />
+			<param index="2" name="class_hash" type="String" />
+			<param index="3" name="rpc_url" type="String" />
+			<param index="4" name="owner" type="DojoOwner" />
+			<param index="5" name="address" type="String" />
+			<param index="6" name="chain_id" type="String" />
+			<description>
+				Initializes the controller with the provided parameters.
+			</description>
+		</method>
+		<method name="initialize_headless">
+			<return type="bool" />
+			<param index="0" name="app_id" type="String" />
+			<param index="1" name="username" type="String" />
+			<param index="2" name="class_hash" type="String" />
+			<param index="3" name="rpc_url" type="String" />
+			<param index="4" name="owner" type="DojoOwner" />
+			<param index="5" name="chain_id" type="String" />
+			<description>
+				Initializes the controller in headless mode.
+			</description>
+		</method>
 		<method name="is_valid">
 			<return type="bool" />
 			<description>
@@ -111,11 +136,11 @@
 				Creates a new headless DojoController instance.
 			</description>
 		</method>
-		<method name="signup">
+		<method name="signup" qualifiers="const">
 			<return type="void" />
-			<param index="0" name="signer_type" type="int" enum="ControllerHelper.SignerType" />
+			<param index="0" name="signer_type" type="int" />
 			<param index="1" name="session_expiration" type="Variant" />
-			<param index="2" name="cartridge_api_url" type="String" />
+			<param index="2" name="cartridge_api_url" type="Variant" />
 			<description>
 				Signs up a new user.
 			</description>

@@ -99,8 +99,10 @@
 			Descending order.
 		</constant>
 		<constant name="Forward" value="1" enum="PaginationDirection">
+			Forward pagination direction.
 		</constant>
 		<constant name="Backward" value="2" enum="PaginationDirection">
+			Backward pagination direction.
 		</constant>
 	</constants>
 </class>

@@ -9,12 +9,35 @@
 	<tutorials>
 	</tutorials>
 	<methods>
+		<method name="bytes_to_double" qualifiers="static">
+			<return type="float" />
+			<param index="0" name="bytes" type="PackedByteArray" />
+			<param index="1" name="is_signed" type="bool" default="false" />
+			<param index="2" name="precision" type="int" default="0" />
+			<description>
+				Converts a byte array to a double value, optionally handling signed values and fixed-point precision.
+			</description>
+		</method>
+		<method name="decode_hex" qualifiers="static">
+			<return type="String" />
+			<param index="0" name="hex" type="String" />
+			<description>
+				Decodes a hexadecimal string into a plain string.
+			</description>
+		</method>
 		<method name="double_to_variant_fp" qualifiers="static">
 			<return type="Variant" />
 			<param index="0" name="value" type="float" />
 			<param index="1" name="precision" type="int" />
 			<description>
 				Converts a double value to a fixed-point variant.
+			</description>
+		</method>
+		<method name="encode_hex" qualifiers="static">
+			<return type="String" />
+			<param index="0" name="input" type="String" />
+			<description>
+				Encodes a string into its hexadecimal representation.
 			</description>
 		</method>
 		<method name="fixed_to_float" qualifiers="static">

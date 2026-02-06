@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="U128" inherits="RefCounted" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://raw.githubusercontent.com/godotengine/godot/master/doc/class.xsd">
+	<brief_description>
+		A class representing a 128-bit unsigned integer.
+	</brief_description>
+	<description>
+		The U128 class provides functionality to handle 128-bit unsigned integers, including conversion to and from various types such as integers, strings, and floats, as well as support for fixed-point arithmetic.
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="from_float" qualifiers="static">
+			<return type="U128" />
+			<param index="0" name="value" type="float" />
+			<param index="1" name="precision" type="int" default="-1" />
+			<description>
+				Creates a U128 instance from a float value with optional precision for fixed-point conversion.
+			</description>
+		</method>
+		<method name="from_int" qualifiers="static">
+			<return type="U128" />
+			<param index="0" name="value" type="int" />
+			<description>
+				Creates a U128 instance from an integer value.
+			</description>
+		</method>
+		<method name="from_string" qualifiers="static">
+			<return type="U128" />
+			<param index="0" name="value" type="String" />
+			<description>
+				Creates a U128 instance from a string representation (hexadecimal or decimal).
+			</description>
+		</method>
+		<method name="from_variant" qualifiers="static">
+			<return type="U128" />
+			<param index="0" name="value" type="Variant" />
+			<description>
+				Creates a U128 instance from a Variant.
+			</description>
+		</method>
+		<method name="to_calldata" qualifiers="const">
+			<return type="PackedStringArray" />
+			<description>
+				Converts the 128-bit integer to a calldata-compatible format (PackedStringArray).
+			</description>
+		</method>
+		<method name="to_float" qualifiers="const">
+			<return type="float" />
+			<param index="0" name="precision" type="int" default="-1" />
+			<description>
+				Converts the 128-bit integer to a float, optionally using the specified precision for fixed-point conversion.
+			</description>
+		</method>
+		<method name="to_string" qualifiers="const">
+			<return type="String" />
+			<description>
+				Converts the 128-bit integer to its string representation.
+			</description>
+		</method>
+	</methods>
+</class>

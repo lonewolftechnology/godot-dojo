@@ -1,8 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="HttpPinger" inherits="HTTPRequest" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://raw.githubusercontent.com/godotengine/godot/master/doc/class.xsd">
 	<brief_description>
+		A helper class for making HTTP requests.
 	</brief_description>
 	<description>
+		The HttpPinger class simplifies making HTTP requests and handling responses, emitting a signal when a response is received.
 	</description>
 	<tutorials>
 	</tutorials>
@@ -11,6 +13,7 @@
 			<return type="HttpPinger" />
 			<param index="0" name="url" type="String" />
 			<description>
+				Initiates an HTTP request to the specified URL.
 			</description>
 		</method>
 	</methods>
@@ -18,6 +21,7 @@
 		<signal name="response_received">
 			<param index="0" name="response" type="Dictionary" />
 			<description>
+				Emitted when an HTTP response is received.
 			</description>
 		</signal>
 	</signals>

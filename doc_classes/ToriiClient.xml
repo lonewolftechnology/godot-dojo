@@ -84,6 +84,7 @@
 		<method name="is_connected" qualifiers="const">
 			<return type="bool" />
 			<description>
+				Checks if the client is connected to the Torii indexer.
 			</description>
 		</method>
 		<method name="player_achievements">
