@@ -18,6 +18,14 @@ class DojoSessionAccount : public Node {
     Dictionary full_policies;
     String max_fee;
 
+    // Persistent storage for C-strings passed to internal controller
+    std::string rpc_url_;
+    std::string private_key_;
+    std::string address_;
+    std::string chain_id_;
+    std::string owner_guid_;
+    std::string cartridge_api_url_;
+
 public:
     DojoSessionAccount() = default;
 
@@ -26,8 +34,8 @@ public:
     void create_from_subscribe(const String &_private_key, const String &_rpc_url,
                                const String &_cartridge_api_url, const Dictionary &_policies = Dictionary());
 
-    void create(const String &rpc_url, const String &private_key, const String &address,
-        const String &chain_id, uint64_t session_expiration);
+    void create(const String& rpc_url, const String& private_key, const String& address,
+                const String& owner_guid, const String& chain_id, uint64_t session_expiration);
 
     String get_address() const;
     String get_chain_id() const;
@@ -53,7 +61,8 @@ public:
     String generate_session_request_url(const String &base_url, const String &public_key,
                                         const String &rpc_url, const Dictionary &policies = Dictionary(),
                                         const String &redirect_uri = String(),
-                                        const String &redirect_query_name = String()) const;
+                                        const String &redirect_query_name = String(),
+                                        const String &callback_uri = String()) const;
 
     void set_full_policies(const Dictionary &p_policies){ full_policies = p_policies; }
     Dictionary get_full_policies() const { return full_policies; }
@@ -72,7 +81,7 @@ protected:
         ClassDB::bind_method(D_METHOD("create_from_subscribe", "private_key", "rpc_url",
                                       "cartridge_api_url", "policies"),
                              &DojoSessionAccount::create_from_subscribe, DEFVAL(Dictionary()));
-        ClassDB::bind_method(D_METHOD("create", "rpc_url", "private_key", "address", "chain_id", "session_expiration"), &DojoSessionAccount::create);
+        ClassDB::bind_method(D_METHOD("create", "rpc_url", "private_key", "address", "owner_guid", "chain_id", "session_expiration"), &DojoSessionAccount::create);
 
         ClassDB::bind_method(D_METHOD("get_address"), &DojoSessionAccount::get_address);
 
@@ -93,8 +102,8 @@ protected:
 
         {
             MethodInfo mi;
-            mi.arguments.push_back(PropertyInfo(Variant::STRING, "contract_address"));
-            mi.arguments.push_back(PropertyInfo(Variant::STRING, "entrypoint"));
+            mi.arguments.emplace_back(Variant::STRING, "contract_address");
+            mi.arguments.emplace_back(Variant::STRING, "entrypoint");
             mi.name = "execute_test";
             ClassDB::bind_vararg_method(METHOD_FLAGS_DEFAULT, "execute_test", &DojoSessionAccount::execute_test, mi);
         }
@@ -112,9 +121,9 @@ protected:
         ADD_PROPERTY(PropertyInfo(Variant::STRING, "max_fee"), "set_max_fee", "get_max_fee");
 
         ClassDB::bind_method(D_METHOD("generate_session_request_url", "base_url", "public_key",
-                                      "rpc_url", "policies", "redirect_uri", "redirect_query_name"),
+                                      "rpc_url", "policies", "redirect_uri", "redirect_query_name", "callback_uri"),
                              &DojoSessionAccount::generate_session_request_url, DEFVAL(Dictionary()),
-                             DEFVAL(String()), DEFVAL(String()));
+                             DEFVAL(String()), DEFVAL(String()), DEFVAL(String()));
 
     }
 };
