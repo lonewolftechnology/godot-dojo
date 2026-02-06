@@ -19,8 +19,11 @@ public:
 
     static GodotDojoHelper *get_singleton() { return singleton; };
 
-    static String get_katana_url();
+    static String decode_hex(const String &hex);
+    static String decode_hex(const std::string& hex);
+    static String encode_hex(const String &input);
 
+    static String get_katana_url();
     static Variant get_setting(const String &setting, const Variant &default_value = Variant());
     static Variant get_custom_setting(const String &category, const String &setting);
     static Variant get_dojo_setting(const String &setting, const Variant &default_value = Variant());
