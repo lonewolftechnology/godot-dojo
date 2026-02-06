@@ -4,6 +4,8 @@
 #include "godot_cpp/variant/string.hpp"
 
 #include "controller/controller.hpp"
+#include "tools/controller_helper.h"
+#include "tools/logger.hpp"
 
 using namespace godot;
 
@@ -14,9 +16,14 @@ class DojoOwner : public RefCounted {
 
 public:
     DojoOwner() {}
-    ~DojoOwner() {}
+    ~DojoOwner() override {}
 
     static Ref<DojoOwner> init(const String &private_key) {
+        if (!ControllerHelper::validate_felt(private_key))
+        {
+            Logger::error("Invalid private key format.");
+            return {};
+        }
         Ref<DojoOwner> owner;
         owner.instantiate();
         const std::string private_key_str = private_key.utf8().get_data();
