@@ -1,3 +1,53 @@
+## [v0.6](https://github.com/lonewolftechnology/godot-dojo/tree/v0.6) (2026-02-06)
+**Commits:**
+- [[9bf5198](https://github.com/lonewolftechnology/godot-dojo/commit/9bf5198cf33efbb907276baed29bf3c1e329d954)] chore: update docs
+- [[ae68a28](https://github.com/lonewolftechnology/godot-dojo/commit/ae68a28f8ca6c616ed618ca358a59bccf883ccb4)] chore(DojoSessionAccount): minor changes and felt validation
+- [[76ad663](https://github.com/lonewolftechnology/godot-dojo/commit/76ad6633d2b82bf6cf22a0239482829c622e1e0b)] feat(DojoController): runtime instantiation alongside static
+- [[399854d](https://github.com/lonewolftechnology/godot-dojo/commit/399854d2dcb06405a003d3f753e5c0894d4e6b90)] feat(DojoOwner): use felt validation
+- [[3f606ff](https://github.com/lonewolftechnology/godot-dojo/commit/3f606ffb3c62dcfaa2b95468140ee6c210ea7a77)] fix(ControllerHelper): properly casting SignerType and Version enums
+- [[9f15ad7](https://github.com/lonewolftechnology/godot-dojo/commit/9f15ad7ddaadf3486df426d7171599ea30643a46)] feat(GodotDojoHelper): encode/decode strings
+- [[49dfb6b](https://github.com/lonewolftechnology/godot-dojo/commit/49dfb6b8b3ff0ea4a5bcada1972f793cf671e5c8)] potencially fix crash when exporting/closing
+
+## [v0.5.5.2.1](https://github.com/lonewolftechnology/godot-dojo/tree/v0.5.5.2.1) (2026-02-04)
+**Commits:**
+- [[c5b47bf](https://github.com/lonewolftechnology/godot-dojo/commit/c5b47bfadc9e6e5379957a0d035073afbfd55243)] ci: fix missing artifacts
+
+## [v0.5.5.2](https://github.com/lonewolftechnology/godot-dojo/tree/v0.5.5.2) (2026-02-04)
+**Commits:**
+- [[a02e313](https://github.com/lonewolftechnology/godot-dojo/commit/a02e313b920757dbcc46240cd3108f82e614c4c0)] ci: cleanup + minor changes
+- [[8c2b173](https://github.com/lonewolftechnology/godot-dojo/commit/8c2b1734de9566c054e4a24b3974bd9ff4c56a38)] chore: update changelog
+- [[18fd2ae](https://github.com/lonewolftechnology/godot-dojo/commit/18fd2aedd213bce0035b985c89a921770e985299)] chore: update changelog
+- [[dc808a1](https://github.com/lonewolftechnology/godot-dojo/commit/dc808a1d1ddccbfbf2d8e0f092cefbd4fe99d8f9)] fix crash after headless export
+- [[654a287](https://github.com/lonewolftechnology/godot-dojo/commit/654a2872ddf79aa94a6c85090afda4998bafbb2b)] chore: update changelog
+- [[cca907d](https://github.com/lonewolftechnology/godot-dojo/commit/cca907d6f2932b2528e19f85412fcb684b6e1da0)] ci: use gnu for windows, msvc in broken and requires std++20 which is not really possible with godot 4.3
+- [[5fc1f54](https://github.com/lonewolftechnology/godot-dojo/commit/5fc1f54344ae44c392eb0cadd38ac95ef49d3909)] ci: fix msvc
+- [[36362a7](https://github.com/lonewolftechnology/godot-dojo/commit/36362a7fade426608ad7e86de9b31a3f34818d26)] ci: avoid skipping all workflow if create_release is skipped
+- [[e78f209](https://github.com/lonewolftechnology/godot-dojo/commit/e78f209b2ffe9ad77146dc91a5974d27d737d7be)] ci: avoid skipping all workflow if create_release is skipped
+- [[75d7c96](https://github.com/lonewolftechnology/godot-dojo/commit/75d7c964cae6bd0302ec4907faa82a1cbf4943e8)] experimental: use std++20 for msvc
+- [[895b2f9](https://github.com/lonewolftechnology/godot-dojo/commit/895b2f9d8bfb1a3caf8385267b0ec7b6cab0fa0d)] bigint: update macros for gcc
+- [[cc9c12e](https://github.com/lonewolftechnology/godot-dojo/commit/cc9c12e7fe4d6196134d09b69acb00b46913995a)] ci: minor change to test build cache
+- [[c2ba6fb](https://github.com/lonewolftechnology/godot-dojo/commit/c2ba6fbafb71ac18029ce0a7381d42bc522badb4)] Merge branch 'dev'
+- [[33cdcbc](https://github.com/lonewolftechnology/godot-dojo/commit/33cdcbc8436e08d76c1fcccebe95756c257ffd2d)] Merge remote-tracking branch 'origin/chained-refactors' into dev
+- [[c527b73](https://github.com/lonewolftechnology/godot-dojo/commit/c527b733b83203d62fd8b15ba41f54d39d7b9f66)] ci: force cache by forcing build on main push
+- [[a81b772](https://github.com/lonewolftechnology/godot-dojo/commit/a81b77203f97462e11a25f671d3530dbee597454)] ci: use msvc
+- [[7ff6307](https://github.com/lonewolftechnology/godot-dojo/commit/7ff63075bba761bc8d876af5edc96c2e32fb2a7d)] chore: update changelog
+- [[a9e8e2b](https://github.com/lonewolftechnology/godot-dojo/commit/a9e8e2b3151a24881ba3b7510fadccbb76185788)] scons: ensure ios xcframework is added to addon folder
+- [[9314f89](https://github.com/lonewolftechnology/godot-dojo/commit/9314f89fb18ddd852ddacc4674926105d6b8a279)] Merge branch 'dev'
+- [[21cc351](https://github.com/lonewolftechnology/godot-dojo/commit/21cc351f775ff976cd8bec5ede64cb98d58a96bb)] update changelog
+- [[cef5ee6](https://github.com/lonewolftechnology/godot-dojo/commit/cef5ee609ab13382141827282ff1edd3cf330329)] ci: typos
+- [[ba4b6cf](https://github.com/lonewolftechnology/godot-dojo/commit/ba4b6cfa51a8afd06b4dcd8fe8c219f87fca382b)] ci: fix release artifacts cache key + description
+- [[a67ad73](https://github.com/lonewolftechnology/godot-dojo/commit/a67ad736dbe55499e209ef294e30bd65ffebfb47)] OptionClause: fix handling of primitive's felts
+- [[df817d8](https://github.com/lonewolftechnology/godot-dojo/commit/df817d8fbd5b2ec84453027a632349e28fd0873f)] class types from models
+- [[c1685d7](https://github.com/lonewolftechnology/godot-dojo/commit/c1685d7356988acb4b5bff297f7b798ae4ecaa50)] execute functions and enums in abi generator
+- [[0b629e4](https://github.com/lonewolftechnology/godot-dojo/commit/0b629e45757cf788321aedead2731fb0d8acf6e6)] abi generator progress
+- [[477f033](https://github.com/lonewolftechnology/godot-dojo/commit/477f033d58810ecd8d3fd171a6c972841b2de68d)] ci: fix
+- [[0fd69aa](https://github.com/lonewolftechnology/godot-dojo/commit/0fd69aa0e23d7d52eeb9643f6f32834138c87f4a)] ci: build msvc
+- [[a5f1f49](https://github.com/lonewolftechnology/godot-dojo/commit/a5f1f49bde8b890e1b06aec6e5a703f321a37e09)] scons: potencial msvc fix
+- [[8b5bcb3](https://github.com/lonewolftechnology/godot-dojo/commit/8b5bcb33114411fff3c7d532fbc19f995326e78c)] scons: minor change
+- [[1385c45](https://github.com/lonewolftechnology/godot-dojo/commit/1385c45e93a9c2ebd9367199f497c9cb05919eed)] ToriiClient: Potentially fix memory leak
+- [[f17ef04](https://github.com/lonewolftechnology/godot-dojo/commit/f17ef04f5d14f572308bdb0cab394ecf792de8d3)] Warn that ControllerAccount is "deprecated" in favor of new wip controller (external/controller.c)
+- [[ecb99d1](https://github.com/lonewolftechnology/godot-dojo/commit/ecb99d1c8ef020edf8cdc405d973c243b71c53a0)] Update scons
+
 ## [v0.5.5.1](https://github.com/lonewolftechnology/godot-dojo/tree/v0.5.5.1) (2026-02-02)
 **Commits:**
 - [[3f6262d](https://github.com/lonewolftechnology/godot-dojo/commit/3f6262d51251b330bedbcab23fccf493245c5746)] feat(BigInt): add _to_string so it prints its hex when using print directly to the object
