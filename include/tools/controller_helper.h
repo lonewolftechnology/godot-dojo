@@ -1,5 +1,4 @@
-#ifndef CONTROLLER_HELPER_H
-#define CONTROLLER_HELPER_H
+#pragma once
 
 #include "godot_cpp/classes/object.hpp"
 #include "godot_cpp/core/class_db.hpp"
@@ -14,22 +13,6 @@ class ControllerHelper : public Object {
     GDCLASS(ControllerHelper, Object)
 
 public:
-    enum SignerType {
-        Webauthn = 1,
-        Starknet = 2
-    };
-
-
-    enum Version {
-        V104 = 1,
-        V105 = 2,
-        V106 = 3,
-        V107 = 4,
-        V108 = 5,
-        V109 = 6,
-        Latest = 7
-    };
-
     ControllerHelper() = default;
     ~ControllerHelper() override = default;
 
@@ -53,24 +36,18 @@ protected:
         ClassDB::bind_static_method("ControllerHelper", D_METHOD("validate_felt", "felt"), &ControllerHelper::validate_felt);
         ClassDB::bind_static_method("ControllerHelper", D_METHOD("generate_private_key"), &ControllerHelper::generate_private_key);
 
-        // SignerType
-        BIND_ENUM_CONSTANT(SignerType::Webauthn);
-        BIND_ENUM_CONSTANT(SignerType::Starknet);
+        ClassDB::bind_integer_constant(get_class_static(), "SignerType", "Webauthn", static_cast<int>(controller::SignerType::kWebauthn));
+        ClassDB::bind_integer_constant(get_class_static(), "SignerType", "Starknet", static_cast<int>(controller::SignerType::kStarknet));
 
-        // Version
-        BIND_ENUM_CONSTANT(Version::V104);
-        BIND_ENUM_CONSTANT(Version::V105);
-        BIND_ENUM_CONSTANT(Version::V106);
-        BIND_ENUM_CONSTANT(Version::V107);
-        BIND_ENUM_CONSTANT(Version::V108);
-        BIND_ENUM_CONSTANT(Version::V109);
-        BIND_ENUM_CONSTANT(Version::Latest);
+        // For Controller class_hash
+        ClassDB::bind_integer_constant(get_class_static(), "Version", "V104", static_cast<int>(controller::Version::kV104));
+        ClassDB::bind_integer_constant(get_class_static(), "Version", "V105", static_cast<int>(controller::Version::kV105));
+        ClassDB::bind_integer_constant(get_class_static(), "Version", "V106", static_cast<int>(controller::Version::kV106));
+        ClassDB::bind_integer_constant(get_class_static(), "Version", "V107", static_cast<int>(controller::Version::kV107));
+        ClassDB::bind_integer_constant(get_class_static(), "Version", "V108", static_cast<int>(controller::Version::kV108));
+        ClassDB::bind_integer_constant(get_class_static(), "Version", "V109", static_cast<int>(controller::Version::kV109));
+        ClassDB::bind_integer_constant(get_class_static(), "Version", "Latest", static_cast<int>(controller::Version::kLatest));
 
     }
 
 };
-VARIANT_ENUM_CAST(ControllerHelper::SignerType);
-VARIANT_ENUM_CAST(ControllerHelper::Version);
-
-
-#endif // CONTROLLER_HELPER_H

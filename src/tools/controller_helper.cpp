@@ -18,17 +18,17 @@ bool ControllerHelper::has_storage(const String& app_id)
 
 String ControllerHelper::get_controller_class_hash(int version)
 {
-    return String(controller::get_controller_class_hash(static_cast<controller::Version>(version)).c_str());
+    return {controller::get_controller_class_hash(static_cast<controller::Version>(version)).c_str()};
 }
 
 String ControllerHelper::get_public_key(const String& private_key)
 {
-    return String(controller::get_public_key(private_key.utf8().get_data()).c_str());
+    return {controller::get_public_key(private_key.utf8().get_data()).c_str()};
 }
 
 String ControllerHelper::signer_to_guid(const String& private_key)
 {
-    return String(controller::signer_to_guid(private_key.utf8().get_data()).c_str());
+    return {controller::signer_to_guid(private_key.utf8().get_data()).c_str()};
 }
 
 bool ControllerHelper::validate_felt(const String& felt)
@@ -38,18 +38,26 @@ bool ControllerHelper::validate_felt(const String& felt)
 
 String ControllerHelper::generate_private_key()
 {
-    // Generate 31 bytes of random data to ensure it fits in a felt (252 bits)
-    // 31 bytes = 248 bits, which is safe.
-    PackedByteArray bytes = OS::get_singleton()->get_entropy(31);
+    while (true) {
+        // Generate 31 bytes of random data to ensure it fits in a felt (252 bits)
+        // 31 bytes = 248 bits, which is safe.
+        PackedByteArray bytes = OS::get_singleton()->get_entropy(31);
 
-    // Convert to hex string
-    String hex = "0x";
-    for (int i = 0; i < bytes.size(); i++)
-    {
-        hex += String::num_uint64(bytes[i], 16).lpad(2, "0");
+        // Convert to hex string
+        String hex = "0x";
+        for (int i = 0; i < bytes.size(); i++) {
+            hex += String::num_uint64(bytes[i], 16).lpad(2, "0");
+        }
+
+        // Validate the key to ensure it doesn't cause a panic in the controller library
+        try {
+            controller::get_public_key(hex.utf8().get_data());
+            return hex;
+        } catch (const std::exception &e) {
+            Logger::debug_extra("Private Key", "Invalid key: ", e.what());
+            continue;
+        }
     }
-
-    return hex;
 }
 
 std::vector<std::shared_ptr<controller::Call>> ControllerHelper::prepare_calls(const TypedArray<Dictionary>& calls)
@@ -91,15 +99,15 @@ std::vector<std::shared_ptr<controller::Call>> ControllerHelper::prepare_calls(c
             case Variant::Type::ARRAY:
                 {
                     Array inner_array = arg;
-                    for (int k = inner_array.size() - 1; k >= 0; --k)
+                    for (int64_t k = inner_array.size() - 1; k >= 0; --k)
                     {
-                        worklist.push_front(inner_array[k]);
+                        worklist.emplace_front(inner_array[k]);
                     }
                     continue;
                 }
             case Variant::Type::FLOAT:
                 {
-                    worklist.push_front(
+                    worklist.emplace_front(
                         GodotDojoHelper::double_to_variant_fp(
                             arg, GodotDojoHelper::get_dojo_setting("fixed_point/default")));
                     continue;
@@ -107,53 +115,53 @@ std::vector<std::shared_ptr<controller::Call>> ControllerHelper::prepare_calls(c
             case Variant::Type::VECTOR2:
                 {
                     Vector2 vec = arg;
-                    worklist.push_front(vec.y);
-                    worklist.push_front(vec.x);
+                    worklist.emplace_front(vec.y);
+                    worklist.emplace_front(vec.x);
                     continue;
                 }
             case Variant::Type::VECTOR2I:
                 {
                     Vector2i vec = arg;
-                    worklist.push_front(static_cast<int64_t>(vec.y));
-                    worklist.push_front(static_cast<int64_t>(vec.x));
+                    worklist.emplace_front(static_cast<int64_t>(vec.y));
+                    worklist.emplace_front(static_cast<int64_t>(vec.x));
                     continue;
                 }
             case Variant::Type::VECTOR3:
                 {
                     Vector3 vec = arg;
-                    worklist.push_front(vec.z);
-                    worklist.push_front(vec.y);
-                    worklist.push_front(vec.x);
+                    worklist.emplace_front(vec.z);
+                    worklist.emplace_front(vec.y);
+                    worklist.emplace_front(vec.x);
                     continue;
                 }
             case Variant::Type::VECTOR3I:
                 {
                     Vector3i vec = arg;
-                    worklist.push_front(static_cast<int64_t>(vec.z));
-                    worklist.push_front(static_cast<int64_t>(vec.y));
-                    worklist.push_front(static_cast<int64_t>(vec.x));
+                    worklist.emplace_front(static_cast<int64_t>(vec.z));
+                    worklist.emplace_front(static_cast<int64_t>(vec.y));
+                    worklist.emplace_front(static_cast<int64_t>(vec.x));
                     continue;
                 }
             case Variant::Type::VECTOR4:
                 {
                     Vector4 vec = arg;
-                    worklist.push_front(vec.z);
-                    worklist.push_front(vec.y);
-                    worklist.push_front(vec.x);
-                    worklist.push_front(vec.w);
+                    worklist.emplace_front(vec.w);
+                    worklist.emplace_front(vec.z);
+                    worklist.emplace_front(vec.y);
+                    worklist.emplace_front(vec.x);
                     continue;
                 }
             case Variant::Type::VECTOR4I:
                 {
                     Vector4i vec = arg;
-                    worklist.push_front(static_cast<int64_t>(vec.z));
-                    worklist.push_front(static_cast<int64_t>(vec.y));
-                    worklist.push_front(static_cast<int64_t>(vec.x));
-                    worklist.push_front(static_cast<int64_t>(vec.w));
+                    worklist.emplace_front(static_cast<int64_t>(vec.w));
+                    worklist.emplace_front(static_cast<int64_t>(vec.z));
+                    worklist.emplace_front(static_cast<int64_t>(vec.y));
+                    worklist.emplace_front(static_cast<int64_t>(vec.x));
                     continue;
                 }
             case Variant::Type::BOOL:
-                current_call->calldata.push_back(static_cast<bool>(arg) ? "0x1" : "0x0");
+                current_call->calldata.emplace_back(static_cast<bool>(arg) ? "0x1" : "0x0");
                 break;
             case Variant::Type::INT:
                 {
@@ -165,7 +173,7 @@ std::vector<std::shared_ptr<controller::Call>> ControllerHelper::prepare_calls(c
                     }
                     std::stringstream ss;
                     ss << "0x" << std::hex << val;
-                    current_call->calldata.push_back(ss.str());
+                    current_call->calldata.emplace_back(ss.str());
                     break;
                 }
             case Variant::Type::PACKED_BYTE_ARRAY:
@@ -176,11 +184,11 @@ std::vector<std::shared_ptr<controller::Call>> ControllerHelper::prepare_calls(c
                     {
                         hex_str += String::num_uint64(arr[k], 16).lpad(2, "0");
                     }
-                    current_call->calldata.push_back(hex_str.utf8().get_data());
+                    current_call->calldata.emplace_back(hex_str.utf8().get_data());
                     break;
                 }
             case Variant::Type::STRING:
-                current_call->calldata.push_back(static_cast<String>(arg).utf8().get_data());
+                current_call->calldata.emplace_back(static_cast<String>(arg).utf8().get_data());
                 break;
             case Variant::Type::OBJECT:
                 {
@@ -191,17 +199,17 @@ std::vector<std::shared_ptr<controller::Call>> ControllerHelper::prepare_calls(c
                         if (ret.get_type() == Variant::PACKED_STRING_ARRAY) {
                             PackedStringArray arr = ret;
                             for (int k = 0; k < arr.size(); ++k) {
-                                current_call->calldata.push_back(arr[k].utf8().get_data());
+                                current_call->calldata.emplace_back(arr[k].utf8().get_data());
                             }
                         } else {
-                            current_call->calldata.push_back(String(ret).utf8().get_data());
+                            current_call->calldata.emplace_back(String(ret).utf8().get_data());
                         }
                         continue;
                     }
                     if (obj.is_valid() && obj->has_method("to_string"))
                     {
                         String val = obj->call("to_string");
-                        current_call->calldata.push_back(val.utf8().get_data());
+                        current_call->calldata.emplace_back(val.utf8().get_data());
                         continue;
                     }
 
