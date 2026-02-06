@@ -17,32 +17,42 @@ class DojoController : public Node {
     GDCLASS(DojoController, Node)
 
     std::shared_ptr<controller::ControllerAccount> internal;
+    Ref<DojoOwner> owner_;
+    std::string app_id_;
+    std::string username_;
+    std::string class_hash_;
+    std::string rpc_url_;
+    std::string address_;
+    std::string chain_id_;
 
 public:
     DojoController() = default;
     ~DojoController() override = default;
 
-    void set_internal(std::shared_ptr<controller::ControllerAccount> p_internal);
+    void set_internal(const std::shared_ptr<controller::ControllerAccount>& p_internal);
 
     static DojoController *init(const String &app_id, const String &username, const String &class_hash, const String &rpc_url, const Ref<DojoOwner> &owner, const String &address, const String &chain_id);
     static DojoController *from_storage(const String &app_id);
     static DojoController *new_headless(const String &app_id, const String &username, const String &class_hash, const String &rpc_url, const Ref<DojoOwner> &owner, const String &chain_id);
 
-    String address();
-    String app_id();
-    String chain_id();
-    void clear_last_error();
-    String delegate_account();
-    void disconnect();
-    String error_message();
+    bool initialize(const String &app_id, const String &username, const String &class_hash, const String &rpc_url, const Ref<DojoOwner> &owner, const String &address, const String &chain_id);
+    bool initialize_headless(const String &app_id, const String &username, const String &class_hash, const String &rpc_url, const Ref<DojoOwner> &owner, const String &chain_id);
+
+    String address() const;
+    String app_id() const;
+    String chain_id() const;
+    void clear_last_error() const;
+    String delegate_account() const;
+    void disconnect() const;
+    String error_message() const;
     String execute(const TypedArray<Dictionary> &calls) const;
     String execute_raw(const String &contract_address, const String &entrypoint, const Array &calldata) const;
-    void signup(ControllerHelper::SignerType signer_type, const Variant &session_expiration, const String &cartridge_api_url);
-    void switch_chain(const String &rpc_url);
-    String transfer(const String &recipient, const String &amount);
-    String username();
-    Dictionary get_info();
-    bool is_valid();
+    void signup(const int &signer_type, const Variant &session_expiration, const Variant &cartridge_api_url) const;
+    void switch_chain(const String &rpc_url) const;
+    String transfer(const String &recipient, const String &amount) const;
+    String username() const;
+    Dictionary get_info() const;
+    bool is_valid() const;
 
 
 protected:
@@ -50,6 +60,9 @@ protected:
         ClassDB::bind_static_method("DojoController", D_METHOD("init", "app_id", "username", "class_hash", "rpc_url", "owner", "address", "chain_id"), &DojoController::init);
         ClassDB::bind_static_method("DojoController", D_METHOD("from_storage", "app_id"), &DojoController::from_storage);
         ClassDB::bind_static_method("DojoController", D_METHOD("new_headless", "app_id", "username", "class_hash", "rpc_url", "owner", "chain_id"), &DojoController::new_headless);
+
+        ClassDB::bind_method(D_METHOD("initialize", "app_id", "username", "class_hash", "rpc_url", "owner", "address", "chain_id"), &DojoController::initialize);
+        ClassDB::bind_method(D_METHOD("initialize_headless", "app_id", "username", "class_hash", "rpc_url", "owner", "chain_id"), &DojoController::initialize_headless);
 
         ClassDB::bind_method(D_METHOD("address"), &DojoController::address);
         ClassDB::bind_method(D_METHOD("app_id"), &DojoController::app_id);
