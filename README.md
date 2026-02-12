@@ -1,6 +1,5 @@
 # Godot Dojo
 
-
 **Godot Dojo** is a cross-platform GDExtension for the [Godot Engine](https://godotengine.org/), providing seamless integration with [Dojo](https://dojoengine.org/)-based backends and blockchain entities. Powered by Rust and C++, it enables advanced networking, subscriptions to blockchain events, and a set of utilities for interacting with decentralized data models directly from Godot.
 
 > Note:
@@ -24,6 +23,9 @@
 -   **Multi-platform:** Build for Linux (x86_64), Windows (x86_64), macOS (x86_64, arm64), Android (arm64), and iOS (universal).
 -   **Blockchain subscriptions:** Create and manage event/entity subscriptions from Godot.
 -   **Rust & C++ core:** High-performance native integration.
+-   **Advanced Data Types:** Full support for `BigInt` (I128, U128, U256), `Felt`, and other Cairo types with seamless Godot Variant conversion.
+-   **Session Management:** Robust `DojoSessionAccount` and `DojoController` for managing user sessions and signing transactions.
+-   **Editor Tools:** Integrated tools menu for checking updates and managing project settings.
 -   **Pluggable demo:** Includes a simple demo scene showcasing basic usage.
 -   📄 **See also:** [Project State & Support Matrix](project-state.md)
 
@@ -34,7 +36,7 @@
 <details>
 <summary><strong>Prerequisites</strong></summary>
 
--   [Godot Engine 4.x](https://godotengine.org/)
+-   [Godot Engine 4.x](https://godotengine.org/) (Recommended: 4.3)
 -   [Rust](https://www.rust-lang.org/tools/install)
 -   [SCons](https://scons.org/pages/download.html)
 -   A C++17 compatible compiler (e.g., GCC, Clang, MSVC)
@@ -54,8 +56,8 @@
 </details>
 
 > Important:
-> We are currently building against Godot 4.3, but 4.2.2 should be supported for a while.
-> If you want to build against 4.2.2, you need to checkout the `godot-4.2.2` branch of the `godot-cpp` submodule. Please submit an issue or PR if you find any problems.
+> We are currently building against Godot 4.3.
+> If you want to build against other versions, you may need to checkout the corresponding branch of the `godot-cpp` submodule. Please submit an issue or PR if you find any problems.
 
 > Warning:
 > The provided Makefile **is not compatible with Windows**.
@@ -65,7 +67,7 @@
 
 1.  **Clone the repository:**
     ```bash
-    git clone --recurse-submodules https
+    git clone --recurse-submodules https://github.com/lonewolftechnology/godot-dojo
     cd godot-dojo
     ```
 
@@ -163,7 +165,7 @@
 
 ## 🚀 Running the Demo
 
-> **Note:** The `dojo-starter-godot-project` uses **Godot 4.5**.
+> **Note:** The `dojo-starter-godot-project` is configured for **Godot 4.5+**.
 
 1.  **Get the addon:**
     - **Option A (Recommended): Download from a release:** Download the `dojo-starter-godot-project.zip` from the [latest release](https://github.com/lonewolftechnology/godot-dojo/releases). The addon is already included.
