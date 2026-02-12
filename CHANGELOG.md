@@ -1,5 +1,10 @@
-## [v0.6.1](https://github.com/lonewolftechnology/godot-dojo/tree/v0.6.1) (2026-02-12)
+## [v0.7](https://github.com/lonewolftechnology/godot-dojo/tree/v0.7) (2026-02-12)
 **Commits:**
+- [[f94f20e](https://github.com/lonewolftechnology/godot-dojo/commit/f94f20ebeb055f516e4f339f2a2c75757fa7a0a2)] ci: fix mac arm64 not being part of zip
+- [[e56841a](https://github.com/lonewolftechnology/godot-dojo/commit/e56841a6f42475aea931be98c19a001698704825)] chore: update docs
+- [[c5e98bb](https://github.com/lonewolftechnology/godot-dojo/commit/c5e98bbdacfca862f0f1bf7033521c882f97ea81)] chore: update policy handling
+- [[cef906d](https://github.com/lonewolftechnology/godot-dojo/commit/cef906d66562ab0d3cd43080c581d9dca191d6c4)] update(ControllerHelper): make preset optional on new methods to match `controller.c` signature
+- [[690ed17](https://github.com/lonewolftechnology/godot-dojo/commit/690ed17b60cb84f9563e0b820d59bd9df97ddb5f)] chore: update changelog
 - [[86c07d9](https://github.com/lonewolftechnology/godot-dojo/commit/86c07d98c0c2eebeae5e4b45e328126d387eafa6)] feat(ControllerHelper): implement create_session_registration_url and create_session_registration_url_with_urls new methods from `controller.c`
 - [[a6a1153](https://github.com/lonewolftechnology/godot-dojo/commit/a6a11535b67309a0fb7c90c1da58d4892b899d1b)] chore(crate): update `controller.c` to `3b208fc`
 - [[7536066](https://github.com/lonewolftechnology/godot-dojo/commit/75360663434d0bc21d9dde54c4f8efdafe57b9c8)] update gitignore
