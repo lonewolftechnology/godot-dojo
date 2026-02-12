@@ -386,19 +386,31 @@ Dictionary DojoSessionAccount::get_session_policy() const
     {
         const String& contract_address = contracts[i];
         const Dictionary& contract_details = full_policies[contract_address];
-        const Array& methods = contract_details["methods"];
-
-        Array entrypoints;
-        for (int j = 0; j < methods.size(); ++j)
-        {
-            const Dictionary& method = methods[j];
-            entrypoints.push_back(method["entrypoint"]);
+        
+        Array methods;
+        if (contract_details.has("methods")) {
+            methods = contract_details["methods"];
+        } else if (contract_details.has("entrypoints")) {
+            methods = contract_details["entrypoints"];
         }
 
-        Dictionary policy_group;
-        policy_group["contract_address"] = contract_address;
-        policy_group["entrypoints"] = entrypoints;
-        policies_array.push_back(policy_group);
+        for (int j = 0; j < methods.size(); ++j)
+        {
+            String method_name;
+            if (methods[j].get_type() == Variant::STRING) {
+                method_name = methods[j];
+            } else if (methods[j].get_type() == Variant::DICTIONARY) {
+                Dictionary m = methods[j];
+                method_name = m.get("entrypoint", "");
+            }
+
+            if (!method_name.is_empty()) {
+                Dictionary policy_item;
+                policy_item["target"] = contract_address;
+                policy_item["method"] = method_name;
+                policies_array.push_back(policy_item);
+            }
+        }
     }
 
     session_policy["policies"] = policies_array;

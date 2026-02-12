@@ -68,6 +68,7 @@ public:
     Dictionary get_full_policies() const { return full_policies; }
 
     Dictionary get_session_policy() const;
+
     Dictionary get_register_session_policy() const;
 
     void set_max_fee(const String &p_max_fee){ max_fee = p_max_fee; }

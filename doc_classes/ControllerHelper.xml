@@ -9,6 +9,28 @@
 	<tutorials>
 	</tutorials>
 	<methods>
+		<method name="create_session_registration_url" qualifiers="static">
+			<return type="String" />
+			<param index="0" name="private_key" type="String" />
+			<param index="1" name="policies" type="Dictionary" />
+			<param index="2" name="rpc_url" type="String" />
+			<param index="3" name="preset" type="String" default="&quot;&quot;" />
+			<description>
+				Creates a session registration URL.
+			</description>
+		</method>
+		<method name="create_session_registration_url_with_urls" qualifiers="static">
+			<return type="String" />
+			<param index="0" name="private_key" type="String" />
+			<param index="1" name="policies" type="Dictionary" />
+			<param index="2" name="rpc_url" type="String" />
+			<param index="3" name="keychain_url" type="String" />
+			<param index="4" name="cartridge_api_url" type="String" />
+			<param index="5" name="preset" type="String" default="&quot;&quot;" />
+			<description>
+				Creates a session registration URL with custom keychain and API URLs.
+			</description>
+		</method>
 		<method name="generate_private_key" qualifiers="static">
 			<return type="String" />
 			<description>

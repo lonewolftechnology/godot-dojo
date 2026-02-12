@@ -261,16 +261,37 @@ controller::SessionPolicies ControllerHelper::to_c_policies(const Dictionary& po
     for (int i = 0; i < policy_array.size(); ++i)
     {
         Dictionary policy_group = policy_array[i];
-        if (!policy_group.has("contract_address") || !policy_group.has("entrypoints")) continue;
+
+        if (policy_group.has("target") && policy_group.has("method"))
+        {
+            auto p = std::make_shared<controller::SessionPolicy>();
+            p->contract_address = String(policy_group["target"]).utf8().get_data();
+            p->entrypoint = String(policy_group["method"]).utf8().get_data();
+            Logger::debug_extra("Policy", "Target", p->contract_address.c_str());
+            Logger::debug_extra("Policy", "Method", p->entrypoint.c_str());
+            c_policies.policies.push_back(p);
+            continue;
+        }
+
+        if (!policy_group.has("contract_address")) continue;
 
         String contract_address = policy_group["contract_address"];
-        Array entrypoints = policy_group["entrypoints"];
+        Array methods;
+
+        if (policy_group.has("methods")) {
+            methods = policy_group["methods"];
+        } else if (policy_group.has("entrypoints")) {
+            methods = policy_group["entrypoints"];
+        } else {
+            continue;
+        }
+
         Logger::debug_extra("Policy", "Contract", contract_address);
-        for (int j = 0; j < entrypoints.size(); ++j)
+        for (int j = 0; j < methods.size(); ++j)
         {
             auto p = std::make_shared<controller::SessionPolicy>();
             p->contract_address = contract_address.utf8().get_data();
-            p->entrypoint = String(entrypoints[j]).utf8().get_data();
+            p->entrypoint = String(methods[j]).utf8().get_data();
             Logger::debug_extra("Policy", "Entrypoint", p->entrypoint.c_str());
             c_policies.policies.push_back(p);
         }
