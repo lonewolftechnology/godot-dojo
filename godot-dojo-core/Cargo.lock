@@ -1232,7 +1232,7 @@ dependencies = [
 [[package]]
 name = "controller-uniffi"
 version = "0.1.0"
-source = "git+https://github.com/cartridge-gg/controller.c?rev=88b355e#88b355ef1720ef43d072cc8a9c1d308a8c6a07da"
+source = "git+https://github.com/cartridge-gg/controller.c?rev=3b208fc#3b208fcd6ae7f9666f33c759acebc43f1d325bce"
 dependencies = [
  "account_sdk",
  "anyhow",
@@ -1241,6 +1241,7 @@ dependencies = [
  "cargo_metadata 0.19.2",
  "chrono",
  "lazy_static",
+ "reqwest 0.11.27",
  "serde",
  "serde_json",
  "starknet",
@@ -1573,7 +1574,7 @@ dependencies = [
 [[package]]
 name = "dojo-c"
 version = "1.8.3"
-source = "git+https://github.com/dojoengine/dojo.c?tag=v1.8.7#ff08875dc9373b966e6636718e909d2fa772737a"
+source = "git+https://github.com/dojoengine/dojo.c?rev=276c37e#276c37eaed66ad2264b3e7fc5592c67b9281fd25"
 dependencies = [
  "anyhow",
  "cainome",
@@ -1600,7 +1601,7 @@ dependencies = [
 [[package]]
 name = "dojo-core"
 version = "1.8.3"
-source = "git+https://github.com/dojoengine/dojo.c?tag=v1.8.7#ff08875dc9373b966e6636718e909d2fa772737a"
+source = "git+https://github.com/dojoengine/dojo.c?rev=276c37e#276c37eaed66ad2264b3e7fc5592c67b9281fd25"
 dependencies = [
  "anyhow",
  "dojo-types",
@@ -1639,7 +1640,7 @@ dependencies = [
 [[package]]
 name = "dojo-uniffi"
 version = "1.8.3"
-source = "git+https://github.com/dojoengine/dojo.c?tag=v1.8.7#ff08875dc9373b966e6636718e909d2fa772737a"
+source = "git+https://github.com/dojoengine/dojo.c?rev=276c37e#276c37eaed66ad2264b3e7fc5592c67b9281fd25"
 dependencies = [
  "anyhow",
  "axum 0.8.6",
