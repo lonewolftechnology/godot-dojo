@@ -39,7 +39,7 @@ bool ControllerHelper::validate_felt(const String& felt)
 String ControllerHelper::generate_private_key()
 {
     while (true) {
-        // Generate 31 bytes of random data to ensure it fits in a felt (252 bits)
+        // Generate 31 bytes of random data to ensure it fits in felt (252 bits)
         // 31 bytes = 248 bits, which is safe.
         PackedByteArray bytes = OS::get_singleton()->get_entropy(31);
 
@@ -198,8 +198,8 @@ std::vector<std::shared_ptr<controller::Call>> ControllerHelper::prepare_calls(c
                         Variant ret = obj->call("to_calldata");
                         if (ret.get_type() == Variant::PACKED_STRING_ARRAY) {
                             PackedStringArray arr = ret;
-                            for (int k = 0; k < arr.size(); ++k) {
-                                current_call->calldata.emplace_back(arr[k].utf8().get_data());
+                            for (const auto & k : arr) {
+                                current_call->calldata.emplace_back(k.utf8().get_data());
                             }
                         } else {
                             current_call->calldata.emplace_back(String(ret).utf8().get_data());
@@ -276,4 +276,40 @@ controller::SessionPolicies ControllerHelper::to_c_policies(const Dictionary& po
         }
     }
     return c_policies;
+}
+
+String ControllerHelper::create_session_registration_url(const String &private_key, const Dictionary &policies, const String &rpc_url, const String &preset)
+{
+    controller::SessionPolicies c_policies = to_c_policies(policies);
+    std::optional<std::string> c_preset;
+    if (!preset.is_empty()) {
+        c_preset = preset.utf8().get_data();
+    }
+
+    std::string result = controller::create_session_registration_url(
+        private_key.utf8().get_data(),
+        c_policies,
+        rpc_url.utf8().get_data(),
+        c_preset
+    );
+    return {result.c_str()};
+}
+
+String ControllerHelper::create_session_registration_url_with_urls(const String &private_key, const Dictionary &policies, const String &rpc_url, const String &keychain_url, const String &cartridge_api_url, const String &preset)
+{
+    controller::SessionPolicies c_policies = to_c_policies(policies);
+    std::optional<std::string> c_preset;
+    if (!preset.is_empty()) {
+        c_preset = preset.utf8().get_data();
+    }
+
+    std::string result = controller::create_session_registration_url_with_urls(
+        private_key.utf8().get_data(),
+        c_policies,
+        rpc_url.utf8().get_data(),
+        keychain_url.utf8().get_data(),
+        cartridge_api_url.utf8().get_data(),
+        c_preset
+    );
+    return {result.c_str()};
 }

@@ -24,6 +24,8 @@ public:
 	static String generate_private_key();
 	static std::vector<std::shared_ptr<controller::Call>>  prepare_calls(const TypedArray<Dictionary> &calls);
     static controller::SessionPolicies to_c_policies(const Dictionary &policies);
+    static String create_session_registration_url(const String &private_key, const Dictionary &policies, const String &rpc_url, const String &preset);
+    static String create_session_registration_url_with_urls(const String &private_key, const Dictionary &policies, const String &rpc_url, const String &keychain_url, const String &cartridge_api_url, const String &preset);
 
 
 
@@ -35,6 +37,8 @@ protected:
         ClassDB::bind_static_method("ControllerHelper", D_METHOD("signer_to_guid", "private_key"), &ControllerHelper::signer_to_guid);
         ClassDB::bind_static_method("ControllerHelper", D_METHOD("validate_felt", "felt"), &ControllerHelper::validate_felt);
         ClassDB::bind_static_method("ControllerHelper", D_METHOD("generate_private_key"), &ControllerHelper::generate_private_key);
+        ClassDB::bind_static_method("ControllerHelper", D_METHOD("create_session_registration_url", "private_key", "policies", "rpc_url", "preset"), &ControllerHelper::create_session_registration_url);
+        ClassDB::bind_static_method("ControllerHelper", D_METHOD("create_session_registration_url_with_urls", "private_key", "policies", "rpc_url", "keychain_url", "cartridge_api_url", "preset"), &ControllerHelper::create_session_registration_url_with_urls);
 
         ClassDB::bind_integer_constant(get_class_static(), "SignerType", "Webauthn", static_cast<int>(controller::SignerType::kWebauthn));
         ClassDB::bind_integer_constant(get_class_static(), "SignerType", "Starknet", static_cast<int>(controller::SignerType::kStarknet));
