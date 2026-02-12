@@ -205,8 +205,6 @@ tramp
 # MISC
 # ============================================================================
 build
-# Temp doc
-dojo_methods.md
-notes.md
 commit_script.sh
 bindings
+demo/addons/rider-plugin
