@@ -112,19 +112,23 @@ jobs:
           cd godot-dojo-core
 
           # Parse dojo-c from [dependencies] in Cargo.toml
-          DOJO_C_LINE=$(awk '/\[dependencies\]/{f=1;next} /\[/{f=0} f && /dojo-c =/' Cargo.toml)
-          DOJO_C_URL=$(echo "$DOJO_C_LINE" | grep -o 'git = "[^"]*"' | sed 's/git = "//;s/"//')
-          DOJO_C_TAG=$(echo "$DOJO_C_LINE" | grep -o 'tag = "[^"]*"' | sed 's/tag = "//;s/"//')
+          DOJO_C_LINE=$(awk '/\[dependencies\]/{f=1;next} /\[/{f=0} f && /^[ \t]*dojo-c =/{print; exit}' Cargo.toml)
+          DOJO_C_URL=$(echo "$DOJO_C_LINE" | grep -o 'git = "[^"]*"' | head -n 1 | sed 's/git = "//;s/"//')
+          DOJO_C_TAG=$(echo "$DOJO_C_LINE" | grep -o 'tag = "[^"]*"' | head -n 1 | sed 's/tag = "//;s/"//')
 
           # Parse controller-uniffi from [dependencies] in Cargo.toml
-          CONTROLLER_LINE=$(awk '/\[dependencies\]/{f=1;next} /\[/{f=0} f && /controller-uniffi =/' Cargo.toml)
-          CONTROLLER_URL=$(echo "$CONTROLLER_LINE" | grep -o 'git = "[^"]*"' | sed 's/git = "//;s/"//')
-          CONTROLLER_REV=$(echo "$CONTROLLER_LINE" | grep -o 'rev = "[^"]*"' | sed 's/rev = "//;s/"//')
+          CONTROLLER_LINE=$(awk '/\[dependencies\]/{f=1;next} /\[/{f=0} f && /^[ \t]*controller-uniffi =/{print; exit}' Cargo.toml)
+          CONTROLLER_URL=$(echo "$CONTROLLER_LINE" | grep -o 'git = "[^"]*"' | head -n 1 | sed 's/git = "//;s/"//')
+          CONTROLLER_REV=$(echo "$CONTROLLER_LINE" | grep -o 'rev = "[^"]*"' | head -n 1 | sed 's/rev = "//;s/"//')
           CONTROLLER_REV_SHORT=${CONTROLLER_REV:0:7}
 
           # Set individual outputs for each dependency
-          echo "dojo_c_version=[dojo.c]($DOJO_C_URL/releases/tag/$DOJO_C_TAG) ($DOJO_C_TAG)" >> $GITHUB_OUTPUT
-          echo "controller_c_version=[controller.c]($CONTROLLER_URL/tree/$CONTROLLER_REV) ($CONTROLLER_REV_SHORT)" >> $GITHUB_OUTPUT
+          echo "dojo_c_version<<EOF" >> $GITHUB_OUTPUT
+          echo "[dojo.c]($DOJO_C_URL/releases/tag/$DOJO_C_TAG) ($DOJO_C_TAG)" >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
+          echo "controller_c_version<<EOF" >> $GITHUB_OUTPUT
+          echo "[controller.c]($CONTROLLER_URL/tree/$CONTROLLER_REV) ($CONTROLLER_REV_SHORT)" >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
 
 
       - name: Create release
