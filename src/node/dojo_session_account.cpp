@@ -117,6 +117,14 @@ String DojoSessionAccount::execute(const TypedArray<Dictionary>& calls) const
         return "";
     }
 
+    if (is_expired())
+    {
+        Logger::error("DojoSessionAccount: Session is expired. Cannot execute from outside.");
+        return "Session expired";
+    }
+
+    Logger::info("DojoSessionAccount: Executing from outside for account address: " + get_address());
+
     std::vector<std::shared_ptr<controller::Call>> c_calls = ControllerHelper::prepare_calls(calls);
 
     try
