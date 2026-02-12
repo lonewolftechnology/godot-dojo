@@ -38,7 +38,7 @@
 				Sets the value to an integer, optionally specifying a primitive tag.
 			</description>
 		</method>
-		<method name="list" qualifiers="vararg">
+		<method name="list" qualifiers="const vararg">
 			<return type="MemberClause" />
 			<description>
 				Creates a list of values for the clause.

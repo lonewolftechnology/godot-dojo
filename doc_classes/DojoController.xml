@@ -9,43 +9,43 @@
 	<tutorials>
 	</tutorials>
 	<methods>
-		<method name="address">
+		<method name="address" qualifiers="const">
 			<return type="String" />
 			<description>
 				Returns the address of the controller account.
 			</description>
 		</method>
-		<method name="app_id">
+		<method name="app_id" qualifiers="const">
 			<return type="String" />
 			<description>
 				Returns the application ID associated with the controller.
 			</description>
 		</method>
-		<method name="chain_id">
+		<method name="chain_id" qualifiers="const">
 			<return type="String" />
 			<description>
 				Returns the chain ID of the network the controller is connected to.
 			</description>
 		</method>
-		<method name="clear_last_error">
+		<method name="clear_last_error" qualifiers="const">
 			<return type="void" />
 			<description>
 				Clears the last error message stored in the controller.
 			</description>
 		</method>
-		<method name="delegate_account">
+		<method name="delegate_account" qualifiers="const">
 			<return type="String" />
 			<description>
 				Returns the delegate account address.
 			</description>
 		</method>
-		<method name="disconnect">
+		<method name="disconnect" qualifiers="const">
 			<return type="void" />
 			<description>
 				Disconnects the controller.
 			</description>
 		</method>
-		<method name="error_message">
+		<method name="error_message" qualifiers="const">
 			<return type="String" />
 			<description>
 				Returns the last error message, if any.
@@ -74,7 +74,7 @@
 				Creates a DojoController instance from storage using the application ID.
 			</description>
 		</method>
-		<method name="get_info">
+		<method name="get_info" qualifiers="const">
 			<return type="Dictionary" />
 			<description>
 				Returns a dictionary containing information about the controller, such as address, app_id, chain_id, delegate_account, and username.
@@ -118,7 +118,7 @@
 				Initializes the controller in headless mode.
 			</description>
 		</method>
-		<method name="is_valid">
+		<method name="is_valid" qualifiers="const">
 			<return type="bool" />
 			<description>
 				Checks if the controller is valid (initialized).
@@ -145,14 +145,14 @@
 				Signs up a new user.
 			</description>
 		</method>
-		<method name="switch_chain">
+		<method name="switch_chain" qualifiers="const">
 			<return type="void" />
 			<param index="0" name="rpc_url" type="String" />
 			<description>
 				Switches the chain to the specified RPC URL.
 			</description>
 		</method>
-		<method name="transfer">
+		<method name="transfer" qualifiers="const">
 			<return type="String" />
 			<param index="0" name="recipient" type="String" />
 			<param index="1" name="amount" type="String" />
@@ -160,7 +160,7 @@
 				Transfers an amount to a recipient.
 			</description>
 		</method>
-		<method name="username">
+		<method name="username" qualifiers="const">
 			<return type="String" />
 			<description>
 				Returns the username associated with the controller.

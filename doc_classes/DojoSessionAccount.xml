@@ -77,7 +77,7 @@
 				Executes a test call.
 			</description>
 		</method>
-		<method name="generate_session_request_url" qualifiers="const">
+		<method name="generate_session_request_url" qualifiers="const" deprecated="Use [method ControllerHelper.create_session_registration_url] or [method ControllerHelper.create_session_registration_url_with_urls] instead.">
 			<return type="String" />
 			<param index="0" name="base_url" type="String" />
 			<param index="1" name="public_key" type="String" />
