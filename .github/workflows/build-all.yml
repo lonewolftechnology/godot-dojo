@@ -115,6 +115,7 @@ jobs:
           DOJO_C_LINE=$(awk '/\[dependencies\]/{f=1;next} /\[/{f=0} f && /^[ \t]*dojo-c =/{print; exit}' Cargo.toml)
           DOJO_C_URL=$(echo "$DOJO_C_LINE" | grep -o 'git = "[^"]*"' | head -n 1 | sed 's/git = "//;s/"//')
           DOJO_C_TAG=$(echo "$DOJO_C_LINE" | grep -o 'tag = "[^"]*"' | head -n 1 | sed 's/tag = "//;s/"//')
+          DOJO_C_REV=$(echo "$DOJO_C_LINE" | grep -o 'rev = "[^"]*"' | head -n 1 | sed 's/rev = "//;s/"//')
 
           # Parse controller-uniffi from [dependencies] in Cargo.toml
           CONTROLLER_LINE=$(awk '/\[dependencies\]/{f=1;next} /\[/{f=0} f && /^[ \t]*controller-uniffi =/{print; exit}' Cargo.toml)
@@ -124,7 +125,12 @@ jobs:
 
           # Set individual outputs for each dependency
           echo "dojo_c_version<<EOF" >> $GITHUB_OUTPUT
-          echo "[dojo.c]($DOJO_C_URL/releases/tag/$DOJO_C_TAG) ($DOJO_C_TAG)" >> $GITHUB_OUTPUT
+          if [ -n "$DOJO_C_TAG" ]; then
+            echo "[dojo.c]($DOJO_C_URL/releases/tag/$DOJO_C_TAG) ($DOJO_C_TAG)" >> $GITHUB_OUTPUT
+          else
+            DOJO_C_REV_SHORT=${DOJO_C_REV:0:7}
+            echo "[dojo.c]($DOJO_C_URL/tree/$DOJO_C_REV) ($DOJO_C_REV_SHORT)" >> $GITHUB_OUTPUT
+          fi
           echo "EOF" >> $GITHUB_OUTPUT
           echo "controller_c_version<<EOF" >> $GITHUB_OUTPUT
           echo "[controller.c]($CONTROLLER_URL/tree/$CONTROLLER_REV) ($CONTROLLER_REV_SHORT)" >> $GITHUB_OUTPUT
