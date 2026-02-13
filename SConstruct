@@ -445,30 +445,13 @@ generated_doc_file = "src/gen/doc_data.gen.cpp"
 sources = [s for s in all_sources if os.path.normpath(s) != os.path.normpath(generated_doc_file)]
 sources = sorted(sources) + ["bindings/controller/controller.cpp", "bindings/dojo/dojo.cpp"]
 
-# --- SMART BUILD: VariantDir ---
-# Define a dedicated build directory for objects based on configuration (including precision).
-# This prevents object file conflicts when switching between single/double precision without cleaning.
+# Define precision string for suffixes
 precision = env.get("precision", "single")
 precision_string = ".double" if precision == "double" else ""
-obj_dir = f"build/obj/{platform}/{target}/{arch}/{precision}"
 
-env.VariantDir(f"{obj_dir}/src", "src", duplicate=0)
-env.VariantDir(f"{obj_dir}/bindings", "bindings", duplicate=0)
-
-# Remap source files to the new object directory
-new_sources = []
-for s in sources:
-    s_path = str(s).replace(os.sep, '/')
-    if s_path.startswith("src/"):
-        new_sources.append(s_path.replace("src/", f"{obj_dir}/src/", 1))
-    elif s_path.startswith("bindings/"):
-        new_sources.append(s_path.replace("bindings/", f"{obj_dir}/bindings/", 1))
-    else:
-        new_sources.append(s)
-sources = new_sources
-
-# Update generated doc file path to be inside the build dir so it doesn't conflict
-generated_doc_file = f"{obj_dir}/src/gen/doc_data.gen.cpp"
+if precision == "double":
+    env["OBJSUFFIX"] = precision_string + env["OBJSUFFIX"]
+    env["SHOBJSUFFIX"] = precision_string + env["SHOBJSUFFIX"]
 
 _godot_min = _detect_godot_min_requirement()
 _godot_tag = _get_git_submodule_version("external/godot-cpp")
