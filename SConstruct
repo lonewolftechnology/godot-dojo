@@ -449,6 +449,7 @@ sources = sorted(sources) + ["bindings/controller/controller.cpp", "bindings/doj
 # Define a dedicated build directory for objects based on configuration (including precision).
 # This prevents object file conflicts when switching between single/double precision without cleaning.
 precision = env.get("precision", "single")
+precision_string = ".double" if precision == "double" else ""
 obj_dir = f"build/obj/{platform}/{target}/{arch}/{precision}"
 
 env.VariantDir(f"{obj_dir}/src", "src", duplicate=0)
@@ -483,10 +484,12 @@ if target in ["editor", "template_debug"]:
 
 # Create library
 suffix_map = {
-    "linux": f".linux.{target}.{arch}.so",
-    "windows": f".windows.{target}.{arch}.dll",
-    "macos": f".macos.{target}.{arch}.dylib",
-    "ios": f".ios.{target}.{arch}.dylib" if not env['ios_simulator'] else f".ios.{target}.simulator.{arch}.dylib" ,
+    "linux": f".linux.{target}{precision_string}.{arch}.so",
+    "windows": f".windows.{target}{precision_string}.{arch}.dll",
+    "macos": f".macos.{target}{precision_string}.{arch}.dylib",
+    "ios": f".ios.{target}{precision_string}.{arch}.dylib" if not env['ios_simulator'] else f".ios.{target}{precision_string}.simulator.{arch}.dylib",
+    "android": f".android.{target}{precision_string}.{arch}.so",
+    "web": f".web.{target}{precision_string}.{arch}.wasm"
 }
 
 target_out_dir = target
@@ -502,7 +505,7 @@ else:
 # Ensure the output directory exists
 os.makedirs(output_dir, exist_ok=True)
 
-lib_name = f"{output_dir}/{prefix}godot-dojo{suffix_map.get(platform, f'.{platform}.{target}.{arch}.so')}"
+lib_name = f"{output_dir}/{prefix}godot-dojo{suffix_map.get(platform, f'.{platform}.{target}{precision_string}.{arch}.so')}"
 
 library = env.SharedLibrary(target=lib_name, source=sources)
 
@@ -518,7 +521,9 @@ gdext = gdext.replace("${ENTRY_POINT}", "godotdojo_library_init")
 
 gdext = gdext.replace("${GODOT_MIN_REQUIREMENT}", _godot_min)
 gdext = gdext.replace("${VERSION}", project_version)
+gdext = gdext.replace("${PRECISION}", precision_string)
 
+print(f"{Y}{clipboard} Generating demo/addons/godot-dojo/godot-dojo.gdextension...{X}")
 with open("demo/addons/godot-dojo/godot-dojo.gdextension", 'w') as f:
     f.write(gdext)
 
@@ -609,7 +614,7 @@ if platform == "ios":
         output_base = f"build/ios/{target_out_dir}"
         is_simulator = env.get('ios_simulator', False)
         # The output path is always the same. The action will handle deletion to force recreation.
-        target_dir = f"demo/addons/godot-dojo/bin/ios/{target_out_dir}/godot-dojo.xcframework"
+        target_dir = f"demo/addons/godot-dojo/bin/ios/{target_out_dir}/godot-dojo{precision_string}.xcframework"
         # Always delete the existing XCFramework to force recreation.
         if os.path.exists(target_dir):
             print(f"{Y}{broom} Deleting existing XCFramework to ensure a clean build: {target_dir}{X}")
@@ -622,17 +627,17 @@ if platform == "ios":
         # If 'arch' is not specified or is 'universal', build all libraries.
         if arch == "universal":
             print(f"{Y}Gathering all architectures for iOS XCFramework...{X}")
-            libs_to_package.append(f"{output_base}/godot-dojo.ios.{target}.arm64.dylib")
-            libs_to_package.append(f"{output_base}/godot-dojo.ios.{target}.simulator.x86_64.dylib")
-            libs_to_package.append(f"{output_base}/godot-dojo.ios.{target}.simulator.arm64.dylib")
+            libs_to_package.append(f"{output_base}/godot-dojo.ios.{target}{precision_string}.arm64.dylib")
+            libs_to_package.append(f"{output_base}/godot-dojo.ios.{target}{precision_string}.simulator.x86_64.dylib")
+            libs_to_package.append(f"{output_base}/godot-dojo.ios.{target}{precision_string}.simulator.arm64.dylib")
         else:
             # Build only the specified architecture.
             if is_simulator:
                 print(f"{Y}Gathering for iOS Simulator ({arch}) only...{X}")
-                libs_to_package.append(f"{output_base}/godot-dojo.ios.{target}.simulator.{arch}.dylib")
+                libs_to_package.append(f"{output_base}/godot-dojo.ios.{target}{precision_string}.simulator.{arch}.dylib")
             else:
                 print(f"{Y}Gathering for iOS Device ({arch}) only...{X}")
-                libs_to_package.append(f"{output_base}/godot-dojo.ios.{target}.{arch}.dylib")
+                libs_to_package.append(f"{output_base}/godot-dojo.ios.{target}{precision_string}.{arch}.dylib")
 
         if not libs_to_package:
             print(f"{R}{cross} No valid iOS libraries to build for the specified configuration. Aborting.{X}")
