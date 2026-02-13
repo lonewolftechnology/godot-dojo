@@ -208,3 +208,4 @@ build
 commit_script.sh
 bindings
 demo/addons/rider-plugin
+src/gen/version.gen.hpp

@@ -13,6 +13,7 @@
 #include "godot_cpp/classes/popup_menu.hpp"
 #include "godot_cpp/classes/reg_ex.hpp"
 #include "tools/logger.hpp"
+#include "gen/version.gen.hpp"
 
 DojoEditorPlugin::DojoEditorPlugin()
 {
@@ -67,11 +68,7 @@ void DojoEditorPlugin::_exit_tree()
 
 String DojoEditorPlugin::_get_plugin_version() const
 {
-#ifdef VERSION_STR
-    return VERSION_STR;
-#else
-    return "0.0.0";
-#endif
+    return GODOT_DOJO_VERSION;
 }
 
 void DojoEditorPlugin::reset_project_settings()
