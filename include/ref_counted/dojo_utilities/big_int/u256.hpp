@@ -29,6 +29,7 @@ public:
     static Ref<U256> from_string(const String& p_value);
     static Ref<U256> from_float(double p_value, int p_precision = -1);
     static Ref<U256> from_variant(const Variant& p_value);
+    static Array from_vector(const Variant& p_value);
 
 protected:
     static void _bind_methods();

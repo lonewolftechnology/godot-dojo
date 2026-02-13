@@ -140,6 +140,57 @@ Ref<I128> I128::from_variant(const Variant& p_value) {
     return instance;
 }
 
+Array I128::from_vector(const Variant& p_value) {
+    Array arr;
+    switch (p_value.get_type()) {
+        case Variant::VECTOR2: {
+            Vector2 v = p_value;
+            arr.append(from_float(v.x));
+            arr.append(from_float(v.y));
+            break;
+        }
+        case Variant::VECTOR2I: {
+            Vector2i v = p_value;
+            arr.append(from_int(v.x));
+            arr.append(from_int(v.y));
+            break;
+        }
+        case Variant::VECTOR3: {
+            Vector3 v = p_value;
+            arr.append(from_float(v.x));
+            arr.append(from_float(v.y));
+            arr.append(from_float(v.z));
+            break;
+        }
+        case Variant::VECTOR3I: {
+            Vector3i v = p_value;
+            arr.append(from_int(v.x));
+            arr.append(from_int(v.y));
+            arr.append(from_int(v.z));
+            break;
+        }
+        case Variant::VECTOR4: {
+            Vector4 v = p_value;
+            arr.append(from_float(v.x));
+            arr.append(from_float(v.y));
+            arr.append(from_float(v.z));
+            arr.append(from_float(v.w));
+            break;
+        }
+        case Variant::VECTOR4I: {
+            Vector4i v = p_value;
+            arr.append(from_int(v.x));
+            arr.append(from_int(v.y));
+            arr.append(from_int(v.z));
+            arr.append(from_int(v.w));
+            break;
+        }
+        default:
+            break;
+    }
+    return arr;
+}
+
 void I128::_bind_methods() {
     ClassDB::bind_method(D_METHOD("to_string"), &I128::to_string);
     ClassDB::bind_method(D_METHOD("_to_string"), &I128::_to_string);
@@ -149,6 +200,7 @@ void I128::_bind_methods() {
     ClassDB::bind_static_method("I128", D_METHOD("from_string", "value"), &I128::from_string);
     ClassDB::bind_static_method("I128", D_METHOD("from_float", "value", "precision"), &I128::from_float, DEFVAL(-1));
     ClassDB::bind_static_method("I128", D_METHOD("from_variant", "value"), &I128::from_variant);
+    ClassDB::bind_static_method("I128", D_METHOD("from_vector", "value"), &I128::from_vector);
 }
 
 #ifdef __GNUC__
