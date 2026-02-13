@@ -1,4 +1,5 @@
 #include "node/torii_client.hpp"
+#include <godot_cpp/core/error_macros.hpp>
 #include <list>
 #include "ref_counted/dojo_utilities/callback_utils.hpp"
 #include "ref_counted/dojo_utilities/clauses/keys.hpp"
@@ -30,7 +31,7 @@ bool ToriiClient::connect(const String& torii_url, int64_t max_message_size) {
             client = dojo::ToriiClient::init(url.get_data());
             Logger::success("ToriiClient connected: ", torii_url);
         } else {
-            client = dojo::ToriiClient::new_with_config(url.get_data(), (uint64_t)max_message_size);
+            client = dojo::ToriiClient::new_with_config(url.get_data(), static_cast<uint64_t>(max_message_size));
             Logger::success("ToriiClient connected with config: ", torii_url);
         }
         return true;
@@ -49,7 +50,14 @@ ToriiClient* ToriiClient::create(const String& torii_url, int64_t max_message_si
     return node;
 }
 
-Dictionary ToriiClient::achievements(const Ref<AchievementQuery>& query) {
+Dictionary ToriiClient::achievements(const Ref<AchievementQuery>& query) const {
+    if (!is_connected(true)) {
+        return {};
+    }
+    if (query.is_null()) {
+        Logger::error("ToriiClient: Query is null.");
+        return {};
+    }
     try {
         dojo::PageAchievement page = client->achievements(query->get_native());
         Dictionary result;
@@ -71,11 +79,18 @@ Dictionary ToriiClient::achievements(const Ref<AchievementQuery>& query) {
         return result;
     } catch (const std::exception& e) {
         Logger::error("Achievements query failed: ", e.what());
-        return Dictionary();
+        return {};
     }
 }
 
-Dictionary ToriiClient::activities(const Ref<ActivityQuery>& query) {
+Dictionary ToriiClient::activities(const Ref<ActivityQuery>& query) const {
+    if (!is_connected(true)) {
+        return {};
+    }
+    if (query.is_null()) {
+        Logger::error("ToriiClient: Query is null.");
+        return {};
+    }
     try {
         dojo::PageActivity page = client->activities(query->get_native());
         Dictionary result;
@@ -97,11 +112,18 @@ Dictionary ToriiClient::activities(const Ref<ActivityQuery>& query) {
         return result;
     } catch (const std::exception& e) {
         Logger::error("Activities query failed: ", e.what());
-        return Dictionary();
+        return {};
     }
 }
 
-Dictionary ToriiClient::aggregations(const Ref<AggregationQuery>& query) {
+Dictionary ToriiClient::aggregations(const Ref<AggregationQuery>& query) const {
+    if (!is_connected(true)) {
+        return {};
+    }
+    if (query.is_null()) {
+        Logger::error("ToriiClient: Query is null.");
+        return {};
+    }
     try {
         dojo::PageAggregationEntry page = client->aggregations(query->get_native());
         Dictionary result;
@@ -123,11 +145,18 @@ Dictionary ToriiClient::aggregations(const Ref<AggregationQuery>& query) {
         return result;
     } catch (const std::exception& e) {
         Logger::error("Aggregations query failed: ", e.what());
-        return Dictionary();
+        return {};
     }
 }
 
-TypedArray<Dictionary> ToriiClient::contracts(const Ref<ContractQuery>& query) {
+TypedArray<Dictionary> ToriiClient::contracts(const Ref<ContractQuery>& query) const {
+    if (!is_connected(true)) {
+        return {};
+    }
+    if (query.is_null()) {
+        Logger::error("ToriiClient: Query is null.");
+        return {};
+    }
     try {
         std::vector<std::shared_ptr<dojo::Contract>> contracts = client->contracts(query->get_native());
         TypedArray<Dictionary> result;
@@ -140,11 +169,18 @@ TypedArray<Dictionary> ToriiClient::contracts(const Ref<ContractQuery>& query) {
         return result;
     } catch (const std::exception& e) {
         Logger::error("Contracts query failed: ", e.what());
-        return TypedArray<Dictionary>();
+        return {};
     }
 }
 
-Dictionary ToriiClient::controllers(const Ref<ControllerQuery>& query) {
+Dictionary ToriiClient::controllers(const Ref<ControllerQuery>& query) const {
+    if (!is_connected(true)) {
+        return {};
+    }
+    if (query.is_null()) {
+        Logger::error("ToriiClient: Query is null.");
+        return {};
+    }
     try {
         dojo::PageController page = client->controllers(query->get_native());
         Dictionary result;
@@ -166,11 +202,18 @@ Dictionary ToriiClient::controllers(const Ref<ControllerQuery>& query) {
         return result;
     } catch (const std::exception& e) {
         Logger::error("Controllers query failed: ", e.what());
-        return Dictionary();
+        return {};
     }
 }
 
-Dictionary ToriiClient::entities(const Ref<DojoQuery>& query) {
+Dictionary ToriiClient::entities(const Ref<DojoQuery>& query) const {
+    if (!is_connected(true)) {
+        return {};
+    }
+    if (query.is_null()) {
+        Logger::error("ToriiClient: Query is null.");
+        return {};
+    }
     try {
         dojo::PageEntity page = client->entities(query->get_native());
         Dictionary result;
@@ -192,11 +235,18 @@ Dictionary ToriiClient::entities(const Ref<DojoQuery>& query) {
         return result;
     } catch (const std::exception& e) {
         Logger::error("Entities query failed: ", e.what());
-        return Dictionary();
+        return {};
     }
 }
 
-Dictionary ToriiClient::event_messages(const Ref<DojoQuery>& query) {
+Dictionary ToriiClient::event_messages(const Ref<DojoQuery>& query) const {
+    if (!is_connected(true)) {
+        return {};
+    }
+    if (query.is_null()) {
+        Logger::error("ToriiClient: Query is null.");
+        return {};
+    }
     try {
         dojo::PageEntity page = client->event_messages(query->get_native());
         Dictionary result;
@@ -218,11 +268,18 @@ Dictionary ToriiClient::event_messages(const Ref<DojoQuery>& query) {
         return result;
     } catch (const std::exception& e) {
         Logger::error("Event messages query failed: ", e.what());
-        return Dictionary();
+        return {};
     }
 }
 
-Dictionary ToriiClient::player_achievements(const Ref<PlayerAchievementQuery>& query) {
+Dictionary ToriiClient::player_achievements(const Ref<PlayerAchievementQuery>& query) const {
+    if (!is_connected(true)) {
+        return {};
+    }
+    if (query.is_null()) {
+        Logger::error("ToriiClient: Query is null.");
+        return {};
+    }
     try {
         dojo::PagePlayerAchievement page = client->player_achievements(query->get_native());
         Dictionary result;
@@ -244,11 +301,18 @@ Dictionary ToriiClient::player_achievements(const Ref<PlayerAchievementQuery>& q
         return result;
     } catch (const std::exception& e) {
         Logger::error("Player achievements query failed: ", e.what());
-        return Dictionary();
+        return {};
     }
 }
 
-Dictionary ToriiClient::search(const Ref<SearchQuery>& query) {
+Dictionary ToriiClient::search(const Ref<SearchQuery>& query) const {
+    if (!is_connected(true)) {
+        return {};
+    }
+    if (query.is_null()) {
+        Logger::error("ToriiClient: Query is null.");
+        return {};
+    }
     try {
         dojo::SearchResponse response = client->search(query->get_native());
         Dictionary result;
@@ -266,11 +330,18 @@ Dictionary ToriiClient::search(const Ref<SearchQuery>& query) {
         return result;
     } catch (const std::exception& e) {
         Logger::error("Search failed: ", e.what());
-        return Dictionary();
+        return {};
     }
 }
 
-Dictionary ToriiClient::starknet_events(const Ref<EventQuery>& query) {
+Dictionary ToriiClient::starknet_events(const Ref<EventQuery>& query) const {
+    if (!is_connected(true)) {
+        return {};
+    }
+    if (query.is_null()) {
+        Logger::error("ToriiClient: Query is null.");
+        return {};
+    }
     try {
         dojo::PageEvent page = client->starknet_events(query->get_native());
         Dictionary result;
@@ -292,11 +363,18 @@ Dictionary ToriiClient::starknet_events(const Ref<EventQuery>& query) {
         return result;
     } catch (const std::exception& e) {
         Logger::error("Starknet events query failed: ", e.what());
-        return Dictionary();
+        return {};
     }
 }
 
-Dictionary ToriiClient::token_balances(const Ref<TokenBalanceQuery>& query) {
+Dictionary ToriiClient::token_balances(const Ref<TokenBalanceQuery>& query) const {
+    if (!is_connected(true)) {
+        return {};
+    }
+    if (query.is_null()) {
+        Logger::error("ToriiClient: Query is null.");
+        return {};
+    }
     try {
         dojo::PageTokenBalance page = client->token_balances(query->get_native());
         Dictionary result;
@@ -318,11 +396,18 @@ Dictionary ToriiClient::token_balances(const Ref<TokenBalanceQuery>& query) {
         return result;
     } catch (const std::exception& e) {
         Logger::error("Token balances query failed: ", e.what());
-        return Dictionary();
+        return {};
     }
 }
 
-Dictionary ToriiClient::token_contracts(const Ref<TokenContractQuery>& query) {
+Dictionary ToriiClient::token_contracts(const Ref<TokenContractQuery>& query) const {
+    if (!is_connected(true)) {
+        return {};
+    }
+    if (query.is_null()) {
+        Logger::error("ToriiClient: Query is null.");
+        return {};
+    }
     try {
         dojo::PageTokenContract page = client->token_contracts(query->get_native());
         Dictionary result;
@@ -344,11 +429,18 @@ Dictionary ToriiClient::token_contracts(const Ref<TokenContractQuery>& query) {
         return result;
     } catch (const std::exception& e) {
         Logger::error("Token contracts query failed: ", e.what());
-        return Dictionary();
+        return {};
     }
 }
 
-Dictionary ToriiClient::token_transfers(const Ref<TokenTransferQuery>& query) {
+Dictionary ToriiClient::token_transfers(const Ref<TokenTransferQuery>& query) const {
+    if (!is_connected(true)) {
+        return {};
+    }
+    if (query.is_null()) {
+        Logger::error("ToriiClient: Query is null.");
+        return {};
+    }
     try {
         dojo::PageTokenTransfer page = client->token_transfers(query->get_native());
         Dictionary result;
@@ -370,11 +462,18 @@ Dictionary ToriiClient::token_transfers(const Ref<TokenTransferQuery>& query) {
         return result;
     } catch (const std::exception& e) {
         Logger::error("Token transfers query failed: ", e.what());
-        return Dictionary();
+        return {};
     }
 }
 
-Dictionary ToriiClient::tokens(const Ref<TokenQuery>& query) {
+Dictionary ToriiClient::tokens(const Ref<TokenQuery>& query) const {
+    if (!is_connected(true)) {
+        return {};
+    }
+    if (query.is_null()) {
+        Logger::error("ToriiClient: Query is null.");
+        return {};
+    }
     try {
         dojo::PageToken page = client->tokens(query->get_native());
         Dictionary result;
@@ -396,11 +495,18 @@ Dictionary ToriiClient::tokens(const Ref<TokenQuery>& query) {
         return result;
     } catch (const std::exception& e) {
         Logger::error("Tokens query failed: ", e.what());
-        return Dictionary();
+        return {};
     }
 }
 
-Dictionary ToriiClient::transactions(const Ref<TransactionQuery>& query) {
+Dictionary ToriiClient::transactions(const Ref<TransactionQuery>& query) const {
+    if (!is_connected(true)) {
+        return {};
+    }
+    if (query.is_null()) {
+        Logger::error("ToriiClient: Query is null.");
+        return {};
+    }
     try {
         dojo::PageTransaction page = client->transactions(query->get_native());
         Dictionary result;
@@ -422,11 +528,14 @@ Dictionary ToriiClient::transactions(const Ref<TransactionQuery>& query) {
         return result;
     } catch (const std::exception& e) {
         Logger::error("Transactions query failed: ", e.what());
-        return Dictionary();
+        return {};
     }
 }
 
-void ToriiClient::cancel_subscription(uint64_t subscription_id) {
+void ToriiClient::cancel_subscription(uint64_t subscription_id) const {
+    if (!is_connected(true)) {
+        return;
+    }
     try {
         client->cancel_subscription(subscription_id);
         Logger::success("Subscription cancelled: ", subscription_id);
@@ -435,7 +544,10 @@ void ToriiClient::cancel_subscription(uint64_t subscription_id) {
     }
 }
 
-String ToriiClient::publish_message(const String& message, const PackedStringArray& signature, const String& world_address) {
+String ToriiClient::publish_message(const String& message, const PackedStringArray& signature, const String& world_address) const {
+    if (!is_connected(true)) {
+        return {};
+    }
     try {
         dojo::Message msg;
         CharString msg_str = message.utf8();
@@ -458,11 +570,14 @@ String ToriiClient::publish_message(const String& message, const PackedStringArr
         return res;
     } catch (const std::exception& e) {
         Logger::error("Publish message failed: ", e.what());
-        return String();
+        return {};
     }
 }
 
-PackedStringArray ToriiClient::publish_message_batch(const Array& messages) {
+PackedStringArray ToriiClient::publish_message_batch(const Array& messages) const {
+    if (!is_connected(true)) {
+        return {};
+    }
     try {
         std::vector<std::shared_ptr<dojo::Message>> msgs;
         std::list<std::string> keep_alive;
@@ -495,11 +610,14 @@ PackedStringArray ToriiClient::publish_message_batch(const Array& messages) {
         return ret;
     } catch (const std::exception& e) {
         Logger::error("Publish message batch failed: ", e.what());
-        return PackedStringArray();
+        return {};
     }
 }
 
-TypedArray<Dictionary> ToriiClient::sql(const String& query) {
+TypedArray<Dictionary> ToriiClient::sql(const String& query) const {
+    if (!is_connected(true)) {
+        return {};
+    }
     try {
         CharString q = query.utf8();
         std::vector<std::shared_ptr<dojo::SqlRow>> rows = client->sql(q.get_data());
@@ -518,11 +636,18 @@ TypedArray<Dictionary> ToriiClient::sql(const String& query) {
         return result;
     } catch (const std::exception& e) {
         Logger::error("SQL query failed: ", e.what());
-        return TypedArray<Dictionary>();
+        return {};
     }
 }
 
-uint64_t ToriiClient::subscribe_entity_updates(const Ref<DojoClause> &clause, const PackedStringArray &world_addresses, const Ref<DojoCallback> &callback) {
+uint64_t ToriiClient::subscribe_entity_updates(const Ref<DojoClause> &clause, const PackedStringArray &world_addresses, const Ref<DojoCallback> &callback) const {
+    if (!is_connected(true)) {
+        return 0;
+    }
+    if (callback.is_null()) {
+        Logger::error("ToriiClient: Callback is null.");
+        return 0;
+    }
     try {
         std::vector<dojo::FieldElement> wa;
         std::vector<std::string> wa_store;
@@ -547,7 +672,14 @@ uint64_t ToriiClient::subscribe_entity_updates(const Ref<DojoClause> &clause, co
     }
 }
 
-uint64_t ToriiClient::subscribe_event_updates(const Array &keys, const Ref<DojoCallback> &callback) {
+uint64_t ToriiClient::subscribe_event_updates(const Array &keys, const Ref<DojoCallback> &callback) const {
+    if (!is_connected(true)) {
+        return 0;
+    }
+    if (callback.is_null()) {
+        Logger::error("ToriiClient: Callback is null.");
+        return 0;
+    }
     try {
         std::vector<std::shared_ptr<dojo::KeysClause>> k;
         for (int i = 0; i < keys.size(); i++) {
@@ -571,7 +703,14 @@ uint64_t ToriiClient::subscribe_event_updates(const Array &keys, const Ref<DojoC
     }
 }
 
-uint64_t ToriiClient::subscribe_token_balance_updates(const PackedStringArray &contract_addresses, const PackedStringArray &account_addresses, const PackedStringArray &token_ids, const Ref<DojoCallback> &callback) {
+uint64_t ToriiClient::subscribe_token_balance_updates(const PackedStringArray &contract_addresses, const PackedStringArray &account_addresses, const PackedStringArray &token_ids, const Ref<DojoCallback> &callback) const {
+    if (!is_connected(true)) {
+        return 0;
+    }
+    if (callback.is_null()) {
+        Logger::error("ToriiClient: Callback is null.");
+        return 0;
+    }
     try {
         std::vector<dojo::FieldElement> ca;
         std::vector<std::string> ca_store;
@@ -609,7 +748,14 @@ uint64_t ToriiClient::subscribe_token_balance_updates(const PackedStringArray &c
     }
 }
 
-uint64_t ToriiClient::subscribe_token_updates(const PackedStringArray &contract_addresses, const PackedStringArray &token_ids, const Ref<DojoCallback> &callback) {
+uint64_t ToriiClient::subscribe_token_updates(const PackedStringArray &contract_addresses, const PackedStringArray &token_ids, const Ref<DojoCallback> &callback) const {
+    if (!is_connected(true)) {
+        return 0;
+    }
+    if (callback.is_null()) {
+        Logger::error("ToriiClient: Callback is null.");
+        return 0;
+    }
     try {
         std::vector<dojo::FieldElement> ca;
         std::vector<std::string> ca_store;
@@ -638,7 +784,14 @@ uint64_t ToriiClient::subscribe_token_updates(const PackedStringArray &contract_
     }
 }
 
-uint64_t ToriiClient::subscribe_transaction_updates(const Dictionary &filter, const Ref<DojoCallback> &callback) {
+uint64_t ToriiClient::subscribe_transaction_updates(const Dictionary &filter, const Ref<DojoCallback> &callback) const {
+    if (!is_connected(true)) {
+        return 0;
+    }
+    if (callback.is_null()) {
+        Logger::error("ToriiClient: Callback is null.");
+        return 0;
+    }
     try {
         std::optional<std::shared_ptr<dojo::TransactionFilter>> f;
         std::list<std::string> keep_alive;
@@ -698,7 +851,10 @@ uint64_t ToriiClient::subscribe_transaction_updates(const Dictionary &filter, co
     }
 }
 
-TypedArray<Dictionary> ToriiClient::worlds(const PackedStringArray& world_addresses) {
+TypedArray<Dictionary> ToriiClient::worlds(const PackedStringArray& world_addresses) const {
+    if (!is_connected(true)) {
+        return {};
+    }
     try {
         std::vector<dojo::FieldElement> wa;
         std::vector<std::string> wa_store;
@@ -740,7 +896,7 @@ TypedArray<Dictionary> ToriiClient::worlds(const PackedStringArray& world_addres
         return result;
     } catch (const std::exception& e) {
         Logger::error("Worlds query failed: ", e.what());
-        return TypedArray<Dictionary>();
+        return {};
     }
 }
 
@@ -748,8 +904,11 @@ std::shared_ptr<dojo::ToriiClient> ToriiClient::get_client() const {
     return client;
 }
 
-bool ToriiClient::is_connected() const
+bool ToriiClient::is_connected(bool verbose) const
 {
+    if (verbose) {
+        ERR_FAIL_COND_V_EDMSG(client == nullptr, false, "ToriiClient: Client not connected.");
+    }
     return client != nullptr;
 }
 
@@ -785,5 +944,5 @@ void ToriiClient::_bind_methods() {
     ClassDB::bind_method(D_METHOD("subscribe_transaction_updates", "filter", "callback"), &ToriiClient::subscribe_transaction_updates);
 
     ClassDB::bind_method(D_METHOD("worlds", "world_addresses"), &ToriiClient::worlds);
-    ClassDB::bind_method(D_METHOD("is_connected"), &ToriiClient::is_connected);
+    ClassDB::bind_method(D_METHOD("is_connected", "verbose"), &ToriiClient::is_connected, DEFVAL(false));
 }
