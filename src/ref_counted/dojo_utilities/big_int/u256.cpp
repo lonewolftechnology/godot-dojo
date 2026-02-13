@@ -5,6 +5,8 @@
 #include <sstream>
 #include <boost/multiprecision/cpp_dec_float.hpp>
 
+#include "tools/logger.hpp"
+
 // Suppress false positive warning from GCC/Boost interaction
 #ifdef __GNUC__
 #pragma GCC diagnostic push
@@ -198,6 +200,7 @@ Array U256::from_vector(const Variant& p_value) {
             break;
         }
         default:
+            Logger::error("Only Vector type are supported");
             break;
     }
     return arr;
