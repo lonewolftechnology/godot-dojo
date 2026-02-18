@@ -44,7 +44,7 @@ void DojoEditorPlugin::_enter_tree()
     tool_menu->connect("id_pressed", callable_mp(this, &DojoEditorPlugin::_on_menu_item_pressed));
 
     add_tool_submenu_item("Godot Dojo Tools", tool_menu);
-    Logger::success_extra("GodotDojo", _get_plugin_version());
+    Logger::success_extra("GodotDojo", _get_plugin_version() + " (" + _get_precision() + ")");
 }
 
 void DojoEditorPlugin::_exit_tree()
@@ -71,6 +71,11 @@ String DojoEditorPlugin::_get_plugin_version() const
     return GODOT_DOJO_VERSION;
 }
 
+String DojoEditorPlugin::_get_precision() const
+{
+    return GODOT_DOJO_PRECISION;
+}
+
 void DojoEditorPlugin::reset_project_settings()
 {
     Logger::debug_extra("Dojo", "Resetting Dojo ProjectSettings");
@@ -79,28 +84,13 @@ void DojoEditorPlugin::reset_project_settings()
 
 void DojoEditorPlugin::print_version()
 {
-    Logger::_print_typed("green","GodotDojo", _get_plugin_version());
+    Logger::_print_typed("green","GodotDojo", _get_plugin_version() + " (" + _get_precision() + ")");
 }
 
 void DojoEditorPlugin::init_config(bool reset)
 {
     if (Engine::get_singleton()->is_editor_hint())
     {
-        set_setting("dojo/config/katana_url", "http://localhost:5050", reset, false);
-        set_setting("dojo/config/contract_address", "0x0", reset, false);
-        // Torii Config
-        // TODO: multiple contracts
-        set_setting("dojo/config/torii/torii_url", "http://localhost:8080", reset, false);
-        // set_setting("dojo/config/torii/contract_addresses", TypedArray<String>(), reset);
-        set_setting("dojo/config/torii/worlds", TypedArray<String>(), reset, false);
-        // Account
-        set_setting("dojo/config/account/address", "0x0",
-                    reset, false);
-        set_setting("dojo/config/account/public_key",
-                    "0x0", reset, false);
-        set_setting("dojo/config/account/private_key",
-                    "0x0", reset, false);
-
         // Fixed Point
         set_setting("dojo/config/fixed_point/default", 128, reset, false);
         set_setting("dojo/config/fixed_point/64", 40, reset, false);

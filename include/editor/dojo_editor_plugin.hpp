@@ -27,6 +27,7 @@ public:
         return "GodotDojo Tools";
     }
     String _get_plugin_version() const;
+    String _get_precision() const;
 
     void set_enabled(bool p_enabled) { enabled = p_enabled; };
     bool get_enabled() const { return enabled; }
@@ -51,6 +52,7 @@ protected:
         ClassDB::bind_method(D_METHOD("reset_project_settings"), &DojoEditorPlugin::reset_project_settings);
         ClassDB::bind_method(D_METHOD("print_version"), &DojoEditorPlugin::print_version);
         ClassDB::bind_method(D_METHOD("_get_plugin_version"), &DojoEditorPlugin::_get_plugin_version);
+        ClassDB::bind_method(D_METHOD("_get_precision"), &DojoEditorPlugin::_get_precision);
         ClassDB::bind_method(D_METHOD("check_for_updates"), &DojoEditorPlugin::check_for_updates);
         ClassDB::bind_method(D_METHOD("init_config", "reset"), &DojoEditorPlugin::init_config);
         ClassDB::bind_method(D_METHOD("init_setting", "setting", "value", "force", "save"),
