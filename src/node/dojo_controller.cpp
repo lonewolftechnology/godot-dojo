@@ -76,6 +76,7 @@ bool DojoController::initialize(const String &app_id, const String &username, co
             chain_id_.c_str()
         );
         set_internal(internal_controller);
+        emit_signal("controller_created");
     } catch (const controller::ControllerError &e) {
         Logger::error("DojoController.initialize failed:", e.what());
         return false;
@@ -110,6 +111,7 @@ bool DojoController::initialize_headless(const String &app_id, const String &use
             chain_id_
         );
         set_internal(internal_controller);
+        emit_signal("controller_created");
     } catch (const controller::ControllerError &e) {
         Logger::error("DojoController.initialize_headless failed:", e.what());
         return false;
@@ -230,7 +232,7 @@ String DojoController::execute(const TypedArray<Dictionary> &calls) const{
     }
 }
 
-String DojoController::execute_raw(const String &contract_address, const String &entrypoint, const Array &calldata) const {
+String DojoController::execute_single(const String &contract_address, const String &entrypoint, const Array &calldata) const {
     Dictionary _call_dict;
     _call_dict["contract_address"] = contract_address;
     _call_dict["entrypoint"] = entrypoint;

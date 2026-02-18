@@ -46,7 +46,7 @@ public:
     void disconnect() const;
     String error_message() const;
     String execute(const TypedArray<Dictionary> &calls) const;
-    String execute_raw(const String &contract_address, const String &entrypoint, const Array &calldata) const;
+    String execute_single(const String &contract_address, const String &entrypoint, const Array &calldata) const;
     void signup(const int &signer_type, const Variant &session_expiration, const Variant &cartridge_api_url) const;
     void switch_chain(const String &rpc_url) const;
     String transfer(const String &recipient, const String &amount) const;
@@ -72,12 +72,14 @@ protected:
         ClassDB::bind_method(D_METHOD("disconnect"), &DojoController::disconnect);
         ClassDB::bind_method(D_METHOD("error_message"), &DojoController::error_message);
         ClassDB::bind_method(D_METHOD("execute", "calls"), &DojoController::execute);
-        ClassDB::bind_method(D_METHOD("execute_raw", "contract_address", "entrypoint", "calldata"), &DojoController::execute_raw);
+        ClassDB::bind_method(D_METHOD("execute_single", "contract_address", "entrypoint", "calldata"), &DojoController::execute_single);
         ClassDB::bind_method(D_METHOD("signup", "signer_type", "session_expiration", "cartridge_api_url"), &DojoController::signup);
         ClassDB::bind_method(D_METHOD("switch_chain", "rpc_url"), &DojoController::switch_chain);
         ClassDB::bind_method(D_METHOD("transfer", "recipient", "amount"), &DojoController::transfer);
         ClassDB::bind_method(D_METHOD("username"), &DojoController::username);
         ClassDB::bind_method(D_METHOD("get_info"), &DojoController::get_info);
         ClassDB::bind_method(D_METHOD("is_valid"), &DojoController::is_valid);
+
+        ADD_SIGNAL(MethodInfo("controller_created"));
     }
 };

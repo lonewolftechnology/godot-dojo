@@ -206,6 +206,6 @@ tramp
 # ============================================================================
 build
 commit_script.sh
-bindings
+#bindings
 demo/addons/rider-plugin
-src/gen/version.gen.hpp
+include/gen/version.gen.hpp

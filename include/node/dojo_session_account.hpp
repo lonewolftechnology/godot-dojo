@@ -32,7 +32,7 @@ public:
     ~DojoSessionAccount() override = default;
 
     void create_from_subscribe(const String &_private_key, const String &_rpc_url,
-                               const String &_cartridge_api_url, const Dictionary &_policies = Dictionary());
+                               const Dictionary &_policies = Dictionary(), const String &_cartridge_api_url = "https://api.cartridge.gg");
 
     void create(const String& rpc_url, const String& private_key, const String& address,
                 const String& owner_guid, const String& chain_id, uint64_t session_expiration);
@@ -42,10 +42,10 @@ public:
     String get_app_id() const;
 
     String execute(const TypedArray<Dictionary> &calls) const;
-    String execute_raw(const String &contract_address, const String &entrypoint, const Array &calldata) const;
+    String execute_single(const String &contract_address, const String &entrypoint, const Array &calldata) const;
 
     String execute_from_outside(const TypedArray<Dictionary> &calls) const;
-    String execute_from_outside_raw(const String &contract_address, const String &entrypoint, const Array &calldata) const;
+    String execute_from_outside_single(const String &contract_address, const String &entrypoint, const Array &calldata) const;
     Variant execute_test(const Variant **calldata, GDExtensionInt arg_count, GDExtensionCallError &error);
 
     uint64_t get_expires_at() const;
@@ -80,17 +80,17 @@ protected:
 
     static void _bind_methods() {
         ClassDB::bind_method(D_METHOD("create_from_subscribe", "private_key", "rpc_url",
-                                      "cartridge_api_url", "policies"),
-                             &DojoSessionAccount::create_from_subscribe, DEFVAL(Dictionary()));
+                                      "policies", "cartridge_api_url"),
+                             &DojoSessionAccount::create_from_subscribe, DEFVAL("https://api.cartridge.gg"), DEFVAL(Dictionary()));
         ClassDB::bind_method(D_METHOD("create", "rpc_url", "private_key", "address", "owner_guid", "chain_id", "session_expiration"), &DojoSessionAccount::create);
 
         ClassDB::bind_method(D_METHOD("get_address"), &DojoSessionAccount::get_address);
 
         ClassDB::bind_method(D_METHOD("execute", "calls"), &DojoSessionAccount::execute);
-        ClassDB::bind_method(D_METHOD("execute_raw", "contract_address", "entrypoint", "calldata"), &DojoSessionAccount::execute_raw);
+        ClassDB::bind_method(D_METHOD("execute_single", "contract_address", "entrypoint", "calldata"), &DojoSessionAccount::execute_single);
 
         ClassDB::bind_method(D_METHOD("execute_from_outside", "calls"), &DojoSessionAccount::execute_from_outside);
-        ClassDB::bind_method(D_METHOD("execute_from_outside_raw", "contract_address", "entrypoint", "calldata"), &DojoSessionAccount::execute_from_outside_raw);
+        ClassDB::bind_method(D_METHOD("execute_from_outside_single", "contract_address", "entrypoint", "calldata"), &DojoSessionAccount::execute_from_outside_single);
 
         ClassDB::bind_method(D_METHOD("get_expires_at"), &DojoSessionAccount::get_expires_at);
         ClassDB::bind_method(D_METHOD("is_expired"), &DojoSessionAccount::is_expired);
@@ -126,6 +126,7 @@ protected:
                              &DojoSessionAccount::generate_session_request_url, DEFVAL(Dictionary()),
                              DEFVAL(String()), DEFVAL(String()), DEFVAL(String()));
 
+        ADD_SIGNAL(MethodInfo("session_created"));
     }
 };
 //VARIANT_ENUM_CAST(controller::SignerType);

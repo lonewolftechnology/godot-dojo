@@ -52,6 +52,7 @@ void DojoSessionAccount::create(const String& rpc_url, const String& private_key
         );
         set_internal(internal_account);
         Logger::success_extra("DojoSessionAccount", "Session account created successfully");
+        emit_signal("account_created");
     }
     catch (const controller::ControllerError& e)
     {
@@ -60,8 +61,8 @@ void DojoSessionAccount::create(const String& rpc_url, const String& private_key
 }
 
 void DojoSessionAccount::create_from_subscribe(const String& _private_key,
-                                               const String& _rpc_url, const String& _cartridge_api_url,
-                                               const Dictionary& _policies)
+                                               const String& _rpc_url,
+                                               const Dictionary& _policies, const String& _cartridge_api_url)
 {
     try
     {
@@ -91,6 +92,7 @@ void DojoSessionAccount::create_from_subscribe(const String& _private_key,
             );
         Logger::success_extra("DojoSessionAccount", "Session account created successfully");
         set_internal(internal_account);
+        emit_signal("account_created");
     }
     catch (const controller::ControllerError& e)
     {
@@ -140,7 +142,7 @@ String DojoSessionAccount::execute(const TypedArray<Dictionary>& calls) const
     }
 }
 
-String DojoSessionAccount::execute_raw(const String& contract_address, const String& entrypoint,
+String DojoSessionAccount::execute_single(const String& contract_address, const String& entrypoint,
                                        const Array& calldata) const
 {
     Dictionary _call_dict;
@@ -175,7 +177,7 @@ String DojoSessionAccount::execute_from_outside(const TypedArray<Dictionary>& ca
     }
 }
 
-String DojoSessionAccount::execute_from_outside_raw(const String& contract_address, const String& entrypoint,
+String DojoSessionAccount::execute_from_outside_single(const String& contract_address, const String& entrypoint,
                                                     const Array& calldata) const
 {
     Dictionary _call_dict;
