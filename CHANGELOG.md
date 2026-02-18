@@ -1,5 +1,21 @@
+## [v0.7.2](https://github.com/lonewolftechnology/godot-dojo/tree/v0.7.2) (2026-02-13)
+**Commits:**
+- [[eb5ec0a](https://github.com/lonewolftechnology/godot-dojo/commit/eb5ec0ac85b0dddee80098974391fabcdc530a09)] scons: ensure intermediate object differentiation by precision and cleanup
+- [[703b2c9](https://github.com/lonewolftechnology/godot-dojo/commit/703b2c99033c49a68e76fd52a9c8343444f8ff8e)] scons: make double binaries recognizable by adding precision to library names
+- [[c4564f8](https://github.com/lonewolftechnology/godot-dojo/commit/c4564f83acad05c3829ece5078f392d1367fca14)] scons: better version handling
+- [[34350eb](https://github.com/lonewolftechnology/godot-dojo/commit/34350eb10d7ee73f4bb8078b0c83a216dfb8a5a7)] ci: update cache handling
+- [[e3185e4](https://github.com/lonewolftechnology/godot-dojo/commit/e3185e422ba29f726de60a8634bb19cc5a887e55)] feat(ToriiClient): verbose error handling for is_connected method
+- [[cfd9bc9](https://github.com/lonewolftechnology/godot-dojo/commit/cfd9bc9c2905b6aa74355cc604098029112782f9)] update(BigInt): add error handling for unsupported types on `from_vector`
+
+## [v0.7.1](https://github.com/lonewolftechnology/godot-dojo/tree/v0.7.1) (2026-02-13)
+**Commits:**
+- [[bcb8c2e](https://github.com/lonewolftechnology/godot-dojo/commit/bcb8c2e86cb397d752511159b8d8f8965db32607)] feat(BigInt): add static methods to convert from vector variants
+- [[54c8ff6](https://github.com/lonewolftechnology/godot-dojo/commit/54c8ff6c7de93dffffac19de429184c283c3336d)] ci: fallback to rev when checking `dojo.c` version if no tag is present
+
 ## [v0.7](https://github.com/lonewolftechnology/godot-dojo/tree/v0.7) (2026-02-12)
 **Commits:**
+- [[1278e9b](https://github.com/lonewolftechnology/godot-dojo/commit/1278e9b9eec2f3f6e96464ad09a3496c657ac76d)] ci: fix release text
+- [[78723fc](https://github.com/lonewolftechnology/godot-dojo/commit/78723fc25b2bcd75e1af85f4aa8094b08827f865)] chore: update changelog
 - [[f94f20e](https://github.com/lonewolftechnology/godot-dojo/commit/f94f20ebeb055f516e4f339f2a2c75757fa7a0a2)] ci: fix mac arm64 not being part of zip
 - [[e56841a](https://github.com/lonewolftechnology/godot-dojo/commit/e56841a6f42475aea931be98c19a001698704825)] chore: update docs
 - [[c5e98bb](https://github.com/lonewolftechnology/godot-dojo/commit/c5e98bbdacfca862f0f1bf7033521c882f97ea81)] chore: update policy handling
