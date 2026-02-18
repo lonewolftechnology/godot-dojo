@@ -58,13 +58,12 @@
 				Executes a list of calls.
 			</description>
 		</method>
-		<method name="execute_raw" qualifiers="const">
+		<method name="execute_single" qualifiers="const">
 			<return type="String" />
 			<param index="0" name="contract_address" type="String" />
 			<param index="1" name="entrypoint" type="String" />
 			<param index="2" name="calldata" type="Array" />
 			<description>
-				Executes a raw call to a contract.
 			</description>
 		</method>
 		<method name="from_storage" qualifiers="static">
@@ -167,4 +166,10 @@
 			</description>
 		</method>
 	</methods>
+	<signals>
+		<signal name="controller_created">
+			<description>
+			</description>
+		</signal>
+	</signals>
 </class>

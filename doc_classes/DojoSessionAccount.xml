@@ -31,8 +31,8 @@
 			<return type="void" />
 			<param index="0" name="private_key" type="String" />
 			<param index="1" name="rpc_url" type="String" />
-			<param index="2" name="cartridge_api_url" type="String" />
-			<param index="3" name="policies" type="Dictionary" default="{}" />
+			<param index="2" name="policies" type="Dictionary" default="&quot;https://api.cartridge.gg&quot;" />
+			<param index="3" name="cartridge_api_url" type="String" default="{}" />
 			<description>
 				Creates a session account from a subscription.
 			</description>
@@ -51,22 +51,20 @@
 				Executes a list of calls from outside the session context.
 			</description>
 		</method>
-		<method name="execute_from_outside_raw" qualifiers="const">
+		<method name="execute_from_outside_single" qualifiers="const">
 			<return type="String" />
 			<param index="0" name="contract_address" type="String" />
 			<param index="1" name="entrypoint" type="String" />
 			<param index="2" name="calldata" type="Array" />
 			<description>
-				Executes a raw call from outside the session context.
 			</description>
 		</method>
-		<method name="execute_raw" qualifiers="const">
+		<method name="execute_single" qualifiers="const">
 			<return type="String" />
 			<param index="0" name="contract_address" type="String" />
 			<param index="1" name="entrypoint" type="String" />
 			<param index="2" name="calldata" type="Array" />
 			<description>
-				Executes a raw call using the session account.
 			</description>
 		</method>
 		<method name="execute_test" qualifiers="const vararg">
@@ -163,4 +161,10 @@
 			The maximum fee allowed for transactions.
 		</member>
 	</members>
+	<signals>
+		<signal name="session_created">
+			<description>
+			</description>
+		</signal>
+	</signals>
 </class>

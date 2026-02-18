@@ -224,4 +224,10 @@
 			</description>
 		</method>
 	</methods>
+	<signals>
+		<signal name="connected">
+			<description>
+			</description>
+		</signal>
+	</signals>
 </class>
