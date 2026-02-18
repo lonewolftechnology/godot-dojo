@@ -6,30 +6,30 @@ reloadable = true
 version = "${VERSION}"
 [libraries]
 
-macos.editor.x86_64 = "./bin/macos/editor/${PROJECT_NAME}.macos.editor${PRECISION}.x86_64.dylib"
-macos.debug.x86_64 = "./bin/macos/debug/${PROJECT_NAME}.macos.debug${PRECISION}.x86_64.dylib"
-macos.release.x86_64 = "./bin/macos/release/${PROJECT_NAME}.macos.release${PRECISION}.x86_64.dylib"
+macos.editor${PRECISION}.x86_64 = "./bin/macos/editor/${PROJECT_NAME}.macos.editor${PRECISION}.x86_64.dylib"
+macos.debug${PRECISION}.x86_64 = "./bin/macos/debug/${PROJECT_NAME}.macos.debug${PRECISION}.x86_64.dylib"
+macos.release${PRECISION}.x86_64 = "./bin/macos/release/${PROJECT_NAME}.macos.release${PRECISION}.x86_64.dylib"
 
-macos.editor.arm64 = "./bin/macos/editor/${PROJECT_NAME}.macos.editor${PRECISION}.arm64.dylib"
-macos.debug.arm64 = "./bin/macos/debug/${PROJECT_NAME}.macos.debug${PRECISION}.arm64.dylib"
-macos.release.arm64 = "./bin/macos/release/${PROJECT_NAME}.macos.release${PRECISION}.arm64.dylib"
+macos.editor${PRECISION}.arm64 = "./bin/macos/editor/${PROJECT_NAME}.macos.editor${PRECISION}.arm64.dylib"
+macos.debug${PRECISION}.arm64 = "./bin/macos/debug/${PROJECT_NAME}.macos.debug${PRECISION}.arm64.dylib"
+macos.release${PRECISION}.arm64 = "./bin/macos/release/${PROJECT_NAME}.macos.release${PRECISION}.arm64.dylib"
 
-ios.debug = "./bin/ios/debug/${PROJECT_NAME}${PRECISION}.xcframework"
-ios.release = "./bin/ios/release/${PROJECT_NAME}${PRECISION}.xcframework"
+ios.debug${PRECISION} = "./bin/ios/debug/${PROJECT_NAME}${PRECISION}.xcframework"
+ios.release${PRECISION} = "./bin/ios/release/${PROJECT_NAME}${PRECISION}.xcframework"
 
-windows.editor.x86_64 = "./bin/windows/editor/${PROJECT_NAME}.windows.editor${PRECISION}.x86_64.dll"
-windows.debug.x86_64 = "./bin/windows/debug/${PROJECT_NAME}.windows.template_debug${PRECISION}.x86_64.dll"
-windows.release.x86_64 = "./bin/windows/release/${PROJECT_NAME}.windows.template_release${PRECISION}.x86_64.dll"
+windows.editor${PRECISION}.x86_64 = "./bin/windows/editor/${PROJECT_NAME}.windows.editor${PRECISION}.x86_64.dll"
+windows.debug${PRECISION}.x86_64 = "./bin/windows/debug/${PROJECT_NAME}.windows.template_debug${PRECISION}.x86_64.dll"
+windows.release${PRECISION}.x86_64 = "./bin/windows/release/${PROJECT_NAME}.windows.template_release${PRECISION}.x86_64.dll"
 
-linux.editor.x86_64 = "./bin/linux/editor/${PROJECT_NAME}.linux.editor${PRECISION}.x86_64.so"
-linux.debug.x86_64 = "./bin/linux/debug/${PROJECT_NAME}.linux.template_debug${PRECISION}.x86_64.so"
-linux.release.x86_64 = "./bin/linux/release/${PROJECT_NAME}.linux.template_release${PRECISION}.x86_64.so"
+linux.editor${PRECISION}.x86_64 = "./bin/linux/editor/${PROJECT_NAME}.linux.editor${PRECISION}.x86_64.so"
+linux.debug${PRECISION}.x86_64 = "./bin/linux/debug/${PROJECT_NAME}.linux.template_debug${PRECISION}.x86_64.so"
+linux.release${PRECISION}.x86_64 = "./bin/linux/release/${PROJECT_NAME}.linux.template_release${PRECISION}.x86_64.so"
 
-android.debug.arm64 = "./bin/android/debug/lib${PROJECT_NAME}.android.template_debug${PRECISION}.arm64.so"
-android.release.arm64 = "./bin/android/release/lib${PROJECT_NAME}.android.template_release${PRECISION}.arm64.so"
+android.debug${PRECISION}.arm64 = "./bin/android/debug/lib${PROJECT_NAME}.android.template_debug${PRECISION}.arm64.so"
+android.release${PRECISION}.arm64 = "./bin/android/release/lib${PROJECT_NAME}.android.template_release${PRECISION}.arm64.so"
 
-web.debug.wasm32 = "./bin/web/debug/${PROJECT_NAME}.web.template_debug${PRECISION}.wasm32.wasm"
-web.release.wasm32 = "./bin/web/release/${PROJECT_NAME}.web.template_release${PRECISION}.wasm32.wasm"
+web.debug${PRECISION}.wasm32 = "./bin/web/debug/${PROJECT_NAME}.web.template_debug${PRECISION}.wasm32.wasm"
+web.release${PRECISION}.wasm32 = "./bin/web/release/${PROJECT_NAME}.web.template_release${PRECISION}.wasm32.wasm"
 
 [dependencies]
 
