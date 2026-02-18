@@ -52,7 +52,7 @@ void DojoSessionAccount::create(const String& rpc_url, const String& private_key
         );
         set_internal(internal_account);
         Logger::success_extra("DojoSessionAccount", "Session account created successfully");
-        emit_signal("account_created");
+        call_deferred("emit_signal", "account_created");
     }
     catch (const controller::ControllerError& e)
     {
@@ -92,7 +92,7 @@ void DojoSessionAccount::create_from_subscribe(const String& _private_key,
             );
         Logger::success_extra("DojoSessionAccount", "Session account created successfully");
         set_internal(internal_account);
-        emit_signal("account_created");
+        call_deferred("emit_signal", "account_created");
     }
     catch (const controller::ControllerError& e)
     {

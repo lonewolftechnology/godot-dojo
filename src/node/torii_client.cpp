@@ -34,7 +34,7 @@ bool ToriiClient::connect(const String& torii_url, int64_t max_message_size) {
             client = dojo::ToriiClient::new_with_config(url.get_data(), static_cast<uint64_t>(max_message_size));
             Logger::success("ToriiClient connected with config: ", torii_url);
         }
-        emit_signal("connected");
+        call_deferred("emit_signal", "connected");
         return true;
     } catch (const std::exception& e) {
         Logger::error("ToriiClient connection failed: ", e.what());
