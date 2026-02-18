@@ -136,7 +136,8 @@ if "assemble-ios" in COMMAND_LINE_TARGETS and platform != "ios":
 
 
 build_info = f"{platform} ({arch}) - {target}"
-if env.get("precision") == "double":
+precision = env.get("precision", "single")
+if precision == "double":
     build_info += " (double precision)"
 
 print(f"{B}Building: {build_info}{X}")
@@ -261,9 +262,17 @@ def _compile_rust_library(lib_name, lib_path, is_release, cargo_flags=None, rust
         current_rustflags += " " + " ".join(rustc_flags)
 
     env_vars["RUSTFLAGS"] = current_rustflags.strip()
+    
+    # Use relative path for Cargo to avoid path duplication issues
+    cargo_target_dir = "target"
+    env_vars["CARGO_TARGET_DIR"] = cargo_target_dir
+    
+    # Path for SCons to find the artifacts (relative to root)
+    scons_search_dir = f"{lib_path}/{cargo_target_dir}"
 
     if is_release:
         base_cmd.append("--release")
+
     if cargo_flags:
         base_cmd.extend(cargo_flags)
 
@@ -294,10 +303,10 @@ def _compile_rust_library(lib_name, lib_path, is_release, cargo_flags=None, rust
                 env_vars["RUSTFLAGS"] = rustflags
 
             subprocess.run(cargo_cmd, check=True, cwd=lib_path, env=env_vars)
-            libs_to_lipo.append(f"{lib_path}/target/{rt}/{build_mode}/lib{lib_name}.a")
+            libs_to_lipo.append(f"{scons_search_dir}/{rt}/{build_mode}/lib{lib_name}.a")
 
         print(f"{Y}Creating universal library for {lib_name} with lipo...{X}")
-        universal_dir = f"{lib_path}/target/universal/{build_mode}"
+        universal_dir = f"{scons_search_dir}/universal/{build_mode}"
         os.makedirs(universal_dir, exist_ok=True)
         universal_lib_path = f"{universal_dir}/lib{lib_name}.a"
 
@@ -342,8 +351,6 @@ if env["platform"] != "android":
 prefix = env.subst('$SHLIBPREFIX')
 
 project_version = get_git_version()
-
-precision = env.get("precision", "single")
 
 # Generate version header
 version_header_path = "include/gen/version.gen.hpp"
@@ -451,10 +458,6 @@ sources = sorted(sources) + ["bindings/controller/controller.cpp", "bindings/doj
 # Define precision string for suffixes
 precision_string = ".double" if precision == "double" else ""
 
-if precision == "double":
-    env["OBJSUFFIX"] = precision_string + env["OBJSUFFIX"]
-    env["SHOBJSUFFIX"] = precision_string + env["SHOBJSUFFIX"]
-
 _godot_min = _detect_godot_min_requirement()
 _godot_tag = _get_git_submodule_version("external/godot-cpp")
 print(f"{Y}{clipboard} Building with {_godot_tag}. Project Version: {project_version}{X}")
@@ -482,6 +485,23 @@ target_out_dir = target
 if not target_out_dir == "editor":
     target_out_dir = target.split('_', 1)[1]  # "debug" or "release"
 
+# --- VariantDir Logic ---
+# Isolate C++ object files by precision and target to prevent conflicts.
+# This removes the need to clean when switching between single/double.
+obj_dir = f"build/obj/{target_out_dir}/{precision}"
+env.VariantDir(f"{obj_dir}/src", "src", duplicate=0)
+env.VariantDir(f"{obj_dir}/bindings", "bindings", duplicate=0)
+
+final_sources = []
+for s in sources:
+    s_path = str(s)
+    if s_path.startswith("src/"):
+        final_sources.append(s_path.replace("src/", f"{obj_dir}/src/", 1))
+    elif s_path.startswith("bindings/"):
+        final_sources.append(s_path.replace("bindings/", f"{obj_dir}/bindings/", 1))
+    else:
+        final_sources.append(s)
+
 if platform == "ios":
     output_dir = f"build/ios/{target_out_dir}"
 else:
@@ -492,7 +512,29 @@ os.makedirs(output_dir, exist_ok=True)
 
 lib_name = f"{output_dir}/{prefix}godot-dojo{suffix_map.get(platform, f'.{platform}.{target}{precision_string}.{arch}.so')}"
 
-library = env.SharedLibrary(target=lib_name, source=sources)
+final_objects = []
+
+# Buscar la librería de godot-cpp para forzar el orden de compilación
+godot_cpp_lib_node = None
+for lib in env.get("LIBS", []):
+    if "godot-cpp" in str(lib):
+        # Si es un nodo (tiene get_path) lo usamos, si es string lo buscamos en LIBPATH
+        if hasattr(lib, "get_path"):
+            godot_cpp_lib_node = lib
+        else:
+            godot_cpp_lib_node = env.FindFile(str(lib), env.get("LIBPATH", []))
+        break
+
+for s in final_sources:
+    objs = env.SharedObject(s)
+    # Forzar recompilación si cambia la precisión (soluciona "ya existen los archivos")
+    env.Depends(objs, env.Value(precision))
+    # Depender de la librería de godot-cpp asegura que los headers generados estén listos (soluciona race condition)
+    if godot_cpp_lib_node:
+        env.Depends(objs, godot_cpp_lib_node)
+    final_objects.extend(objs)
+
+library = env.SharedLibrary(target=lib_name, source=final_objects)
 
 env.Alias(f"godot-dojo-{platform}-{target_out_dir}", library)
 
