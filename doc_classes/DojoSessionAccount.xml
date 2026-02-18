@@ -31,8 +31,8 @@
 			<return type="void" />
 			<param index="0" name="private_key" type="String" />
 			<param index="1" name="rpc_url" type="String" />
-			<param index="2" name="policies" type="Dictionary" default="&quot;https://api.cartridge.gg&quot;" />
-			<param index="3" name="cartridge_api_url" type="String" default="{}" />
+			<param index="2" name="policies" type="Dictionary" default="{}" />
+			<param index="3" name="cartridge_api_url" type="String" default="&quot;https://api.cartridge.gg&quot;" />
 			<description>
 				Creates a session account from a subscription.
 			</description>

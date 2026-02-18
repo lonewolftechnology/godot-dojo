@@ -56,6 +56,11 @@
 				Returns the low 128 bits of the 256-bit integer as a U128 instance.
 			</description>
 		</method>
+		<method name="to_bytes" qualifiers="const">
+			<return type="PackedByteArray" />
+			<description>
+			</description>
+		</method>
 		<method name="to_calldata" qualifiers="const">
 			<return type="PackedStringArray" />
 			<description>
