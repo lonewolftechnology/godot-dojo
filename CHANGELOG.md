@@ -1,3 +1,11 @@
+## [v0.7.3](https://github.com/lonewolftechnology/godot-dojo/tree/v0.7.3) (2026-02-18)
+**Commits:**
+- [[8befc00](https://github.com/lonewolftechnology/godot-dojo/commit/8befc005a9705cc8a0b543f1cbb1e6d1a5a7e4d9)] chore: update changelog
+- [[a3d5a9d](https://github.com/lonewolftechnology/godot-dojo/commit/a3d5a9daa9c8db722f2aaab4b75435217118194e)] update docs data gen
+- [[b602158](https://github.com/lonewolftechnology/godot-dojo/commit/b60215810addaca49a4356063808568fcb0502de)] feat: add signals to `DojoController` `DojoSessionAccount` and `ToriiClient`
+- [[278774a](https://github.com/lonewolftechnology/godot-dojo/commit/278774ae414e3ecf607abcc104e1c94723e47f20)] feat: add precision to print version utility
+- [[77bc592](https://github.com/lonewolftechnology/godot-dojo/commit/77bc59229562d50f506299b008bb8ee67303a682)] update docs
+
 ## [v0.7.2](https://github.com/lonewolftechnology/godot-dojo/tree/v0.7.2) (2026-02-13)
 **Commits:**
 - [[eb5ec0a](https://github.com/lonewolftechnology/godot-dojo/commit/eb5ec0ac85b0dddee80098974391fabcdc530a09)] scons: ensure intermediate object differentiation by precision and cleanup
