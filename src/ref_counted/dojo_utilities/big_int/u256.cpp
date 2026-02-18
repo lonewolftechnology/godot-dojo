@@ -4,6 +4,7 @@
 #include "tools/godot_helper.hpp"
 #include <sstream>
 #include <boost/multiprecision/cpp_dec_float.hpp>
+#include <vector>
 
 #include "tools/logger.hpp"
 
@@ -16,16 +17,7 @@
 using boost::multiprecision::cpp_int;
 
 void U256::_init_from_int(int64_t p_value) {
-    int p_precision = ProjectSettings::get_singleton()->get_setting("dojo/config/fixed_point/default", 40);
-    if (p_precision > 2048) {
-        p_precision = 2048;
-    }
-    if (p_precision < 0) {
-        p_precision = 0;
-    }
     cpp_int val = p_value;
-    val <<= p_precision;
-
     if (val < 0) {
         val = GodotDojoHelper::to_starknet_negative_felt(val);
     }
@@ -38,7 +30,7 @@ void U256::_init_from_string(const String& p_value) {
 
 void U256::_init_from_float(double p_value, int p_precision) {
     if (p_precision < 0) {
-        p_precision = ProjectSettings::get_singleton()->get_setting("dojo/config/fixed_point/default", 40);
+        p_precision = ProjectSettings::get_singleton()->get_setting("dojo/config/fixed_point/256", 64);
     }
     if (p_precision > 2048) {
         p_precision = 2048;
@@ -90,9 +82,29 @@ PackedStringArray U256::to_calldata() const {
     return arr;
 }
 
+PackedByteArray U256::to_bytes() const {
+    PackedByteArray arr;
+    arr.resize(32);
+    uint8_t* ptr = arr.ptrw();
+    for (int i = 0; i < 32; ++i) {
+        ptr[i] = 0;
+    }
+
+    std::vector<uint8_t> vec;
+    boost::multiprecision::export_bits(value, std::back_inserter(vec), 8);
+
+    int count = vec.size();
+    if (count > 32) count = 32;
+    int offset = 32 - count;
+    for (int i = 0; i < count; ++i) {
+        ptr[offset + i] = vec[i];
+    }
+    return arr;
+}
+
 double U256::to_float(int p_precision) const {
     if (p_precision < 0) {
-        p_precision = ProjectSettings::get_singleton()->get_setting("dojo/config/fixed_point/default", 40);
+        p_precision = ProjectSettings::get_singleton()->get_setting("dojo/config/fixed_point/256", 64);
     }
     
     if (p_precision > 2048) {
@@ -213,6 +225,7 @@ void U256::_bind_methods() {
     ClassDB::bind_method(D_METHOD("get_low"), &U256::get_low);
     ClassDB::bind_method(D_METHOD("get_high"), &U256::get_high);
     ClassDB::bind_method(D_METHOD("to_calldata"), &U256::to_calldata);
+    ClassDB::bind_method(D_METHOD("to_bytes"), &U256::to_bytes);
     ClassDB::bind_static_method("U256", D_METHOD("from_int", "value"), &U256::from_int);
     ClassDB::bind_static_method("U256", D_METHOD("from_string", "value"), &U256::from_string);
     ClassDB::bind_static_method("U256", D_METHOD("from_float", "value", "precision"), &U256::from_float, DEFVAL(-1));

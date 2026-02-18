@@ -1,7 +1,6 @@
 #pragma once
 #include "godot_cpp/classes/ref_counted.hpp"
 #include <boost/multiprecision/cpp_int.hpp>
-#include "godot_cpp/variant/packed_string_array.hpp"
 
 using namespace godot;
 using boost::multiprecision::uint256_t;
@@ -23,6 +22,7 @@ public:
     Ref<U128> get_low() const;
     Ref<U128> get_high() const;
     PackedStringArray to_calldata() const;
+    PackedByteArray to_bytes() const;
     double to_float(int p_precision = -1) const;
 
     static Ref<U256> from_int(int64_t p_value);

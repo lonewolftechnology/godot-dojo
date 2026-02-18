@@ -3,6 +3,7 @@
 #include "tools/godot_helper.hpp"
 #include <boost/multiprecision/cpp_dec_float.hpp>
 #include <sstream>
+#include <vector>
 
 #include "tools/logger.hpp"
 
@@ -15,15 +16,7 @@
 using boost::multiprecision::cpp_int;
 
 void I128::_init_from_int(int64_t p_value) {
-    int p_precision = ProjectSettings::get_singleton()->get_setting("dojo/config/fixed_point/default", 40);
-    if (p_precision > 2048) {
-        p_precision = 2048;
-    }
-    if (p_precision < 0) {
-        p_precision = 0;
-    }
     cpp_int val = p_value;
-    val <<= p_precision;
     value = val.convert_to<int128_t>();
 }
 
@@ -45,7 +38,7 @@ void I128::_init_from_string(const String& p_value) {
 
 void I128::_init_from_float(double p_value, int p_precision) {
     if (p_precision < 0) {
-        p_precision = ProjectSettings::get_singleton()->get_setting("dojo/config/fixed_point/default", 40);
+        p_precision = ProjectSettings::get_singleton()->get_setting("dojo/config/fixed_point/128", 64);
     }
     if (p_precision > 2048) {
         p_precision = 2048;
@@ -83,9 +76,34 @@ PackedStringArray I128::to_calldata() const {
     return arr;
 }
 
+PackedByteArray I128::to_bytes() const {
+    PackedByteArray arr;
+    arr.resize(16);
+    uint8_t* ptr = arr.ptrw();
+    for (int i = 0; i < 16; ++i) {
+        ptr[i] = 0;
+    }
+
+    cpp_int val = value;
+    if (val < 0) {
+        val += (cpp_int(1) << 128);
+    }
+
+    std::vector<uint8_t> vec;
+    boost::multiprecision::export_bits(val, std::back_inserter(vec), 8);
+
+    int count = vec.size();
+    if (count > 16) count = 16;
+    int offset = 16 - count;
+    for (int i = 0; i < count; ++i) {
+        ptr[offset + i] = vec[i];
+    }
+    return arr;
+}
+
 double I128::to_float(int p_precision) const {
     if (p_precision < 0) {
-        p_precision = ProjectSettings::get_singleton()->get_setting("dojo/config/fixed_point/default", 40);
+        p_precision = ProjectSettings::get_singleton()->get_setting("dojo/config/fixed_point/128", 64);
     }
 
     if (p_precision > 2048) {
@@ -199,6 +217,7 @@ void I128::_bind_methods() {
     ClassDB::bind_method(D_METHOD("_to_string"), &I128::_to_string);
     ClassDB::bind_method(D_METHOD("to_float", "precision"), &I128::to_float, DEFVAL(-1));
     ClassDB::bind_method(D_METHOD("to_calldata"), &I128::to_calldata);
+    ClassDB::bind_method(D_METHOD("to_bytes"), &I128::to_bytes);
     ClassDB::bind_static_method("I128", D_METHOD("from_int", "value"), &I128::from_int);
     ClassDB::bind_static_method("I128", D_METHOD("from_string", "value"), &I128::from_string);
     ClassDB::bind_static_method("I128", D_METHOD("from_float", "value", "precision"), &I128::from_float, DEFVAL(-1));
