@@ -81,7 +81,7 @@ protected:
     static void _bind_methods() {
         ClassDB::bind_method(D_METHOD("create_from_subscribe", "private_key", "rpc_url",
                                       "policies", "cartridge_api_url"),
-                             &DojoSessionAccount::create_from_subscribe, DEFVAL("https://api.cartridge.gg"), DEFVAL(Dictionary()));
+                             &DojoSessionAccount::create_from_subscribe, DEFVAL(Dictionary()), DEFVAL("https://api.cartridge.gg"));
         ClassDB::bind_method(D_METHOD("create", "rpc_url", "private_key", "address", "owner_guid", "chain_id", "session_expiration"), &DojoSessionAccount::create);
 
         ClassDB::bind_method(D_METHOD("get_address"), &DojoSessionAccount::get_address);
