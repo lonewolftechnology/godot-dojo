@@ -42,6 +42,17 @@
 			<param index="0" name="clause" type="DojoClause" />
 			<description>
 				Adds a clause to the query for more complex filtering.
+				[codeblock]
+				var query = DojoQuery.new()
+				query.with_clause(
+					# Filter by keys
+					KeysClause.new(
+						["0x123...", "0x456..."],
+						["0xabc...", "0xdef..."],
+						"dojo_starter-Moves"
+					)
+				)
+				[/codeblock]
 			</description>
 		</method>
 		<method name="world_addresses">

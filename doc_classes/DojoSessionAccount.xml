@@ -148,6 +148,16 @@
 	<members>
 		<member name="full_policies" type="Dictionary" setter="set_full_policies" getter="get_full_policies" default="{}">
 			The full set of policies associated with the session.
+			[codeblock]
+			full_policies = {
+				"0x05...":{
+					"methods": [
+						{"entrypoint": "spawn"},
+						{"entrypoint": "move"}
+					]
+				}
+			}
+			[/codeblock]
 		</member>
 		<member name="max_fee" type="String" setter="set_max_fee" getter="get_max_fee" default="&quot;&quot;">
 			The maximum fee allowed for transactions.

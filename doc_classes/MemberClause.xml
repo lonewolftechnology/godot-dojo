@@ -76,6 +76,13 @@
 			<return type="Dictionary" />
 			<description>
 				Converts the clause to a dictionary representation.
+				[codeblock]
+				var clause = MemberClause.new()
+				clause.model("dojo_starter-Moves")
+				clause.member("remaining")
+				clause.op(MemberClause.Gt)
+				clause.int(10)
+				[/codeblock]
 			</description>
 		</method>
 	</methods>

@@ -14,6 +14,19 @@
 		</member>
 		<member name="on_update" type="Callable" setter="set_on_update" getter="get_on_update" default="Callable()">
 			The callable to be executed when an update is received.
+			[codeblock]
+			func callback(data:Dictionary, type:String):
+				if type == "Entity":
+					var result = data["models"]
+					add_entry_to_output("%s CALLBACK" % type, result)
+				if type == "Message":
+					var _data = data["data"]
+					for _key in _data:
+						printt("**",_key)
+
+			var _dojo_callback:DojoCallback = DojoCallback.new()
+			_dojo_callback.on_update = callback.bind("Entity")
+			[/codeblock]
 		</member>
 	</members>
 </class>

@@ -28,6 +28,10 @@
 			<param index="0" name="keys" type="PackedStringArray" />
 			<description>
 				Sets the keys for the clause.
+				[codeblock]
+				var clause = KeysClause.new()
+				clause.keys(["0x123...", "0x456..."])
+				[/codeblock]
 			</description>
 		</method>
 		<method name="models">
@@ -35,6 +39,10 @@
 			<param index="0" name="models" type="PackedStringArray" />
 			<description>
 				Sets the models for the clause.
+				[codeblock]
+				var clause = KeysClause.new()
+				clause.models(["dojo_starter-Moves"])
+				[/codeblock]
 			</description>
 		</method>
 		<method name="pattern">

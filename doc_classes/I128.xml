@@ -38,6 +38,12 @@
 				Creates an I128 instance from a Variant.
 			</description>
 		</method>
+		<method name="from_vector" qualifiers="static">
+			<return type="Array" />
+			<param index="0" name="value" type="Variant" />
+			<description>
+			</description>
+		</method>
 		<method name="to_calldata" qualifiers="const">
 			<return type="PackedStringArray" />
 			<description>

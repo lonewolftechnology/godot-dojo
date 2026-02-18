@@ -14,6 +14,12 @@
 			<param index="0" name="clause" type="DojoClause" />
 			<description>
 				Adds a clause to the composite clause.
+				[codeblock]
+				var composite = CompositeClause.new()
+				composite.set_operator(CompositeClause.And)
+				composite.add(clause1)
+				composite.add(clause2)
+				[/codeblock]
 			</description>
 		</method>
 		<method name="set_operator">

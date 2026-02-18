@@ -17,6 +17,19 @@
 			<param index="3" name="preset" type="String" default="&quot;&quot;" />
 			<description>
 				Creates a session registration URL.
+				[codeblock]
+				var policies = { "policies":[
+				{
+					"target": "0x0...",
+					"method": "move"
+					},
+					{
+					"target": "0x0...",
+					"method": "spawn"
+					}
+				]}
+				var session_url = ControllerHelper.create_session_registration_url(ControllerHelper.generate_private_key(), policies, "http://localhost:5050")
+				[/codeblock]
 			</description>
 		</method>
 		<method name="create_session_registration_url_with_urls" qualifiers="static">
