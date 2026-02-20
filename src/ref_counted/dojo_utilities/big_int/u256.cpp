@@ -30,7 +30,7 @@ void U256::_init_from_string(const String& p_value) {
 
 void U256::_init_from_float(double p_value, int p_precision) {
     if (p_precision < 0) {
-        p_precision = ProjectSettings::get_singleton()->get_setting("dojo/config/fixed_point/256");
+        p_precision = ProjectSettings::get_singleton()->get_setting("dojo/config/fixed_point/default");
     }
     if (p_precision > 2048) {
         p_precision = 2048;
@@ -104,7 +104,7 @@ PackedByteArray U256::to_bytes() const {
 
 double U256::to_float(int p_precision) const {
     if (p_precision < 0) {
-        p_precision = ProjectSettings::get_singleton()->get_setting("dojo/config/fixed_point/256");
+        p_precision = ProjectSettings::get_singleton()->get_setting("dojo/config/fixed_point/default");
     }
     
     if (p_precision > 2048) {
