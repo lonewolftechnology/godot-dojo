@@ -1057,24 +1057,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "cbindgen"
-version = "0.27.0"
-source = "git+https://github.com/Larkooo/cbindgen?branch=no-c-forward-enum#1df076f7559fbfeb3f9d5c9968c1c1630363ebc8"
-dependencies = [
- "clap",
- "heck 0.4.1",
- "indexmap 2.12.0",
- "log",
- "proc-macro2",
- "quote",
- "serde",
- "serde_json",
- "syn 2.0.109",
- "tempfile",
- "toml 0.8.23",
-]
-
-[[package]]
 name = "cc"
 version = "1.2.44"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1232,7 +1214,7 @@ dependencies = [
 [[package]]
 name = "controller-uniffi"
 version = "0.1.0"
-source = "git+https://github.com/cartridge-gg/controller.c?rev=3b208fc#3b208fcd6ae7f9666f33c759acebc43f1d325bce"
+source = "git+https://github.com/dannroda/controller.c?rev=428c8ef#428c8efccc4ae3c2a1d7ea05895489e213ac67da"
 dependencies = [
  "account_sdk",
  "anyhow",
@@ -1253,6 +1235,7 @@ dependencies = [
  "uniffi",
  "uniffi_bindgen",
  "url",
+ "uuid",
  "walkdir",
  "which",
 ]
@@ -1572,36 +1555,9 @@ dependencies = [
 ]
 
 [[package]]
-name = "dojo-c"
-version = "1.8.3"
-source = "git+https://github.com/dojoengine/dojo.c?rev=276c37e#276c37eaed66ad2264b3e7fc5592c67b9281fd25"
-dependencies = [
- "anyhow",
- "cainome",
- "cbindgen",
- "chrono",
- "crypto-bigint",
- "dojo-core",
- "dojo-types",
- "dojo-world",
- "futures",
- "lazy_static",
- "serde",
- "serde_json",
- "starknet",
- "starknet-crypto",
- "stream-cancel",
- "tokio",
- "tokio-stream",
- "torii-client",
- "torii-proto",
- "url",
-]
-
-[[package]]
 name = "dojo-core"
 version = "1.8.3"
-source = "git+https://github.com/dojoengine/dojo.c?rev=276c37e#276c37eaed66ad2264b3e7fc5592c67b9281fd25"
+source = "git+https://github.com/dannroda/dojo.c?rev=cac318a#cac318ad152689446cb33a88e43fb11087650b41"
 dependencies = [
  "anyhow",
  "dojo-types",
@@ -1640,7 +1596,7 @@ dependencies = [
 [[package]]
 name = "dojo-uniffi"
 version = "1.8.3"
-source = "git+https://github.com/dojoengine/dojo.c?rev=276c37e#276c37eaed66ad2264b3e7fc5592c67b9281fd25"
+source = "git+https://github.com/dannroda/dojo.c?rev=cac318a#cac318ad152689446cb33a88e43fb11087650b41"
 dependencies = [
  "anyhow",
  "axum 0.8.6",
@@ -1678,6 +1634,7 @@ dependencies = [
  "uniffi_bindgen",
  "url",
  "urlencoding",
+ "uuid",
  "walkdir",
  "which",
 ]
@@ -2157,7 +2114,6 @@ dependencies = [
  "build-print",
  "cargo_metadata 0.23.0",
  "controller-uniffi",
- "dojo-c",
  "dojo-uniffi",
 ]
 

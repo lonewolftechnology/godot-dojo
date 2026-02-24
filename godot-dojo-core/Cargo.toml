@@ -7,14 +7,12 @@ edition = "2021"
 crate-type = ["cdylib", "rlib", "staticlib"]
 
 [dependencies]
-#dojo-c = { git = "https://github.com/dojoengine/dojo.c", tag = "v1.8.7" }
-dojo-c = { git = "https://github.com/dojoengine/dojo.c", rev = "276c37e" }
-controller-uniffi = { git = "https://github.com/cartridge-gg/controller.c", rev = "3b208fc" }
-dojo-uniffi = { git = "https://github.com/dojoengine/dojo.c", rev = "276c37e" }
+controller-uniffi = { git = "https://github.com/dannroda/controller.c", rev = "428c8ef" }
+dojo-uniffi = { git = "https://github.com/dannroda/dojo.c", rev = "cac318a" }
 
 [build-dependencies]
-dojo-uniffi = { git = "https://github.com/dojoengine/dojo.c", rev = "276c37e", artifact = "bin:uniffi-bindgen-cpp" }
-controller-uniffi = { git = "https://github.com/cartridge-gg/controller.c", rev = "3b208fc", artifact = "bin:uniffi-bindgen-cpp" }
+dojo-uniffi = { git = "https://github.com/dannroda/dojo.c", rev = "cac318a", artifact = "bin:uniffi-bindgen-cpp" }
+controller-uniffi = { git = "https://github.com/dannroda/controller.c", rev = "428c8ef", artifact = "bin:uniffi-bindgen-cpp" }
 cargo_metadata = "0.23.0"
 build-print = "1.0.1"
 

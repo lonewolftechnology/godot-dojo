@@ -1,5 +1,5 @@
 [unstable]
 bindeps = true
 
-[target.wasm32-unknown-unknown]
-rustflags = ["-C", "target-feature=+atomics,+bulk-memory", "--cfg=web"]
+[target.wasm32-unknown-emscripten]
+rustflags = ["-C", "link-arg=--no-entry"]

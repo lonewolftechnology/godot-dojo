@@ -168,31 +168,4 @@ fn main(){
 
     handle_uniffi_dependency("controller-uniffi", "src/controller.udl", "controller");
     handle_uniffi_dependency("dojo-uniffi", "src/dojo.udl", "dojo");
-
-    // --- Copy dojo.h from dojo-c ---
-    custom_println!("PROCESS", green, "dependency: dojo-c");
-
-    // 1. Find the source directory of the dojo-c dependency.
-    let dojo_c_dir = find_dependency_dir("dojo-c")
-        .expect("Could not find the directory for dependency 'dojo-c'");
-    // The `dojo-c` crate is inside a workspace. The `bindings` folder is at the root of the repository.
-    // So we need to go up from the crate's directory to the repository root.
-    let source_header_path = dojo_c_dir.parent().unwrap().parent().unwrap() // Go up to the repo root
-        .join("bindings").join("c").join("dojo.h");
-    note!("Source header: {}", source_header_path.display());
-
-    // 2. Define the destination directory.
-    let dest_dir = PathBuf::from(&manifest_dir).parent().unwrap().join("bindings").join("dojo");
-    let dest_header_path = dest_dir.join("dojo.h");
-    note!("Destination header: {}", dest_header_path.display());
-
-    // 3. Tell Cargo to re-run if the original header changes.
-    println!("cargo:rerun-if-changed={}", source_header_path.display());
-
-    // 4. Copy the file.
-    fs::copy(&source_header_path, &dest_header_path)
-        .unwrap_or_else(|e| panic!("Failed to copy dojo.h: {}", e));
-    info!("Copied dojo.h successfully\n");
-
-
 }
