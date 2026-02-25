@@ -26,6 +26,10 @@ on:
         required: false
         type: string
         default: ''
+      compile_rust:
+        required: false
+        type: boolean
+        default: false
       threads:
         required: false
         type: string
@@ -79,6 +83,12 @@ jobs:
           version: 3.1.62
           actions-cache-folder: 'emsdk-cache'
 
+      - name: Set up Rust nightly
+        if: inputs.compile_rust == true
+        uses: dtolnay/rust-toolchain@nightly
+        with:
+          targets: ${{ inputs.rust_target }}
+
       - name: Install Android NDK
         if: inputs.platform_id == 'android'
         shell: bash
@@ -87,6 +97,7 @@ jobs:
           echo "ANDROID_NDK_ROOT=${ANDROID_HOME}/ndk/23.2.8568313" >> $GITHUB_ENV
 
       - name: Download core artifacts (target)
+        if: inputs.compile_rust == false
         uses: actions/download-artifact@v4
         with:
           name: core-build-${{ inputs.platform_id }}-${{ inputs.arch }}${{ inputs.platform_id != 'ios' && '-release' || '' }}
@@ -118,7 +129,7 @@ jobs:
         run: |
           set -e
           export FORCE_RUST_RELEASE=1
-          export SKIP_RUST_BUILD=1
+          export SKIP_RUST_BUILD=${{ inputs.compile_rust == true && '0' || '1' }}
           export SKIP_BINDINGS_GENERATION=1
           export CARGO_BUILD_TARGET=${{ inputs.rust_target }}
           if [ "${{ inputs.platform_id }}" = "android" ]; then
@@ -138,7 +149,7 @@ jobs:
         run: |
           set -e
           export FORCE_RUST_RELEASE=1
-          export SKIP_RUST_BUILD=1
+          export SKIP_RUST_BUILD=${{ inputs.compile_rust == true && '0' || '1' }}
           export SKIP_BINDINGS_GENERATION=1
           export CARGO_BUILD_TARGET=${{ inputs.rust_target }}
           if [ "${{ inputs.platform_id }}" = "android" ]; then
@@ -158,7 +169,7 @@ jobs:
         run: |
           set -e
           export FORCE_RUST_RELEASE=1
-          export SKIP_RUST_BUILD=1
+          export SKIP_RUST_BUILD=${{ inputs.compile_rust == true && '0' || '1' }}
           export SKIP_BINDINGS_GENERATION=1
           export CARGO_BUILD_TARGET=${{ inputs.rust_target }}
           if [ "${{ inputs.platform_id }}" = "android" ]; then

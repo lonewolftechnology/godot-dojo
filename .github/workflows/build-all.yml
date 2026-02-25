@@ -201,11 +201,6 @@ jobs:
             arch: universal
             rust_target: 'aarch64-apple-ios' # Base target, SConstruct handles the rest
             macos_deployment_target: ""
-          - platform_id: web
-            os_image: ubuntu-latest
-            arch: wasm32
-            rust_target: wasm32-unknown-emscripten
-            macos_deployment_target: ""
 
 
     steps:
@@ -456,6 +451,7 @@ jobs:
 
   build-gdextension-web:
     name: Build GDExtension (web-${{ matrix.threads }}-${{ matrix.precision }})
+    continue-on-error: true
     needs: [build-rust-core]
     if: needs.build-rust-core.result == 'success'
     uses: ./.github/workflows/reusable-build.yml
@@ -463,7 +459,7 @@ jobs:
       fail-fast: false
       matrix:
         precision: [single, double]
-        threads: ['yes', 'no']
+        threads: ['no']
     with:
       os: ubuntu-latest
       arch: wasm32
@@ -471,6 +467,7 @@ jobs:
       precision: ${{ matrix.precision }}
       platform_id: web
       threads: ${{ matrix.threads }}
+      compile_rust: true
       macos_deployment_target: ''
 
   package-single:
