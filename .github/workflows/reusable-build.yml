@@ -57,6 +57,7 @@ jobs:
           fetch-depth: 0
 
       - name: Download generated bindings
+        if: inputs.compile_rust == false
         uses: actions/download-artifact@v4
         with:
           name: generated-bindings
@@ -93,6 +94,20 @@ jobs:
         uses: dtolnay/rust-toolchain@nightly
         with:
           targets: ${{ inputs.rust_target }}
+
+      - name: Cache uniffi-bindgen-cpp
+        if: inputs.compile_rust == true
+        id: cache-uniffi-bindgen-cpp
+        uses: actions/cache@v4
+        with:
+          path: ~/.cargo/bin/uniffi-bindgen-cpp
+          key: ${{ runner.os }}-uniffi-bindgen-cpp-Larkooo-update-0.30
+          restore-keys: |
+            ${{ runner.os }}-uniffi-bindgen-cpp-Larkooo-update-0.30
+
+      - name: Install uniffi-bindgen-cpp from source
+        if: inputs.compile_rust == true && steps.cache-uniffi-bindgen-cpp.outputs.cache-hit != 'true'
+        run: cargo install --git https://github.com/Larkooo/uniffi-bindgen-cpp --branch update-0.30 uniffi-bindgen-cpp
 
       - name: Install Android NDK
         if: inputs.platform_id == 'android'
@@ -135,7 +150,7 @@ jobs:
           set -e
           export FORCE_RUST_RELEASE=1
           export SKIP_RUST_BUILD=${{ inputs.compile_rust == true && '0' || '1' }}
-          export SKIP_BINDINGS_GENERATION=1
+          export SKIP_BINDINGS_GENERATION=${{ inputs.compile_rust == true && '0' || '1' }}
           export CARGO_BUILD_TARGET=${{ inputs.rust_target }}
           if [ "${{ inputs.platform_id }}" = "android" ]; then
             unset ANDROID_HOME
@@ -155,7 +170,7 @@ jobs:
           set -e
           export FORCE_RUST_RELEASE=1
           export SKIP_RUST_BUILD=${{ inputs.compile_rust == true && '0' || '1' }}
-          export SKIP_BINDINGS_GENERATION=1
+          export SKIP_BINDINGS_GENERATION=${{ inputs.compile_rust == true && '0' || '1' }}
           export CARGO_BUILD_TARGET=${{ inputs.rust_target }}
           if [ "${{ inputs.platform_id }}" = "android" ]; then
             unset ANDROID_HOME
@@ -175,7 +190,7 @@ jobs:
           set -e
           export FORCE_RUST_RELEASE=1
           export SKIP_RUST_BUILD=${{ inputs.compile_rust == true && '0' || '1' }}
-          export SKIP_BINDINGS_GENERATION=1
+          export SKIP_BINDINGS_GENERATION=${{ inputs.compile_rust == true && '0' || '1' }}
           export CARGO_BUILD_TARGET=${{ inputs.rust_target }}
           if [ "${{ inputs.platform_id }}" = "android" ]; then
             unset ANDROID_HOME

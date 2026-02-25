@@ -451,8 +451,6 @@ jobs:
 
   build-gdextension-web:
     name: Build GDExtension (web-${{ matrix.threads }}-${{ matrix.precision }})
-    needs: [build-rust-core]
-    if: needs.build-rust-core.result == 'success'
     uses: ./.github/workflows/reusable-build.yml
     strategy:
       fail-fast: false
