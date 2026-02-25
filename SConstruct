@@ -213,7 +213,7 @@ targets = {
     ("macos", "x86_64"): "x86_64-apple-darwin",
     ("macos", "arm64"): "aarch64-apple-darwin",
     ("macos", "universal"): ["x86_64-apple-darwin", "aarch64-apple-darwin"],
-    ("web", "wasm32"): "wasm32-unknown-unknown",
+    ("web", "wasm32"): "wasm32-unknown-emscripten",
     ("android", "arm64"): "aarch64-linux-android",
     ("ios", "arm64"): "aarch64-apple-ios" if not env['ios_simulator'] else "aarch64-apple-ios-sim",
     ("ios", "x86_64"): "x86_64-apple-ios",
@@ -248,7 +248,7 @@ except subprocess.CalledProcessError as e:
     print(f"{R}{cross} Failed to check or install Rust target: {e}{X}")
     # Continue anyway, as cargo will show a more specific error if needed
 
-def _compile_rust_library(lib_name, lib_path, is_release, cargo_flags=None, rustc_flags=None):
+def _compile_rust_library(lib_name, lib_path, is_release, cargo_flags=None, rustc_flags=None, extra_env=None):
     """Logic to compile a Rust library, handling normal, universal, and web builds."""
     print(f"{Y}{package} Compiling {lib_name}...{X}")
 
@@ -257,11 +257,17 @@ def _compile_rust_library(lib_name, lib_path, is_release, cargo_flags=None, rust
 
     # Prepare environment variables
     env_vars = os.environ.copy()
+    if extra_env:
+        env_vars.update(extra_env)
     current_rustflags = env_vars.get("RUSTFLAGS", "")
     if rustc_flags:
         current_rustflags += " " + " ".join(rustc_flags)
 
-    env_vars["RUSTFLAGS"] = current_rustflags.strip()
+    current_rustflags = current_rustflags.strip()
+    if current_rustflags:
+        env_vars["RUSTFLAGS"] = current_rustflags
+    elif "RUSTFLAGS" in env_vars:
+        del env_vars["RUSTFLAGS"]
     
     # Use relative path for Cargo to avoid path duplication issues
     cargo_target_dir = "target"
@@ -275,6 +281,8 @@ def _compile_rust_library(lib_name, lib_path, is_release, cargo_flags=None, rust
 
     if cargo_flags:
         base_cmd.extend(cargo_flags)
+        if any("-Z" in f for f in cargo_flags):
+            env_vars["RUSTC_BOOTSTRAP"] = "1"
 
     # Always specify the target unless it's a universal macOS build (handled separately)
     if not (platform in ["macos", "ios"] and arch == "universal"):
@@ -335,13 +343,25 @@ def _compile_rust_library(lib_name, lib_path, is_release, cargo_flags=None, rust
 force_rust_release = os.environ.get("FORCE_RUST_RELEASE", "0") == "1"
 is_release_build = target == "template_release" or force_rust_release
 
+rustc_flags = []
+cargo_flags = []
+extra_env = {}
+if platform == "web" and env.get("threads", "yes") == "yes":
+    print(f"{Y}Enabling atomics and bulk-memory for Web multi-threading...{X}")
+    rustc_flags = ["-C", "target-feature=+atomics,+bulk-memory,+mutable-globals", "-C", "link-arg=--no-entry"]
+    cargo_flags = ["-Z", "build-std=std,panic_abort"]
+    extra_env = {"CFLAGS": "-pthread -matomics -mbulk-memory -mmutable-globals", "CXXFLAGS": "-pthread -matomics -mbulk-memory -mmutable-globals"}
+    
+    env.Append(CCFLAGS=["-pthread", "-matomics", "-mbulk-memory", "-mmutable-globals"])
+    env.Append(SHLINKFLAGS=["-pthread", "-matomics", "-mbulk-memory", "-mmutable-globals"])
+
 # By default, SCons compiles the Rust library.
 # To prevent this (e.g., in CI where a separate 'cargo build' step is used),
 # set the environment variable SKIP_RUST_BUILD=1.
 if os.environ.get("SKIP_RUST_BUILD", "0") == "1":
     print(f"{Y}Skipping Rust library compilation from SCons because SKIP_RUST_BUILD is set.{X}")
 else:
-    _compile_rust_library('godot_dojo_core', 'godot-dojo-core', is_release_build)
+    _compile_rust_library('godot_dojo_core', 'godot-dojo-core', is_release_build, cargo_flags=cargo_flags, rustc_flags=rustc_flags, extra_env=extra_env)
 
 # Configure library
 if env["platform"] != "android":
@@ -385,9 +405,17 @@ if env["platform"] == "windows" and not env.get("use_mingw"):
 else:
     # For GCC/Clang
     # Using C++17 for consistency and to avoid breaking changes from C++20.
-    cxx_flags = ['-fexceptions', '-std=c++17']
+    cxx_flags = ['-std=c++17']
+
+    if "-fno-exceptions" in env["CCFLAGS"]:
+        env["CCFLAGS"].remove("-fno-exceptions")
+
+    cxx_flags.append('-fexceptions')
+    if env["platform"] == "web":
+        cxx_flags.append('-fwasm-exceptions')
+
     # -Wno-template-id-cdtor suppresses warnings from godot-cpp templates with GCC, but is not supported by Clang.
-    if env["platform"] not in ["macos", "android", "ios"]:
+    if env["platform"] not in ["macos", "android", "ios", "web"]:
         cxx_flags.append('-Wno-template-id-cdtor')
     env.Append(CXXFLAGS=cxx_flags)
 
@@ -430,7 +458,7 @@ if platform == "windows":
         env.Append(LINKFLAGS=['/OPT:NOREF', '/NODEFAULTLIB:MSVCRT'])
         env.Append(LIBS=['ws2_32', 'advapi32', 'ntdll'])
 elif platform in ["linux", "android"]:
-    env.Append(_LIBFLAGS=['-Wl,--start-group', rust_lib_path, '-Wl,--end-group'])
+    env.Append(LIBS=[rust_lib_path])
     if platform == "linux":
         try:
             env.ParseConfig('pkg-config --cflags --libs dbus-1')
@@ -440,6 +468,9 @@ elif platform in ["macos", "ios"]:
     env.Append(_LIBFLAGS=[rust_lib_path])
     # The iana_time_zone crate (a dependency) requires the CoreFoundation framework on Apple platforms.
     env.Append(LINKFLAGS=['-framework', 'CoreFoundation'])
+elif platform == "web":
+    env.Append(SHLINKFLAGS=["-sSIDE_MODULE=1", "-fwasm-exceptions", "--no-entry", "-sSUPPORT_LONGJMP=wasm"])
+    env.Append(SHLINKFLAGS=[rust_lib_path])
 else:
     # Fallback for other platforms (like web) which might just need the library path.
     # Web builds, for example, don't link in the same way.
@@ -458,6 +489,11 @@ sources = sorted(sources) + ["bindings/controller/controller.cpp", "bindings/doj
 # Define precision string for suffixes
 precision_string = ".double" if precision == "double" else ""
 
+threads_string = ""
+threads_conf = env.get("threads", "yes")
+if threads_conf == "no" or threads_conf is False:
+    threads_string = ".nothreads"
+
 _godot_min = _detect_godot_min_requirement()
 _godot_tag = _get_git_submodule_version("external/godot-cpp")
 print(f"{Y}{clipboard} Building with {_godot_tag}. Project Version: {project_version}{X}")
@@ -472,12 +508,12 @@ if target in ["editor", "template_debug"]:
 
 # Create library
 suffix_map = {
-    "linux": f".linux.{target}{precision_string}.{arch}.so",
-    "windows": f".windows.{target}{precision_string}.{arch}.dll",
-    "macos": f".macos.{target}{precision_string}.{arch}.dylib",
-    "ios": f".ios.{target}{precision_string}.{arch}.dylib" if not env['ios_simulator'] else f".ios.{target}{precision_string}.simulator.{arch}.dylib",
-    "android": f".android.{target}{precision_string}.{arch}.so",
-    "web": f".web.{target}{precision_string}.{arch}.wasm"
+    "linux": f".linux.{target}{precision_string}{threads_string}.{arch}.so",
+    "windows": f".windows.{target}{precision_string}{threads_string}.{arch}.dll",
+    "macos": f".macos.{target}{precision_string}{threads_string}.{arch}.dylib",
+    "ios": f".ios.{target}{precision_string}{threads_string}.{arch}.dylib" if not env['ios_simulator'] else f".ios.{target}{precision_string}{threads_string}.simulator.{arch}.dylib",
+    "android": f".android.{target}{precision_string}{threads_string}.{arch}.so",
+    "web": f".web.{target}{precision_string}{threads_string}.{arch}.wasm"
 }
 
 target_out_dir = target

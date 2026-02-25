@@ -26,6 +26,10 @@ on:
         required: false
         type: string
         default: ''
+      threads:
+        required: false
+        type: string
+        default: 'yes'
       previous_tag:
         required: false
         type: string
@@ -67,6 +71,13 @@ jobs:
         run: |
           choco install python --version=3.11
           python -m pip install scons protobuf
+
+      - name: Set up Emscripten
+        if: inputs.platform_id == 'web'
+        uses: mymindstorm/setup-emsdk@v14
+        with:
+          version: 3.1.62
+          actions-cache-folder: 'emsdk-cache'
 
       - name: Install Android NDK
         if: inputs.platform_id == 'android'
@@ -119,7 +130,7 @@ jobs:
           fi
           mkdir -p demo/addons/godot-dojo
           SCONS_PLATFORM=${{ (inputs.platform_id == 'windows-gnu' || inputs.platform_id == 'windows-msvc') && 'windows' || inputs.platform_id }}
-          scons platform=${SCONS_PLATFORM} arch=${{ inputs.arch }} target=editor precision=${{ inputs.precision }} -j2
+          scons platform=${SCONS_PLATFORM} arch=${{ inputs.arch }} target=editor precision=${{ inputs.precision }} threads=${{ inputs.threads }} -j2
 
       - name: Build GDExtension (template debug)
         if: inputs.platform_id != 'ios'
@@ -139,7 +150,7 @@ jobs:
           fi
           mkdir -p demo/addons/godot-dojo
           SCONS_PLATFORM=${{ (inputs.platform_id == 'windows-gnu' || inputs.platform_id == 'windows-msvc') && 'windows' || inputs.platform_id }}
-          scons platform=${SCONS_PLATFORM} arch=${{ inputs.arch }} target=template_debug precision=${{ inputs.precision }} -j2
+          scons platform=${SCONS_PLATFORM} arch=${{ inputs.arch }} target=template_debug precision=${{ inputs.precision }} threads=${{ inputs.threads }} -j2
 
       - name: Build GDExtension (template release)
         if: inputs.platform_id != 'ios'
@@ -159,7 +170,7 @@ jobs:
           fi
           mkdir -p demo/addons/godot-dojo
           SCONS_PLATFORM=${{ (inputs.platform_id == 'windows-gnu' || inputs.platform_id == 'windows-msvc') && 'windows' || inputs.platform_id }}
-          scons platform=${SCONS_PLATFORM} arch=${{ inputs.arch }} target=template_release precision=${{ inputs.precision }} -j2
+          scons platform=${SCONS_PLATFORM} arch=${{ inputs.arch }} target=template_release precision=${{ inputs.precision }} threads=${{ inputs.threads }} -j2
 
       - name: Build for iOS Device (arm64)
         if: inputs.platform_id == 'ios'
@@ -202,7 +213,7 @@ jobs:
       - name: Upload binaries
         uses: actions/upload-artifact@v4
         with:
-          name: bin-${{ inputs.precision }}-${{ inputs.platform_id }}-${{ inputs.arch }}
+          name: bin-${{ inputs.precision }}-${{ inputs.platform_id }}-${{ inputs.arch }}-${{ inputs.threads }}
           path: |
             demo/addons/godot-dojo/bin
             demo/addons/godot-dojo/assets

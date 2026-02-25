@@ -2,7 +2,7 @@
 
 entry_symbol = "${ENTRY_POINT}"
 compatibility_minimum = "${GODOT_MIN_REQUIREMENT}"
-reloadable = true
+reloadable true
 version = "${VERSION}"
 [libraries]
 
@@ -28,17 +28,11 @@ linux.release${PRECISION}.x86_64 = "./bin/linux/release/${PROJECT_NAME}.linux.te
 android.debug${PRECISION}.arm64 = "./bin/android/debug/lib${PROJECT_NAME}.android.template_debug${PRECISION}.arm64.so"
 android.release${PRECISION}.arm64 = "./bin/android/release/lib${PROJECT_NAME}.android.template_release${PRECISION}.arm64.so"
 
-web.debug${PRECISION}.wasm32 = "./bin/web/debug/${PROJECT_NAME}.web.template_debug${PRECISION}.wasm32.wasm"
-web.release${PRECISION}.wasm32 = "./bin/web/release/${PROJECT_NAME}.web.template_release${PRECISION}.wasm32.wasm"
+web.debug.threads${PRECISION}.wasm32 = "./bin/web/debug/${PROJECT_NAME}.web.template_debug${PRECISION}.wasm32.wasm"
+web.release.threads${PRECISION}.wasm32 = "./bin/web/release/${PROJECT_NAME}.web.template_release${PRECISION}.wasm32.wasm"
 
-[dependencies]
-
-ios.debug = {
-    "./bin/ios/debug/${PROJECT_NAME}${PRECISION}.xcframework" : "",
-}
-ios.release = {
-    "./bin/ios/release/${PROJECT_NAME}${PRECISION}.xcframework" : "",
-}
+web.debug${PRECISION}.wasm32 = "./bin/web/debug/${PROJECT_NAME}.web.template_debug.nothreads${PRECISION}.wasm32.wasm"
+web.release${PRECISION}.wasm32 = "./bin/web/release/${PROJECT_NAME}.web.template_release.nothreads${PRECISION}.wasm32.wasm"
 
 [icons]
 

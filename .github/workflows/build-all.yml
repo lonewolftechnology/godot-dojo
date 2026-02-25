@@ -201,6 +201,11 @@ jobs:
             arch: universal
             rust_target: 'aarch64-apple-ios' # Base target, SConstruct handles the rest
             macos_deployment_target: ""
+          - platform_id: web
+            os_image: ubuntu-latest
+            arch: wasm32
+            rust_target: wasm32-unknown-emscripten
+            macos_deployment_target: ""
 
 
     steps:
@@ -241,6 +246,13 @@ jobs:
       - name: Install uniffi-bindgen-cpp from source
         if: matrix.rust_target == 'x86_64-unknown-linux-gnu' && steps.cache-uniffi-bindgen-cpp.outputs.cache-hit != 'true'
         run: cargo install --git https://github.com/Larkooo/uniffi-bindgen-cpp --branch update-0.30 uniffi-bindgen-cpp
+
+      - name: Set up Emscripten
+        if: matrix.platform_id == 'web'
+        uses: mymindstorm/setup-emsdk@v14
+        with:
+          version: 3.1.62
+          actions-cache-folder: 'emsdk-cache'
 
       - name: Install Android NDK
         if: matrix.platform_id == 'android'
@@ -442,10 +454,29 @@ jobs:
       platform_id: ${{ matrix.platform_id }}
       macos_deployment_target: ''
 
+  build-gdextension-web:
+    name: Build GDExtension (web-${{ matrix.threads }}-${{ matrix.precision }})
+    needs: [build-rust-core]
+    if: needs.build-rust-core.result == 'success'
+    uses: ./.github/workflows/reusable-build.yml
+    strategy:
+      fail-fast: false
+      matrix:
+        precision: [single, double]
+        threads: ['yes', 'no']
+    with:
+      os: ubuntu-latest
+      arch: wasm32
+      rust_target: wasm32-unknown-emscripten
+      precision: ${{ matrix.precision }}
+      platform_id: web
+      threads: ${{ matrix.threads }}
+      macos_deployment_target: ''
+
   package-single:
     name: Package Single Precision Binaries
     runs-on: ubuntu-latest
-    needs: [create_release, build-gdextension-android, build-gdextension-linux, build-gdextension-macos, build-gdextension-windows, build-gdextension-ios]
+    needs: [create_release, build-gdextension-android, build-gdextension-linux, build-gdextension-macos, build-gdextension-windows, build-gdextension-ios, build-gdextension-web]
     if: success() && needs.create_release.result == 'success'
     steps:
       - name: Checkout code
@@ -495,7 +526,7 @@ jobs:
   package-double:
     name: Package Double Precision Binaries
     runs-on: ubuntu-latest
-    needs: [create_release, build-gdextension-android, build-gdextension-linux, build-gdextension-macos, build-gdextension-windows, build-gdextension-ios]
+    needs: [create_release, build-gdextension-android, build-gdextension-linux, build-gdextension-macos, build-gdextension-windows, build-gdextension-ios, build-gdextension-web]
     if: success() && needs.create_release.result == 'success'
     steps:
       - name: Checkout code
