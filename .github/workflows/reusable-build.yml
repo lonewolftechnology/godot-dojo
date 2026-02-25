@@ -124,6 +124,7 @@ jobs:
           path: godot-dojo-core/target
 
       - name: Debug - List downloaded artifacts
+        if: inputs.compile_rust == false
         shell: bash
         run: ls -R godot-dojo-core/target
 
