@@ -30,6 +30,10 @@ on:
         required: false
         type: boolean
         default: false
+      continue_on_error:
+        required: false
+        type: boolean
+        default: false
       threads:
         required: false
         type: string
@@ -43,6 +47,7 @@ jobs:
   build:
     name: Build ${{ inputs.platform_id }}-${{ inputs.arch }}-${{ inputs.precision }}
     runs-on: ${{ inputs.os }}
+    continue-on-error: ${{ inputs.continue_on_error }}
 
     steps:
       - name: Checkout code

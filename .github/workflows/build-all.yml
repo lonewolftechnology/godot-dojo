@@ -451,7 +451,6 @@ jobs:
 
   build-gdextension-web:
     name: Build GDExtension (web-${{ matrix.threads }}-${{ matrix.precision }})
-    continue-on-error: true
     needs: [build-rust-core]
     if: needs.build-rust-core.result == 'success'
     uses: ./.github/workflows/reusable-build.yml
@@ -468,6 +467,7 @@ jobs:
       platform_id: web
       threads: ${{ matrix.threads }}
       compile_rust: true
+      continue_on_error: true
       macos_deployment_target: ''
 
   package-single:
