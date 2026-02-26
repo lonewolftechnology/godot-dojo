@@ -259,6 +259,11 @@ def _compile_rust_library(lib_name, lib_path, is_release, cargo_flags=None, rust
     env_vars = os.environ.copy()
     if extra_env:
         env_vars.update(extra_env)
+
+    if platform == "web":
+        # Disable wasm-opt during cargo build to avoid failures with intermediate artifacts
+        env_vars["EMCC_CFLAGS"] = env_vars.get("EMCC_CFLAGS", "") + " -s WASM_OPT=0"
+
     current_rustflags = env_vars.get("RUSTFLAGS", "")
     if rustc_flags:
         current_rustflags += " " + " ".join(rustc_flags)
@@ -458,7 +463,9 @@ if platform == "windows":
         env.Append(LINKFLAGS=['/OPT:NOREF', '/NODEFAULTLIB:MSVCRT'])
         env.Append(LIBS=['ws2_32', 'advapi32', 'ntdll'])
 elif platform in ["linux", "android"]:
-    env.Append(LIBS=[rust_lib_path])
+    env.Append(LIBPATH=[os.path.dirname(rust_lib_path)])
+    # Strip 'lib' prefix and '.a' suffix to get the library name for -l
+    env.Append(LIBS=[os.path.basename(rust_lib_path)[3:-2]])
     if platform == "linux":
         try:
             env.ParseConfig('pkg-config --cflags --libs dbus-1')
