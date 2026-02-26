@@ -242,20 +242,6 @@ jobs:
         if: matrix.rust_target == 'x86_64-unknown-linux-gnu' && steps.cache-uniffi-bindgen-cpp.outputs.cache-hit != 'true'
         run: cargo install --git https://github.com/Larkooo/uniffi-bindgen-cpp --branch update-0.30 uniffi-bindgen-cpp
 
-      - name: Set up Emscripten
-        if: matrix.platform_id == 'web'
-        shell: bash
-        run: |
-          git clone https://github.com/emscripten-core/emsdk.git
-          cd emsdk
-          ./emsdk install 3.1.56
-          ./emsdk activate 3.1.56
-          source ./emsdk_env.sh
-          echo "EMSDK=$EMSDK" >> $GITHUB_ENV
-          echo "EM_CONFIG=$EM_CONFIG" >> $GITHUB_ENV
-          echo "$EMSDK/upstream/emscripten" >> $GITHUB_PATH
-          echo "$EMSDK/upstream/bin" >> $GITHUB_PATH
-
       - name: Install Android NDK
         if: matrix.platform_id == 'android'
         uses: nttld/setup-ndk@v1
