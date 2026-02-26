@@ -259,11 +259,6 @@ def _compile_rust_library(lib_name, lib_path, is_release, cargo_flags=None, rust
     env_vars = os.environ.copy()
     if extra_env:
         env_vars.update(extra_env)
-
-    if platform == "web":
-        # Disable wasm-opt during cargo build to avoid failures with intermediate artifacts
-        env_vars["EMCC_CFLAGS"] = env_vars.get("EMCC_CFLAGS", "") + " -s WASM_OPT=0"
-
     current_rustflags = env_vars.get("RUSTFLAGS", "")
     if rustc_flags:
         current_rustflags += " " + " ".join(rustc_flags)
