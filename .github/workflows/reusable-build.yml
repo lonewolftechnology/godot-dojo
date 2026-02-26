@@ -86,7 +86,7 @@ jobs:
         if: inputs.platform_id == 'web'
         uses: mymindstorm/setup-emsdk@v14
         with:
-          version: 3.1.62
+          version: 3.1.56
           actions-cache-folder: 'emsdk-cache'
 
       - name: Set up Rust nightly
@@ -145,7 +145,7 @@ jobs:
             scons-cache-${{ inputs.platform_id }}-${{ inputs.arch }}-${{ inputs.precision }}-
 
       - name: Build GDExtension (editor)
-        if: inputs.platform_id != 'ios' && inputs.platform_id != 'web'
+        if: inputs.platform_id != 'ios' && inputs.platform_id != 'web' && inputs.platform_id != 'android'
         shell: bash
         run: |
           set -e
