@@ -84,10 +84,17 @@ jobs:
 
       - name: Set up Emscripten
         if: inputs.platform_id == 'web'
-        uses: mymindstorm/setup-emsdk@v14
-        with:
-          version: 3.1.56
-          actions-cache-folder: 'emsdk-cache'
+        shell: bash
+        run: |
+          git clone https://github.com/emscripten-core/emsdk.git
+          cd emsdk
+          ./emsdk install 3.1.58
+          ./emsdk activate 3.1.58
+          source ./emsdk_env.sh
+          echo "EMSDK=$EMSDK" >> $GITHUB_ENV
+          echo "EM_CONFIG=$EM_CONFIG" >> $GITHUB_ENV
+          echo "$EMSDK/upstream/emscripten" >> $GITHUB_PATH
+          echo "$EMSDK/upstream/bin" >> $GITHUB_PATH
 
       - name: Set up Rust nightly
         if: inputs.compile_rust == true
