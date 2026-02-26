@@ -246,7 +246,7 @@ jobs:
         if: matrix.platform_id == 'web'
         uses: mymindstorm/setup-emsdk@v14
         with:
-          version: 3.1.62
+          version: 3.1.56
           actions-cache-folder: 'emsdk-cache'
 
       - name: Install Android NDK
