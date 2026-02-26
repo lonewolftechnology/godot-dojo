@@ -88,8 +88,8 @@ jobs:
         run: |
           git clone https://github.com/emscripten-core/emsdk.git
           cd emsdk
-          ./emsdk install 3.1.58
-          ./emsdk activate 3.1.58
+          ./emsdk install 5.0.1
+          ./emsdk activate 5.0.1
           source ./emsdk_env.sh
           echo "EMSDK=$EMSDK" >> $GITHUB_ENV
           echo "EM_CONFIG=$EM_CONFIG" >> $GITHUB_ENV
