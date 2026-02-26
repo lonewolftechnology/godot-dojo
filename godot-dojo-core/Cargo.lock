@@ -5938,8 +5938,7 @@ dependencies = [
 [[package]]
 name = "uniffi_core"
 version = "0.30.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "7e7a5a038ebffe8f4cf91416b154ef3c2468b18e828b7009e01b1b99938089f9"
+source = "git+https://github.com/dannroda/uniffi-rs?rev=3ac537537ee0f439fca1294207d159bef2973c0d#3ac537537ee0f439fca1294207d159bef2973c0d"
 dependencies = [
  "anyhow",
  "bytes",
