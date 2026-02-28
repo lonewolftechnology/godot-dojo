@@ -1,5 +1,20 @@
 [unstable]
 bindeps = true
+#build-std = ["std", "panic_abort", "proc_macro"]
 
 [target.wasm32-unknown-emscripten]
-rustflags = ["-C", "link-arg=--no-entry"]
+rustflags = [
+#    "-C", "link-arg=--no-entry",
+#    "-C", "panic=abort",
+#    "-C", "link-arg=-sSIDE_MODULE=2",
+#    "-C", "link-arg=-sASSERTIONS=1",
+#    "-C", "target-feature=+exception-handling",
+#    "-C", "target-feature=+bulk-memory",
+#    "-C", "link-arg=-fwasm-exceptions",
+#    "-C", "link-arg=-fno-exceptions",
+#    "-C", "relocation-model=pic"
+#    "-C", "llvm-args=-enable-exception-handling",
+#    "-C", "llvm-args=--enable-acc-forwarding",
+#    "-C", "llvm-args=-enable-emscripten-cxx-exceptions=0",
+#    "-C", "llvm-args=-wasm-enable-sjlj"
+]

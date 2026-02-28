@@ -4,18 +4,35 @@ version = "0.1.0"
 edition = "2021"
 
 [lib]
-crate-type = ["cdylib", "rlib", "staticlib"]
+crate-type = ["rlib", "staticlib", "cdylib"]
 
 [dependencies]
-controller-uniffi = { git = "https://github.com/dannroda/controller.c", rev = "428c8ef" }
-dojo-uniffi = { git = "https://github.com/dannroda/dojo.c", rev = "cac318a" }
+controller-uniffi = { git = "https://github.com/dannroda/controller.c", rev = "0479b6e" }
+#controller-uniffi = { path = "../../controller.c" }
+dojo-uniffi = { git = "https://github.com/dannroda/dojo.c", rev = "cc89def" }
+#dojo-uniffi = { path = "../../dojo.c/crates/uniffi" }
+
+#wasm-bindgen = "=0.2.108" # fix __cpp_exceptions not a Tag
+#tonic-web-wasm-client = "=0.9.0"
+#wasm-streams = "=0.5.0"
+#cairo-lang-starknet-classes = "=2.15.0"
+#wasm-bindgen-futures = "=0.4.63"
 
 [build-dependencies]
-dojo-uniffi = { git = "https://github.com/dannroda/dojo.c", rev = "cac318a", artifact = "bin:uniffi-bindgen-cpp" }
-controller-uniffi = { git = "https://github.com/dannroda/controller.c", rev = "428c8ef", artifact = "bin:uniffi-bindgen-cpp" }
+dojo-uniffi = { git = "https://github.com/dannroda/dojo.c", rev = "cc89def", artifact = "bin:uniffi-bindgen-cpp" }
+#dojo-uniffi = { path = "../../dojo.c/crates/uniffi", artifact = "bin:uniffi-bindgen-cpp" }
+controller-uniffi = { git = "https://github.com/dannroda/controller.c", rev = "0479b6e", artifact = "bin:uniffi-bindgen-cpp" }
+#controller-uniffi = { path = "../../controller.c", artifact = "bin:uniffi-bindgen-cpp" }
 cargo_metadata = "0.23.0"
 build-print = "1.0.1"
 
 [patch.crates-io]
 starknet-crypto = { git = "https://github.com/glihm/starknet-rs", rev = "c1e7e19f45f9fad6ea2796da9b7b3dcf8f9f2b82" } # Force to fix crate version mismatch
 uniffi_core = { git = "https://github.com/dannroda/uniffi-rs", rev = "3ac537537ee0f439fca1294207d159bef2973c0d" }
+#wasm-bindgen = { git = "https://github.com/rustwasm/wasm-bindgen", tag = "0.2.113" }
+
+#[profile.release]
+#panic = "abort"
+#
+#[profile.dev]
+#panic = "abort"
