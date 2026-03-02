@@ -7,6 +7,9 @@
 #include "godot_cpp/variant/utility_functions.hpp"
 #include "godot_cpp/core/error_macros.hpp"
 #include "tools/godot_helper.hpp"
+#ifdef WEB_ENABLED
+#include "godot_cpp/classes/java_script_bridge.hpp"
+#endif
 using namespace godot;
 
 namespace logger_internal
@@ -61,10 +64,21 @@ class Logger
     {
 #ifdef DEBUG_ENABLED
         String message = logger_internal::concat_all(args...);
-        String formatted = "[color=" + color + "][b][" + type + "][/b][/color] " + message;
+
 #ifdef WEB_ENABLED
-        formatted = formatted.insert(0, "[color=green][b][WEB][/b][/color]");
+        JavaScriptBridge* js = JavaScriptBridge::get_singleton();
+        if (js) {
+            String safe_msg = message.replace("\\", "\\\\").replace("'", "\\'").replace("\n", "\\n");
+            String code = String("console.log('%c[WEB]%c[") + type + "] %c' + '" + safe_msg + "', " +
+                          "'color: green; font-weight: bold', " +
+                          "'color: " + color + "; font-weight: bold', " +
+                          "'color: unset');";
+            js->eval(code);
+            return; // Retornamos para evitar que print_rich imprima basura ANSI
+        }
 #endif
+
+        String formatted = "[color=" + color + "][b][" + type + "][/b][/color] " + message;
         UtilityFunctions::print_rich(formatted);
 #endif
     }
