@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Dojo Starter - WASM Demo</title>
+    <style>
+        body { font-family: sans-serif; padding: 20px; }
+        .container { display: flex; gap: 20px; }
+        .panel { flex: 1; border: 1px solid #ccc; padding: 10px; border-radius: 5px; }
+        button { margin: 5px 0; padding: 8px; cursor: pointer; }
+        pre { background: #f0f0f0; padding: 10px; overflow-x: auto; white-space: pre-wrap; }
+        .log-entry { margin-bottom: 5px; border-bottom: 1px solid #eee; }
+        .success { color: green; }
+        .error { color: red; }
+        input { width: 100%; padding: 5px; margin-bottom: 10px; box-sizing: border-box; }
+        label { font-weight: bold; display: block; margin-top: 10px; }
+        .hidden { display: none; }
+        #linkContainer { margin: 10px 0; padding: 10px; background: #eef; border: 1px solid #ccd; text-align: center; }
+        #btnOpenSession { font-weight: bold; font-size: 1.1em; }
+    </style>
+</head>
+<body>
+    <h1>Dojo Starter - WASM Demo</h1>
+
+    <div class="container">
+        <div class="panel">
+            <h2>Controls</h2>
+
+            <label>Private Key</label>
+            <input type="text" id="privateKey" placeholder="Generated automatically if empty">
+            <button id="btnRefreshKey">Generate New Key</button>
+            <button id="btnRegisterSession">Register Session</button>
+
+
+            <hr>
+
+            <h3>1. Connection</h3>
+            <button id="btnConnectTorii">Connect to Torii</button>
+            <div id="toriiStatus">Not connected</div>
+
+            <h3>2. Session</h3>
+            <button id="btnGenerateUrl">1. Generate Session URL</button>
+
+            <div id="linkContainer" class="hidden">
+                <p>URL Generated! Click below to login:</p>
+                <a id="btnOpenSession" href="#" target="_blank">OPEN CARTRIDGE LOGIN</a>
+                <p><small>After logging in, come back here and click "Complete Registration"</small></p>
+            </div>
+
+            <button id="btnCompleteRegistration" disabled>2. Complete Registration</button>
+
+            <button id="btnCheckSession">Check Session Status</button>
+            <div id="sessionStatus">No session</div>
+
+            <h3>3. Actions</h3>
+            <button id="btnSpawn">Execute Spawn</button>
+            <button id="btnMove">Execute Move</button>
+
+            <h3>4. Subscriptions</h3>
+            <button id="btnSubscribe">Subscribe to Entities</button>
+        </div>
+
+        <div class="panel">
+            <h2>Logs & Output</h2>
+            <div id="output"></div>
+        </div>
+    </div>
+
+<script type="module">
+    import init, {
+        ToriiClient,
+        SessionAccount,
+        ControllerAccount,
+        create_session_registration_url,
+        get_public_key,
+        validate_felt
+    } from './godot_dojo_core.js';
+
+    // Configuration
+    const PROXY_ORIGIN = window.location.origin + "/cartridge_api";
+
+    const CONFIG = {
+        CONTRACT: "0x055091778f1b57df5272d8f36dc6d729fc9a2c2550b93d4e4f5b520371e35796",
+        RPC_URL: `${PROXY_ORIGIN}/x/godot-testing/katana`,
+        TORII_URL: `${PROXY_ORIGIN}/x/godot-testing/torii`,
+        CARTRIDGE_API: `${PROXY_ORIGIN}`,
+        KEYCHAIN_URL: "https://x.cartridge.gg"
+    };
+
+    // State
+    let state = {
+        toriiClient: null,
+        sessionAccount: null,
+        privateKey: "0x06e9270fafa808e336d25534555d118ad707078c7007330b16187923e63789",
+        entitySub: null,
+        policies: null // Store policies for step 2
+    };
+
+    // UI Elements
+    const ui = {
+        output: document.getElementById('output'),
+        privateKeyInput: document.getElementById('privateKey'),
+        toriiStatus: document.getElementById('toriiStatus'),
+        sessionStatus: document.getElementById('sessionStatus'),
+        linkContainer: document.getElementById('linkContainer'),
+        btnOpenSession: document.getElementById('btnOpenSession'),
+        btnCompleteRegistration: document.getElementById('btnCompleteRegistration')
+    };
+
+    function log(msg, type = 'info') {
+        const div = document.createElement('div');
+        div.className = `log-entry ${type}`;
+        div.textContent = `[${new Date().toLocaleTimeString()}] ${msg}`;
+        ui.output.prepend(div);
+        console.log(msg);
+    }
+
+    function generatePrivateKey() {
+        const array = new Uint8Array(32);
+        crypto.getRandomValues(array);
+        return "0x" + Array.from(array).map(b => b.toString(16).padStart(2, '0')).join('');
+    }
+
+    async function initialize() {
+        try {
+            log("Initializing WASM...", "info");
+            await init();
+            log("WASM Initialized", "success");
+            ui.privateKeyInput.value = state.privateKey;
+        } catch (e) {
+            log(`Initialization error: ${e.message}`, "error");
+        }
+    }
+
+    async function connectTorii() {
+        try {
+            log(`Connecting to Torii at ${CONFIG.TORII_URL}...`);
+            state.toriiClient = await ToriiClient.create(CONFIG.TORII_URL);
+            log("Connected to Torii!", "success");
+            ui.toriiStatus.textContent = "Connected";
+            ui.toriiStatus.className = "success";
+        } catch (e) {
+            log(`Torii connection error: ${e.message}`, "error");
+        }
+    }
+
+    async function generateSessionUrl() {
+        try {
+            const privKey = ui.privateKeyInput.value;
+            if (!privKey) {
+                log("Private key required", "error");
+                return;
+            }
+            state.privateKey = privKey;
+
+            log("Generating session request...");
+
+            state.policies = {
+                max_fee: "0x100000",
+                policies: [
+                    {
+                        contract_address: CONFIG.CONTRACT,
+                        entrypoint: "spawn"
+                    },
+                    {
+                        contract_address: CONFIG.CONTRACT,
+                        entrypoint: "move"
+                    },
+                    {
+                        contract_address: CONFIG.CONTRACT,
+                        entrypoint: "validate_u64"
+                    }
+                ]
+            };
+
+            const realRpcUrl = "https://api.cartridge.gg/x/godot-testing/katana";
+
+            console.log("Calling create_session_registration_url with:", {
+                privKey: state.privateKey,
+                policies: state.policies,
+                rpcUrl: realRpcUrl,
+                keychainUrl: CONFIG.KEYCHAIN_URL,
+                cartridgeApi: CONFIG.CARTRIDGE_API
+            });
+
+            const sessionUrl = await create_session_registration_url(
+                state.privateKey,
+                state.policies,
+                realRpcUrl
+            );
+
+            log(`Session URL generated.`);
+            console.log("Session URL:", sessionUrl);
+
+            ui.btnOpenSession.href = sessionUrl;
+            ui.linkContainer.classList.remove('hidden');
+            ui.btnCompleteRegistration.disabled = false;
+
+        } catch (e) {
+            console.error("Full generation error:", e);
+            log(`Generation error: ${e}`, "error");
+        }
+    }
+
+    async function completeRegistration() {
+        try {
+            log("Waiting for session authorization (polling)...");
+            ui.btnCompleteRegistration.disabled = true;
+
+            state.sessionAccount = await SessionAccount.create_from_subscribe(
+                state.privateKey,
+                state.policies,
+                CONFIG.RPC_URL,
+                CONFIG.CARTRIDGE_API
+            );
+
+            log("Session created successfully!", "success");
+            ui.sessionStatus.textContent = `Active (Address: ${state.sessionAccount.address()})`;
+            ui.sessionStatus.className = "success";
+
+            // Hide link container
+            ui.linkContainer.classList.add('hidden');
+
+        } catch (e) {
+            console.error("Full registration error:", e);
+            log(`Registration error: ${e}`, "error");
+            ui.btnCompleteRegistration.disabled = false;
+        }
+    }
+
+    async function executeSpawn() {
+        if (!state.sessionAccount) {
+            log("No active session. Please login first.", "error");
+            return;
+        }
+
+        try {
+            log("Executing 'spawn'...");
+
+            const call = {
+                contract_address: CONFIG.CONTRACT,
+                entrypoint: "spawn",
+                calldata: []
+            };
+
+            const txHash = await state.sessionAccount.execute([call]);
+            log(`Spawn executed! Tx Hash: ${txHash}`, "success");
+        } catch (e) {
+            log(`Execution error: ${e.message}`, "error");
+        }
+    }
+
+    async function subscribeEntities() {
+        if (!state.toriiClient) {
+            log("Torii client not connected.", "error");
+            return;
+        }
+
+        try {
+            log("Subscribing to entity updates...");
+
+            const callback = {
+                on_update: (entity) => {
+                    const replacer = (key, value) => typeof value === 'bigint' ? value.toString() : value;
+                    log(`Entity Update: ${JSON.stringify(entity, replacer)}`, "success");
+                },
+                on_error: (err) => {
+                    log(`Subscription error: ${err}`, "error");
+                }
+            };
+
+            const subId = await state.toriiClient.subscribe_entity_updates(
+                null,
+                [],
+                callback
+            );
+
+            state.entitySub = subId;
+            log(`Subscribed! ID: ${subId}`, "success");
+        } catch (e) {
+            log(`Subscription failed: ${e.message}`, "error");
+        }
+    }
+
+    // Event Listeners
+    document.getElementById('btnRefreshKey').onclick = () => {
+        state.privateKey = generatePrivateKey();
+        ui.privateKeyInput.value = state.privateKey;
+        log("New private key generated");
+    };
+
+    document.getElementById('btnConnectTorii').onclick = connectTorii;
+    document.getElementById('btnGenerateUrl').onclick = generateSessionUrl;
+    document.getElementById('btnCompleteRegistration').onclick = completeRegistration;
+    document.getElementById('btnRegisterSession').onclick = completeRegistration;
+    document.getElementById('btnSpawn').onclick = executeSpawn;
+    document.getElementById('btnSubscribe').onclick = subscribeEntities;
+
+    document.getElementById('btnCheckSession').onclick = () => {
+        if (state.sessionAccount) {
+            log(`Session Info:
+                Address: ${state.sessionAccount.address()}
+                Chain ID: ${state.sessionAccount.chain_id()}
+                Expires At: ${new Date(Number(state.sessionAccount.expires_at()) * 1000).toLocaleString()}
+                Is Expired: ${state.sessionAccount.is_expired()}
+            `);
+        } else {
+            log("No active session");
+        }
+    };
+
+    initialize();
+
+</script>
+</body>
+</html>
