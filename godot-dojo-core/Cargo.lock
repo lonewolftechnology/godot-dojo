@@ -39,7 +39,7 @@ dependencies = [
  "starknet-types-core",
  "thiserror 1.0.69",
  "tokio",
- "toml 0.8.23",
+ "toml",
  "tsify-next",
  "u256-literal",
  "url",
@@ -1057,6 +1057,12 @@ dependencies = [
 ]
 
 [[package]]
+name = "cast"
+version = "0.3.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "37b2a672a2cb129a2e41c10b1224bb368f9f37a2b16b612598138befd7b37eb5"
+
+[[package]]
 name = "cc"
 version = "1.2.44"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1168,6 +1174,16 @@ dependencies = [
 ]
 
 [[package]]
+name = "console_error_panic_hook"
+version = "0.1.7"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "a06aeb73f470f66dcdbf7223caeebb85984942f22f1adb2a088cf9668146bbbc"
+dependencies = [
+ "cfg-if",
+ "wasm-bindgen",
+]
+
+[[package]]
 name = "const-fnv1a-hash"
 version = "1.1.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1214,7 +1230,6 @@ dependencies = [
 [[package]]
 name = "controller-uniffi"
 version = "0.1.0"
-source = "git+https://github.com/dannroda/controller.c?rev=0479b6e#0479b6eeae4ee8e48fb20b7d9cc5b0af6fc37c92"
 dependencies = [
  "account_sdk",
  "anyhow",
@@ -1222,9 +1237,14 @@ dependencies = [
  "camino",
  "cargo_metadata 0.19.2",
  "chrono",
+ "console_error_panic_hook",
+ "futures-util",
+ "getrandom 0.2.16",
+ "js-sys",
  "lazy_static",
  "reqwest 0.11.27",
  "serde",
+ "serde-wasm-bindgen",
  "serde_json",
  "starknet",
  "starknet-crypto",
@@ -1237,6 +1257,9 @@ dependencies = [
  "url",
  "uuid",
  "walkdir",
+ "wasm-bindgen",
+ "wasm-bindgen-futures",
+ "web-sys",
  "which",
 ]
 
@@ -1567,7 +1590,6 @@ dependencies = [
 [[package]]
 name = "dojo-core"
 version = "1.8.3"
-source = "git+https://github.com/dannroda/dojo.c?rev=cc89def#cc89defad369bc9673ba66abdd22e90141e3ccd7"
 dependencies = [
  "anyhow",
  "dojo-types",
@@ -1606,7 +1628,6 @@ dependencies = [
 [[package]]
 name = "dojo-uniffi"
 version = "1.8.3"
-source = "git+https://github.com/dannroda/dojo.c?rev=cc89def#cc89defad369bc9673ba66abdd22e90141e3ccd7"
 dependencies = [
  "anyhow",
  "axum 0.8.6",
@@ -1615,6 +1636,7 @@ dependencies = [
  "camino",
  "cargo_metadata 0.19.2",
  "chrono",
+ "console_error_panic_hook",
  "crypto-bigint",
  "directories",
  "dojo-core",
@@ -1622,13 +1644,18 @@ dependencies = [
  "dojo-world",
  "futures",
  "futures-util",
+ "gloo-timers",
+ "gloo-utils",
  "hex",
+ "instant",
+ "js-sys",
  "keyring",
  "lazy_static",
  "num-bigint",
  "num-traits",
  "open",
  "serde",
+ "serde-wasm-bindgen",
  "serde_json",
  "starknet",
  "starknet-crypto",
@@ -1640,12 +1667,16 @@ dependencies = [
  "torii-grpc-client",
  "torii-proto",
  "tower-http 0.6.6",
+ "tsify-next",
  "uniffi",
  "uniffi_bindgen",
  "url",
  "urlencoding",
  "uuid",
  "walkdir",
+ "wasm-bindgen",
+ "wasm-bindgen-futures",
+ "web-sys",
  "which",
 ]
 
@@ -1669,7 +1700,7 @@ dependencies = [
  "starknet",
  "starknet-crypto",
  "thiserror 1.0.69",
- "toml 0.8.23",
+ "toml",
  "tracing",
  "url",
 ]
@@ -2094,6 +2125,18 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "0cc23270f6e1808e30a928bdc84dea0b9b4136a8bc82338574f23baf47bbd280"
 
 [[package]]
+name = "gloo-timers"
+version = "0.3.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "bbb143cf96099802033e0d4f4963b19fd2e0b728bcf076cd9cf7f6634f092994"
+dependencies = [
+ "futures-channel",
+ "futures-core",
+ "js-sys",
+ "wasm-bindgen",
+]
+
+[[package]]
 name = "gloo-utils"
 version = "0.2.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2126,7 +2169,6 @@ dependencies = [
  "controller-uniffi",
  "ctor",
  "dojo-uniffi",
- "web-sys",
 ]
 
 [[package]]
@@ -2707,6 +2749,18 @@ dependencies = [
 ]
 
 [[package]]
+name = "instant"
+version = "0.1.13"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "e0242819d153cba4b4b05a5a8f2a7e9bbf97b6055b2a002b395c96b5ff3c0222"
+dependencies = [
+ "cfg-if",
+ "js-sys",
+ "wasm-bindgen",
+ "web-sys",
+]
+
+[[package]]
 name = "intrusive-collections"
 version = "0.9.7"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2809,9 +2863,9 @@ checksum = "4a5f13b858c8d314ee3e8f639011f7ccefe71f97f96e50151fb991f267928e2c"
 
 [[package]]
 name = "js-sys"
-version = "0.3.82"
+version = "0.3.91"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "b011eec8cc36da2aab2d5cff675ec18454fad408585853910a202391cf9f8e65"
+checksum = "b49715b7073f385ba4bc528e5747d02e66cb39c6146efb66b781f131f0fb399c"
 dependencies = [
  "once_cell",
  "wasm-bindgen",
@@ -3059,9 +3113,9 @@ checksum = "6877bb514081ee2a7ff5ef9de3281f14a4dd4bceac4c09388074a6b5df8a139a"
 
 [[package]]
 name = "minicov"
-version = "0.3.7"
+version = "0.3.8"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "f27fe9f1cc3c22e1687f9446c2083c4c5fc7f0bcf1c7a86bdbded14985895b4b"
+checksum = "4869b6a491569605d66d3952bcdf03df789e5b536e5f0cf7758a7f08a55ae24d"
 dependencies = [
  "cc",
  "walkdir",
@@ -3196,6 +3250,12 @@ name = "once_cell_polyfill"
 version = "1.70.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "384b8ab6d37215f3c5301a95a4accb5d64aa607f1fcb26a11b5303878451b4fe"
+
+[[package]]
+name = "oorandom"
+version = "11.1.5"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "d6790f58c7ff633d8771f42965289203411a5e5c68388703c06e14f24770b41e"
 
 [[package]]
 name = "open"
@@ -4552,15 +4612,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "serde_spanned"
-version = "1.0.3"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "e24345aa0fe688594e73770a5f6d1b216508b4f93484c0026d521acd30134392"
-dependencies = [
- "serde_core",
-]
-
-[[package]]
 name = "serde_urlencoded"
 version = "0.7.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -5331,24 +5382,9 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "dc1beb996b9d83529a9e75c17a1686767d148d70663143c7854d8b4a09ced362"
 dependencies = [
  "serde",
- "serde_spanned 0.6.9",
+ "serde_spanned",
  "toml_datetime 0.6.11",
  "toml_edit 0.22.27",
-]
-
-[[package]]
-name = "toml"
-version = "0.9.8"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "f0dc8b1fb61449e27716ec0e1bdf0f6b8f3e8f6b05391e8497b8b6d7804ea6d8"
-dependencies = [
- "indexmap 2.12.0",
- "serde_core",
- "serde_spanned 1.0.3",
- "toml_datetime 0.7.3",
- "toml_parser",
- "toml_writer",
- "winnow",
 ]
 
 [[package]]
@@ -5377,7 +5413,7 @@ checksum = "41fe8c660ae4257887cf66394862d21dbca4a6ddd26f04a3560410406a2f819a"
 dependencies = [
  "indexmap 2.12.0",
  "serde",
- "serde_spanned 0.6.9",
+ "serde_spanned",
  "toml_datetime 0.6.11",
  "toml_write",
  "winnow",
@@ -5409,12 +5445,6 @@ name = "toml_write"
 version = "0.1.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "5d99f8c9a7727884afe522e9bd5edbfc91a3312b36a77b5fb8926e4c31a41801"
-
-[[package]]
-name = "toml_writer"
-version = "1.0.4"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "df8b2b54733674ad286d16267dcfc7a71ed5c776e4ac7aa3c3e2561f7c637bf2"
 
 [[package]]
 name = "tonic"
@@ -5803,6 +5833,7 @@ checksum = "7d0f2208feeb5f7a6edb15a2389c14cd42480ef6417318316bb866da5806a61d"
 dependencies = [
  "gloo-utils",
  "serde",
+ "serde-wasm-bindgen",
  "serde_json",
  "tsify-next-macros",
  "wasm-bindgen",
@@ -5896,8 +5927,7 @@ checksum = "ebc1c04c71510c7f702b52b7c350734c9ff1295c464a03335b00bb84fc54f853"
 [[package]]
 name = "uniffi"
 version = "0.30.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "c866f627c3f04c3df068b68bb2d725492caaa539dd313e2a9d26bb85b1a32f4e"
+source = "git+https://github.com/dannroda/uniffi-rs?rev=3ac537537ee0f439fca1294207d159bef2973c0d#3ac537537ee0f439fca1294207d159bef2973c0d"
 dependencies = [
  "anyhow",
  "camino",
@@ -5913,8 +5943,7 @@ dependencies = [
 [[package]]
 name = "uniffi_bindgen"
 version = "0.30.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "7c8ca600167641ebe7c8ba9254af40492dda3397c528cc3b2f511bd23e8541a5"
+source = "git+https://github.com/dannroda/uniffi-rs?rev=3ac537537ee0f439fca1294207d159bef2973c0d#3ac537537ee0f439fca1294207d159bef2973c0d"
 dependencies = [
  "anyhow",
  "askama",
@@ -5929,7 +5958,7 @@ dependencies = [
  "serde",
  "tempfile",
  "textwrap",
- "toml 0.9.8",
+ "toml",
  "uniffi_internal_macros",
  "uniffi_meta",
  "uniffi_pipeline",
@@ -5939,8 +5968,7 @@ dependencies = [
 [[package]]
 name = "uniffi_build"
 version = "0.30.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "3e55c05228f4858bb258f651d21d743fcc1fe5a2ec20d3c0f9daefddb105ee4d"
+source = "git+https://github.com/dannroda/uniffi-rs?rev=3ac537537ee0f439fca1294207d159bef2973c0d#3ac537537ee0f439fca1294207d159bef2973c0d"
 dependencies = [
  "anyhow",
  "camino",
@@ -5961,8 +5989,7 @@ dependencies = [
 [[package]]
 name = "uniffi_internal_macros"
 version = "0.30.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "e3c2a6f93e7b73726e2015696ece25ca0ac5a5f1cf8d6a7ab5214dd0a01d2edf"
+source = "git+https://github.com/dannroda/uniffi-rs?rev=3ac537537ee0f439fca1294207d159bef2973c0d#3ac537537ee0f439fca1294207d159bef2973c0d"
 dependencies = [
  "anyhow",
  "indexmap 2.12.0",
@@ -5974,8 +6001,7 @@ dependencies = [
 [[package]]
 name = "uniffi_macros"
 version = "0.30.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "64c6309fc36c7992afc03bc0c5b059c656bccbef3f2a4bc362980017f8936141"
+source = "git+https://github.com/dannroda/uniffi-rs?rev=3ac537537ee0f439fca1294207d159bef2973c0d#3ac537537ee0f439fca1294207d159bef2973c0d"
 dependencies = [
  "camino",
  "fs-err",
@@ -5984,15 +6010,14 @@ dependencies = [
  "quote",
  "serde",
  "syn 2.0.109",
- "toml 0.9.8",
+ "toml",
  "uniffi_meta",
 ]
 
 [[package]]
 name = "uniffi_meta"
 version = "0.30.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "0a138823392dba19b0aa494872689f97d0ee157de5852e2bec157ce6de9cdc22"
+source = "git+https://github.com/dannroda/uniffi-rs?rev=3ac537537ee0f439fca1294207d159bef2973c0d#3ac537537ee0f439fca1294207d159bef2973c0d"
 dependencies = [
  "anyhow",
  "siphasher 0.3.11",
@@ -6003,8 +6028,7 @@ dependencies = [
 [[package]]
 name = "uniffi_pipeline"
 version = "0.30.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "8c27c4b515d25f8e53cc918e238c39a79c3144a40eaf2e51c4a7958973422c29"
+source = "git+https://github.com/dannroda/uniffi-rs?rev=3ac537537ee0f439fca1294207d159bef2973c0d#3ac537537ee0f439fca1294207d159bef2973c0d"
 dependencies = [
  "anyhow",
  "heck 0.5.0",
@@ -6016,8 +6040,7 @@ dependencies = [
 [[package]]
 name = "uniffi_udl"
 version = "0.30.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "d0adacdd848aeed7af4f5af7d2f621d5e82531325d405e29463482becfdeafca"
+source = "git+https://github.com/dannroda/uniffi-rs?rev=3ac537537ee0f439fca1294207d159bef2973c0d#3ac537537ee0f439fca1294207d159bef2973c0d"
 dependencies = [
  "anyhow",
  "textwrap",
@@ -6148,9 +6171,9 @@ dependencies = [
 
 [[package]]
 name = "wasm-bindgen"
-version = "0.2.105"
+version = "0.2.114"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "da95793dfc411fbbd93f5be7715b0578ec61fe87cb1a42b12eb625caa5c5ea60"
+checksum = "6532f9a5c1ece3798cb1c2cfdba640b9b3ba884f5db45973a6f442510a87d38e"
 dependencies = [
  "cfg-if",
  "once_cell",
@@ -6161,11 +6184,12 @@ dependencies = [
 
 [[package]]
 name = "wasm-bindgen-futures"
-version = "0.4.55"
+version = "0.4.64"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "551f88106c6d5e7ccc7cd9a16f312dd3b5d36ea8b4954304657d5dfba115d4a0"
+checksum = "e9c5522b3a28661442748e09d40924dfb9ca614b21c00d3fd135720e48b67db8"
 dependencies = [
  "cfg-if",
+ "futures-util",
  "js-sys",
  "once_cell",
  "wasm-bindgen",
@@ -6174,9 +6198,9 @@ dependencies = [
 
 [[package]]
 name = "wasm-bindgen-macro"
-version = "0.2.105"
+version = "0.2.114"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "04264334509e04a7bf8690f2384ef5265f05143a4bff3889ab7a3269adab59c2"
+checksum = "18a2d50fcf105fb33bb15f00e7a77b772945a2ee45dcf454961fd843e74c18e6"
 dependencies = [
  "quote",
  "wasm-bindgen-macro-support",
@@ -6184,9 +6208,9 @@ dependencies = [
 
 [[package]]
 name = "wasm-bindgen-macro-support"
-version = "0.2.105"
+version = "0.2.114"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "420bc339d9f322e562942d52e115d57e950d12d88983a14c79b86859ee6c7ebc"
+checksum = "03ce4caeaac547cdf713d280eda22a730824dd11e6b8c3ca9e42247b25c631e3"
 dependencies = [
  "bumpalo",
  "proc-macro2",
@@ -6197,36 +6221,51 @@ dependencies = [
 
 [[package]]
 name = "wasm-bindgen-shared"
-version = "0.2.105"
+version = "0.2.114"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "76f218a38c84bcb33c25ec7059b07847d465ce0e0a76b995e134a45adcb6af76"
+checksum = "75a326b8c223ee17883a4251907455a2431acc2791c98c26279376490c378c16"
 dependencies = [
  "unicode-ident",
 ]
 
 [[package]]
 name = "wasm-bindgen-test"
-version = "0.3.55"
+version = "0.3.64"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "bfc379bfb624eb59050b509c13e77b4eb53150c350db69628141abce842f2373"
+checksum = "6311c867385cc7d5602463b31825d454d0837a3aba7cdb5e56d5201792a3f7fe"
 dependencies = [
+ "async-trait",
+ "cast",
  "js-sys",
+ "libm",
  "minicov",
+ "nu-ansi-term",
+ "num-traits",
+ "oorandom",
+ "serde",
+ "serde_json",
  "wasm-bindgen",
  "wasm-bindgen-futures",
  "wasm-bindgen-test-macro",
+ "wasm-bindgen-test-shared",
 ]
 
 [[package]]
 name = "wasm-bindgen-test-macro"
-version = "0.3.55"
+version = "0.3.64"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "085b2df989e1e6f9620c1311df6c996e83fe16f57792b272ce1e024ac16a90f1"
+checksum = "67008cdde4769831958536b0f11b3bdd0380bde882be17fff9c2f34bb4549abd"
 dependencies = [
  "proc-macro2",
  "quote",
  "syn 2.0.109",
 ]
+
+[[package]]
+name = "wasm-bindgen-test-shared"
+version = "0.2.114"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "cfe29135b180b72b04c74aa97b2b4a2ef275161eff9a6c7955ea9eaedc7e1d4e"
 
 [[package]]
 name = "wasm-streams"
@@ -6243,9 +6282,9 @@ dependencies = [
 
 [[package]]
 name = "web-sys"
-version = "0.3.82"
+version = "0.3.91"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "3a1f95c0d03a47f4ae1f7a64643a6bb97465d9b740f0fa8f90ea33915c99a9a1"
+checksum = "854ba17bb104abfb26ba36da9729addc7ce7f06f5c0f90f3c391f8461cca21f9"
 dependencies = [
  "js-sys",
  "wasm-bindgen",
@@ -6288,8 +6327,7 @@ dependencies = [
 [[package]]
 name = "weedle2"
 version = "5.0.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "998d2c24ec099a87daf9467808859f9d82b61f1d9c9701251aea037f514eae0e"
+source = "git+https://github.com/dannroda/uniffi-rs?rev=3ac537537ee0f439fca1294207d159bef2973c0d#3ac537537ee0f439fca1294207d159bef2973c0d"
 dependencies = [
  "nom",
 ]
@@ -6767,3 +6805,23 @@ dependencies = [
  "quote",
  "syn 2.0.109",
 ]
+
+[[patch.unused]]
+name = "js-sys"
+version = "0.3.85"
+source = "git+https://github.com/walkingeyerobot/wasm-bindgen?rev=ec08aff#ec08aff2248cb7f6b47b1863a9edda7935e7c22d"
+
+[[patch.unused]]
+name = "wasm-bindgen"
+version = "0.2.108"
+source = "git+https://github.com/walkingeyerobot/wasm-bindgen?rev=ec08aff#ec08aff2248cb7f6b47b1863a9edda7935e7c22d"
+
+[[patch.unused]]
+name = "wasm-bindgen-futures"
+version = "0.4.58"
+source = "git+https://github.com/walkingeyerobot/wasm-bindgen?rev=ec08aff#ec08aff2248cb7f6b47b1863a9edda7935e7c22d"
+
+[[patch.unused]]
+name = "web-sys"
+version = "0.3.85"
+source = "git+https://github.com/walkingeyerobot/wasm-bindgen?rev=ec08aff#ec08aff2248cb7f6b47b1863a9edda7935e7c22d"

@@ -51,8 +51,18 @@ fn handle_uniffi_dependency(dep_name: &str, udl_relative_path: &str, output_sub_
     fs::create_dir_all(&output_dir)
         .unwrap_or_else(|e| panic!("Failed to create output directory {}: {}", output_dir.display(), e));
 
+    // Detectar si el binario es de Emscripten (.js) y usar node para ejecutarlo
+    let mut cmd = if bindgen_path.ends_with(".js") {
+        note!("Detectado binario Emscripten, ejecutando con node: {}", bindgen_path);
+        let mut c = Command::new("node");
+        c.arg(&bindgen_path);
+        c
+    } else {
+        note!("Ejecutando binario nativo (Host): {}", bindgen_path);
+        Command::new(&bindgen_path)
+    };
 
-    let output = Command::new(&bindgen_path)
+    let output = cmd
         .arg(&source_udl_path)
         .arg(&output_dir)
         .output() // Use .output() to capture stdout and stderr
@@ -65,8 +75,15 @@ fn handle_uniffi_dependency(dep_name: &str, udl_relative_path: &str, output_sub_
         panic!();
     }
     
+    let skip_var = format!("SKIP_{}_HEADER_PATCHING", output_sub_dir.to_uppercase());
+    let should_skip = env::var(&skip_var).as_deref() == Ok("1");
+
     // For controller.hpp and dojo.hpp, inject the std::endian polyfill for C++17 compilers.
-    if output_sub_dir == "controller" || output_sub_dir == "dojo" {
+    if (output_sub_dir == "controller" || output_sub_dir == "dojo") && should_skip {
+        note!("Skipping header patching for {}.", dep_name);
+    }
+
+    if (output_sub_dir == "controller" || output_sub_dir == "dojo") && !should_skip {
         let hpp_filename = format!("{}.hpp", output_sub_dir);
         let hpp_path = output_dir.join(&hpp_filename);
 
@@ -144,7 +161,7 @@ namespace std {
                     for (old, new) in replacements {
                         content = content.replace(&old, &new);
                     }
-                    custom_println!("PATCHED", green, "Corrected vtable order in {}", hpp_path.display());
+                    custom_println!("PATCHED", green, "Corrected vtable order in  {}", hpp_path.display());
                 }
             }
 
@@ -164,7 +181,7 @@ fn main(){
     };
 
     let manifest_dir = env::var("CARGO_MANIFEST_DIR").unwrap();
-    note!("Source directory of 'godot-dojo-core': {}", manifest_dir);
+    note!("Source directory of  'godot-dojo-core': {}", manifest_dir);
 
     handle_uniffi_dependency("controller-uniffi", "src/controller.udl", "controller");
     handle_uniffi_dependency("dojo-uniffi", "src/dojo.udl", "dojo");

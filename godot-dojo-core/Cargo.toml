@@ -1,4 +1,3 @@
-cargo-features = ["panic-immediate-abort"]
 [package]
 name = "godot-dojo-core"
 version = "0.1.0"
@@ -8,28 +7,32 @@ edition = "2021"
 crate-type = ["rlib", "staticlib", "cdylib"]
 
 [dependencies]
-controller-uniffi = { git = "https://github.com/dannroda/controller.c", rev = "0479b6e" }
-#controller-uniffi = { path = "../../controller.c" }
-dojo-uniffi = { git = "https://github.com/dannroda/dojo.c", rev = "cc89def" }
-#dojo-uniffi = { path = "../../dojo.c/crates/uniffi" }
-web-sys = { version = "0.3.77", features = ["console"] }
+#controller-uniffi = { git = "https://github.com/dannroda/controller.c", rev = "0479b6e" }
+controller-uniffi = { path = "../../controller.c" }
+#dojo-uniffi = { git = "https://github.com/dannroda/dojo.c", rev = "cc89def" }
+dojo-uniffi = { path = "../../dojo.c/crates/uniffi" }
 ctor = "0.2"
 
 
 [build-dependencies]
-dojo-uniffi = { git = "https://github.com/dannroda/dojo.c", rev = "cc89def", artifact = "bin:uniffi-bindgen-cpp" }
-#dojo-uniffi = { path = "../../dojo.c/crates/uniffi", artifact = "bin:uniffi-bindgen-cpp" }
-controller-uniffi = { git = "https://github.com/dannroda/controller.c", rev = "0479b6e", artifact = "bin:uniffi-bindgen-cpp" }
-#controller-uniffi = { path = "../../controller.c", artifact = "bin:uniffi-bindgen-cpp" }
+#dojo-uniffi = { git = "https://github.com/dannroda/dojo.c", rev = "cc89def", artifact = "bin:uniffi-bindgen-cpp" }
+dojo-uniffi = { path = "../../dojo.c/crates/uniffi", artifact = "bin:uniffi-bindgen-cpp" }
+#controller-uniffi = { git = "https://github.com/dannroda/controller.c", rev = "0479b6e", artifact = "bin:uniffi-bindgen-cpp" }
+controller-uniffi = { path = "../../controller.c", artifact = "bin:uniffi-bindgen-cpp" }
 cargo_metadata = "0.23.0"
 build-print = "1.0.1"
 
 [patch.crates-io]
 starknet-crypto = { git = "https://github.com/glihm/starknet-rs", rev = "c1e7e19f45f9fad6ea2796da9b7b3dcf8f9f2b82" } # Force to fix crate version mismatch
+uniffi = { git = "https://github.com/dannroda/uniffi-rs", rev = "3ac537537ee0f439fca1294207d159bef2973c0d" }
 uniffi_core = { git = "https://github.com/dannroda/uniffi-rs", rev = "3ac537537ee0f439fca1294207d159bef2973c0d" }
+uniffi_macros = { git = "https://github.com/dannroda/uniffi-rs", rev = "3ac537537ee0f439fca1294207d159bef2973c0d" }
+uniffi_bindgen = { git = "https://github.com/dannroda/uniffi-rs", rev = "3ac537537ee0f439fca1294207d159bef2973c0d" }
 
-[profile.release]
-panic = "immediate-abort"
+wasm-bindgen = { git = "https://github.com/walkingeyerobot/wasm-bindgen", rev = "ec08aff" }
+wasm-bindgen-futures = { git = "https://github.com/walkingeyerobot/wasm-bindgen", rev = "ec08aff" }
+js-sys = { git = "https://github.com/walkingeyerobot/wasm-bindgen", rev = "ec08aff" }
+web-sys = { git = "https://github.com/walkingeyerobot/wasm-bindgen", rev = "ec08aff"}
 
 [profile.dev]
-panic = "immediate-abort"
+debug = "full"

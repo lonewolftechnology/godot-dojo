@@ -4,5 +4,23 @@ build-std = ["std", "panic_abort"]
 
 [target.wasm32-unknown-emscripten]
 rustflags = [
-    "-C", "target-feature=-exception-handling"
+    "-C", "panic=abort",
+#    "-C", "target-feature=-exception-handling",
+    "-C", "link-arg=-sASSERTIONS=2",
+    "-C", "link-args=--no-entry",
+    "-C", "relocation-model=pic",
+#    "-C", "relocation-model=static",
+#    "-C", "link-arg=-sWASM_BINDGEN=2",
+#    "-C", "link-arg=-sWASM_BINDGEN",
+    "-C", "link-args=--pie",
+    "-C", "link-args=--experimental-pic"
+#    "-C", "link-arg=--shared"
+]
+
+[target.wasm32-unknown-unknown]
+rustflags = [
+#    "-C", "panic=abort",
+#    "-C", "target-feature=-exception-handling",
+#    "-C", "link-arg=-sASSERTIONS=2",
+#    "-C", "relocation-model=pic"
 ]
