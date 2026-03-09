@@ -2,7 +2,6 @@
 
 #include "ref_counted/query_builder.hpp"
 #include "ref_counted/dojo_utilities/clause.hpp"
-#include "dojo/dojo.hpp"
 
 class DojoQuery : public QueryBuilder {
     GDCLASS(DojoQuery, QueryBuilder)

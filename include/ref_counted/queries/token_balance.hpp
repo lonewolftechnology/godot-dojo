@@ -1,7 +1,6 @@
 #pragma once
 
 #include "ref_counted/query_builder.hpp"
-#include "dojo/dojo.hpp"
 
 class TokenBalanceQuery : public QueryBuilder {
     GDCLASS(TokenBalanceQuery, QueryBuilder)

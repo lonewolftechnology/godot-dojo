@@ -1,7 +1,6 @@
 #pragma once
 
 #include "godot_cpp/classes/ref_counted.hpp"
-#include "dojo/dojo.hpp"
 #include "ref_counted/dojo_utilities/clause.hpp"
 
 using namespace godot;

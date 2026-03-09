@@ -2,7 +2,6 @@
 
 #include "ref_counted/query_builder.hpp"
 #include "ref_counted/dojo_utilities/clauses/keys.hpp"
-#include "dojo/dojo.hpp"
 
 class EventQuery : public QueryBuilder {
     GDCLASS(EventQuery, QueryBuilder)
