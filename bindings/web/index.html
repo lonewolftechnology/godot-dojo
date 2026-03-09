@@ -29,8 +29,6 @@
             <label>Private Key</label>
             <input type="text" id="privateKey" placeholder="Generated automatically if empty">
             <button id="btnRefreshKey">Generate New Key</button>
-            <button id="btnRegisterSession">Register Session</button>
-
 
             <hr>
 
@@ -71,7 +69,7 @@
         ToriiClient,
         SessionAccount,
         ControllerAccount,
-        create_session_registration_url,
+        create_session_registration_url_with_urls,
         get_public_key,
         validate_felt
     } from './godot_dojo_core.js';
@@ -82,7 +80,7 @@
     const CONFIG = {
         CONTRACT: "0x055091778f1b57df5272d8f36dc6d729fc9a2c2550b93d4e4f5b520371e35796",
         RPC_URL: `${PROXY_ORIGIN}/x/godot-testing/katana`,
-        TORII_URL: `${PROXY_ORIGIN}/x/godot-testing/torii`,
+        TORII_URL: "https://api.cartridge.gg/x/godot-testing/torii",
         CARTRIDGE_API: `${PROXY_ORIGIN}`,
         KEYCHAIN_URL: "https://x.cartridge.gg"
     };
@@ -91,7 +89,7 @@
     let state = {
         toriiClient: null,
         sessionAccount: null,
-        privateKey: "0x06e9270fafa808e336d25534555d118ad707078c7007330b16187923e63789",
+        privateKey: "0x06e9270fafa808e336d25534555d118ad707078c7007330b16187923e63789", // Default from GD script (valid felt)
         entitySub: null,
         policies: null // Store policies for step 2
     };
@@ -116,16 +114,19 @@
     }
 
     function generatePrivateKey() {
-        const array = new Uint8Array(32);
+        // Generate 31 bytes instead of 32 to ensure it fits within Starknet Field Element (252 bits)
+        const array = new Uint8Array(31);
         crypto.getRandomValues(array);
         return "0x" + Array.from(array).map(b => b.toString(16).padStart(2, '0')).join('');
     }
 
+    // Initialize WASM
     async function initialize() {
         try {
             log("Initializing WASM...", "info");
             await init();
             log("WASM Initialized", "success");
+
             ui.privateKeyInput.value = state.privateKey;
         } catch (e) {
             log(`Initialization error: ${e.message}`, "error");
@@ -165,17 +166,13 @@
                     {
                         contract_address: CONFIG.CONTRACT,
                         entrypoint: "move"
-                    },
-                    {
-                        contract_address: CONFIG.CONTRACT,
-                        entrypoint: "validate_u64"
                     }
                 ]
             };
 
             const realRpcUrl = "https://api.cartridge.gg/x/godot-testing/katana";
 
-            console.log("Calling create_session_registration_url with:", {
+            console.log("Calling create_session_registration_url_with_urls with:", {
                 privKey: state.privateKey,
                 policies: state.policies,
                 rpcUrl: realRpcUrl,
@@ -183,10 +180,13 @@
                 cartridgeApi: CONFIG.CARTRIDGE_API
             });
 
-            const sessionUrl = await create_session_registration_url(
+            const sessionUrl = await create_session_registration_url_with_urls(
                 state.privateKey,
                 state.policies,
-                realRpcUrl
+                realRpcUrl,
+                CONFIG.KEYCHAIN_URL,
+                CONFIG.CARTRIDGE_API,
+                "startapp"
             );
 
             log(`Session URL generated.`);
@@ -204,7 +204,13 @@
 
     async function completeRegistration() {
         try {
+            if (!state.policies) {
+                throw new Error("Policies not defined. Please generate URL first.");
+            }
+
             log("Waiting for session authorization (polling)...");
+            console.log("Calling create_from_subscribe with policies:", state.policies);
+
             ui.btnCompleteRegistration.disabled = true;
 
             state.sessionAccount = await SessionAccount.create_from_subscribe(
@@ -223,7 +229,7 @@
 
         } catch (e) {
             console.error("Full registration error:", e);
-            log(`Registration error: ${e}`, "error");
+            log(`Registration error: ${e.message || e}`, "error");
             ui.btnCompleteRegistration.disabled = false;
         }
     }
@@ -241,6 +247,27 @@
                 contract_address: CONFIG.CONTRACT,
                 entrypoint: "spawn",
                 calldata: []
+            };
+
+            const txHash = await state.sessionAccount.execute([call]);
+            log(`Spawn executed! Tx Hash: ${txHash}`, "success");
+        } catch (e) {
+            log(`Execution error: ${e.message}`, "error");
+        }
+    }
+    async function executeMove() {
+        if (!state.sessionAccount) {
+            log("No active session. Please login first.", "error");
+            return;
+        }
+
+        try {
+            log("Executing 'move'...");
+
+            const call = {
+                contract_address: CONFIG.CONTRACT,
+                entrypoint: "move",
+                calldata: ["0x1", "1"]
             };
 
             const txHash = await state.sessionAccount.execute([call]);
@@ -292,8 +319,8 @@
     document.getElementById('btnConnectTorii').onclick = connectTorii;
     document.getElementById('btnGenerateUrl').onclick = generateSessionUrl;
     document.getElementById('btnCompleteRegistration').onclick = completeRegistration;
-    document.getElementById('btnRegisterSession').onclick = completeRegistration;
     document.getElementById('btnSpawn').onclick = executeSpawn;
+    document.getElementById('btnMove').onclick = executeMove;
     document.getElementById('btnSubscribe').onclick = subscribeEntities;
 
     document.getElementById('btnCheckSession').onclick = () => {

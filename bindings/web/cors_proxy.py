@@ -27,8 +27,12 @@ class ProxyHTTPRequestHandler(http.server.SimpleHTTPRequestHandler):
 
     def handle_proxy_request(self, method):
         if self.path.startswith("/cartridge_api/"):
-            target_path = self.path.replace("/cartridge_api/", "/")
-            url = TARGET_API + target_path
+            # Limpieza de URL para evitar dobles barras
+            clean_path = self.path.replace("/cartridge_api/", "/")
+            while "//" in clean_path:
+                clean_path = clean_path.replace("//", "/")
+            
+            url = TARGET_API + clean_path
             
             print(f"Proxying {method} {self.path} -> {url}")
 
@@ -36,16 +40,14 @@ class ProxyHTTPRequestHandler(http.server.SimpleHTTPRequestHandler):
             if method == 'POST':
                 content_length = int(self.headers.get('Content-Length', 0))
                 post_data = self.rfile.read(content_length)
+                print(f"Request Body: {post_data.decode('utf-8', errors='ignore')}")
             
             req = urllib.request.Request(url, data=post_data, method=method)
             
-            # Copiar headers esenciales
-            # Importante: Content-Type es vital para que la API sepa que es JSON
             for key, value in self.headers.items():
                 if key.lower() in ['content-type', 'accept', 'authorization']:
                     req.add_header(key, value)
             
-            # User-Agent de Chrome estándar para evitar bloqueos por bot
             req.add_header('User-Agent', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36')
             req.add_header('Accept', 'application/json')
 
@@ -62,7 +64,6 @@ class ProxyHTTPRequestHandler(http.server.SimpleHTTPRequestHandler):
                     
             except urllib.error.HTTPError as e:
                 print(f"Remote API Error: {e.code}")
-                # Intentar leer el cuerpo del error para ver qué dice la API
                 error_body = e.read()
                 print(f"Error Body: {error_body.decode('utf-8', errors='ignore')}")
                 
