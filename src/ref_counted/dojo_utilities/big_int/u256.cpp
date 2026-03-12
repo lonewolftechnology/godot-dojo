@@ -123,6 +123,15 @@ double U256::to_float(int p_precision) const {
     return static_cast<double>(float_val);
 }
 
+int64_t U256::to_int() const {
+    cpp_int val = value;
+    if (val > GodotDojoHelper::STARK_PRIME / 2) {
+        val -= GodotDojoHelper::STARK_PRIME;
+    }
+
+    return static_cast<int64_t>(val);
+}
+
 Ref<U256> U256::from_int(int64_t p_value) {
     Ref<U256> instance = memnew(U256);
     instance->_init_from_int(p_value);
@@ -222,6 +231,7 @@ void U256::_bind_methods() {
     ClassDB::bind_method(D_METHOD("to_string"), &U256::to_string);
     ClassDB::bind_method(D_METHOD("_to_string"), &U256::_to_string);
     ClassDB::bind_method(D_METHOD("to_float", "precision"), &U256::to_float, DEFVAL(-1));
+    ClassDB::bind_method(D_METHOD("to_int"), &U256::to_int);
     ClassDB::bind_method(D_METHOD("get_low"), &U256::get_low);
     ClassDB::bind_method(D_METHOD("get_high"), &U256::get_high);
     ClassDB::bind_method(D_METHOD("to_calldata"), &U256::to_calldata);
