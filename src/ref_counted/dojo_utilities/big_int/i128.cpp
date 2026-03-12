@@ -117,6 +117,10 @@ double I128::to_float(int p_precision) const {
     return static_cast<double>(float_val);
 }
 
+int64_t I128::to_int() const {
+    return static_cast<int64_t>(value);
+}
+
 Ref<I128> I128::from_int(int64_t p_value) {
     Ref<I128> instance = memnew(I128);
     instance->_init_from_int(p_value);
@@ -216,6 +220,7 @@ void I128::_bind_methods() {
     ClassDB::bind_method(D_METHOD("to_string"), &I128::to_string);
     ClassDB::bind_method(D_METHOD("_to_string"), &I128::_to_string);
     ClassDB::bind_method(D_METHOD("to_float", "precision"), &I128::to_float, DEFVAL(-1));
+    ClassDB::bind_method(D_METHOD("to_int"), &I128::to_int);
     ClassDB::bind_method(D_METHOD("to_calldata"), &I128::to_calldata);
     ClassDB::bind_method(D_METHOD("to_bytes"), &I128::to_bytes);
     ClassDB::bind_static_method("I128", D_METHOD("from_int", "value"), &I128::from_int);
