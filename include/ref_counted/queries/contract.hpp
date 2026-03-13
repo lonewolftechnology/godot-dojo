@@ -14,7 +14,9 @@ public:
     Ref<ContractQuery> contract_addresses(const PackedStringArray& addresses);
     Ref<ContractQuery> contract_types(const TypedArray<int>& types);
 
+#ifndef WEB_ENABLED
     dojo::ContractQuery get_native() const;
+#endif
 
 protected:
     void static _bind_methods() {

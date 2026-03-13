@@ -15,6 +15,7 @@ Ref<PlayerAchievementQuery> PlayerAchievementQuery::player_addresses(const Packe
     return this;
 }
 
+#ifndef WEB_ENABLED
 dojo::PlayerAchievementQuery PlayerAchievementQuery::get_native() const {
     dojo::PlayerAchievementQuery query;
 
@@ -42,3 +43,4 @@ dojo::PlayerAchievementQuery PlayerAchievementQuery::get_native() const {
 
     return query;
 }
+#endif

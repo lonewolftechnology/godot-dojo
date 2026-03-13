@@ -19,7 +19,10 @@ public:
     Ref<HashedKeysClause> remove_key(const String& hashed_key);
     Ref<HashedKeysClause> keys(const PackedStringArray& keys);
 
+#ifndef WEB_ENABLED
     dojo::Clause get_native() const override;
+#endif
+
     Dictionary to_dict() const override;
 
 protected:

@@ -14,7 +14,9 @@ public:
     Ref<ControllerQuery> contract_addresses(const PackedStringArray& addresses);
     Ref<ControllerQuery> usernames(const PackedStringArray& usernames);
 
+#ifndef WEB_ENABLED
     dojo::ControllerQuery get_native() const;
+#endif
 
 protected:
     void static _bind_methods() {

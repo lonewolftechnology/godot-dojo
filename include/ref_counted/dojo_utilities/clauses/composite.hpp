@@ -8,17 +8,25 @@ using namespace godot;
 class CompositeClause : public DojoClause {
     GDCLASS(CompositeClause, DojoClause)
 
-    int64_t p_operator = static_cast<int64_t>(dojo::LogicalOperator::kAnd);
+    int64_t p_operator = LogicalOperator::And;
     TypedArray<DojoClause> p_clauses;
 
 public:
     CompositeClause();
     ~CompositeClause();
 
+    enum LogicalOperator {
+        And = 1,
+        Or = 2
+    };
+
     Ref<CompositeClause> set_operator(int64_t p_op);
     Ref<CompositeClause> add(const Ref<DojoClause>& clause);
 
+#ifndef WEB_ENABLED
     dojo::Clause get_native() const override;
+#endif
+
     Dictionary to_dict() const override;
 
 protected:

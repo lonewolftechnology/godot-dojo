@@ -16,7 +16,9 @@ public:
     Ref<TokenTransferQuery> account_addresses(const PackedStringArray& addresses);
     Ref<TokenTransferQuery> token_ids(const PackedStringArray& ids);
 
+#ifndef WEB_ENABLED
     dojo::TokenTransferQuery get_native() const;
+#endif
 
 protected:
     void static _bind_methods() {

@@ -30,6 +30,7 @@ Ref<DojoQuery> DojoQuery::with_clause(const Ref<DojoClause>& clause) {
     return this;
 }
 
+#ifndef WEB_ENABLED
 dojo::Query DojoQuery::get_native() const {
     dojo::Query query;
 
@@ -59,3 +60,4 @@ dojo::Query DojoQuery::get_native() const {
 
     return query;
 }
+#endif

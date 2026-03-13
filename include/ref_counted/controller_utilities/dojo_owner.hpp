@@ -2,8 +2,9 @@
 #include "godot_cpp/classes/ref_counted.hpp"
 #include "godot_cpp/core/class_db.hpp"
 #include "godot_cpp/variant/string.hpp"
-
+#ifndef WEB_ENABLED
 #include "controller/controller.hpp"
+#endif
 #include "tools/controller_helper.h"
 #include "tools/logger.hpp"
 

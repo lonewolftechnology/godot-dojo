@@ -24,6 +24,7 @@ Ref<HashedKeysClause> HashedKeysClause::keys(const PackedStringArray& keys) {
     this->p_hashed_keys = keys;
     return this;
 }
+#ifndef WEB_ENABLED
 
 dojo::Clause HashedKeysClause::get_native() const {
     std::vector<dojo::FieldElement> keys;
@@ -33,6 +34,7 @@ dojo::Clause HashedKeysClause::get_native() const {
     }
     return dojo::Clause(dojo::Clause::kHashedKeys{keys});
 }
+#endif
 
 Dictionary HashedKeysClause::to_dict() const {
     Dictionary result = {};

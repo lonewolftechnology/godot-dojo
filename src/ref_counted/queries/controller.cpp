@@ -10,6 +10,7 @@ Ref<ControllerQuery> ControllerQuery::usernames(const PackedStringArray& usernam
     return this;
 }
 
+#ifndef WEB_ENABLED
 dojo::ControllerQuery ControllerQuery::get_native() const {
     dojo::ControllerQuery query;
 
@@ -31,3 +32,4 @@ dojo::ControllerQuery ControllerQuery::get_native() const {
 
     return query;
 }
+#endif

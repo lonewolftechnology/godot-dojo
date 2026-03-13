@@ -10,6 +10,7 @@ Ref<TokenContractQuery> TokenContractQuery::contract_types(const TypedArray<int>
     return this;
 }
 
+#ifndef WEB_ENABLED
 dojo::TokenContractQuery TokenContractQuery::get_native() const {
     dojo::TokenContractQuery query;
 
@@ -31,3 +32,4 @@ dojo::TokenContractQuery TokenContractQuery::get_native() const {
 
     return query;
 }
+#endif

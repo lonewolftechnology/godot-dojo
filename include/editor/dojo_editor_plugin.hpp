@@ -1,5 +1,6 @@
 #pragma once
 
+#include "export_plugin.hpp"
 #include "godot_cpp/classes/editor_plugin.hpp"
 #include "godot_cpp/classes/http_request.hpp"
 #include "tools/logger.hpp"
@@ -18,6 +19,8 @@ public:
 
     PopupMenu* tool_menu;
     uint64_t tool_menu_id;
+
+    GodotDojoExportPlugin* dojo_export_plugin;
 
     void _enter_tree() override;
     void _exit_tree() override;

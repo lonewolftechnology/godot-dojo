@@ -20,7 +20,9 @@ public:
     Ref<ActivityQuery> from_time(const uint64_t& time);
     Ref<ActivityQuery> to_time(const uint64_t& time);
 
+#ifndef WEB_ENABLED
     dojo::ActivityQuery get_native() const;
+#endif
 
 protected:
     void static _bind_methods() {

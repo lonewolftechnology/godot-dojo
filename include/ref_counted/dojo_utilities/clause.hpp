@@ -1,7 +1,10 @@
 #pragma once
 
 #include "godot_cpp/classes/ref_counted.hpp"
+#ifndef WEB_ENABLED
 #include "dojo/dojo.hpp"
+#endif
+
 
 using namespace godot;
 
@@ -27,9 +30,11 @@ public:
 
     Type get_type() const { return p_type; }
 
+#ifndef WEB_ENABLED
     virtual dojo::Clause get_native() const {
         return dojo::Clause(dojo::Clause::kHashedKeys{}); // Dummy return
     }
+#endif
 
     virtual Dictionary to_dict() const {
         return Dictionary();

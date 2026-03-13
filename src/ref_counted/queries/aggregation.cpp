@@ -10,6 +10,7 @@ Ref<AggregationQuery> AggregationQuery::entity_ids(const PackedStringArray& ids)
     return this;
 }
 
+#ifndef WEB_ENABLED
 dojo::AggregationQuery AggregationQuery::get_native() const {
     dojo::AggregationQuery query;
 
@@ -31,3 +32,4 @@ dojo::AggregationQuery AggregationQuery::get_native() const {
 
     return query;
 }
+#endif

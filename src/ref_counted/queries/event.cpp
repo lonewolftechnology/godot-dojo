@@ -4,6 +4,7 @@ Ref<EventQuery> EventQuery::keys(const Ref<KeysClause>& keys) {
     this->p_keys = keys;
     return this;
 }
+#ifndef WEB_ENABLED
 
 dojo::EventQuery EventQuery::get_native() const {
     dojo::EventQuery query;
@@ -23,3 +24,4 @@ dojo::EventQuery EventQuery::get_native() const {
 
     return query;
 }
+#endif

@@ -83,10 +83,24 @@ int64_t QueryBuilder::get_type() const {
 Ref<QueryBuilder> QueryBuilder::pagination(const uint32_t& limit, const String& cursor, const int64_t& direction) {
     this->p_pagination.limit = limit;
     this->p_pagination.cursor = cursor;
-    this->p_pagination.direction = static_cast<dojo::PaginationDirection>(direction);
+    this->p_pagination.direction = static_cast<PaginationDirection>(direction);
     return this;
 }
 
+
+Ref<QueryBuilder> QueryBuilder::order_by(const String& field, const int64_t& direction) {
+    OrderBy ob;
+    ob.field = field;
+    ob.direction = static_cast<OrderDirection>(direction);
+    p_order_by.push_back(ob);
+    return this;
+}
+
+Dictionary QueryBuilder::to_dict() const {
+    return {};
+}
+
+#ifndef WEB_ENABLED
 std::shared_ptr<dojo::Pagination> QueryBuilder::get_native_pagination() const {
     auto pagination = std::make_shared<dojo::Pagination>();
     pagination->limit = get_limit();
@@ -96,21 +110,16 @@ std::shared_ptr<dojo::Pagination> QueryBuilder::get_native_pagination() const {
     return pagination;
 }
 
-Ref<QueryBuilder> QueryBuilder::order_by(const String& field, const int64_t& direction) {
-    OrderBy ob;
-    ob.field = field;
-    ob.direction = static_cast<dojo::OrderDirection>(direction);
-    p_order_by.push_back(ob);
-    return this;
-}
 
 std::vector<std::shared_ptr<dojo::OrderBy>> QueryBuilder::get_order_by() const {
     std::vector<std::shared_ptr<dojo::OrderBy>> result;
     for (const auto& ob : p_order_by) {
         auto native_ob = std::make_shared<dojo::OrderBy>();
         native_ob->field = ob.field.utf8().get_data();
-        native_ob->direction = ob.direction;
+        native_ob->direction = static_cast<dojo::OrderDirection>(ob.direction);
         result.push_back(native_ob);
     }
     return result;
 }
+
+#endif

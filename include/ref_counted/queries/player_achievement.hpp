@@ -15,8 +15,9 @@ public:
     Ref<PlayerAchievementQuery> world_addresses(const PackedStringArray& worlds);
     Ref<PlayerAchievementQuery> namespaces(const PackedStringArray& namespaces);
     Ref<PlayerAchievementQuery> player_addresses(const PackedStringArray& players);
-
+#ifndef WEB_ENABLED
     dojo::PlayerAchievementQuery get_native() const;
+#endif
 
 protected:
     void static _bind_methods() {

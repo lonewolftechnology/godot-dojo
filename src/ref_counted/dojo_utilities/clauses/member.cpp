@@ -14,7 +14,7 @@ Dictionary MemberClause::to_dict() const {
     result["value"] = p_value;
     return result;
 }
-
+#ifndef WEB_ENABLED
 // Recursive helper to convert Variant (Array/String/Primitive) to dojo::MemberValue (C++)
 std::shared_ptr<dojo::MemberValue> variant_to_member_value(const Variant &val, MemberClause::PrimitiveTag prim_tag) {
     if (val.get_type() == Variant::ARRAY) {
@@ -44,7 +44,7 @@ dojo::Clause MemberClause::get_native() const {
     clause.member = p_member.utf8().get_data();
     clause.model = p_model.utf8().get_data();
 
-    clause.operator_ = p_operator;
+    clause.operator_ = static_cast<dojo::ComparisonOperator>(p_operator);
 
     std::shared_ptr<dojo::MemberValue> val;
 
@@ -68,6 +68,7 @@ dojo::Clause MemberClause::get_native() const {
     clause.value = val;
     return dojo::Clause(dojo::Clause::kMember{std::make_shared<dojo::MemberClause>(clause)});
 }
+#endif
 
 bool MemberClause::is_value_set() const {
     return p_value.get_type() != Variant::NIL;
@@ -119,7 +120,7 @@ Ref<MemberClause> MemberClause::model(const Variant &model) {
 }
 
 Ref<MemberClause> MemberClause::op(const int &operator_) {
-    this->p_operator = static_cast<dojo::ComparisonOperator>(operator_);
+    this->p_operator = static_cast<ComparisonOperator>(operator_);
     return this;
 }
 
@@ -127,7 +128,7 @@ Ref<MemberClause> MemberClause::member(const Variant &model) {
     this->p_member = model;
     return this;
 }
-
+#ifndef WEB_ENABLED
 dojo::Primitive MemberClause::to_native_primitive(const Variant &p_value, PrimitiveTag p_tag) {
     switch (p_tag) {
         case I8: {
@@ -189,3 +190,5 @@ dojo::Primitive MemberClause::to_native_primitive(const Variant &p_value, Primit
     String str_val = p_value;
     return dojo::Primitive(dojo::Primitive::kFelt252{str_val.utf8().get_data()});
 }
+#endif
+

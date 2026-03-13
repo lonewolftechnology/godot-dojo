@@ -24,6 +24,7 @@ Ref<ActivityQuery> ActivityQuery::to_time(const uint64_t& time) {
     this->p_to_time = time;
     return this;
 }
+#ifndef WEB_ENABLED
 
 dojo::ActivityQuery ActivityQuery::get_native() const {
     dojo::ActivityQuery query;
@@ -55,3 +56,4 @@ dojo::ActivityQuery ActivityQuery::get_native() const {
 
     return query;
 }
+#endif

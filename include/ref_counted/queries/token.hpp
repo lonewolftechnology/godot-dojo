@@ -21,7 +21,9 @@ public:
     Ref<TokenQuery> token_ids(const PackedStringArray& ids);
     Ref<TokenQuery> attribute_filter(const String& trait_name, const String& trait_value);
 
+#ifndef WEB_ENABLED
     dojo::TokenQuery get_native() const;
+#endif
 
 protected:
     void static _bind_methods() {

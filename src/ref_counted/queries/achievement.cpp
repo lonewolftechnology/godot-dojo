@@ -14,6 +14,7 @@ Ref<AchievementQuery> AchievementQuery::hidden(const bool& hidden) {
     this->p_hidden = hidden;
     return this;
 }
+#ifndef WEB_ENABLED
 
 dojo::AchievementQuery AchievementQuery::get_native() const {
     dojo::AchievementQuery query;
@@ -38,3 +39,4 @@ dojo::AchievementQuery AchievementQuery::get_native() const {
 
     return query;
 }
+#endif

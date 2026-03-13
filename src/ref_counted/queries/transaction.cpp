@@ -35,6 +35,7 @@ Ref<TransactionQuery> TransactionQuery::to_block(const uint64_t& block) {
     return this;
 }
 
+#ifndef WEB_ENABLED
 dojo::TransactionQuery TransactionQuery::get_native() const {
     dojo::TransactionQuery query;
 
@@ -78,3 +79,4 @@ dojo::TransactionQuery TransactionQuery::get_native() const {
 
     return query;
 }
+#endif

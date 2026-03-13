@@ -7,14 +7,14 @@ using namespace godot;
 
 class KeysClause : public DojoClause {
     GDCLASS(KeysClause, DojoClause)
-
-    TypedArray<String> p_keys; // Option Felt
-    dojo::PatternMatching p_patter_matching;
-    TypedArray<String> p_models;
-
 public:
     KeysClause();
     ~KeysClause();
+
+    enum PatternMatching {
+        FixedLen = 1,
+        VariableLen = 2
+    };
 
     Ref<KeysClause> add_key(const String& hashed_key);
     Ref<KeysClause> remove_key(const String& hashed_key);
@@ -24,13 +24,23 @@ public:
     Ref<KeysClause> models(const PackedStringArray& models);
     Ref<KeysClause> pattern(const int64_t& pattern);
 
+#ifndef WEB_ENABLED
     dojo::Clause get_native() const override;
+#endif
+
     Dictionary to_dict() const override;
+
+private:
+    TypedArray<String> p_keys; // Option Felt
+    PatternMatching p_patter_matching;
+    TypedArray<String> p_models;
 
 protected:
     static void _bind_methods() {
-        ClassDB::bind_integer_constant(get_class_static(), "PatternMatching", "FixedLen", (int)dojo::PatternMatching::kFixedLen);
-        ClassDB::bind_integer_constant(get_class_static(), "PatternMatching", "VariableLen", (int)dojo::PatternMatching::kVariableLen);
+        // ClassDB::bind_integer_constant(get_class_static(), "PatternMatching", "FixedLen", (int)dojo::PatternMatching::kFixedLen);
+        // ClassDB::bind_integer_constant(get_class_static(), "PatternMatching", "VariableLen", (int)dojo::PatternMatching::kVariableLen);
+        BIND_ENUM_CONSTANT(FixedLen);
+        BIND_ENUM_CONSTANT(VariableLen);
 
         ClassDB::bind_method(D_METHOD("add_key", "hashed_key"), &KeysClause::add_key);
         ClassDB::bind_method(D_METHOD("remove_key", "hashed_key"), &KeysClause::remove_key);
@@ -43,4 +53,4 @@ protected:
     }
 };
 
-// VARIANT_ENUM_CAST(dojo::PatternMatching)
+VARIANT_ENUM_CAST(KeysClause::PatternMatching)

@@ -15,6 +15,7 @@ Ref<TokenBalanceQuery> TokenBalanceQuery::token_ids(const PackedStringArray& ids
     return this;
 }
 
+#ifndef WEB_ENABLED
 dojo::TokenBalanceQuery TokenBalanceQuery::get_native() const {
     dojo::TokenBalanceQuery query;
 
@@ -42,3 +43,4 @@ dojo::TokenBalanceQuery TokenBalanceQuery::get_native() const {
 
     return query;
 }
+#endif

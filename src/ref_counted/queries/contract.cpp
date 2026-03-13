@@ -9,6 +9,7 @@ Ref<ContractQuery> ContractQuery::contract_types(const TypedArray<int>& types) {
     this->p_contract_types = types;
     return this;
 }
+#ifndef WEB_ENABLED
 
 dojo::ContractQuery ContractQuery::get_native() const {
     dojo::ContractQuery query;
@@ -27,3 +28,4 @@ dojo::ContractQuery ContractQuery::get_native() const {
 
     return query;
 }
+#endif

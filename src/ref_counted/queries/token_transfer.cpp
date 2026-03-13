@@ -15,6 +15,7 @@ Ref<TokenTransferQuery> TokenTransferQuery::token_ids(const PackedStringArray& i
     return this;
 }
 
+#ifndef WEB_ENABLED
 dojo::TokenTransferQuery TokenTransferQuery::get_native() const {
     dojo::TokenTransferQuery query;
 
@@ -42,3 +43,4 @@ dojo::TokenTransferQuery TokenTransferQuery::get_native() const {
 
     return query;
 }
+#endif

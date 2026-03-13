@@ -16,7 +16,9 @@ public:
     Ref<TokenBalanceQuery> account_addresses(const PackedStringArray& addresses);
     Ref<TokenBalanceQuery> token_ids(const PackedStringArray& ids);
 
+#ifndef WEB_ENABLED
     dojo::TokenBalanceQuery get_native() const;
+#endif
 
 protected:
     void static _bind_methods() {

@@ -1,7 +1,7 @@
 #include "ref_counted/dojo_utilities/clauses/keys.hpp"
 
 KeysClause::KeysClause() : DojoClause(DojoClause::Keys) {
-    p_patter_matching = dojo::PatternMatching::kFixedLen;
+    p_patter_matching = FixedLen;
 }
 
 KeysClause::~KeysClause() {}
@@ -37,10 +37,11 @@ Ref<KeysClause> KeysClause::models(const PackedStringArray& models) {
 }
 
 Ref<KeysClause> KeysClause::pattern(const int64_t& pattern) {
-    this->p_patter_matching = static_cast<dojo::PatternMatching>(pattern);
+    this->p_patter_matching = static_cast<PatternMatching>(pattern);
     return this;
 }
 
+#ifndef WEB_ENABLED
 dojo::Clause KeysClause::get_native() const {
     dojo::KeysClause clause = {};
 
@@ -51,7 +52,7 @@ dojo::Clause KeysClause::get_native() const {
     }
     clause.keys = keys;
 
-    clause.pattern_matching = p_patter_matching;
+    clause.pattern_matching = static_cast<dojo::PatternMatching>(p_patter_matching);
 
     std::vector<std::string> models;
     for (int i = 0; i < p_models.size(); i++) {
@@ -62,6 +63,7 @@ dojo::Clause KeysClause::get_native() const {
 
     return dojo::Clause(dojo::Clause::kKeys{std::make_shared<dojo::KeysClause>(clause)});
 }
+#endif
 
 Dictionary KeysClause::to_dict() const {
     Dictionary result = {};

@@ -27,9 +27,11 @@ Ref<SearchQuery> SearchQuery::order_by(const String& field, const int64_t& direc
     return this;
 }
 
+#ifndef WEB_ENABLED
 dojo::SearchQuery SearchQuery::get_native() const {
     dojo::SearchQuery query;
     query.query = p_query.utf8().get_data();
     query.limit = p_limit;
     return query;
 }
+#endif

@@ -14,7 +14,9 @@ public:
     Ref<AggregationQuery> aggregator_ids(const PackedStringArray& ids);
     Ref<AggregationQuery> entity_ids(const PackedStringArray& ids);
 
+#ifndef WEB_ENABLED
     dojo::AggregationQuery get_native() const;
+#endif
 
 protected:
     void static _bind_methods() {

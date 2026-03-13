@@ -23,7 +23,9 @@ public:
     Ref<DojoQuery> historical(const bool& historical);
     Ref<DojoQuery> with_clause(const Ref<DojoClause>& clause);
 
+#ifndef WEB_ENABLED
     dojo::Query get_native() const;
+#endif
 
 protected:
     void static _bind_methods() {

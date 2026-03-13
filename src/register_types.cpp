@@ -10,13 +10,20 @@
 #include "godot_cpp/godot.hpp"
 
 #include "editor/dojo_editor_plugin.hpp"
+#ifndef WEB_ENABLED
 #include "node/torii_client.hpp"
 #include "node/dojo_controller.hpp"
 #include "node/dojo_session_account.hpp"
+#include "ref_counted/dojo_utilities/callback.hpp"
+#else
+#include "web/node/torii_client.hpp"
+#include "web/ref_counted/callback.hpp"
+// #include "web/node/dojo_controller.hpp"
+// #include "web/node/dojo_session_account.hpp"
+#endif
 #include "ref_counted/controller_utilities/dojo_owner.hpp"
 
 #include "ref_counted/query_builder.hpp"
-#include "ref_counted/dojo_utilities/callback.hpp"
 #include "ref_counted/dojo_utilities/clause.hpp"
 #include "ref_counted/dojo_utilities/clauses/keys.hpp"
 #include "ref_counted/dojo_utilities/clauses/member.hpp"
@@ -25,6 +32,7 @@
 #include "ref_counted/dojo_utilities/big_int/i128.hpp"
 #include "ref_counted/dojo_utilities/big_int/u128.hpp"
 #include "ref_counted/dojo_utilities/big_int/u256.hpp"
+#include "ref_counted/dojo_utilities/clauses/hashed_keys.hpp"
 #include "tools/godot_helper.hpp"
 #include "tools/controller_helper.h"
 #include "tools/http_pinger.hpp"
@@ -46,8 +54,11 @@
 
 using namespace godot;
 
+// extern "C" void register_panic_hook();
+
 void initialize_godotdojo_module(ModuleInitializationLevel p_level) {
     if (p_level == MODULE_INITIALIZATION_LEVEL_SCENE) {
+        // register_panic_hook();
         // Main Client
         GDREGISTER_CLASS(ToriiClient);
 
@@ -67,13 +78,14 @@ void initialize_godotdojo_module(ModuleInitializationLevel p_level) {
         GDREGISTER_CLASS(U256)
 
         // Clauses
-        GDREGISTER_CLASS(DojoClause);
+        GDREGISTER_ABSTRACT_CLASS(DojoClause);
         GDREGISTER_CLASS(KeysClause);
         GDREGISTER_CLASS(MemberClause);
         GDREGISTER_CLASS(CompositeClause);
+        GDREGISTER_CLASS(HashedKeysClause);
 
         // Builders
-        GDREGISTER_CLASS(QueryBuilder);
+        GDREGISTER_ABSTRACT_CLASS(QueryBuilder);
 
         // Queries
         GDREGISTER_CLASS(AchievementQuery);
@@ -81,7 +93,7 @@ void initialize_godotdojo_module(ModuleInitializationLevel p_level) {
         GDREGISTER_CLASS(AggregationQuery);
         GDREGISTER_CLASS(ContractQuery);
         GDREGISTER_CLASS(ControllerQuery);
-        GDREGISTER_CLASS(DojoQuery); // Formerly EntityQuery
+        GDREGISTER_CLASS(DojoQuery);
         GDREGISTER_CLASS(EventQuery);
         GDREGISTER_CLASS(PlayerAchievementQuery);
         GDREGISTER_CLASS(SearchQuery);
@@ -95,6 +107,7 @@ void initialize_godotdojo_module(ModuleInitializationLevel p_level) {
     if (p_level == MODULE_INITIALIZATION_LEVEL_EDITOR) {
         // Editor plugins if any
         GDREGISTER_CLASS(DojoEditorPlugin)
+        GDREGISTER_CLASS(GodotDojoExportPlugin)
         EditorPlugins::add_by_type<DojoEditorPlugin>();
     }
 }

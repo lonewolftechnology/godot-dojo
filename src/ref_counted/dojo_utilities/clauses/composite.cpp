@@ -12,6 +12,7 @@ Ref<CompositeClause> CompositeClause::add(const Ref<DojoClause>& clause) {
     p_clauses.append(clause);
     return this;
 }
+#ifndef WEB_ENABLED
 
 dojo::Clause CompositeClause::get_native() const {
     dojo::CompositeClause composite_clause;
@@ -25,6 +26,7 @@ dojo::Clause CompositeClause::get_native() const {
     }
     return dojo::Clause(dojo::Clause::kComposite{std::make_shared<dojo::CompositeClause>(composite_clause)});
 }
+#endif
 
 Dictionary CompositeClause::to_dict() const {
     Dictionary result;

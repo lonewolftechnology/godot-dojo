@@ -44,6 +44,10 @@ void DojoEditorPlugin::_enter_tree()
     tool_menu->connect("id_pressed", callable_mp(this, &DojoEditorPlugin::_on_menu_item_pressed));
 
     add_tool_submenu_item("Godot Dojo Tools", tool_menu);
+
+    dojo_export_plugin = memnew(GodotDojoExportPlugin);
+    add_export_plugin(dojo_export_plugin);
+
     Logger::success_extra("GodotDojo", _get_plugin_version() + " (" + _get_precision() + ")");
 }
 
@@ -63,6 +67,10 @@ void DojoEditorPlugin::_exit_tree()
     }
     tool_menu = nullptr;
     tool_menu_id = 0;
+
+    remove_export_plugin(dojo_export_plugin);
+    dojo_export_plugin = nullptr;
+
     Logger::success_extra("DojoEditorPlugin", "Tree exited");
 }
 

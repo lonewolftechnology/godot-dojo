@@ -25,7 +25,9 @@ public:
     Ref<TransactionQuery> from_block(const uint64_t& block);
     Ref<TransactionQuery> to_block(const uint64_t& block);
 
+#ifndef WEB_ENABLED
     dojo::TransactionQuery get_native() const;
+#endif
 
 protected:
     void static _bind_methods() {

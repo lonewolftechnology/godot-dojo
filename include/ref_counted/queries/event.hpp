@@ -13,7 +13,9 @@ public:
 
     Ref<EventQuery> keys(const Ref<KeysClause>& keys);
 
+#ifndef WEB_ENABLED
     dojo::EventQuery get_native() const;
+#endif
 
 protected:
     void static _bind_methods() {

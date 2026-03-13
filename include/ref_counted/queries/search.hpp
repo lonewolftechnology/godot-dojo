@@ -19,7 +19,9 @@ public:
     Ref<SearchQuery> cursor(const String& cursor);
     Ref<SearchQuery> order_by(const String& field, const int64_t& direction);
 
+#ifndef WEB_ENABLED
     dojo::SearchQuery get_native() const;
+#endif
 
 protected:
     void static _bind_methods() {

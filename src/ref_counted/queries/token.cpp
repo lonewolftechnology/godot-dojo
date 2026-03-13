@@ -18,6 +18,7 @@ Ref<TokenQuery> TokenQuery::attribute_filter(const String& trait_name, const Str
     return this;
 }
 
+#ifndef WEB_ENABLED
 dojo::TokenQuery TokenQuery::get_native() const {
     dojo::TokenQuery query;
 
@@ -48,3 +49,4 @@ dojo::TokenQuery TokenQuery::get_native() const {
 
     return query;
 }
+#endif
