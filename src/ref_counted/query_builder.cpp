@@ -97,7 +97,25 @@ Ref<QueryBuilder> QueryBuilder::order_by(const String& field, const int64_t& dir
 }
 
 Dictionary QueryBuilder::to_dict() const {
-    return {};
+    Dictionary result;
+    result["type"] = static_cast<int>(type);
+    
+    Dictionary pagination;
+    pagination["limit"] = p_pagination.limit;
+    pagination["cursor"] = p_pagination.cursor;
+    pagination["direction"] = static_cast<int>(p_pagination.direction);
+    result["pagination"] = pagination;
+
+    Array order_by_list;
+    for (const auto& ob : p_order_by) {
+        Dictionary order_by_dict;
+        order_by_dict["field"] = ob.field;
+        order_by_dict["direction"] = static_cast<int>(ob.direction);
+        order_by_list.push_back(order_by_dict);
+    }
+    result["order_by"] = order_by_list;
+
+    return result;
 }
 
 #ifndef WEB_ENABLED

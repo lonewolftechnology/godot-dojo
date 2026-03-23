@@ -18,6 +18,7 @@ public:
     Ref<SearchQuery> pagination(const uint32_t& limit, const String& cursor, const int64_t& direction);
     Ref<SearchQuery> cursor(const String& cursor);
     Ref<SearchQuery> order_by(const String& field, const int64_t& direction);
+    virtual Dictionary to_dict() const override;
 
 #ifndef WEB_ENABLED
     dojo::SearchQuery get_native() const;

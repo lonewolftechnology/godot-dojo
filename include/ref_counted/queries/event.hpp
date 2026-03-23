@@ -12,6 +12,7 @@ public:
     EventQuery() : QueryBuilder(Event){}
 
     Ref<EventQuery> keys(const Ref<KeysClause>& keys);
+    virtual Dictionary to_dict() const override;
 
 #ifndef WEB_ENABLED
     dojo::EventQuery get_native() const;

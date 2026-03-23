@@ -24,6 +24,7 @@ public:
     Ref<TransactionQuery> model_selectors(const PackedStringArray& selectors);
     Ref<TransactionQuery> from_block(const uint64_t& block);
     Ref<TransactionQuery> to_block(const uint64_t& block);
+    virtual Dictionary to_dict() const override;
 
 #ifndef WEB_ENABLED
     dojo::TransactionQuery get_native() const;

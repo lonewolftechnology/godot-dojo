@@ -33,3 +33,10 @@ dojo::AggregationQuery AggregationQuery::get_native() const {
     return query;
 }
 #endif
+
+Dictionary AggregationQuery::to_dict() const {
+    Dictionary result = QueryBuilder::to_dict();
+    result["aggregator_ids"] = p_aggregator_ids;
+    result["entity_ids"] = p_entity_ids;
+    return result;
+}

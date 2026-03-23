@@ -33,3 +33,10 @@ dojo::ControllerQuery ControllerQuery::get_native() const {
     return query;
 }
 #endif
+
+Dictionary ControllerQuery::to_dict() const {
+    Dictionary result = QueryBuilder::to_dict();
+    result["contract_addresses"] = p_contract_addresses;
+    result["usernames"] = p_usernames;
+    return result;
+}

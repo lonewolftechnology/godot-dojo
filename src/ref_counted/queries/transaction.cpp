@@ -80,3 +80,25 @@ dojo::TransactionQuery TransactionQuery::get_native() const {
     return query;
 }
 #endif
+
+Dictionary TransactionQuery::to_dict() const {
+    Dictionary result = QueryBuilder::to_dict();
+    
+    if (!p_transaction_hashes.is_empty() || !p_caller_addresses.is_empty() ||
+        !p_contract_addresses.is_empty() || !p_entrypoints.is_empty() ||
+        !p_model_selectors.is_empty() || p_from_block > 0 || p_to_block > 0) {
+        
+        Dictionary filter;
+        filter["transaction_hashes"] = p_transaction_hashes;
+        filter["caller_addresses"] = p_caller_addresses;
+        filter["contract_addresses"] = p_contract_addresses;
+        filter["entrypoints"] = p_entrypoints;
+        filter["model_selectors"] = p_model_selectors;
+        filter["from_block"] = p_from_block;
+        filter["to_block"] = p_to_block;
+        
+        result["filter"] = filter;
+    }
+    
+    return result;
+}

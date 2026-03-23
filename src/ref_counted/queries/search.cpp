@@ -35,3 +35,10 @@ dojo::SearchQuery SearchQuery::get_native() const {
     return query;
 }
 #endif
+
+Dictionary SearchQuery::to_dict() const {
+    Dictionary result = QueryBuilder::to_dict();
+    result["query"] = p_query;
+    result["limit"] = p_limit;
+    return result;
+}

@@ -44,3 +44,11 @@ dojo::TokenTransferQuery TokenTransferQuery::get_native() const {
     return query;
 }
 #endif
+
+Dictionary TokenTransferQuery::to_dict() const {
+    Dictionary result = QueryBuilder::to_dict();
+    result["contract_addresses"] = p_contract_addresses;
+    result["account_addresses"] = p_account_addresses;
+    result["token_ids"] = p_token_ids;
+    return result;
+}

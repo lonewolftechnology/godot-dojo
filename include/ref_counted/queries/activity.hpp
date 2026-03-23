@@ -19,6 +19,7 @@ public:
     Ref<ActivityQuery> caller_addresses(const PackedStringArray& callers);
     Ref<ActivityQuery> from_time(const uint64_t& time);
     Ref<ActivityQuery> to_time(const uint64_t& time);
+    virtual Dictionary to_dict() const override;
 
 #ifndef WEB_ENABLED
     dojo::ActivityQuery get_native() const;

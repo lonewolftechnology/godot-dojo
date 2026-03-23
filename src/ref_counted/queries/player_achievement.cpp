@@ -44,3 +44,11 @@ dojo::PlayerAchievementQuery PlayerAchievementQuery::get_native() const {
     return query;
 }
 #endif
+
+Dictionary PlayerAchievementQuery::to_dict() const {
+    Dictionary result = QueryBuilder::to_dict();
+    result["world_addresses"] = p_world_addresses;
+    result["namespaces"] = p_namespaces;
+    result["player_addresses"] = p_player_addresses;
+    return result;
+}

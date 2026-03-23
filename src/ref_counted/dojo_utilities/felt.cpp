@@ -32,8 +32,15 @@ Ref<Felt> Felt::from_string(const String& p_value) {
     return instance;
 }
 
+Dictionary Felt::to_dict() const {
+    Dictionary result;
+    result["value"] = to_string();
+    return result;
+}
+
 void Felt::_bind_methods() {
     ClassDB::bind_method(D_METHOD("to_string"), &Felt::to_string);
     ClassDB::bind_method(D_METHOD("to_short_string"), &Felt::to_short_string);
+    ClassDB::bind_method(D_METHOD("to_dict"), &Felt::to_dict);
     ClassDB::bind_static_method("Felt", D_METHOD("from_string", "value"), &Felt::from_string);
 }

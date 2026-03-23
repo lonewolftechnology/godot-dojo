@@ -15,6 +15,7 @@ public:
     Ref<PlayerAchievementQuery> world_addresses(const PackedStringArray& worlds);
     Ref<PlayerAchievementQuery> namespaces(const PackedStringArray& namespaces);
     Ref<PlayerAchievementQuery> player_addresses(const PackedStringArray& players);
+    virtual Dictionary to_dict() const override;
 #ifndef WEB_ENABLED
     dojo::PlayerAchievementQuery get_native() const;
 #endif

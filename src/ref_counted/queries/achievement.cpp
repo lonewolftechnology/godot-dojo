@@ -40,3 +40,11 @@ dojo::AchievementQuery AchievementQuery::get_native() const {
     return query;
 }
 #endif
+
+Dictionary AchievementQuery::to_dict() const {
+    Dictionary result = QueryBuilder::to_dict();
+    result["world_addresses"] = p_world_addresses;
+    result["namespaces"] = p_namespaces;
+    result["hidden"] = p_hidden;
+    return result;
+}

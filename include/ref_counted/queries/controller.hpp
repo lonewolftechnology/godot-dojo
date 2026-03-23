@@ -13,6 +13,7 @@ public:
 
     Ref<ControllerQuery> contract_addresses(const PackedStringArray& addresses);
     Ref<ControllerQuery> usernames(const PackedStringArray& usernames);
+    virtual Dictionary to_dict() const override;
 
 #ifndef WEB_ENABLED
     dojo::ControllerQuery get_native() const;

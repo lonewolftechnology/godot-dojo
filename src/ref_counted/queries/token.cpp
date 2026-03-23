@@ -50,3 +50,20 @@ dojo::TokenQuery TokenQuery::get_native() const {
     return query;
 }
 #endif
+
+Dictionary TokenQuery::to_dict() const {
+    Dictionary result = QueryBuilder::to_dict();
+    result["contract_addresses"] = p_contract_addresses;
+    result["token_ids"] = p_token_ids;
+    
+    Array attribute_filters;
+    for (const auto& filter : p_attribute_filters) {
+        Dictionary f;
+        f["trait_name"] = filter.trait_name;
+        f["trait_value"] = filter.trait_value;
+        attribute_filters.push_back(f);
+    }
+    result["attribute_filters"] = attribute_filters;
+    
+    return result;
+}

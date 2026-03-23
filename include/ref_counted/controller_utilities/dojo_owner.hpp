@@ -48,5 +48,6 @@ public:
 protected:
     static void _bind_methods() {
         ClassDB::bind_static_method("DojoOwner", D_METHOD("init", "private_key"), &DojoOwner::init);
+        ClassDB::bind_method(D_METHOD("to_dict"), &DojoOwner::to_dict);
     }
 };

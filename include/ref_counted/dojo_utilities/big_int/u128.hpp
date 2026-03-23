@@ -26,6 +26,7 @@ public:
     PackedByteArray to_bytes() const;
     double to_float(int p_precision = -1) const;
     int64_t to_int() const;
+    Dictionary to_dict() const;
 
     static Ref<U128> from_int(int64_t p_value);
     static Ref<U128> from_string(const String& p_value);

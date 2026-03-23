@@ -57,3 +57,13 @@ dojo::ActivityQuery ActivityQuery::get_native() const {
     return query;
 }
 #endif
+
+Dictionary ActivityQuery::to_dict() const {
+    Dictionary result = QueryBuilder::to_dict();
+    result["world_addresses"] = p_world_addresses;
+    result["namespaces"] = p_namespaces;
+    result["caller_addresses"] = p_caller_addresses;
+    result["from_time"] = p_from_time;
+    result["to_time"] = p_to_time;
+    return result;
+}

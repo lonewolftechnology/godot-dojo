@@ -61,3 +61,15 @@ dojo::Query DojoQuery::get_native() const {
     return query;
 }
 #endif
+
+Dictionary DojoQuery::to_dict() const {
+    Dictionary result = QueryBuilder::to_dict();
+    result["world_addresses"] = p_world_addresses;
+    result["no_hashed_keys"] = p_no_hashed_keys;
+    result["models"] = p_models;
+    result["historical"] = p_historical;
+    if (p_clause.is_valid()) {
+        result["clause"] = p_clause->to_dict();
+    }
+    return result;
+}

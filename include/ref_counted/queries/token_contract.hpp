@@ -13,6 +13,7 @@ public:
 
     Ref<TokenContractQuery> contract_addresses(const PackedStringArray& addresses);
     Ref<TokenContractQuery> contract_types(const TypedArray<int>& types);
+    virtual Dictionary to_dict() const override;
 
 #ifndef WEB_ENABLED
     dojo::TokenContractQuery get_native() const;

@@ -29,3 +29,10 @@ dojo::ContractQuery ContractQuery::get_native() const {
     return query;
 }
 #endif
+
+Dictionary ContractQuery::to_dict() const {
+    Dictionary result = QueryBuilder::to_dict();
+    result["contract_addresses"] = p_contract_addresses;
+    result["contract_types"] = p_contract_types;
+    return result;
+}

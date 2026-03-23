@@ -130,7 +130,11 @@ int64_t U128::to_int() const {
     return static_cast<int64_t>(value);
 }
 
-
+Dictionary U128::to_dict() const {
+    Dictionary result;
+    result["value"] = to_string();
+    return result;
+}
 
 Ref<U128> U128::from_int(int64_t p_value) {
     Ref<U128> instance = memnew(U128);
@@ -233,6 +237,7 @@ void U128::_bind_methods() {
     ClassDB::bind_method(D_METHOD("_to_string"), &U128::_to_string);
     ClassDB::bind_method(D_METHOD("to_float", "precision"), &U128::to_float, DEFVAL(-1));
     ClassDB::bind_method(D_METHOD("to_int"), &U128::to_int);
+    ClassDB::bind_method(D_METHOD("to_dict"), &U128::to_dict);
     ClassDB::bind_method(D_METHOD("to_calldata"), &U128::to_calldata);
     ClassDB::bind_method(D_METHOD("to_bytes"), &U128::to_bytes);
     ClassDB::bind_static_method("U128", D_METHOD("from_int", "value"), &U128::from_int);

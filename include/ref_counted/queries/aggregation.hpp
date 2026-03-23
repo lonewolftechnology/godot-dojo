@@ -13,6 +13,7 @@ public:
 
     Ref<AggregationQuery> aggregator_ids(const PackedStringArray& ids);
     Ref<AggregationQuery> entity_ids(const PackedStringArray& ids);
+    virtual Dictionary to_dict() const override;
 
 #ifndef WEB_ENABLED
     dojo::AggregationQuery get_native() const;

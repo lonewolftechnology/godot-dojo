@@ -20,6 +20,7 @@ public:
     Ref<TokenQuery> contract_addresses(const PackedStringArray& addresses);
     Ref<TokenQuery> token_ids(const PackedStringArray& ids);
     Ref<TokenQuery> attribute_filter(const String& trait_name, const String& trait_value);
+    virtual Dictionary to_dict() const override;
 
 #ifndef WEB_ENABLED
     dojo::TokenQuery get_native() const;

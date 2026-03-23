@@ -27,6 +27,8 @@ public:
     dojo::Query get_native() const;
 #endif
 
+    virtual Dictionary to_dict() const override;
+
 protected:
     void static _bind_methods() {
         ClassDB::bind_method(D_METHOD("world_addresses", "worlds"), &DojoQuery::world_addresses);

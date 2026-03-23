@@ -13,6 +13,7 @@ public:
 
     Ref<ContractQuery> contract_addresses(const PackedStringArray& addresses);
     Ref<ContractQuery> contract_types(const TypedArray<int>& types);
+    virtual Dictionary to_dict() const override;
 
 #ifndef WEB_ENABLED
     dojo::ContractQuery get_native() const;

@@ -15,6 +15,7 @@ public:
     Ref<TokenTransferQuery> contract_addresses(const PackedStringArray& addresses);
     Ref<TokenTransferQuery> account_addresses(const PackedStringArray& addresses);
     Ref<TokenTransferQuery> token_ids(const PackedStringArray& ids);
+    virtual Dictionary to_dict() const override;
 
 #ifndef WEB_ENABLED
     dojo::TokenTransferQuery get_native() const;

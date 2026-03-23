@@ -212,4 +212,3 @@ dojo::Primitive MemberClause::to_native_primitive(const Variant &p_value, Primit
     return dojo::Primitive(dojo::Primitive::kFelt252{str_val.utf8().get_data()});
 }
 #endif
-

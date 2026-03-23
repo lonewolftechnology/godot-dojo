@@ -25,3 +25,11 @@ dojo::EventQuery EventQuery::get_native() const {
     return query;
 }
 #endif
+
+Dictionary EventQuery::to_dict() const {
+    Dictionary result = QueryBuilder::to_dict();
+    if (p_keys.is_valid()) {
+        result["keys"] = p_keys->to_dict();
+    }
+    return result;
+}

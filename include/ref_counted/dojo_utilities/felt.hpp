@@ -16,6 +16,7 @@ public:
     
     String to_string() const;
     String to_short_string() const;
+    Dictionary to_dict() const;
 
     static Ref<Felt> from_string(const String& p_value);
 
