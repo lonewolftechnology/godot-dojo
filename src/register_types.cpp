@@ -15,13 +15,13 @@
 #include "node/dojo_controller.hpp"
 #include "node/dojo_session_account.hpp"
 #include "ref_counted/dojo_utilities/callback.hpp"
+#include "ref_counted/controller_utilities/dojo_owner.hpp"
 #else
 #include "web/node/torii_client.hpp"
 #include "web/ref_counted/callback.hpp"
 // #include "web/node/dojo_controller.hpp"
 // #include "web/node/dojo_session_account.hpp"
 #endif
-#include "ref_counted/controller_utilities/dojo_owner.hpp"
 
 #include "ref_counted/query_builder.hpp"
 #include "ref_counted/dojo_utilities/clause.hpp"
@@ -63,9 +63,11 @@ void initialize_godotdojo_module(ModuleInitializationLevel p_level) {
         GDREGISTER_CLASS(ToriiClient);
 
         // Controller
+#ifndef WEB_ENABLED
         GDREGISTER_CLASS(DojoController);
         GDREGISTER_CLASS(DojoSessionAccount);
         GDREGISTER_CLASS(DojoOwner);
+#endif
 
         // Utilities
         GDREGISTER_CLASS(DojoCallback);
@@ -78,7 +80,7 @@ void initialize_godotdojo_module(ModuleInitializationLevel p_level) {
         GDREGISTER_CLASS(U256)
 
         // Clauses
-        GDREGISTER_ABSTRACT_CLASS(DojoClause);
+        GDREGISTER_CLASS(DojoClause);
         GDREGISTER_CLASS(KeysClause);
         GDREGISTER_CLASS(MemberClause);
         GDREGISTER_CLASS(CompositeClause);

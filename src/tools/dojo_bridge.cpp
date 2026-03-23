@@ -37,27 +37,63 @@ void DojoBridge::call_async(const String& function_name, const Variant& args, co
 }
 
 Variant DojoBridge::process_js_arg(const Variant& arg) {
-    //TODO: Reimplement when web is supported
-    return {};
-    // if (arg.get_type() == Variant::OBJECT) {
-    //     Ref<DojoOption> dojo_option = arg;
-    //     if (dojo_option.is_valid()) {
-    //         return "json:" + JSON::stringify(dojo_option->to_json());
-    //     }
-    // }
-    //
-    // if (arg.get_type() == Variant::DICTIONARY) {
-    //     return "json:" + JSON::stringify(arg);
-    // }
-    //
-    // if (arg.get_type() == Variant::NIL) {
-    //     if (js_bridge) {
-    //         return js_bridge->create_object("undefined", Variant());
-    //     }
-    //     return arg;
-    // }
-    //
-    // return arg;
+    if (!js_bridge) {
+        js_bridge = JavaScriptBridge::get_singleton();
+    }
+
+    if (!js_bridge) {
+        return arg;
+    }
+
+    if (arg.get_type() == Variant::OBJECT) {
+        Ref<RefCounted> ref = arg;
+        if (ref.is_valid() && ref->has_method("to_dict")) {
+            return process_js_arg(ref->call("to_dict"));
+        }
+    }
+
+    if (arg.get_type() == Variant::DICTIONARY) {
+        Ref<JavaScriptObject> js_obj = js_bridge->create_object("Object", Array());
+        Dictionary dict = arg;
+        Array keys = dict.keys();
+        for (int i = 0; i < keys.size(); i++) {
+            Variant key = keys[i];
+            js_obj->set(key, process_js_arg(dict[key]));
+        }
+        return js_obj;
+    }
+
+    if (arg.get_type() == Variant::ARRAY) {
+        Ref<JavaScriptObject> js_arr = js_bridge->create_object("Array", Array());
+        Array arr = arg;
+        for (int i = 0; i < arr.size(); i++) {
+            js_arr->set(String::num_int64(i), process_js_arg(arr[i]));
+        }
+        return js_arr;
+    }
+
+    if (arg.get_type() == Variant::PACKED_BYTE_ARRAY ||
+        arg.get_type() == Variant::PACKED_INT32_ARRAY ||
+        arg.get_type() == Variant::PACKED_INT64_ARRAY ||
+        arg.get_type() == Variant::PACKED_FLOAT32_ARRAY ||
+        arg.get_type() == Variant::PACKED_FLOAT64_ARRAY ||
+        arg.get_type() == Variant::PACKED_STRING_ARRAY ||
+        arg.get_type() == Variant::PACKED_VECTOR2_ARRAY ||
+        arg.get_type() == Variant::PACKED_VECTOR3_ARRAY ||
+        arg.get_type() == Variant::PACKED_COLOR_ARRAY) {
+        Ref<JavaScriptObject> js_arr = js_bridge->create_object("Array", Array());
+        Array arr = arg;
+        for (int i = 0; i < arr.size(); i++) {
+            js_arr->set(String::num_int64(i), arr[i]);
+        }
+        return js_arr;
+    }
+
+    if (arg.get_type() == Variant::NIL) {
+        return js_bridge->create_object("undefined", Array());
+    }
+
+    return arg;
 }
 
 void DojoBridge::call_async(const Ref<JavaScriptObject>& target, const String& function_name, const Variant& args,

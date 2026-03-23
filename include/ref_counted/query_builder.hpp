@@ -135,6 +135,7 @@ protected:
 
         ClassDB::bind_method(D_METHOD("pagination", "limit", "cursor", "direction"), &QueryBuilder::pagination);
         ClassDB::bind_method(D_METHOD("order_by", "field", "direction"), &QueryBuilder::order_by);
+        ClassDB::bind_method(D_METHOD("to_dict"), &QueryBuilder::to_dict);
     }
 };
 
