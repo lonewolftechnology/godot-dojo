@@ -31,11 +31,15 @@ public:
 
 protected:
     static void _bind_methods() {
-        ClassDB::bind_integer_constant(get_class_static(), "LogicalOperator", "And", static_cast<int>(dojo::LogicalOperator::kAnd));
-        ClassDB::bind_integer_constant(get_class_static(), "LogicalOperator", "Or", static_cast<int>(dojo::LogicalOperator::kOr));
+        // ClassDB::bind_integer_constant(get_class_static(), "LogicalOperator", "And", static_cast<int>(dojo::LogicalOperator::kAnd));
+        // ClassDB::bind_integer_constant(get_class_static(), "LogicalOperator", "Or", static_cast<int>(dojo::LogicalOperator::kOr));
+
+        BIND_ENUM_CONSTANT(And);
+        BIND_ENUM_CONSTANT(Or);
 
         ClassDB::bind_method(D_METHOD("set_operator", "operator"), &CompositeClause::set_operator);
         ClassDB::bind_method(D_METHOD("add", "clause"), &CompositeClause::add);
         ClassDB::bind_method(D_METHOD("to_dict"), &CompositeClause::to_dict);
     }
 };
+VARIANT_ENUM_CAST(CompositeClause::LogicalOperator);

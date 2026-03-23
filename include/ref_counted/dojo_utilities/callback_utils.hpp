@@ -1,6 +1,7 @@
 #pragma once
-
+#ifndef WEB_ENABLED
 #include "dojo/dojo.hpp"
+#endif
 #include "godot_cpp/classes/object.hpp"
 
 using namespace godot;
@@ -9,6 +10,8 @@ class CallbackUtils : public Object {
     GDCLASS(CallbackUtils, Object)
 
 public:
+#ifndef WEB_ENABLED
+
     static Dictionary entity_to_dict(const dojo::Entity& entity);
     static Dictionary event_to_dict(const dojo::Event& event);
     static Dictionary token_balance_to_dict(const dojo::TokenBalance& balance);
@@ -30,6 +33,7 @@ public:
     static Dictionary struct_to_dict(const std::shared_ptr<dojo::Struct>& struct_ptr);
     static Dictionary enum_to_dict(const std::shared_ptr<dojo::EnumType>& enum_ptr);
     static Dictionary sql_value_to_dict(const dojo::SqlValue& value);
+#endif
 
 protected:
     static void _bind_methods() {}

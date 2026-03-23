@@ -12,8 +12,9 @@ using namespace godot;
 
 class DojoOwner : public RefCounted {
     GDCLASS(DojoOwner, RefCounted)
-
+#ifndef WEB_ENABLED
     std::shared_ptr<controller::Owner> internal;
+#endif
 
 public:
     DojoOwner() {}
@@ -27,12 +28,18 @@ public:
         }
         Ref<DojoOwner> owner;
         owner.instantiate();
+#ifndef WEB_ENABLED
         const std::string private_key_str = private_key.utf8().get_data();
+
         owner->internal = controller::Owner::init(private_key_str);
+#endif
+
         return owner;
     }
+#ifndef WEB_ENABLED
 
     std::shared_ptr<controller::Owner> get_internal() { return internal; }
+#endif
 
 protected:
     static void _bind_methods() {

@@ -9,7 +9,7 @@
 #include "tools/logger.hpp"
 
 // Suppress false positive warning from GCC/Boost interaction
-#ifdef __GNUC__
+#if defined(__GNUC__) && !defined(__clang__)
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wstringop-overflow"
 #endif
