@@ -8,12 +8,12 @@ rustflags = [
 #    "-C", "target-feature=-exception-handling",
     "-C", "link-arg=-sASSERTIONS=2",
     "-C", "link-args=--no-entry",
-    "-C", "relocation-model=pic",
+#    "-C", "relocation-model=pic",
 #    "-C", "relocation-model=static",
 #    "-C", "link-arg=-sWASM_BINDGEN=2",
 #    "-C", "link-arg=-sWASM_BINDGEN",
-    "-C", "link-args=--pie",
-    "-C", "link-args=--experimental-pic"
+#    "-C", "link-args=--pie",
+#    "-C", "link-args=--experimental-pic"
 #    "-C", "link-arg=--shared"
 ]
 

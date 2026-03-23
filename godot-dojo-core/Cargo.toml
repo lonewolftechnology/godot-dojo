@@ -29,10 +29,10 @@ uniffi_core = { git = "https://github.com/dannroda/uniffi-rs", rev = "3ac537537e
 uniffi_macros = { git = "https://github.com/dannroda/uniffi-rs", rev = "3ac537537ee0f439fca1294207d159bef2973c0d" }
 uniffi_bindgen = { git = "https://github.com/dannroda/uniffi-rs", rev = "3ac537537ee0f439fca1294207d159bef2973c0d" }
 
-wasm-bindgen = { git = "https://github.com/walkingeyerobot/wasm-bindgen", rev = "ec08aff" }
-wasm-bindgen-futures = { git = "https://github.com/walkingeyerobot/wasm-bindgen", rev = "ec08aff" }
-js-sys = { git = "https://github.com/walkingeyerobot/wasm-bindgen", rev = "ec08aff" }
-web-sys = { git = "https://github.com/walkingeyerobot/wasm-bindgen", rev = "ec08aff"}
+#wasm-bindgen = { git = "https://github.com/walkingeyerobot/wasm-bindgen", rev = "356a6ed" }
+#wasm-bindgen-futures = { git = "https://github.com/walkingeyerobot/wasm-bindgen", rev = "356a6ed" }
+#js-sys = { git = "https://github.com/walkingeyerobot/wasm-bindgen", rev = "356a6ed" }
+#web-sys = { git = "https://github.com/walkingeyerobot/wasm-bindgen", rev = "356a6ed"}
 
 [profile.dev]
 debug = "full"
