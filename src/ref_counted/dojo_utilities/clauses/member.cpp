@@ -148,6 +148,23 @@ dojo::Primitive MemberClause::to_native_primitive(const Variant &p_value, Primit
             int128_t val(str_val.utf8().get_data());
             std::vector<uint8_t> vec;
             export_bits(val, std::back_inserter(vec), 8);
+
+            if (vec.size() < 16) {
+                vec.insert(vec.begin(), 16 - vec.size(), 0);
+            }
+            if (val < 0) {
+                for (size_t i = 0; i < 16; ++i) {
+                    vec[i] = ~vec[i];
+                }
+                for (int i = 15; i >= 0; --i) {
+                    if (vec[i] == 0xFF) {
+                        vec[i] = 0;
+                    } else {
+                        vec[i]++;
+                        break;
+                    }
+                }
+            }
             return dojo::Primitive(dojo::Primitive::kI128{vec});
         }
         case U8: return dojo::Primitive(dojo::Primitive::kU8{static_cast<uint8_t>(p_value)});
@@ -159,6 +176,10 @@ dojo::Primitive MemberClause::to_native_primitive(const Variant &p_value, Primit
             uint128_t val(str_val.utf8().get_data());
             std::vector<uint8_t> vec;
             export_bits(val, std::back_inserter(vec), 8);
+
+            if (vec.size() < 16) {
+                vec.insert(vec.begin(), 16 - vec.size(), 0);
+            }
             return dojo::Primitive(dojo::Primitive::kU128{vec});
         }
         case U256: {

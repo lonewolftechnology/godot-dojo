@@ -41,6 +41,10 @@ public:
     std::shared_ptr<controller::Owner> get_internal() { return internal; }
 #endif
 
+    Dictionary to_dict() const {
+        return Dictionary(); // Private key should not be exposed easily unless needed
+    }
+
 protected:
     static void _bind_methods() {
         ClassDB::bind_static_method("DojoOwner", D_METHOD("init", "private_key"), &DojoOwner::init);
