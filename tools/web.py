@@ -115,14 +115,14 @@ def generate(env):
         "-semit-symbol-map",
         "--source-map-base http://localhost:8060/",
         "--profiling-funcs",
-        "-fwasm-exceptions",
+        # "-fwasm-exceptions",
     ])
     env.Append(LINKFLAGS=[
-        "-fwasm-exceptions",
+        # "-fwasm-exceptions",
         "-sASSERTIONS=2",
-        "-sWASM_BINDGEN"
+        # "-sWASM_BINDGEN"
     ])
-    env.Append(CPPPATH=["include/web"])
+    env.Append(CPPPATH=["web/include"])
     env.Append(CPPDEFINES=["WEB_ENABLED"])
     
     try:

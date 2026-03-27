@@ -45,7 +45,7 @@ def compile_rust_immediately(env):
     if platform == "web":
         if env.get("use_wasm_pack"):
             profile = "--release" if is_release else "--dev"
-            cmd = f"wasm-pack build {profile} --target web"
+            cmd = f"wasm-pack build {profile} --target web -d ../demo/addons/godot-dojo/bin/web/dojo"
             print(f"Compiling Rust library strictly first with wasm-pack: {cmd}")
             ret = os.system(f"cd godot-dojo-core && {cmd}")
             if ret != 0:

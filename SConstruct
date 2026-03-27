@@ -6,7 +6,7 @@ from SCons.Variables import BoolVariable
 from methods import print_error
 
 libname = "godot-dojo"
-projectdir = "demo"
+projectdir = "demo/addons/godot-dojo"
 
 localEnv = Environment(tools=["default"], PLATFORM="", ENV=os.environ)
 
@@ -35,6 +35,9 @@ Run the following command to download godot-cpp:
 
     git submodule update --init --recursive""")
     sys.exit(1)
+
+env["libname"] = libname
+env["projectdir"] = projectdir
 
 # Appending toolpath for common_compiler_flags
 sys.path.append(os.path.abspath("external/godot-cpp/tools"))
@@ -66,9 +69,6 @@ web_excludes = [
 
 sources = []
 for root, dirs, files in os.walk("src"):
-    if env["platform"] != "web" and "web" in dirs:
-        dirs.remove("web")
-
     for file in files:
         if file.endswith(".cpp"):
             filepath = os.path.join(root, file)
@@ -77,6 +77,20 @@ for root, dirs, files in os.walk("src"):
                 continue
                 
             sources.append(filepath)
+sources.extend([
+    "bindings/dojo/dojo.cpp",
+    "bindings/controller/controller.cpp"
+    ])
+
+if env["platform"] == "web":
+    env.Append(CPPPATH=["web/include", "."])
+
+    for root, dirs, files in os.walk("web/src"):
+        for file in files:
+            if file.endswith(".cpp"):
+                filepath = os.path.join(root, file)
+
+                sources.append(filepath)
 
 if env["target"] in ["editor", "template_debug"]:
     try:
@@ -84,9 +98,6 @@ if env["target"] in ["editor", "template_debug"]:
         sources.append(doc_data)
     except AttributeError:
         print("Not including class reference as we're targeting a pre-4.3 baseline.")
-
-if env["platform"] != "web":
-    sources.extend(["bindings/controller/controller.cpp", "bindings/dojo/dojo.cpp"])
 
 # .dev doesn't inhibit compatibility, so we don't need to key it.
 # .universal just means "compatible with all relevant arches" so we don't need to key it.
