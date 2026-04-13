@@ -177,7 +177,6 @@ func _on_session_btn_pressed() -> void:
 	dojo_session_account.create_from_subscribe(
 		priv_key,
 		Constants.RPC_URL,
-		"https://api.cartridge.gg",
 	)
 	_update_parent_status_indicator("session_connected", dojo_session_account.is_valid())
 	if (dojo_session_account.is_valid()):

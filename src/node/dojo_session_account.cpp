@@ -108,7 +108,13 @@ String DojoSessionAccount::get_address() const
         Logger::error("DojoSessionAccount is not initialized.");
         return "0x0";
     }
-    return {internal->address().c_str()};
+
+    const String raw_address = internal->address().c_str();
+    if (raw_address.begins_with("0x")) {
+        return "0x" + raw_address.substr(2).lpad(64, "0");
+    }
+
+    return "0x" + raw_address.lpad(64, "0");
 }
 
 String DojoSessionAccount::execute(const TypedArray<Dictionary>& calls) const

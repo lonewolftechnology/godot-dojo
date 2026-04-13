@@ -123,7 +123,6 @@ func _on_session_btn_pressed() -> void:
 	dojo_session_account.create_from_subscribe(
 		priv_key,
 		RPC_URL,
-		"https://api.cartridge.gg",
 		policies,
 	)
 	if (dojo_session_account.is_valid()):
