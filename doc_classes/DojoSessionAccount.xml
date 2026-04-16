@@ -57,6 +57,7 @@
 			<param index="1" name="entrypoint" type="String" />
 			<param index="2" name="calldata" type="Array" />
 			<description>
+				Executes a single call from outside the session context.
 			</description>
 		</method>
 		<method name="execute_single" qualifiers="const">
@@ -65,6 +66,7 @@
 			<param index="1" name="entrypoint" type="String" />
 			<param index="2" name="calldata" type="Array" />
 			<description>
+				Executes a single call using the session account.
 			</description>
 		</method>
 		<method name="execute_test" qualifiers="const vararg">
@@ -164,6 +166,7 @@
 	<signals>
 		<signal name="session_created">
 			<description>
+				Emitted when a session is created.
 			</description>
 		</signal>
 	</signals>

@@ -9,6 +9,13 @@
 	<tutorials>
 	</tutorials>
 	<methods>
+		<method name="from_bytes" qualifiers="static">
+			<return type="I128" />
+			<param index="0" name="value" type="PackedByteArray" />
+			<description>
+				Creates an I128 instance from a byte array representing the 128-bit integer.
+			</description>
+		</method>
 		<method name="from_float" qualifiers="static">
 			<return type="I128" />
 			<param index="0" name="value" type="float" />
@@ -39,14 +46,16 @@
 			</description>
 		</method>
 		<method name="from_vector" qualifiers="static">
-			<return type="Array" />
+			<return type="I128" />
 			<param index="0" name="value" type="Variant" />
 			<description>
+				Creates an I128 instance from a Variant representing a vector-like structure containing parts of the 128-bit integer.
 			</description>
 		</method>
 		<method name="to_bytes" qualifiers="const">
 			<return type="PackedByteArray" />
 			<description>
+				Converts the 128-bit integer to a byte array representation.
 			</description>
 		</method>
 		<method name="to_calldata" qualifiers="const">
@@ -60,6 +69,12 @@
 			<param index="0" name="precision" type="int" default="-1" />
 			<description>
 				Converts the 128-bit integer to a float, optionally using the specified precision for fixed-point conversion.
+			</description>
+		</method>
+		<method name="to_int" qualifiers="const">
+			<return type="int" />
+			<description>
+				Converts the 128-bit integer to an integer. Note that this may result in data loss if the value is out of bounds for the target integer size.
 			</description>
 		</method>
 		<method name="to_string" qualifiers="const">
