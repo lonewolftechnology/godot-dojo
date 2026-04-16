@@ -54,6 +54,87 @@ void I128::_init_from_float(double p_value, int p_precision) {
     value = fixed_point_val.convert_to<int128_t>();
 }
 
+void I128::_init_from_bytes(const PackedByteArray& p_value) {
+    value = 0;
+    if (p_value.is_empty()) return;
+
+    const uint8_t* ptr = p_value.ptr();
+    int size = p_value.size();
+    boost::multiprecision::uint128_t u_val = 0;
+    boost::multiprecision::import_bits(u_val, ptr, ptr + size, 8);
+
+    if (boost::multiprecision::bit_test(u_val, 127)) {
+        cpp_int temp = u_val;
+        temp -= (cpp_int(1) << 128);
+        value = temp.convert_to<int128_t>();
+    } else {
+        value = u_val.convert_to<int128_t>();
+    }
+}
+
+void I128::_init_from_vector(const Variant& p_value) {
+    boost::multiprecision::uint128_t val = 0;
+    switch (p_value.get_type()) {
+        case Variant::VECTOR2: {
+            Vector2 v = p_value;
+            boost::multiprecision::uint128_t px = (boost::multiprecision::uint128_t)(from_float(v.x)->value & 0xFFFFFFFFFFFFFFFFULL);
+            boost::multiprecision::uint128_t py = (boost::multiprecision::uint128_t)(from_float(v.y)->value & 0xFFFFFFFFFFFFFFFFULL);
+            val = px | (py << 64);
+            break;
+        }
+        case Variant::VECTOR2I: {
+            Vector2i v = p_value;
+            boost::multiprecision::uint128_t px = (boost::multiprecision::uint128_t)(from_int(v.x)->value & 0xFFFFFFFFFFFFFFFFULL);
+            boost::multiprecision::uint128_t py = (boost::multiprecision::uint128_t)(from_int(v.y)->value & 0xFFFFFFFFFFFFFFFFULL);
+            val = px | (py << 64);
+            break;
+        }
+        case Variant::VECTOR3: {
+            Vector3 v = p_value;
+            boost::multiprecision::uint128_t px = (boost::multiprecision::uint128_t)(from_float(v.x)->value & 0xFFFFFFFFULL);
+            boost::multiprecision::uint128_t py = (boost::multiprecision::uint128_t)(from_float(v.y)->value & 0xFFFFFFFFULL);
+            boost::multiprecision::uint128_t pz = (boost::multiprecision::uint128_t)(from_float(v.z)->value & 0xFFFFFFFFULL);
+            val = px | (py << 32) | (pz << 64);
+            break;
+        }
+        case Variant::VECTOR3I: {
+            Vector3i v = p_value;
+            boost::multiprecision::uint128_t px = (boost::multiprecision::uint128_t)(from_int(v.x)->value & 0xFFFFFFFFULL);
+            boost::multiprecision::uint128_t py = (boost::multiprecision::uint128_t)(from_int(v.y)->value & 0xFFFFFFFFULL);
+            boost::multiprecision::uint128_t pz = (boost::multiprecision::uint128_t)(from_int(v.z)->value & 0xFFFFFFFFULL);
+            val = px | (py << 32) | (pz << 64);
+            break;
+        }
+        case Variant::VECTOR4: {
+            Vector4 v = p_value;
+            boost::multiprecision::uint128_t px = (boost::multiprecision::uint128_t)(from_float(v.x)->value & 0xFFFFFFFFULL);
+            boost::multiprecision::uint128_t py = (boost::multiprecision::uint128_t)(from_float(v.y)->value & 0xFFFFFFFFULL);
+            boost::multiprecision::uint128_t pz = (boost::multiprecision::uint128_t)(from_float(v.z)->value & 0xFFFFFFFFULL);
+            boost::multiprecision::uint128_t pw = (boost::multiprecision::uint128_t)(from_float(v.w)->value & 0xFFFFFFFFULL);
+            val = px | (py << 32) | (pz << 64) | (pw << 96);
+            break;
+        }
+        case Variant::VECTOR4I: {
+            Vector4i v = p_value;
+            boost::multiprecision::uint128_t px = (boost::multiprecision::uint128_t)(from_int(v.x)->value & 0xFFFFFFFFULL);
+            boost::multiprecision::uint128_t py = (boost::multiprecision::uint128_t)(from_int(v.y)->value & 0xFFFFFFFFULL);
+            boost::multiprecision::uint128_t pz = (boost::multiprecision::uint128_t)(from_int(v.z)->value & 0xFFFFFFFFULL);
+            boost::multiprecision::uint128_t pw = (boost::multiprecision::uint128_t)(from_int(v.w)->value & 0xFFFFFFFFULL);
+            val = px | (py << 32) | (pz << 64) | (pw << 96);
+            break;
+        }
+        default:
+            Logger::error("Only Vector types are supported");
+            break;
+    }
+
+    cpp_int temp = val;
+    if (boost::multiprecision::bit_test(val, 127)) {
+        temp -= (cpp_int(1) << 128);
+    }
+    value = temp.convert_to<int128_t>();
+}
+
 String I128::to_string() const {
     cpp_int val = value;
     if (val < 0) {
@@ -139,6 +220,12 @@ Ref<I128> I128::from_float(double p_value, int p_precision) {
     return instance;
 }
 
+Ref<I128> I128::from_bytes(const PackedByteArray& p_value) {
+    Ref<I128> instance = memnew(I128);
+    instance->_init_from_bytes(p_value);
+    return instance;
+}
+
 Ref<I128> I128::from_variant(const Variant& p_value) {
     if (p_value.get_type() == Variant::OBJECT) {
         Ref<I128> casted = p_value;
@@ -149,6 +236,12 @@ Ref<I128> I128::from_variant(const Variant& p_value) {
 
     Ref<I128> instance = memnew(I128);
     switch (p_value.get_type()) {
+        case Variant::NIL:
+            instance->_init_from_int(0);
+            break;
+        case Variant::BOOL:
+            instance->_init_from_int(bool(p_value) ? 1 : 0);
+            break;
         case Variant::INT:
             instance->_init_from_int(p_value);
             break;
@@ -156,64 +249,30 @@ Ref<I128> I128::from_variant(const Variant& p_value) {
             instance->_init_from_float(p_value, -1);
             break;
         case Variant::STRING:
+        case Variant::STRING_NAME:
             instance->_init_from_string(p_value);
             break;
+        case Variant::PACKED_BYTE_ARRAY:
+            instance->_init_from_bytes(p_value);
+            break;
+        case Variant::VECTOR2:
+        case Variant::VECTOR2I:
+        case Variant::VECTOR3:
+        case Variant::VECTOR3I:
+        case Variant::VECTOR4:
+        case Variant::VECTOR4I:
+            return from_vector(p_value);
         default:
+            instance->_init_from_string(String(p_value));
             break;
     }
     return instance;
 }
 
-Array I128::from_vector(const Variant& p_value) {
-    Array arr;
-    switch (p_value.get_type()) {
-        case Variant::VECTOR2: {
-            Vector2 v = p_value;
-            arr.append(from_float(v.x));
-            arr.append(from_float(v.y));
-            break;
-        }
-        case Variant::VECTOR2I: {
-            Vector2i v = p_value;
-            arr.append(from_int(v.x));
-            arr.append(from_int(v.y));
-            break;
-        }
-        case Variant::VECTOR3: {
-            Vector3 v = p_value;
-            arr.append(from_float(v.x));
-            arr.append(from_float(v.y));
-            arr.append(from_float(v.z));
-            break;
-        }
-        case Variant::VECTOR3I: {
-            Vector3i v = p_value;
-            arr.append(from_int(v.x));
-            arr.append(from_int(v.y));
-            arr.append(from_int(v.z));
-            break;
-        }
-        case Variant::VECTOR4: {
-            Vector4 v = p_value;
-            arr.append(from_float(v.x));
-            arr.append(from_float(v.y));
-            arr.append(from_float(v.z));
-            arr.append(from_float(v.w));
-            break;
-        }
-        case Variant::VECTOR4I: {
-            Vector4i v = p_value;
-            arr.append(from_int(v.x));
-            arr.append(from_int(v.y));
-            arr.append(from_int(v.z));
-            arr.append(from_int(v.w));
-            break;
-        }
-        default:
-            Logger::error("Only Vector type are supported");
-            break;
-    }
-    return arr;
+Ref<I128> I128::from_vector(const Variant& p_value) {
+    Ref<I128> instance = memnew(I128);
+    instance->_init_from_vector(p_value);
+    return instance;
 }
 
 void I128::_bind_methods() {
@@ -226,6 +285,7 @@ void I128::_bind_methods() {
     ClassDB::bind_static_method("I128", D_METHOD("from_int", "value"), &I128::from_int);
     ClassDB::bind_static_method("I128", D_METHOD("from_string", "value"), &I128::from_string);
     ClassDB::bind_static_method("I128", D_METHOD("from_float", "value", "precision"), &I128::from_float, DEFVAL(-1));
+    ClassDB::bind_static_method("I128", D_METHOD("from_bytes", "value"), &I128::from_bytes);
     ClassDB::bind_static_method("I128", D_METHOD("from_variant", "value"), &I128::from_variant);
     ClassDB::bind_static_method("I128", D_METHOD("from_vector", "value"), &I128::from_vector);
 }

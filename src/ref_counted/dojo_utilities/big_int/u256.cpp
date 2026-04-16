@@ -50,6 +50,68 @@ void U256::_init_from_float(double p_value, int p_precision) {
     value = val.convert_to<uint256_t>();
 }
 
+void U256::_init_from_bytes(const PackedByteArray& p_value) {
+    value = 0;
+    if (p_value.is_empty()) return;
+
+    const uint8_t* ptr = p_value.ptr();
+    int size = p_value.size();
+    boost::multiprecision::import_bits(value, ptr, ptr + size, 8);
+}
+
+void U256::_init_from_vector(const Variant& p_value) {
+    value = 0;
+    
+    uint256_t mask64 = ((uint256_t)1 << 64) - 1;
+    uint256_t mask128 = ((uint256_t)1 << 128) - 1;
+
+    switch (p_value.get_type()) {
+        case Variant::VECTOR2: {
+            Vector2 v = p_value;
+            value = (from_float(v.x)->value & mask128) | ((from_float(v.y)->value & mask128) << 128);
+            break;
+        }
+        case Variant::VECTOR2I: {
+            Vector2i v = p_value;
+            value = (from_int(v.x)->value & mask128) | ((from_int(v.y)->value & mask128) << 128);
+            break;
+        }
+        case Variant::VECTOR3: {
+            Vector3 v = p_value;
+            value = (from_float(v.x)->value & mask64) | 
+                  ((from_float(v.y)->value & mask64) << 64) | 
+                  ((from_float(v.z)->value & mask64) << 128);
+            break;
+        }
+        case Variant::VECTOR3I: {
+            Vector3i v = p_value;
+            value = (from_int(v.x)->value & mask64) | 
+                  ((from_int(v.y)->value & mask64) << 64) | 
+                  ((from_int(v.z)->value & mask64) << 128);
+            break;
+        }
+        case Variant::VECTOR4: {
+            Vector4 v = p_value;
+            value = (from_float(v.x)->value & mask64) | 
+                  ((from_float(v.y)->value & mask64) << 64) | 
+                  ((from_float(v.z)->value & mask64) << 128) | 
+                  ((from_float(v.w)->value & mask64) << 192);
+            break;
+        }
+        case Variant::VECTOR4I: {
+            Vector4i v = p_value;
+            value = (from_int(v.x)->value & mask64) | 
+                  ((from_int(v.y)->value & mask64) << 64) | 
+                  ((from_int(v.z)->value & mask64) << 128) | 
+                  ((from_int(v.w)->value & mask64) << 192);
+            break;
+        }
+        default:
+            Logger::error("Only Vector types are supported");
+            break;
+    }
+}
+
 String U256::to_string() const {
     std::stringstream ss;
     ss << "0x" << std::hex << value;
@@ -150,6 +212,12 @@ Ref<U256> U256::from_float(double p_value, int p_precision) {
     return instance;
 }
 
+Ref<U256> U256::from_bytes(const PackedByteArray& p_value) {
+    Ref<U256> instance = memnew(U256);
+    instance->_init_from_bytes(p_value);
+    return instance;
+}
+
 Ref<U256> U256::from_variant(const Variant& p_value) {
     if (p_value.get_type() == Variant::OBJECT) {
         Ref<U256> casted = p_value;
@@ -160,6 +228,12 @@ Ref<U256> U256::from_variant(const Variant& p_value) {
 
     Ref<U256> instance = memnew(U256);
     switch (p_value.get_type()) {
+        case Variant::NIL:
+            instance->_init_from_int(0);
+            break;
+        case Variant::BOOL:
+            instance->_init_from_int(bool(p_value) ? 1 : 0);
+            break;
         case Variant::INT:
             instance->_init_from_int(p_value);
             break;
@@ -167,64 +241,30 @@ Ref<U256> U256::from_variant(const Variant& p_value) {
             instance->_init_from_float(p_value, -1);
             break;
         case Variant::STRING:
+        case Variant::STRING_NAME:
             instance->_init_from_string(p_value);
             break;
+        case Variant::PACKED_BYTE_ARRAY:
+            instance->_init_from_bytes(p_value);
+            break;
+        case Variant::VECTOR2:
+        case Variant::VECTOR2I:
+        case Variant::VECTOR3:
+        case Variant::VECTOR3I:
+        case Variant::VECTOR4:
+        case Variant::VECTOR4I:
+            return from_vector(p_value);
         default:
+            instance->_init_from_string(String(p_value));
             break;
     }
     return instance;
 }
 
-Array U256::from_vector(const Variant& p_value) {
-    Array arr;
-    switch (p_value.get_type()) {
-        case Variant::VECTOR2: {
-            Vector2 v = p_value;
-            arr.append(from_float(v.x));
-            arr.append(from_float(v.y));
-            break;
-        }
-        case Variant::VECTOR2I: {
-            Vector2i v = p_value;
-            arr.append(from_int(v.x));
-            arr.append(from_int(v.y));
-            break;
-        }
-        case Variant::VECTOR3: {
-            Vector3 v = p_value;
-            arr.append(from_float(v.x));
-            arr.append(from_float(v.y));
-            arr.append(from_float(v.z));
-            break;
-        }
-        case Variant::VECTOR3I: {
-            Vector3i v = p_value;
-            arr.append(from_int(v.x));
-            arr.append(from_int(v.y));
-            arr.append(from_int(v.z));
-            break;
-        }
-        case Variant::VECTOR4: {
-            Vector4 v = p_value;
-            arr.append(from_float(v.x));
-            arr.append(from_float(v.y));
-            arr.append(from_float(v.z));
-            arr.append(from_float(v.w));
-            break;
-        }
-        case Variant::VECTOR4I: {
-            Vector4i v = p_value;
-            arr.append(from_int(v.x));
-            arr.append(from_int(v.y));
-            arr.append(from_int(v.z));
-            arr.append(from_int(v.w));
-            break;
-        }
-        default:
-            Logger::error("Only Vector type are supported");
-            break;
-    }
-    return arr;
+Ref<U256> U256::from_vector(const Variant& p_value) {
+    Ref<U256> instance = memnew(U256);
+    instance->_init_from_vector(p_value);
+    return instance;
 }
 
 void U256::_bind_methods() {
@@ -239,6 +279,7 @@ void U256::_bind_methods() {
     ClassDB::bind_static_method("U256", D_METHOD("from_int", "value"), &U256::from_int);
     ClassDB::bind_static_method("U256", D_METHOD("from_string", "value"), &U256::from_string);
     ClassDB::bind_static_method("U256", D_METHOD("from_float", "value", "precision"), &U256::from_float, DEFVAL(-1));
+    ClassDB::bind_static_method("U256", D_METHOD("from_bytes", "value"), &U256::from_bytes);
     ClassDB::bind_static_method("U256", D_METHOD("from_variant", "value"), &U256::from_variant);
     ClassDB::bind_static_method("U256", D_METHOD("from_vector", "value"), &U256::from_vector);
 }
