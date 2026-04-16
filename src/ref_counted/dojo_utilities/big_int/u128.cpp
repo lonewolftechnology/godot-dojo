@@ -75,7 +75,9 @@ void U128::_init_from_bytes(const PackedByteArray& p_value) {
 
     const uint8_t* ptr = p_value.ptr();
     int size = p_value.size();
-    boost::multiprecision::import_bits(value, ptr, ptr + size, 8);
+    uint128_t temp_val;
+    boost::multiprecision::import_bits(temp_val, ptr, ptr + size, 8);
+    value = temp_val;
 }
 
 void U128::_init_from_vector(const Variant& p_value) {
@@ -133,7 +135,7 @@ void U128::_init_from_vector(const Variant& p_value) {
 String U128::to_string() const {
     std::stringstream ss;
     ss << "0x" << std::hex << value;
-    return String(ss.str().c_str());
+    return {ss.str().c_str()};
 }
 
 String U128::_to_string() const
@@ -237,7 +239,7 @@ Ref<U128> U128::from_variant(const Variant& p_value) {
             instance->_init_from_int(0);
             break;
         case Variant::BOOL:
-            instance->_init_from_int(bool(p_value) ? 1 : 0);
+            instance->_init_from_int(static_cast<bool>(p_value) ? 1 : 0);
             break;
         case Variant::INT:
             instance->_init_from_int(p_value);
@@ -258,7 +260,8 @@ Ref<U128> U128::from_variant(const Variant& p_value) {
         case Variant::VECTOR3I:
         case Variant::VECTOR4:
         case Variant::VECTOR4I:
-            return from_vector(p_value);
+            instance->_init_from_vector(p_value);
+            break;
         default:
             instance->_init_from_string(String(p_value));
             break;

@@ -39,7 +39,7 @@ void U256::_init_from_float(double p_value, int p_precision) {
         p_precision = 0;
     }
     typedef boost::multiprecision::number<boost::multiprecision::cpp_dec_float<100> > cpp_dec_float_100;
-    cpp_dec_float_100 float_val(p_value);
+    const cpp_dec_float_100 float_val(p_value);
     cpp_int multiplier = 1;
     multiplier <<= p_precision;
     cpp_int val = static_cast<cpp_int>(float_val * cpp_dec_float_100(multiplier));
@@ -56,14 +56,16 @@ void U256::_init_from_bytes(const PackedByteArray& p_value) {
 
     const uint8_t* ptr = p_value.ptr();
     int size = p_value.size();
-    boost::multiprecision::import_bits(value, ptr, ptr + size, 8);
+    uint256_t temp_val;
+    boost::multiprecision::import_bits(temp_val, ptr, ptr + size, 8);
+    value = temp_val;
 }
 
 void U256::_init_from_vector(const Variant& p_value) {
     value = 0;
     
-    uint256_t mask64 = ((uint256_t)1 << 64) - 1;
-    uint256_t mask128 = ((uint256_t)1 << 128) - 1;
+    uint256_t mask64 = (uint256_t(1) << 64) - 1;
+    uint256_t mask128 = (uint256_t(1) << 128) - 1;
 
     switch (p_value.get_type()) {
         case Variant::VECTOR2: {
@@ -232,7 +234,7 @@ Ref<U256> U256::from_variant(const Variant& p_value) {
             instance->_init_from_int(0);
             break;
         case Variant::BOOL:
-            instance->_init_from_int(bool(p_value) ? 1 : 0);
+            instance->_init_from_int(static_cast<bool>(p_value) ? 1 : 0);
             break;
         case Variant::INT:
             instance->_init_from_int(p_value);
@@ -253,7 +255,8 @@ Ref<U256> U256::from_variant(const Variant& p_value) {
         case Variant::VECTOR3I:
         case Variant::VECTOR4:
         case Variant::VECTOR4I:
-            return from_vector(p_value);
+            instance->_init_from_vector(p_value);
+            break;
         default:
             instance->_init_from_string(String(p_value));
             break;
