@@ -88,96 +88,6 @@ void I128::_init_from_bytes(const PackedByteArray& p_value)
     }
 }
 
-void I128::_init_from_vector(const Variant& p_value)
-{
-    uint128_t val = 0;
-    switch (p_value.get_type())
-    {
-    case Variant::VECTOR2:
-        {
-            Vector2 v = p_value;
-            uint128_t px = uint128_t(from_float(v.x)->value &
-                0xFFFFFFFFFFFFFFFFULL);
-            uint128_t py = uint128_t(from_float(v.y)->value &
-                0xFFFFFFFFFFFFFFFFULL);
-            val = px | (py << 64);
-            break;
-        }
-    case Variant::VECTOR2I:
-        {
-            Vector2i v = p_value;
-            uint128_t px = static_cast<uint128_t>(from_int(v.x)->value &
-                0xFFFFFFFFFFFFFFFFULL);
-            uint128_t py = uint128_t(from_int(v.y)->value &
-                0xFFFFFFFFFFFFFFFFULL);
-            val = px | (py << 64);
-            break;
-        }
-    case Variant::VECTOR3:
-        {
-            Vector3 v = p_value;
-            uint128_t px = uint128_t(from_float(v.x)->value &
-                0xFFFFFFFFULL);
-            uint128_t py = uint128_t(from_float(v.y)->value &
-                0xFFFFFFFFULL);
-            uint128_t pz = uint128_t(from_float(v.z)->value &
-                0xFFFFFFFFULL);
-            val = px | (py << 32) | (pz << 64);
-            break;
-        }
-    case Variant::VECTOR3I:
-        {
-            Vector3i v = p_value;
-            uint128_t px = uint128_t(from_int(v.x)->value &
-                0xFFFFFFFFULL);
-            uint128_t py = uint128_t(from_int(v.y)->value &
-                0xFFFFFFFFULL);
-            uint128_t pz = uint128_t(from_int(v.z)->value &
-                0xFFFFFFFFULL);
-            val = px | (py << 32) | (pz << 64);
-            break;
-        }
-    case Variant::VECTOR4:
-        {
-            Vector4 v = p_value;
-            uint128_t px = uint128_t(from_float(v.x)->value &
-                0xFFFFFFFFULL);
-            uint128_t py = uint128_t(from_float(v.y)->value &
-                0xFFFFFFFFULL);
-            uint128_t pz = uint128_t(from_float(v.z)->value &
-                0xFFFFFFFFULL);
-            uint128_t pw = uint128_t(from_float(v.w)->value &
-                0xFFFFFFFFULL);
-            val = px | (py << 32) | (pz << 64) | (pw << 96);
-            break;
-        }
-    case Variant::VECTOR4I:
-        {
-            Vector4i v = p_value;
-            uint128_t px = uint128_t(from_int(v.x)->value &
-                0xFFFFFFFFULL);
-            uint128_t py = uint128_t(from_int(v.y)->value &
-                0xFFFFFFFFULL);
-            uint128_t pz = uint128_t(from_int(v.z)->value &
-                0xFFFFFFFFULL);
-            uint128_t pw = uint128_t(from_int(v.w)->value &
-                0xFFFFFFFFULL);
-            val = px | (py << 32) | (pz << 64) | (pw << 96);
-            break;
-        }
-    default:
-        Logger::error("Only Vector types are supported");
-        break;
-    }
-
-    cpp_int temp = val;
-    if (boost::multiprecision::bit_test(val, 127))
-    {
-        temp -= (cpp_int(1) << 128);
-    }
-    value = temp.convert_to<int128_t>();
-}
-
 String I128::to_string() const
 {
     cpp_int val = value;
@@ -317,14 +227,6 @@ Ref<I128> I128::from_variant(const Variant& p_value)
     case Variant::PACKED_BYTE_ARRAY:
         instance->_init_from_bytes(p_value);
         break;
-    case Variant::VECTOR2:
-    case Variant::VECTOR2I:
-    case Variant::VECTOR3:
-    case Variant::VECTOR3I:
-    case Variant::VECTOR4:
-    case Variant::VECTOR4I:
-        instance->_init_from_vector(p_value);
-        break;
     default:
         instance->_init_from_string(String(p_value));
         break;
@@ -332,11 +234,57 @@ Ref<I128> I128::from_variant(const Variant& p_value)
     return instance;
 }
 
-Ref<I128> I128::from_vector(const Variant& p_value)
+Array I128::from_vector(const Variant& p_value)
 {
-    Ref<I128> instance = memnew(I128);
-    instance->_init_from_vector(p_value);
-    return instance;
+    Array arr;
+    switch (p_value.get_type()) {
+    case Variant::VECTOR2: {
+            Vector2 v = p_value;
+            arr.append(from_float(v.x));
+            arr.append(from_float(v.y));
+            break;
+    }
+    case Variant::VECTOR2I: {
+            Vector2i v = p_value;
+            arr.append(from_int(v.x));
+            arr.append(from_int(v.y));
+            break;
+    }
+    case Variant::VECTOR3: {
+            Vector3 v = p_value;
+            arr.append(from_float(v.x));
+            arr.append(from_float(v.y));
+            arr.append(from_float(v.z));
+            break;
+    }
+    case Variant::VECTOR3I: {
+            Vector3i v = p_value;
+            arr.append(from_int(v.x));
+            arr.append(from_int(v.y));
+            arr.append(from_int(v.z));
+            break;
+    }
+    case Variant::VECTOR4: {
+            Vector4 v = p_value;
+            arr.append(from_float(v.x));
+            arr.append(from_float(v.y));
+            arr.append(from_float(v.z));
+            arr.append(from_float(v.w));
+            break;
+    }
+    case Variant::VECTOR4I: {
+            Vector4i v = p_value;
+            arr.append(from_int(v.x));
+            arr.append(from_int(v.y));
+            arr.append(from_int(v.z));
+            arr.append(from_int(v.w));
+            break;
+    }
+    default:
+        Logger::error("Only Vector types are supported");
+        break;
+    }
+    return arr;
 }
 
 void I128::_bind_methods()

@@ -61,59 +61,6 @@ void U256::_init_from_bytes(const PackedByteArray& p_value) {
     value = temp_val;
 }
 
-void U256::_init_from_vector(const Variant& p_value) {
-    value = 0;
-    
-    uint256_t mask64 = (uint256_t(1) << 64) - 1;
-    uint256_t mask128 = (uint256_t(1) << 128) - 1;
-
-    switch (p_value.get_type()) {
-        case Variant::VECTOR2: {
-            Vector2 v = p_value;
-            value = (from_float(v.x)->value & mask128) | ((from_float(v.y)->value & mask128) << 128);
-            break;
-        }
-        case Variant::VECTOR2I: {
-            Vector2i v = p_value;
-            value = (from_int(v.x)->value & mask128) | ((from_int(v.y)->value & mask128) << 128);
-            break;
-        }
-        case Variant::VECTOR3: {
-            Vector3 v = p_value;
-            value = (from_float(v.x)->value & mask64) | 
-                  ((from_float(v.y)->value & mask64) << 64) | 
-                  ((from_float(v.z)->value & mask64) << 128);
-            break;
-        }
-        case Variant::VECTOR3I: {
-            Vector3i v = p_value;
-            value = (from_int(v.x)->value & mask64) | 
-                  ((from_int(v.y)->value & mask64) << 64) | 
-                  ((from_int(v.z)->value & mask64) << 128);
-            break;
-        }
-        case Variant::VECTOR4: {
-            Vector4 v = p_value;
-            value = (from_float(v.x)->value & mask64) | 
-                  ((from_float(v.y)->value & mask64) << 64) | 
-                  ((from_float(v.z)->value & mask64) << 128) | 
-                  ((from_float(v.w)->value & mask64) << 192);
-            break;
-        }
-        case Variant::VECTOR4I: {
-            Vector4i v = p_value;
-            value = (from_int(v.x)->value & mask64) | 
-                  ((from_int(v.y)->value & mask64) << 64) | 
-                  ((from_int(v.z)->value & mask64) << 128) | 
-                  ((from_int(v.w)->value & mask64) << 192);
-            break;
-        }
-        default:
-            Logger::error("Only Vector types are supported");
-            break;
-    }
-}
-
 String U256::to_string() const {
     std::stringstream ss;
     ss << "0x" << std::hex << value;
@@ -249,14 +196,6 @@ Ref<U256> U256::from_variant(const Variant& p_value) {
         case Variant::PACKED_BYTE_ARRAY:
             instance->_init_from_bytes(p_value);
             break;
-        case Variant::VECTOR2:
-        case Variant::VECTOR2I:
-        case Variant::VECTOR3:
-        case Variant::VECTOR3I:
-        case Variant::VECTOR4:
-        case Variant::VECTOR4I:
-            instance->_init_from_vector(p_value);
-            break;
         default:
             instance->_init_from_string(String(p_value));
             break;
@@ -264,10 +203,56 @@ Ref<U256> U256::from_variant(const Variant& p_value) {
     return instance;
 }
 
-Ref<U256> U256::from_vector(const Variant& p_value) {
-    Ref<U256> instance = memnew(U256);
-    instance->_init_from_vector(p_value);
-    return instance;
+Array U256::from_vector(const Variant& p_value) {
+    Array arr;
+    switch (p_value.get_type()) {
+        case Variant::VECTOR2: {
+            Vector2 v = p_value;
+            arr.append(from_float(v.x));
+            arr.append(from_float(v.y));
+            break;
+        }
+        case Variant::VECTOR2I: {
+            Vector2i v = p_value;
+            arr.append(from_int(v.x));
+            arr.append(from_int(v.y));
+            break;
+        }
+        case Variant::VECTOR3: {
+            Vector3 v = p_value;
+            arr.append(from_float(v.x));
+            arr.append(from_float(v.y));
+            arr.append(from_float(v.z));
+            break;
+        }
+        case Variant::VECTOR3I: {
+            Vector3i v = p_value;
+            arr.append(from_int(v.x));
+            arr.append(from_int(v.y));
+            arr.append(from_int(v.z));
+            break;
+        }
+        case Variant::VECTOR4: {
+            Vector4 v = p_value;
+            arr.append(from_float(v.x));
+            arr.append(from_float(v.y));
+            arr.append(from_float(v.z));
+            arr.append(from_float(v.w));
+            break;
+        }
+        case Variant::VECTOR4I: {
+            Vector4i v = p_value;
+            arr.append(from_int(v.x));
+            arr.append(from_int(v.y));
+            arr.append(from_int(v.z));
+            arr.append(from_int(v.w));
+            break;
+        }
+        default:
+            Logger::error("Only Vector types are supported");
+            break;
+    }
+    return arr;
 }
 
 void U256::_bind_methods() {

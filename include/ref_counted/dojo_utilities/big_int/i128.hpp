@@ -16,7 +16,6 @@ public:
     void _init_from_string(const String& p_value);
     void _init_from_float(double p_value, int p_precision);
     void _init_from_bytes(const PackedByteArray& p_value);
-    void _init_from_vector(const Variant& p_value);
 
     void set_value(const int128_t& p_value) { value = p_value; }
 
@@ -32,7 +31,7 @@ public:
     static Ref<I128> from_float(double p_value, int p_precision = -1);
     static Ref<I128> from_bytes(const PackedByteArray& p_value);
     static Ref<I128> from_variant(const Variant& p_value);
-    static Ref<I128> from_vector(const Variant& p_value);
+    static Array from_vector(const Variant& p_value);
 
 protected:
     static void _bind_methods();
