@@ -7,12 +7,12 @@ version = "${VERSION}"
 [libraries]
 
 macos.editor${PRECISION}.x86_64 = "./bin/macos/editor/${PROJECT_NAME}.macos.editor${PRECISION}.x86_64.dylib"
-macos.debug${PRECISION}.x86_64 = "./bin/macos/debug/${PROJECT_NAME}.macos.debug${PRECISION}.x86_64.dylib"
-macos.release${PRECISION}.x86_64 = "./bin/macos/release/${PROJECT_NAME}.macos.release${PRECISION}.x86_64.dylib"
+macos.debug${PRECISION}.x86_64 = "./bin/macos/debug/${PROJECT_NAME}.macos.template_debug${PRECISION}.x86_64.dylib"
+macos.release${PRECISION}.x86_64 = "./bin/macos/release/${PROJECT_NAME}.macos.template_release${PRECISION}.x86_64.dylib"
 
 macos.editor${PRECISION}.arm64 = "./bin/macos/editor/${PROJECT_NAME}.macos.editor${PRECISION}.arm64.dylib"
-macos.debug${PRECISION}.arm64 = "./bin/macos/debug/${PROJECT_NAME}.macos.debug${PRECISION}.arm64.dylib"
-macos.release${PRECISION}.arm64 = "./bin/macos/release/${PROJECT_NAME}.macos.release${PRECISION}.arm64.dylib"
+macos.debug${PRECISION}.arm64 = "./bin/macos/debug/${PROJECT_NAME}.macos.template_debug${PRECISION}.arm64.dylib"
+macos.release${PRECISION}.arm64 = "./bin/macos/release/${PROJECT_NAME}.macos.template_release${PRECISION}.arm64.dylib"
 
 ios.debug${PRECISION} = "./bin/ios/debug/${PROJECT_NAME}${PRECISION}.xcframework"
 ios.release${PRECISION} = "./bin/ios/release/${PROJECT_NAME}${PRECISION}.xcframework"
