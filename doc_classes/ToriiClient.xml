@@ -227,6 +227,7 @@
 	<signals>
 		<signal name="connected">
 			<description>
+				Emitted when the client is connected to the Torii indexer.
 			</description>
 		</signal>
 	</signals>

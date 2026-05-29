@@ -21,7 +21,7 @@ std::shared_ptr<dojo::MemberValue> variant_to_member_value(const Variant &val, M
         Array arr = val;
         std::vector<std::shared_ptr<dojo::MemberValue> > list;
         list.reserve(arr.size());
-        for (int i = 0; i < arr.size(); ++i) {
+        for (int64_t i = 0; i < arr.size(); ++i) {
             list.push_back(variant_to_member_value(arr[i], prim_tag));
         }
         return std::make_shared<dojo::MemberValue>(dojo::MemberValue::kList{list});
@@ -34,38 +34,25 @@ std::shared_ptr<dojo::MemberValue> variant_to_member_value(const Variant &val, M
         return std::make_shared<dojo::MemberValue>(dojo::MemberValue::kString{s});
     }
 
-    // Otherwise try to convert to primitive
-    dojo::Primitive p = MemberClause::to_native_primitive(val, prim_tag);
+    MemberClause::PrimitiveTag tag = prim_tag;
+    if (tag == MemberClause::Nil) {
+        if (val.get_type() == Variant::BOOL) tag = MemberClause::Bool;
+        else if (val.get_type() == Variant::INT) tag = MemberClause::I64;
+    }
+
+    dojo::Primitive p = MemberClause::to_native_primitive(val, tag);
     return std::make_shared<dojo::MemberValue>(dojo::MemberValue::kPrimitive{std::make_shared<dojo::Primitive>(p)});
 }
 
 dojo::Clause MemberClause::get_native() const {
     dojo::MemberClause clause;
-    clause.member = p_member.utf8().get_data();
-    clause.model = p_model.utf8().get_data();
+    clause.member = static_cast<String>(p_member).utf8().get_data();
+    clause.model = static_cast<String>(p_model).utf8().get_data();
 
     clause.operator_ = p_operator;
-
-    std::shared_ptr<dojo::MemberValue> val;
-
-    if (p_value.get_type() == Variant::ARRAY) {
-        val = variant_to_member_value(p_value, p_primitive_tag);
-    } else if (p_value.get_type() == Variant::STRING && p_primitive_tag == Nil) {
-        std::string s = static_cast<String>(p_value).utf8().get_data();
-        val = std::make_shared<dojo::MemberValue>(dojo::MemberValue::kString{s});
-    } else {
-        // Primitive (explicit tag or implicit default)
-        PrimitiveTag tag = p_primitive_tag;
-        if (tag == Nil) {
-            // Fallback defaults if not set explicitly
-            if (p_value.get_type() == Variant::BOOL) tag = Bool;
-            else if (p_value.get_type() == Variant::INT) tag = I64;
-            else if (p_value.get_type() == Variant::STRING) tag = Felt252;
-        }
-        dojo::Primitive p = to_native_primitive(p_value, tag);
-        val = std::make_shared<dojo::MemberValue>(dojo::MemberValue::kPrimitive{std::make_shared<dojo::Primitive>(p)});
-    }
-    clause.value = val;
+    
+    clause.value = variant_to_member_value(p_value, p_primitive_tag);
+    
     return dojo::Clause(dojo::Clause::kMember{std::make_shared<dojo::MemberClause>(clause)});
 }
 
@@ -123,8 +110,8 @@ Ref<MemberClause> MemberClause::op(const int &operator_) {
     return this;
 }
 
-Ref<MemberClause> MemberClause::member(const Variant &model) {
-    this->p_member = model;
+Ref<MemberClause> MemberClause::member(const Variant &member_val) {
+    this->p_member = member_val;
     return this;
 }
 
@@ -147,6 +134,23 @@ dojo::Primitive MemberClause::to_native_primitive(const Variant &p_value, Primit
             int128_t val(str_val.utf8().get_data());
             std::vector<uint8_t> vec;
             export_bits(val, std::back_inserter(vec), 8);
+
+            if (vec.size() < 16) {
+                vec.insert(vec.begin(), 16 - vec.size(), 0);
+            }
+            if (val < 0) {
+                for (size_t i = 0; i < 16; ++i) {
+                    vec[i] = ~vec[i];
+                }
+                for (int i = 15; i >= 0; --i) {
+                    if (vec[i] == 0xFF) {
+                        vec[i] = 0;
+                    } else {
+                        vec[i]++;
+                        break;
+                    }
+                }
+            }
             return dojo::Primitive(dojo::Primitive::kI128{vec});
         }
         case U8: return dojo::Primitive(dojo::Primitive::kU8{static_cast<uint8_t>(p_value)});
@@ -158,6 +162,10 @@ dojo::Primitive MemberClause::to_native_primitive(const Variant &p_value, Primit
             uint128_t val(str_val.utf8().get_data());
             std::vector<uint8_t> vec;
             export_bits(val, std::back_inserter(vec), 8);
+
+            if (vec.size() < 16) {
+                vec.insert(vec.begin(), 16 - vec.size(), 0);
+            }
             return dojo::Primitive(dojo::Primitive::kU128{vec});
         }
         case U256: {

@@ -39,7 +39,7 @@ void U256::_init_from_float(double p_value, int p_precision) {
         p_precision = 0;
     }
     typedef boost::multiprecision::number<boost::multiprecision::cpp_dec_float<100> > cpp_dec_float_100;
-    cpp_dec_float_100 float_val(p_value);
+    const cpp_dec_float_100 float_val(p_value);
     cpp_int multiplier = 1;
     multiplier <<= p_precision;
     cpp_int val = static_cast<cpp_int>(float_val * cpp_dec_float_100(multiplier));
@@ -48,6 +48,17 @@ void U256::_init_from_float(double p_value, int p_precision) {
         val = GodotDojoHelper::to_starknet_negative_felt(val);
     }
     value = val.convert_to<uint256_t>();
+}
+
+void U256::_init_from_bytes(const PackedByteArray& p_value) {
+    value = 0;
+    if (p_value.is_empty()) return;
+
+    const uint8_t* ptr = p_value.ptr();
+    int size = p_value.size();
+    uint256_t temp_val;
+    boost::multiprecision::import_bits(temp_val, ptr, ptr + size, 8);
+    value = temp_val;
 }
 
 String U256::to_string() const {
@@ -123,6 +134,15 @@ double U256::to_float(int p_precision) const {
     return static_cast<double>(float_val);
 }
 
+int64_t U256::to_int() const {
+    cpp_int val = value;
+    if (val > GodotDojoHelper::STARK_PRIME / 2) {
+        val -= GodotDojoHelper::STARK_PRIME;
+    }
+
+    return static_cast<int64_t>(val);
+}
+
 Ref<U256> U256::from_int(int64_t p_value) {
     Ref<U256> instance = memnew(U256);
     instance->_init_from_int(p_value);
@@ -141,6 +161,12 @@ Ref<U256> U256::from_float(double p_value, int p_precision) {
     return instance;
 }
 
+Ref<U256> U256::from_bytes(const PackedByteArray& p_value) {
+    Ref<U256> instance = memnew(U256);
+    instance->_init_from_bytes(p_value);
+    return instance;
+}
+
 Ref<U256> U256::from_variant(const Variant& p_value) {
     if (p_value.get_type() == Variant::OBJECT) {
         Ref<U256> casted = p_value;
@@ -151,6 +177,12 @@ Ref<U256> U256::from_variant(const Variant& p_value) {
 
     Ref<U256> instance = memnew(U256);
     switch (p_value.get_type()) {
+        case Variant::NIL:
+            instance->_init_from_int(0);
+            break;
+        case Variant::BOOL:
+            instance->_init_from_int(static_cast<bool>(p_value) ? 1 : 0);
+            break;
         case Variant::INT:
             instance->_init_from_int(p_value);
             break;
@@ -158,9 +190,14 @@ Ref<U256> U256::from_variant(const Variant& p_value) {
             instance->_init_from_float(p_value, -1);
             break;
         case Variant::STRING:
+        case Variant::STRING_NAME:
             instance->_init_from_string(p_value);
             break;
+        case Variant::PACKED_BYTE_ARRAY:
+            instance->_init_from_bytes(p_value);
+            break;
         default:
+            instance->_init_from_string(String(p_value));
             break;
     }
     return instance;
@@ -212,7 +249,7 @@ Array U256::from_vector(const Variant& p_value) {
             break;
         }
         default:
-            Logger::error("Only Vector type are supported");
+            Logger::error("Only Vector types are supported");
             break;
     }
     return arr;
@@ -222,6 +259,7 @@ void U256::_bind_methods() {
     ClassDB::bind_method(D_METHOD("to_string"), &U256::to_string);
     ClassDB::bind_method(D_METHOD("_to_string"), &U256::_to_string);
     ClassDB::bind_method(D_METHOD("to_float", "precision"), &U256::to_float, DEFVAL(-1));
+    ClassDB::bind_method(D_METHOD("to_int"), &U256::to_int);
     ClassDB::bind_method(D_METHOD("get_low"), &U256::get_low);
     ClassDB::bind_method(D_METHOD("get_high"), &U256::get_high);
     ClassDB::bind_method(D_METHOD("to_calldata"), &U256::to_calldata);
@@ -229,6 +267,7 @@ void U256::_bind_methods() {
     ClassDB::bind_static_method("U256", D_METHOD("from_int", "value"), &U256::from_int);
     ClassDB::bind_static_method("U256", D_METHOD("from_string", "value"), &U256::from_string);
     ClassDB::bind_static_method("U256", D_METHOD("from_float", "value", "precision"), &U256::from_float, DEFVAL(-1));
+    ClassDB::bind_static_method("U256", D_METHOD("from_bytes", "value"), &U256::from_bytes);
     ClassDB::bind_static_method("U256", D_METHOD("from_variant", "value"), &U256::from_variant);
     ClassDB::bind_static_method("U256", D_METHOD("from_vector", "value"), &U256::from_vector);
 }

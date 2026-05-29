@@ -28,11 +28,7 @@ HttpPinger* HttpPinger::ping(const String& url) {
 }
 
 void HttpPinger::_on_request_completed(int result, int response_code, const PackedStringArray& headers, const PackedByteArray& body) {
-    Variant res;
-    if (result == HTTPRequest::RESULT_SUCCESS && response_code >= 200 && response_code < 300) {
-        res = JSON::parse_string(body.get_string_from_utf8());
-        if (res.get_type() != Variant::DICTIONARY) res = Variant();
-    }
+    Dictionary res = JSON::parse_string(body.get_string_from_utf8());
     emit_signal("response_received", res);
     queue_free();
 }

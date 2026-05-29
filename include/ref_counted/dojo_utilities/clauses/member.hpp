@@ -56,7 +56,7 @@ public:
 
     Ref<MemberClause> model(const Variant &model);
     Ref<MemberClause> op(const int &operator_);
-    Ref<MemberClause> member(const Variant &model);
+    Ref<MemberClause> member(const Variant &member_val);
 
     static dojo::Primitive to_native_primitive(const Variant &p_value, PrimitiveTag p_tag);
 

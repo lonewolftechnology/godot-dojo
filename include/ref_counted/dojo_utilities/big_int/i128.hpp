@@ -15,16 +15,21 @@ public:
     void _init_from_int(int64_t p_value);
     void _init_from_string(const String& p_value);
     void _init_from_float(double p_value, int p_precision);
+    void _init_from_bytes(const PackedByteArray& p_value);
+
+    void set_value(const int128_t& p_value) { value = p_value; }
 
     String to_string() const;
     String _to_string() const;
     PackedStringArray to_calldata() const;
     PackedByteArray to_bytes() const;
     double to_float(int p_precision = -1) const;
+    int64_t to_int() const;
 
     static Ref<I128> from_int(int64_t p_value);
     static Ref<I128> from_string(const String& p_value);
     static Ref<I128> from_float(double p_value, int p_precision = -1);
+    static Ref<I128> from_bytes(const PackedByteArray& p_value);
     static Ref<I128> from_variant(const Variant& p_value);
     static Array from_vector(const Variant& p_value);
 

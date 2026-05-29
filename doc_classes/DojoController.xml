@@ -64,6 +64,7 @@
 			<param index="1" name="entrypoint" type="String" />
 			<param index="2" name="calldata" type="Array" />
 			<description>
+				Executes a single call.
 			</description>
 		</method>
 		<method name="from_storage" qualifiers="static">
@@ -169,6 +170,7 @@
 	<signals>
 		<signal name="controller_created">
 			<description>
+				Emitted when the controller is created.
 			</description>
 		</signal>
 	</signals>

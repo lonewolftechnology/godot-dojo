@@ -127,7 +127,11 @@ String DojoController::address() const
         return "";
     }
     try {
-        return String(internal->address().c_str());
+        String raw_address = String(internal->address().c_str());
+        if (raw_address.begins_with("0x")) {
+            return "0x" + raw_address.substr(2).lpad(64, "0");
+        }
+        return "0x" + raw_address.lpad(64, "0");
     } catch (const controller::ControllerError &e) {
         Logger::error("DojoController.address failed:", e.what());
         return "";
